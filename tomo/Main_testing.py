@@ -5,10 +5,8 @@ from Reconstruct import Reconstruct
 from Tomography import Tomography
 
 logging.basicConfig(level=logging.DEBUG)
-PARAMETER_FILE = r"/home/cgrindhe/tomo_action/input_v2.dat"
-WORKING_DIR = r"/home/cgrindhe/tomo_action/tmp/"
-# PARAMETER_FILE = r"tmp/input.dat"
-# WORKING_DIR = r"tmp/out/"
+PARAMETER_FILE = r"../tomo_action/input_v2.dat"
+WORKING_DIR = r"../tomo_action/tmp/"
 
 ts = TimeSpace(PARAMETER_FILE)
 ts.save_profiles_text(ts.profiles, WORKING_DIR, "py_profiles.dat")

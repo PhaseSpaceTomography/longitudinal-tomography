@@ -1,4 +1,3 @@
-import os
 import logging
 import matplotlib.pyplot as plt
 from analyze import Analyze
@@ -6,11 +5,12 @@ from system_handling import SysHandling
 
 logging.basicConfig(level=logging.INFO)
 
-WORKING_DIR = os.path.realpath(__file__)[:-8] + "/tmp/"
-RESOURCES_DIR = r"/home/cgrindhe/testIO/"
-PY_MAIN_PATH = r"/home/cgrindhe/tomo_v3/tomo/Main_testing.py"
+WORKING_DIR = r"tmp"
+RESOURCES_DIR = r"test_resources"
+OUTPUT_DIR = r"saved_output"
+PY_MAIN_PATH = r"../tomo/Main_testing.py"
 
-INPUT_NAMES = [                     # nbr
+INPUT_NAMES = [                     # Nbr
     "C500MidPhaseNoise",            # 0
     "C550MidPhaseNoise",            # 1
     "flatTopINDIV8thOrder",         # 2
@@ -24,6 +24,7 @@ INPUT_NAMES = [                     # nbr
     "noiseStructure1",              # 10
     "noiseStructure2"               # 11
 ]
+
 
 def main(load_from_file=False, show_picture=True,
          analyze=True, start_file=0, end_file=len(INPUT_NAMES)):
@@ -43,18 +44,17 @@ def main(load_from_file=False, show_picture=True,
         else:
             print("\n!! loading from files !!")
             print("current input: " + INPUT_NAMES[i])
+            inpath = create_out_dir_path(INPUT_NAMES[i])
             (py_picture,
-             ftr_picture) = SysHandling.get_pics_from_file(
-                                    RESOURCES_DIR + INPUT_NAMES[i] + "/")
+             ftr_picture) = SysHandling.get_pics_from_file(inpath)
+
         if show_picture:
             Analyze.show_images(py_picture, ftr_picture, plt)
 
         if analyze:
             if load_from_file:
-                Analyze.analyze_difference(
-                    RESOURCES_DIR + INPUT_NAMES[i]+'/', plot=plt)
-                Analyze.compare_profiles(
-                    RESOURCES_DIR + INPUT_NAMES[i]+'/', plot=plt)
+                Analyze.analyze_difference(inpath, plot=plt)
+                Analyze.compare_profiles(inpath, plot=plt)
             else:
                 Analyze.analyze_difference(WORKING_DIR, plot=plt)
                 Analyze.compare_profiles(WORKING_DIR, plot=plt)
@@ -66,9 +66,16 @@ def main(load_from_file=False, show_picture=True,
             sysh.move_to_resource_dir(i)
 
 
+def create_out_dir_path(input_name):
+    if RESOURCES_DIR[-1] != "/":
+        return RESOURCES_DIR + "/" + input_name
+    else:
+        return RESOURCES_DIR + input_name
+
+
 if __name__ == '__main__':
-    main(load_from_file=False,
+    main(load_from_file=True,
          show_picture=True,
          analyze=True,
-         start_file=10,
-         end_file=11)
+         start_file=0,
+         end_file=1)

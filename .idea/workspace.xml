@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="" />
+    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/tomo_v3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tomo_v3.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/Main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Main_testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_d1.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_jmax.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_picture1.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_plotinfo.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_profiles.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_vself.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/reconstruction.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/analyze.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/analyze.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/fortran/input_v2.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/fortran/tomo_fortran" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/input_v2.dat" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/input_v2.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/system_handling.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/system_handling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/tmpInput0.dat" beforeDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -9,20 +28,73 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
+        <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="600">
-              <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+            <state>
               <folding>
-                <element signature="e#0#14#0" expanded="true" />
+                <element signature="e#1#15#0" expanded="true" />
+                <element signature="e#942#2253#0" />
+                <element signature="e#2129#2269#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="50" selection-start-line="50" selection-end-line="50" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#202#1148#0" />
+                <element signature="e#1225#1882#0" />
+                <element signature="e#1902#2181#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="297">
+              <caret line="81" selection-start-line="81" selection-end-line="81" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+                <element signature="e#420#1401#0" />
+                <element signature="e#1495#1898#0" />
+                <element signature="e#1972#2109#0" />
+                <element signature="e#2162#2381#0" />
+                <element signature="e#2443#2911#0" />
+                <element signature="e#2966#3501#0" />
+                <element signature="e#3330#3606#0" />
+                <element signature="e#3568#3726#0" />
+                <element signature="e#3791#4321#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>RESOURCES_DIR</find>
+      <find>py_main_pth</find>
+      <find>INPUT_DIR</find>
+      <find>dirr</find>
+      <find>make_out_dir</find>
+      <find>find_input_path</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>INPUT_DIR</replace>
+      <replace>py_main_path</replace>
+      <replace>RESOURCES_DIR</replace>
+      <replace>create_out_dir_path</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -32,6 +104,9 @@
       <list>
         <option value="$PROJECT_DIR$/unit_tests/foo.txt" />
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
+        <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
+        <option value="$PROJECT_DIR$/tomo_action/analyze.py" />
+        <option value="$PROJECT_DIR$/tomo_action/main.py" />
       </list>
     </option>
   </component>
@@ -69,6 +144,17 @@
               <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
               <item name="tomo" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="tomo" type="462c0819:PsiDirectoryNode" />
+              <item name="tmp" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="tomo_action" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -89,6 +175,34 @@
         </RuleState>
       </list>
     </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="tomo_v3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tomo_action" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tomo_action/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -120,14 +234,15 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32998997" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39919758" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -146,12 +261,76 @@
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/unit_tests/foo.txt" />
+    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/tokenize.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="446" selection-start-line="446" selection-end-line="446" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/Parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2340">
+          <caret line="158" column="54" lean-forward="true" selection-start-line="158" selection-start-column="54" selection-end-line="158" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="600">
-          <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+        <state relative-caret-position="390">
+          <caret line="26" column="42" selection-start-line="26" selection-start-column="42" selection-end-line="26" selection-end-column="42" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/site-packages/numpy/lib/_datasource.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="617" selection-start-line="617" selection-end-line="617" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="81" selection-start-line="81" selection-end-line="81" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#420#1401#0" />
+            <element signature="e#1495#1898#0" />
+            <element signature="e#1972#2109#0" />
+            <element signature="e#2162#2381#0" />
+            <element signature="e#2443#2911#0" />
+            <element signature="e#2966#3501#0" />
+            <element signature="e#3330#3606#0" />
+            <element signature="e#3568#3726#0" />
+            <element signature="e#3791#4321#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="50" selection-start-line="50" selection-end-line="50" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#202#1148#0" />
+            <element signature="e#1225#1882#0" />
+            <element signature="e#1902#2181#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#1#15#0" expanded="true" />
+            <element signature="e#942#2253#0" />
+            <element signature="e#2129#2269#0" />
           </folding>
         </state>
       </provider>

@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from system_handling import SysHandling
 
 
@@ -7,6 +6,8 @@ class Analyze:
 
     @staticmethod
     def compare_profiles(dirr, plot, tag='Reconstructed profile'):
+        if dirr[-1] != "/":
+            dirr += "/"
         o_prof_str = SysHandling.find_file_in_dir(dirr, r"^profile....data")
         o_prof = np.genfromtxt(dirr + o_prof_str[0])
 
@@ -30,6 +31,8 @@ class Analyze:
 
     @staticmethod
     def analyze_difference(dirr, plot):
+        if dirr[-1] != "/":
+            dirr += "/"
         f_diff, py_diff = SysHandling.find_difference_files(dirr)
 
         plot.subplot(224)
@@ -45,7 +48,6 @@ class Analyze:
               f"python: {py_diff[-1]}, fortran: {f_diff[-1]}\n"
               f"difference of differences: "
               f"{diff_py_over_f[-1] * 100 - 100}%")
-
 
     @staticmethod
     def show_images(py_picture, ftr_picture, plot):
