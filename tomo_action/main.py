@@ -29,6 +29,7 @@ INPUT_NAMES = [                     # Nbr
 def main(load_from_file=False, show_picture=True,
          analyze=True, start_file=0, end_file=len(INPUT_NAMES)):
 
+    SysHandling.dir_exists(WORKING_DIR)
     SysHandling.clear_dir(WORKING_DIR)
     sysh = SysHandling(INPUT_NAMES, WORKING_DIR, RESOURCES_DIR, PY_MAIN_PATH)
 

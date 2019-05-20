@@ -3,23 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/tomo_v3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tomo_v3.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/Main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Main_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_d1.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_jmax.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_picture1.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_plotinfo.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_profiles.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/py_vself.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tmp/out/reconstruction.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/analyze.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/analyze.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/fortran/input_v2.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/fortran/tomo_fortran" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/input_v2.dat" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/input_v2.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo_action/system_handling.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/system_handling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/tmpInput0.dat" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,10 +18,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="438">
+              <caret line="50" lean-forward="true" selection-start-line="50" selection-end-line="50" />
               <folding>
                 <element signature="e#1#15#0" expanded="true" />
-                <element signature="e#942#2253#0" />
                 <element signature="e#2129#2269#0" />
               </folding>
             </state>
@@ -60,8 +46,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="297">
-              <caret line="81" selection-start-line="81" selection-end-line="81" />
+            <state relative-caret-position="453">
+              <caret line="131" selection-start-line="131" selection-end-line="131" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
                 <element signature="e#420#1401#0" />
@@ -85,9 +71,9 @@
       <find>RESOURCES_DIR</find>
       <find>py_main_pth</find>
       <find>INPUT_DIR</find>
-      <find>dirr</find>
       <find>make_out_dir</find>
       <find>find_input_path</find>
+      <find>dirr</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -104,8 +90,9 @@
       <list>
         <option value="$PROJECT_DIR$/unit_tests/foo.txt" />
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
-        <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
         <option value="$PROJECT_DIR$/tomo_action/analyze.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
       </list>
     </option>
@@ -229,24 +216,31 @@
       <option name="project" value="LOCAL" />
       <updated>1558339704374</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="tomo_action script for running tomography is now integrated in repos">
+      <created>1558356634770</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1558356634770</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32998997" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39919758" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32998997" />
+      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.39919758" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" />
@@ -257,7 +251,19 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Testing repos" />
-    <option name="LAST_COMMIT_MESSAGE" value="Testing repos" />
+    <MESSAGE value="tomo_action script for running tomography is now integrated in repos" />
+    <option name="LAST_COMMIT_MESSAGE" value="tomo_action script for running tomography is now integrated in repos" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tomo_action/main.py</url>
+          <line>31</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/unit_tests/foo.txt" />
@@ -292,10 +298,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="50" selection-start-line="50" selection-end-line="50" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#202#1148#0" />
+            <element signature="e#1225#1882#0" />
+            <element signature="e#1902#2181#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="28" lean-forward="true" selection-start-line="2" selection-start-column="28" selection-end-line="2" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="297">
-          <caret line="81" selection-start-line="81" selection-end-line="81" />
+        <state relative-caret-position="453">
+          <caret line="131" selection-start-line="131" selection-end-line="131" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
             <element signature="e#420#1401#0" />
@@ -311,25 +337,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="50" selection-start-line="50" selection-end-line="50" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#202#1148#0" />
-            <element signature="e#1225#1882#0" />
-            <element signature="e#1902#2181#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="438">
+          <caret line="50" lean-forward="true" selection-start-line="50" selection-end-line="50" />
           <folding>
             <element signature="e#1#15#0" expanded="true" />
-            <element signature="e#942#2253#0" />
             <element signature="e#2129#2269#0" />
           </folding>
         </state>

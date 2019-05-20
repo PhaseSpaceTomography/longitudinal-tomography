@@ -126,3 +126,7 @@ class SysHandling:
               + f_diff_str[0] + " and " + p_diff_str[0] + ".")
         return f_diff, p_diff
 
+    @staticmethod
+    def dir_exists(dir_name, path="./"):
+        if not os.path.isdir(path + dir_name):
+            os.mkdir(path + dir_name)
