@@ -75,7 +75,7 @@ def create_out_dir_path(input_name):
 
 
 if __name__ == '__main__':
-    main(load_from_file=True,
+    main(load_from_file=False,
          show_picture=True,
          analyze=True,
          start_file=0,
