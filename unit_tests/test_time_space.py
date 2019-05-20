@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
-from Time_space import TimeSpace
+from tomo.Time_space import TimeSpace
 from unit_tests.resources.C500MidPhaseNoise.C500values import C500
 
 noiseStruct_path = r"resources/noiseStructure2/"

@@ -1,7 +1,7 @@
 import unittest
 # from Parameters import Parameters
-from Physics import *
-from Parameters import Parameters
+from tomo.Physics import *
+from tomo.Parameters import Parameters
 
 # In this test-suite i am testing individual physics formulas,
 #  mostly using made-up values

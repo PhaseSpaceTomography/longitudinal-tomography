@@ -1,4 +1,4 @@
-from Physics import *
+from tomo.Physics import *
 import numpy as np
 import logging
 

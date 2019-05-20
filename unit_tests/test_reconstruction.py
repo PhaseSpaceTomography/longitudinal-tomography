@@ -1,8 +1,8 @@
 import unittest
 import numpy.testing as nptest
 import numpy as np
-from Reconstruct import Reconstruct
-from MapInfo import MapInfo
+from tomo.Reconstruct import Reconstruct
+from tomo.MapInfo import MapInfo
 from unit_tests.resources.C500MidPhaseNoise.C500values import C500
 
 

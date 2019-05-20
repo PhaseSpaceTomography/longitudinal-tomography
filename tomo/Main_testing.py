@@ -1,8 +1,8 @@
 import logging
-from Time_space import TimeSpace
-from MapInfo import MapInfo
-from Reconstruct import Reconstruct
-from Tomography import Tomography
+from tomo.Time_space import TimeSpace
+from tomo.MapInfo import MapInfo
+from tomo.Reconstruct import Reconstruct
+from tomo.Tomography import Tomography
 
 logging.basicConfig(level=logging.DEBUG)
 PARAMETER_FILE = r"../tomo_action/input_v2.dat"

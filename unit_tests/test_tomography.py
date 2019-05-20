@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
-from Tomography import Tomography
+from tomo.Tomography import Tomography
 from unit_tests.resources.C500MidPhaseNoise.C500values import C500
 
 
