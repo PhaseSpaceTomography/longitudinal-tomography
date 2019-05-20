@@ -3,6 +3,7 @@ import subprocess
 import logging
 import numpy as np
 import re
+import sys
 
 
 class SysHandling:
@@ -25,7 +26,7 @@ class SysHandling:
         if python:
             print("Running python")
             # TODO: Catch exceptions
-            subprocess.call(['python', self.py_main_path])
+            subprocess.call([sys.executable, self.py_main_path])
 
         # Running fortran script
         if fortran:
