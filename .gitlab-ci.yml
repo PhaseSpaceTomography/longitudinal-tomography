@@ -2,7 +2,7 @@ stages:
     - test
 
 test:
-	stage: test
-	script:
-		- echo "Testing..."
-		- python -m unittest unit_tests/test*.py
+    stage: test
+    script:
+        - echo "Testing..."
+        - python -m unittest unit_tests/test*.py
