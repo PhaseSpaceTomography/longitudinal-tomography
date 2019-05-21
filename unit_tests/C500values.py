@@ -3,7 +3,7 @@ import numpy as np
 
 class C500:
     def __init__(self):
-        self.path = r"resources/C500MidPhaseNoise/"
+        self.path = r"./resources/C500MidPhaseNoise/"
 
         self.arrays = {
             "beta0": np.genfromtxt(self.path + "beta0.dat"),

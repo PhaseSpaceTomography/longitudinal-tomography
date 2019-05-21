@@ -1,7 +1,7 @@
 import unittest
 import numpy.testing as nptest
 from tomo.Parameters import Parameters
-from unit_tests.resources.C500MidPhaseNoise.C500values import C500
+from unit_tests.C500values import C500
 
 class TestParameters(unittest.TestCase):
 

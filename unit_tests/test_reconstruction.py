@@ -3,7 +3,7 @@ import numpy.testing as nptest
 import numpy as np
 from tomo.Reconstruct import Reconstruct
 from tomo.MapInfo import MapInfo
-from unit_tests.resources.C500MidPhaseNoise.C500values import C500
+from unit_tests.C500values import C500
 
 
 # Tests for reconstruction class
