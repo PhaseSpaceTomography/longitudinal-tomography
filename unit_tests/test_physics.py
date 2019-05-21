@@ -1,10 +1,19 @@
+import sys
+import os
+
+search_directory = os.path.dirname(os.path.realpath(__file__))
+search_directory = os.path.split(search_directory)[0]
+search_directory += "/tomo"
+if search_directory not in sys.path:
+    sys.path.append(search_directory)
+
 import unittest
-# from Parameters import Parameters
-from tomo.Physics import *
-from tomo.Parameters import Parameters
+from Physics import *
+from Parameters import Parameters
 
 # In this test-suite i am testing individual physics formulas,
 #  mostly using made-up values
+
 
 class TestPhysics(unittest.TestCase):
 
@@ -212,4 +221,5 @@ class TestPhysics(unittest.TestCase):
 
 
 if __name__ == '__main__':
+
     unittest.main()
