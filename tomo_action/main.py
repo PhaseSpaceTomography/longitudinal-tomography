@@ -2,10 +2,16 @@ import logging
 import matplotlib.pyplot as plt
 from analyze import Analyze
 from system_handling import SysHandling
+import os
 
 logging.basicConfig(level=logging.INFO)
 
-WORKING_DIR = r"tmp"
+wanted_working_directory = os.path.dirname(os.path.realpath(__file__))
+if os.getcwd() != wanted_working_directory:
+    logging.info("Changing working directory to: " + wanted_working_directory)
+    os.chdir(wanted_working_directory)
+
+TMP_DIR = r"tmp"
 RESOURCES_DIR = r"test_resources"
 OUTPUT_DIR = r"saved_output"
 PY_MAIN_PATH = r"../tomo/Main_testing.py"
@@ -29,9 +35,9 @@ INPUT_NAMES = [                     # Nbr
 def main(load_from_file=False, show_picture=True,
          analyze=True, start_file=0, end_file=len(INPUT_NAMES)):
 
-    SysHandling.dir_exists(WORKING_DIR)
-    SysHandling.clear_dir(WORKING_DIR)
-    sysh = SysHandling(INPUT_NAMES, WORKING_DIR, RESOURCES_DIR, PY_MAIN_PATH)
+    SysHandling.dir_exists(TMP_DIR)
+    SysHandling.clear_dir(TMP_DIR)
+    sysh = SysHandling(INPUT_NAMES, TMP_DIR, RESOURCES_DIR, PY_MAIN_PATH)
 
     for i in range(start_file, end_file):
 
@@ -41,7 +47,7 @@ def main(load_from_file=False, show_picture=True,
         if not load_from_file:
             sysh.run_programs(i, python=True, fortran=True)
             (py_picture,
-             ftr_picture) = SysHandling.get_pics_from_file(WORKING_DIR)
+             ftr_picture) = SysHandling.get_pics_from_file(TMP_DIR)
         else:
             print("\n!! loading from files !!")
             print("current input: " + INPUT_NAMES[i])
@@ -57,8 +63,8 @@ def main(load_from_file=False, show_picture=True,
                 Analyze.analyze_difference(inpath, plot=plt)
                 Analyze.compare_profiles(inpath, plot=plt)
             else:
-                Analyze.analyze_difference(WORKING_DIR, plot=plt)
-                Analyze.compare_profiles(WORKING_DIR, plot=plt)
+                Analyze.analyze_difference(TMP_DIR, plot=plt)
+                Analyze.compare_profiles(TMP_DIR, plot=plt)
 
         if show_picture or analyze:
             plt.show()
@@ -75,8 +81,8 @@ def create_out_dir_path(input_name):
 
 
 if __name__ == '__main__':
-    main(load_from_file=False,
+    main(load_from_file=True,
          show_picture=True,
          analyze=True,
          start_file=0,
-         end_file=1)
+         end_file=2)
