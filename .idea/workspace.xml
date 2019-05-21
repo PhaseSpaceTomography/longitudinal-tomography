@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/unit_tests/test_physics.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_physics.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -31,11 +30,23 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/unit_tests/test_physics.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" column="27" lean-forward="true" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
+            <state relative-caret-position="240">
+              <caret line="16" column="25" lean-forward="true" selection-start-line="16" selection-start-column="25" selection-end-line="16" selection-end-column="25" />
+              <folding>
+                <element signature="e#2#17#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/unit_tests/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="120">
+              <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -44,6 +55,13 @@
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
@@ -92,16 +110,7 @@
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_physics.py" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectConfigurationFiles">
-    <option name="files">
-      <list>
-        <option value="$PROJECT_DIR$/.idea/tomo_v3.iml" />
-        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
-        <option value="$PROJECT_DIR$/.idea/misc.xml" />
-        <option value="$PROJECT_DIR$/.idea/modules.xml" />
+        <option value="$PROJECT_DIR$/unit_tests/__init__.py" />
       </list>
     </option>
   </component>
@@ -122,6 +131,11 @@
             <path>
               <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
               <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -343,7 +357,14 @@
       <option name="project" value="LOCAL" />
       <updated>1558448413600</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path">
+      <created>1558450809961</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1558450809961</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -389,6 +410,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -421,7 +443,8 @@
     <MESSAGE value="Moved C500values from resources to unit_tests" />
     <MESSAGE value="Adding directory to sys.path for correcting importing trouble&#10;&#10;Also changes in the import calls due to this change." />
     <MESSAGE value="tomo_action script now changes CWD to where the file is placed.&#10;&#10;tomo_action/main.py can now run from anywhere (hopefully)" />
-    <option name="LAST_COMMIT_MESSAGE" value="tomo_action script now changes CWD to where the file is placed.&#10;&#10;tomo_action/main.py can now run from anywhere (hopefully)" />
+    <MESSAGE value="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path" />
+    <option name="LAST_COMMIT_MESSAGE" value="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/unit_tests/foo.txt" />
@@ -595,8 +618,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_physics.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="27" lean-forward="true" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
+        <state relative-caret-position="240">
+          <caret line="16" column="25" lean-forward="true" selection-start-line="16" selection-start-column="25" selection-end-line="16" selection-end-column="25" />
+          <folding>
+            <element signature="e#2#17#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
