@@ -1,8 +1,8 @@
 import logging
 import scipy.signal._savitzky_golay as savgol
-from tomo.Parameters import Parameters
-from tomo.Physics import *
-from tomo.Numeric import lin_fit, newton
+from Parameters import Parameters
+from Physics import *
+from Numeric import lin_fit, newton
 
 # Handles import and processing of data in time domain.
 class TimeSpace:

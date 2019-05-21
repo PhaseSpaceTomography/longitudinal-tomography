@@ -1,6 +1,6 @@
 import logging
-from tomo.Physics import *
-from tomo.Numeric import *
+from Physics import *
+from Numeric import *
 
 
 class Parameters:

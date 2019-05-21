@@ -1,7 +1,7 @@
 """
     Physics formulas
                     """
-from tomo.Numeric import *
+from Numeric import *
 from numba import njit
 
 # Constants:
