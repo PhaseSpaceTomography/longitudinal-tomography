@@ -7,6 +7,3 @@ unittests:
     - conda env create -f environment.yaml
     - source activate tomo_env
     - pytest -v unit_tests/test_*.py
-  after_success:
-    - coveralls
-
