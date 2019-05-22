@@ -31,7 +31,7 @@ class Analyze:
     # this difference is calculated in the fortran and python tomo programs
     def show_difference_to_original(f_diff, py_diff, plot):
         print("Fortran difference | Python difference")
-        print(np.concatenate((f_diff.T, py_diff.T), axis=1))
+        print(np.concatenate((f_diff, py_diff), axis=1))
         diff_py_over_f = py_diff / f_diff
         print(f"Last difference of reconstruction:"
               f"python: {py_diff[-1]}, fortran: {f_diff[-1]}\n"
