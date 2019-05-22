@@ -1,4 +1,6 @@
 test:
+  image: python:3.6
   script: 
-    - echo "Testing"
-    - python -m unit_tests.test_physics
+    - apt-get update -q -y
+    - pip install -r requirements.txt
+    - pytest -v unit_tests/test_*.py
