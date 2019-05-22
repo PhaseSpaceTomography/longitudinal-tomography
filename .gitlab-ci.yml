@@ -4,6 +4,13 @@ unittests:
   script:
     - apt-get update -q -y
     - apt-get install -y build-essential
-    - conda env create -f environment.yaml
+    - conda env create -f environment.yml
     - source activate tomo_env
     - pytest -v unit_tests/test_*.py
+    # - echo "Installing coveralls"
+    # - pip install coveralls
+    # - coverage run -m pytest -v unittests/*/test*.py 
+  # after_script:
+    # - coveralls
+
+# Uncomment for coverals usage
