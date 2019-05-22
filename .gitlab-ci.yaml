@@ -1,0 +1,9 @@
+image: continuumio/miniconda3:latest
+
+unittests:
+  script:
+    - apt-get update -q -y
+    - apt-get install -y build-essential
+    - conda env create -f environment.yaml
+    - source activate tomo_env
+    - pytest -v unit_tests/test_*.py

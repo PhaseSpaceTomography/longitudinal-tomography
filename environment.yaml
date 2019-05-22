@@ -1,0 +1,9 @@
+name: tomo_env
+
+dependencies:
+  - python>=3.6
+  - numpy
+  - pytest
+  - scipy
+  - numba
+
