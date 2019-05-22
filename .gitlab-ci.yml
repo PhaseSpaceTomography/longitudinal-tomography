@@ -1,4 +1,4 @@
 test:
   script: 
-    # echo "Testing"
-    python -m unittest unit_tests/test_physics.py
+    - echo "Testing"
+    - python -m unittest unit_tests.test_physics.py
