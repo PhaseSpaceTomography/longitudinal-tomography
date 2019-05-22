@@ -1,5 +1,5 @@
 import numpy as np
-from system_handling import SysHandling
+from tomo_action.system_handling import SysHandling
 
 
 class Analyze:

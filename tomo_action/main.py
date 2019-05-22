@@ -1,15 +1,6 @@
-import logging
 import matplotlib.pyplot as plt
-from analyze import Analyze
-from system_handling import SysHandling
-import os
-
-logging.basicConfig(level=logging.INFO)
-
-wanted_working_directory = os.path.dirname(os.path.realpath(__file__))
-if os.getcwd() != wanted_working_directory:
-    logging.info("Changing working directory to: " + wanted_working_directory)
-    os.chdir(wanted_working_directory)
+from tomo_action.analyze import Analyze
+from tomo_action.system_handling import SysHandling
 
 TMP_DIR = r"tmp"
 RESOURCES_DIR = r"test_resources"
@@ -85,4 +76,4 @@ if __name__ == '__main__':
          show_picture=True,
          analyze=True,
          start_file=0,
-         end_file=2)
+         end_file=1)
