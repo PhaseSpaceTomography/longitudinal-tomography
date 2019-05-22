@@ -36,26 +36,22 @@ def main(load_from_file=False, show_picture=True,
         plt.clf()
 
         if not load_from_file:
+            in_path = TMP_DIR
             sysh.run_programs(i, python=True, fortran=True)
-            (py_picture,
-             ftr_picture) = SysHandling.get_pics_from_file(TMP_DIR)
+            (py_image,
+             f_image) = SysHandling.get_pics_from_file(in_path)
         else:
             print("\n!! loading from files !!")
             print("current input: " + INPUT_NAMES[i])
-            inpath = create_out_dir_path(INPUT_NAMES[i])
-            (py_picture,
-             ftr_picture) = SysHandling.get_pics_from_file(inpath)
+            in_path = create_out_dir_path(INPUT_NAMES[i])
+            (py_image,
+             f_image) = SysHandling.get_pics_from_file(in_path)
 
         if show_picture:
-            Analyze.show_images(py_picture, ftr_picture, plt)
+            Analyze.show_images(py_image, f_image, plt)
 
         if analyze:
-            if load_from_file:
-                Analyze.analyze_difference(inpath, plot=plt)
-                Analyze.compare_profiles(inpath, plot=plt)
-            else:
-                Analyze.analyze_difference(TMP_DIR, plot=plt)
-                Analyze.compare_profiles(TMP_DIR, plot=plt)
+            do_analyze(in_path, py_image, f_image, plot=plt)
 
         if show_picture or analyze:
             plt.show()
@@ -64,6 +60,7 @@ def main(load_from_file=False, show_picture=True,
             sysh.move_to_resource_dir(i)
 
 
+# Asserts that the path to output dir is created correctly
 def create_out_dir_path(input_name):
     if RESOURCES_DIR[-1] != "/":
         return RESOURCES_DIR + "/" + input_name
@@ -71,8 +68,20 @@ def create_out_dir_path(input_name):
         return RESOURCES_DIR + input_name
 
 
+def do_analyze(path, py_image, f_image, plot):
+    plt.subplot(224)
+    plt.axis('off')
+    f_diff, py_diff = SysHandling.find_difference_files(path)
+    Analyze.show_difference_to_original(f_diff, py_diff, plot)
+
+    pf_diff = Analyze.compare_phase_space(py_image, f_image)
+    Analyze.show_difference_to_fortran(pf_diff, plot)
+
+    Analyze.compare_profiles(path, py_image, f_image, plot)
+
+
 if __name__ == '__main__':
-    main(load_from_file=True,
+    main(load_from_file=False,
          show_picture=True,
          analyze=True,
          start_file=0,

@@ -5,49 +5,47 @@ from tomo_action.system_handling import SysHandling
 class Analyze:
 
     @staticmethod
-    def compare_profiles(dirr, plot, tag='Reconstructed profile'):
-        if dirr[-1] != "/":
-            dirr += "/"
-        o_prof_str = SysHandling.find_file_in_dir(dirr, r"^profile....data")
-        o_prof = np.genfromtxt(dirr + o_prof_str[0])
+    def compare_profiles(o_profile_dir, py_image, f_image,
+                         plot, tag='Reconstructed profile'):
+        if o_profile_dir[-1] != "/":
+            o_profile_dir += "/"
 
-        py_rec_file = SysHandling.find_file_in_dir(dirr, r"^py_picture")
-        py_rec_prof = np.genfromtxt(dirr + py_rec_file[0])
-        im_shape = int(np.sqrt(len(py_rec_prof)))
-        py_rec_prof = py_rec_prof.reshape((im_shape, im_shape))
-
-        f_rec_file = SysHandling.find_file_in_dir(dirr, r"^image....data")
-        f_rec_prof = np.genfromtxt(dirr + f_rec_file[0])
-        im_shape = int(np.sqrt(len(f_rec_prof)))
-        f_rec_prof = f_rec_prof.reshape((im_shape, im_shape))
+        o_prof_str = SysHandling.find_file_in_dir(o_profile_dir,
+                                                  r"^profile....data")
+        original_profile = np.genfromtxt(o_profile_dir + o_prof_str[0])
 
         plot.subplot(223)
-        plot.plot(o_prof)
-        plot.plot(np.sum(py_rec_prof.T, axis=0))
-        plot.plot(np.sum(f_rec_prof.T, axis=0))
+        plot.plot(original_profile)
+        plot.plot(np.sum(py_image.T, axis=0))
+        plot.plot(np.sum(f_image.T, axis=0))
         plot.gca().legend(('original', 'recreated python',
                            'recreated fortran'))
         plot.title(tag)
 
     @staticmethod
-    def analyze_difference(dirr, plot):
-        if dirr[-1] != "/":
-            dirr += "/"
-        f_diff, py_diff = SysHandling.find_difference_files(dirr)
+    def compare_phase_space(py_picture, f_picture):
+        return np.sum(np.sqrt((f_picture - py_picture)**2))
 
-        plot.subplot(224)
-        plot.axis('off')
-        plot.text(0.0, 0.9, "Differences in last reconstruction: ")
-        plot.text(0.0, 0.75, f"Fortran: {f_diff[-1]}")
-        plot.text(0.0, 0.65, f"Python:  {py_diff[-1]}")
-
+    @staticmethod
+    # Compares differences relative to original profile
+    # this difference is calculated in the fortran and python tomo programs
+    def show_difference_to_original(f_diff, py_diff, plot):
         print("Fortran difference | Python difference")
-        print(np.concatenate((f_diff, py_diff), axis=1))
+        print(np.concatenate((f_diff.T, py_diff.T), axis=1))
         diff_py_over_f = py_diff / f_diff
         print(f"Last difference of reconstruction:"
               f"python: {py_diff[-1]}, fortran: {f_diff[-1]}\n"
               f"difference of differences: "
               f"{diff_py_over_f[-1] * 100 - 100}%")
+
+        plot.text(0.0, 0.9, "Differences from original profile")
+        plot.text(0.0, 0.75, "  Fortran: {:e}".format(f_diff[0, -1]))
+        plot.text(0.0, 0.65, "  Python:  {:e}".format(py_diff[0, -1]))
+
+    @staticmethod
+    def show_difference_to_fortran(pf_diff, plot):
+        plot.text(0.0, 0.50, f"Difference Fortran - Python:")
+        plot.text(0.0, 0.40, "  {:e}".format(pf_diff))
 
     @staticmethod
     def show_images(py_picture, ftr_picture, plot):

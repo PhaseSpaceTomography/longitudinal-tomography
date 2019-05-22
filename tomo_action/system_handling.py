@@ -118,13 +118,16 @@ class SysHandling:
         if dirr[-1] != "/":
             dirr += "/"
         f_diff_str = SysHandling.find_file_in_dir(dirr, r"\Ad[0-9][0-9][0-9]")
-        p_diff_str = SysHandling.find_file_in_dir(dirr, r"\Apy_d[0-9]")
         f_diff = np.genfromtxt(dirr + f_diff_str[0])
         f_diff = np.delete(f_diff, (0), axis=1)
+
+        p_diff_str = SysHandling.find_file_in_dir(dirr, r"\Apy_d[0-9]")
         p_diff = np.genfromtxt(dirr + p_diff_str[0])
         p_diff = np.delete(p_diff, (0), axis=1)
+
         print("Found difference files: "
               + f_diff_str[0] + " and " + p_diff_str[0] + ".")
+
         return f_diff, p_diff
 
     @staticmethod
