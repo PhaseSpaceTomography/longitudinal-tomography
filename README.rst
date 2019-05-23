@@ -1,0 +1,1 @@
+.. image:: https://gitlab.cern.ch/cgrindhe/tomo_v3/-/jobs/4316384/artifacts/raw/coverage.svg
