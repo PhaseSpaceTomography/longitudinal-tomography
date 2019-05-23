@@ -1,16 +1,24 @@
 image: continuumio/miniconda3:latest
 
-unittests:
-  script:
-    - apt-get update -q -y
-    - apt-get install -y build-essential
-    - conda env create -f environment.yml
-    - source activate tomo_env
-    - pytest -v unit_tests/test_*.py
-    # - echo "Installing coveralls"
-    # - pip install coveralls
-    # - coverage run -m pytest -v unittests/*/test*.py 
-  # after_script:
-    # - coveralls
+before_script:
+  - export PIP_CACHE_DIR="/opt/cache/pip"
+  - apt-get update -q -y
+  - apt-get install -y build-essential
+  - conda env create -f .environment.yml
+  - source activate tomo_env
 
-# Uncomment for coverals usage
+tests:
+  stage: test
+  script:
+    - echo "Installing coverage"
+    - pip install coverage
+    - pip install coverage-badge
+    - coverage run -m pytest -v unit_tests/test*.py
+    - coverage report -m
+    - coverage html
+    - coverage-badge -o coverage.svg
+  artifacts:
+    paths:
+      - htmlcov/*
+      - coverage.svg
+    expire_in: 1 day
