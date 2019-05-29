@@ -23,11 +23,11 @@ extern "C"{
                int profile_length,
                int fmlistlength,
                double xp_segment[], // in
-               int map_nr){
+               int submap){
 
         int isout = 0;
         int icount = 0;
-        int start_index = map_nr * 16;
+        int start_index = submap * 16;
 
         for(int i=0; i < npt; i++){
             xlog[i] = true;
@@ -70,40 +70,23 @@ extern "C"{
         return isout;
     }
 
-    int weight_factor_array(double xp[],    //In
+    int weight_factor_array(double xp[],//In
                         int jmin[],     //In
                         int jmax[],     //In
                         int maps[],     //Out
                         int mapsi[],    //Out
                         int mapsw[],    //Out
-                        int jmin_len,
                         int imin,
                         int imax,
                         int npt,
                         int profile_length,
                         int fmlistlength,
-                        int number_of_maps,
                         int submap){   // out
         int ioffset = 0;
         int isout = 0;
         int uplim = 0;
         int lowlim = 0;
         double* xp_segment = new double[fmlistlength];
-        //maps = new int[profile_length * profile_length];
-        //mapsi = new int[number_of_maps * fmlistlength];
-        //mapsw = new int[number_of_maps * fmlistlength];
-
-        // Initializing arrays
-        for(int i=0; i < fmlistlength; i++){
-            xp_segment[i] = 0;
-        }
-        for(int i=0; i < number_of_maps * fmlistlength; i++){
-            mapsi[i] = -1;
-            mapsw[i] = 0;
-        }
-        for(int i=0; i < profile_length * profile_length; i++){
-            maps[i] = 0;
-        }
 
         // to be used in calc_one_wf().
         // decleared here for efficiency.
@@ -114,7 +97,7 @@ extern "C"{
 
         for(int i=imin; i < imax + 1; i++){
             for(int j=jmin[i]; j < jmax[i]; j++){
-                maps[(i * j) + j] = submap;
+                maps[(i * profile_length) + j] = submap;
                 lowlim = (j - jmin[i]) * npt + ioffset;
                 uplim = (j - jmin[i] + 1) * npt + ioffset;
 

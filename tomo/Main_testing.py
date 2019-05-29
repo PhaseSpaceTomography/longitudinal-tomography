@@ -21,7 +21,7 @@ mi.write_plotinfo_tofile(ts, mi, WORKING_DIR)
 # rec = Reconstruct(ts, mi)
 rec = Creconstruct(ts, mi)
 rec.reconstruct()
-
+# rec.test_mw()
 raise SystemExit
 
 tomo = Tomography(rec)

@@ -142,6 +142,7 @@ class Reconstruct:
 
             direction = 1
             endprofile = timespace.par.profile_count
+            t0 = tm.time()
             for twice in range(2):
 
                 turn_now = film * timespace.par.dturns
@@ -230,6 +231,9 @@ class Reconstruct:
 
                 direction = -1
                 endprofile = -1
+
+            print("Mean iteration time: "
+                  + str((tm.time() - t0) / timespace.par.profile_count))
 
             logging.info("Calculating reversed weight")
             t = tm.process_time()

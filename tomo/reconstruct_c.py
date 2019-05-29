@@ -29,8 +29,6 @@ class Creconstruct:
                                             ctypes.c_int,
                                             ctypes.c_int,
                                             ctypes.c_int,
-                                            ctypes.c_int,
-                                            ctypes.c_int,
                                             ctypes.c_int]
 
         lib.first_map.argtypes = [ndpointer(ctypes.c_int),
@@ -45,6 +43,41 @@ class Creconstruct:
 
         self.find_mapweight = lib.weight_factor_array
         self.first_map = lib.first_map
+
+    def test_mw(self):
+        xp = np.genfromtxt("/home/cgrindhe/cpp_test/xp.dat", dtype=np.double)
+        mapsi = np.zeros(406272, dtype=np.int32)
+        mapsi -= 1
+        mapsw = np.zeros(406272, dtype=np.int32)
+        maps = np.zeros(42025, dtype=np.int32)
+        actmaps = 0
+        nr_of_arrays = 25392
+
+        isOut = self.find_mapweight(xp,
+                                    self.mapinfo.jmin[0],
+                                    self.mapinfo.jmax[0],
+                                    maps,
+                                    mapsi,
+                                    mapsw,
+                                    self.mapinfo.imin[0],
+                                    self.mapinfo.imax[0],
+                                    self.timespace.par.snpt**2,
+                                    self.timespace.par.profile_length,
+                                    self.timespace.par.snpt**2,
+                                    actmaps)
+
+
+        print(isOut)
+        print(mapsi[:16])
+        print(mapsw[:16])
+        a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsw.npy")
+        diff = a[nr_of_arrays: 2 * nr_of_arrays].flatten() - mapsw
+        del a
+        print(str(diff.any()))
+        a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsi.npy")
+        diff = a[nr_of_arrays: 2 * nr_of_arrays].flatten() - mapsi
+        print(str(diff.any()))
+        del a
 
     def reconstruct(self):
         tpar = self.timespace.par
@@ -69,7 +102,7 @@ class Creconstruct:
              mapsw) = self._init_arrays(tpar.profile_count,
                                              tpar.profile_length,
                                              needed_maps,
-                                             tpar.snpt)
+                                             tpar.snpt**2)
 
             # Calculating first map, indexes and weight factors.
             nr_of_submaps = self.first_map(mi.jmin[film],
@@ -93,6 +126,7 @@ class Creconstruct:
 
             direction = 1
             endprofile = tpar.profile_count
+            start_submap = nr_of_submaps
 
             t0 = tm.time()
             for twice in range(2):
@@ -161,12 +195,41 @@ class Creconstruct:
                                                 tpar.phi12,
                                                 tpar.q)
 
-                    # self.find_mapweight()
+                    isOut = self.find_mapweight(xp,
+                                                self.mapinfo.jmin[0],
+                                                self.mapinfo.jmax[0],
+                                                maps[profile],
+                                                mapsi,
+                                                mapsw,
+                                                self.mapinfo.imin[0],
+                                                self.mapinfo.imax[0],
+                                                self.timespace.par.snpt ** 2,
+                                                self.timespace.par.profile_length,
+                                                self.timespace.par.snpt ** 2,
+                                                start_submap)
+                    print(str(profile) + ": " + str(isOut))
+                    start_submap += nr_of_submaps
 
                 direction = -1
                 endprofile = -1
             print("mean iteration time: " +
                   str((tm.time() - t0) / tpar.profile_count))
+
+            mapsi = mapsi.reshape((needed_maps, 16))
+            a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsi.npy")
+            diff = a - mapsi
+            print(diff.any())
+            del a
+            mapsw = mapsw.reshape((needed_maps, 16))
+            a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsw.npy")
+            diff = a - mapsw
+            print(diff.any())
+            del a
+            maps = maps.reshape((100, 205, 205))
+            a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/maps.npy")
+            diff = a - maps
+            del a
+            print(diff.any())
 
 
     def _needed_amount_maps(self, filmstart, filmstop, filmstep,
