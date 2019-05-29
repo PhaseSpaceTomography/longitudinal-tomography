@@ -2,6 +2,7 @@ import logging
 from Time_space import TimeSpace
 from MapInfo import MapInfo
 from Reconstruct import Reconstruct
+from reconstruct_c import Creconstruct
 from Tomography import Tomography
 logging.basicConfig(level=logging.DEBUG)
 PARAMETER_FILE = r"../tomo_action/input_v2.dat"
@@ -17,8 +18,11 @@ mi = MapInfo(ts)
 mi.write_jmax_tofile(ts, mi, WORKING_DIR)
 mi.write_plotinfo_tofile(ts, mi, WORKING_DIR)
 
-rec = Reconstruct(ts, mi)
-rec.reconstruct(rec.timespace, rec.mapinfo)
+# rec = Reconstruct(ts, mi)
+rec = Creconstruct(ts, mi)
+rec.reconstruct()
+
+raise SystemExit
 
 tomo = Tomography(rec)
 for film in range(rec.timespace.par.filmstart - 1,
