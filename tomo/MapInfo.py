@@ -209,7 +209,7 @@ class MapInfo:
         allbin_max = np.zeros(filmstop, dtype=int)
 
         # initializing matrix with zeroes.
-        jmax = np.zeros((filmstop, profile_length), dtype=int)
+        jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
         jmin = np.copy(jmax)
 
         for film in range(filmstart - 1, filmstop, filmstep):
@@ -332,7 +332,7 @@ class MapInfo:
         # initializing matrix with zeroes.
         allbin_min = np.zeros(filmstop, dtype=int)
         allbin_max = np.zeros(filmstop, dtype=int)
-        jmax = np.zeros((filmstop, profile_length), dtype=int)
+        jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
         jmin = np.copy(jmax)
 
         jmax[:, :] = profile_length
