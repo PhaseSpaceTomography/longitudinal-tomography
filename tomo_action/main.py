@@ -23,7 +23,7 @@ INPUT_NAMES = [                     # Nbr
 ]
 
 
-def main(load_from_file=False, show_picture=True,
+def main(load_from_file=False,
          analyze=True, start_file=0, end_file=len(INPUT_NAMES)):
 
     SysHandling.dir_exists(TMP_DIR)
@@ -47,13 +47,9 @@ def main(load_from_file=False, show_picture=True,
             (py_image,
              f_image) = SysHandling.get_pics_from_file(in_path)
 
-        if show_picture:
-            Analyze.show_images(py_image, f_image, plt)
-
         if analyze:
+            Analyze.show_images(py_image, f_image, plt)
             do_analyze(in_path, py_image, f_image, plot=plt)
-
-        if show_picture or analyze:
             plt.show()
 
         if not load_from_file:
@@ -82,7 +78,6 @@ def do_analyze(path, py_image, f_image, plot):
 
 if __name__ == '__main__':
     main(load_from_file=False,
-         show_picture=True,
          analyze=True,
          start_file=0,
          end_file=1)
