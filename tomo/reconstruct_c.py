@@ -16,9 +16,9 @@ class Creconstruct:
         self.mapsi = []
         self.mapweights = []
         self.reversedweights = []
-        self.fmlistlength = 0
+        self.fmlistlength = timespace.par.snpt**2
 
-        lib = ctypes.cdll.LoadLibrary('cpp_files/map_weights.so')
+        lib = ctypes.cdll.LoadLibrary('/home/cgrindhe/tomo_v3/tomo/cpp_files/map_weights.so')
         lib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
                                             ndpointer(ctypes.c_int),
                                             ndpointer(ctypes.c_int),
@@ -196,16 +196,16 @@ class Creconstruct:
                                                 tpar.q)
 
                     isOut = self.find_mapweight(xp,
-                                                self.mapinfo.jmin[0],
-                                                self.mapinfo.jmax[0],
+                                                mi.jmin[0],
+                                                mi.jmax[0],
                                                 maps[profile],
                                                 mapsi,
                                                 mapsw,
-                                                self.mapinfo.imin[0],
-                                                self.mapinfo.imax[0],
-                                                self.timespace.par.snpt ** 2,
-                                                self.timespace.par.profile_length,
-                                                self.timespace.par.snpt ** 2,
+                                                mi.imin[0],
+                                                mi.imax[0],
+                                                tpar.snpt ** 2,
+                                                tpar.profile_length,
+                                                tpar.snpt ** 2,
                                                 start_submap)
                     print(str(profile) + ": " + str(isOut))
                     start_submap += nr_of_submaps
@@ -215,22 +215,29 @@ class Creconstruct:
             print("mean iteration time: " +
                   str((tm.time() - t0) / tpar.profile_count))
 
-            mapsi = mapsi.reshape((needed_maps, 16))
-            a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsi.npy")
-            diff = a - mapsi
-            print(diff.any())
-            del a
-            mapsw = mapsw.reshape((needed_maps, 16))
-            a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsw.npy")
-            diff = a - mapsw
-            print(diff.any())
-            del a
-            maps = maps.reshape((100, 205, 205))
-            a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/maps.npy")
-            diff = a - maps
-            del a
-            print(diff.any())
+            maps = maps.reshape((tpar.profile_count,
+                                 tpar.profile_length,
+                                 tpar.profile_length))
+            mapsi = mapsi.reshape((needed_maps, tpar.snpt**2))
+            mapsw = mapsw.reshape((needed_maps, tpar.snpt**2))
 
+            reversedweights = self._total_weightfactor(
+                                        tpar.profile_count,
+                                        tpar.profile_length,
+                                        tpar.snpt**2,
+                                        tpar.snpt**2,
+                                        mi.imin[film],
+                                        mi.imax[film],
+                                        mi.jmin[film, :],
+                                        mi.jmax[film, :],
+                                        mapsw,
+                                        mapsi,
+                                        maps)
+
+            self.maps = maps
+            self.mapsi = mapsi
+            self.mapweights = mapsw
+            self.reversedweights = reversedweights
 
     def _needed_amount_maps(self, filmstart, filmstop, filmstep,
                             profile_count, imin, imax, jmin, jmax):
@@ -374,6 +381,39 @@ class Creconstruct:
                       / (h_num * omegarev0[turn_now] * dtbin))
         yp = denergy / debin + yat0
         return xp, yp, turn_now
+
+
+    @staticmethod
+    @njit
+    def _total_weightfactor(profile_count, profile_length, fmlistlength,
+                            npt, imin, imax, jmin, jmax,
+                            mapsweight, mapsi, maps):
+        reversedweights = np.zeros((profile_count, profile_length))
+        for p in range(profile_count):
+            for i in range(imin, imax + 1):
+                for j in range(jmin[i], jmax[i]):
+                    _reversedweights(reversedweights[p, :],      # out
+                                  mapsweight[maps[p, i, j], :],  # in
+                                  mapsi[maps[p, i, j], :],       # in
+                                      fmlistlength,
+                                      npt)
+        return reversedweights * float(profile_count)
+
+@njit
+def _reversedweights(reversedweights, mapsweightarr,
+                     mapsiarr, fmListLenght, npt):
+    numpts = np.sum(mapsweightarr[:])
+    if mapsiarr[fmListLenght - 1] < -1:
+        raise NotImplementedError("Ext. maps not implemented.")
+    for fl in range(npt):
+        if fl < fmListLenght:
+            if mapsiarr[fl] > 0:
+                reversedweights[mapsiarr[fl]] += mapsweightarr[fl] \
+                                               / float(numpts)
+            else:
+                break
+        else:
+            raise NotImplementedError("Ext. maps not implemented.")
 
 
 

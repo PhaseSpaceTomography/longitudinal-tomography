@@ -1,4 +1,5 @@
 import logging
+import time as tm
 from Time_space import TimeSpace
 from MapInfo import MapInfo
 from Reconstruct import Reconstruct
@@ -20,9 +21,11 @@ mi.write_plotinfo_tofile(ts, mi, WORKING_DIR)
 
 # rec = Reconstruct(ts, mi)
 rec = Creconstruct(ts, mi)
+t0 = tm.time()
 rec.reconstruct()
+print("full reconstruction time: " + str(tm.time() - t0))
 # rec.test_mw()
-raise SystemExit
+# raise SystemExit
 
 tomo = Tomography(rec)
 for film in range(rec.timespace.par.filmstart - 1,
