@@ -107,7 +107,7 @@ class Creconstruct:
             # Calculating first map, indexes and weight factors.
             nr_of_submaps = self.first_map(mi.jmin[film],
                                            mi.jmax[film],
-                                           maps[0],
+                                           maps[film],
                                            mapsi,
                                            mapsw,
                                            mi.imin[film],
@@ -196,13 +196,13 @@ class Creconstruct:
                                                 tpar.q)
 
                     isOut = self.find_mapweight(xp,
-                                                mi.jmin[0],
-                                                mi.jmax[0],
+                                                mi.jmin[film],
+                                                mi.jmax[film],
                                                 maps[profile],
                                                 mapsi,
                                                 mapsw,
-                                                mi.imin[0],
-                                                mi.imax[0],
+                                                mi.imin[film],
+                                                mi.imax[film],
                                                 tpar.snpt ** 2,
                                                 tpar.profile_length,
                                                 tpar.snpt ** 2,

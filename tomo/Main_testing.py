@@ -24,8 +24,6 @@ rec = Creconstruct(ts, mi)
 t0 = tm.time()
 rec.reconstruct()
 print("full reconstruction time: " + str(tm.time() - t0))
-# rec.test_mw()
-# raise SystemExit
 
 tomo = Tomography(rec)
 for film in range(rec.timespace.par.filmstart - 1,

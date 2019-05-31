@@ -5,8 +5,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/Main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Main_testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/reconstruct_c.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_c.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/input_v2.dat" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/input_v2.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,8 +20,8 @@
             <file pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="362">
-                    <caret line="251" selection-start-line="251" selection-end-line="255" selection-end-column="40" />
+                  <state relative-caret-position="542">
+                    <caret line="230" selection-start-line="230" selection-end-line="230" />
                     <folding>
                       <element signature="e#0#18#0" expanded="true" />
                     </folding>
@@ -38,37 +36,25 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="465">
-              <caret line="235" selection-start-line="235" selection-end-line="235" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="237">
-              <caret line="24" column="16" selection-start-line="24" selection-start-column="16" selection-end-line="24" selection-end-column="16" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="462">
-              <caret line="84" column="26" lean-forward="true" selection-start-line="84" selection-start-column="26" selection-end-line="84" selection-end-column="26" />
+            <state relative-caret-position="504">
+              <caret line="85" column="21" selection-start-line="85" selection-start-column="21" selection-end-line="85" selection-end-column="21" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="14" column="46" lean-forward="true" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
+              <folding>
+                <element signature="e#0#14#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -146,8 +132,8 @@
         <option value="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" />
         <option value="$PROJECT_DIR$/tomo/Reconstruct.py" />
         <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
-        <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
+        <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
       </list>
     </option>
   </component>
@@ -489,7 +475,14 @@
       <option name="project" value="LOCAL" />
       <updated>1559145607715</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="c_reconstruct tested and working, for many cases&#10;&#10;  problem with cases where profile to be reconstructed is not 0">
+      <created>1559288272763</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1559288272767</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -579,7 +572,8 @@
     <MESSAGE value="cpp calculation of mapweights&#10;&#10;- added cpp file for calculation of mapweights&#10;- added module for cpp based reconstruction&#10;- changes jmin, jmax, imin, imax values to ctype.int32" />
     <MESSAGE value="creconstruct working up to and including longtrack" />
     <MESSAGE value="c_reconstruct now (seemingly) working with c++ mapweights function" />
-    <option name="LAST_COMMIT_MESSAGE" value="c_reconstruct now (seemingly) working with c++ mapweights function" />
+    <MESSAGE value="c_reconstruct tested and working, for many cases&#10;&#10;  problem with cases where profile to be reconstructed is not 0" />
+    <option name="LAST_COMMIT_MESSAGE" value="c_reconstruct tested and working, for many cases&#10;&#10;  problem with cases where profile to be reconstructed is not 0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -836,18 +830,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="362">
-          <caret line="251" selection-start-line="251" selection-end-line="255" selection-end-column="40" />
+        <state relative-caret-position="542">
+          <caret line="230" selection-start-line="230" selection-end-line="230" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1333">
+          <caret line="121" column="64" selection-start-line="121" selection-start-column="64" selection-end-line="121" selection-end-column="64" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#1769#3185#0" />
+            <element signature="e#11862#12323#0" />
+            <element signature="e#12369#12635#0" />
+            <element signature="e#12750#13282#0" />
+            <element signature="e#15835#18272#0" />
+            <element signature="e#18495#19047#0" />
+            <element signature="e#19163#19643#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="462">
-          <caret line="84" column="26" lean-forward="true" selection-start-line="84" selection-start-column="26" selection-end-line="84" selection-end-column="26" />
+        <state relative-caret-position="504">
+          <caret line="85" column="21" selection-start-line="85" selection-start-column="21" selection-end-line="85" selection-end-column="21" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
@@ -856,20 +867,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="237">
-          <caret line="24" column="16" selection-start-line="24" selection-start-column="16" selection-end-line="24" selection-end-column="16" />
+        <state relative-caret-position="210">
+          <caret line="14" column="46" lean-forward="true" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="235" selection-start-line="235" selection-end-line="235" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
