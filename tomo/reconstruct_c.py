@@ -1,10 +1,10 @@
 import numpy as np
 import time as tm
 import ctypes
+import line_profiler
 from Physics import vrft
 from numba import njit
 from numpy.ctypeslib import ndpointer
-
 
 
 class Creconstruct:
@@ -235,6 +235,7 @@ class Creconstruct:
         print("c++: " + str(cpp_time))
         print("c++ - numba: " + str(cpp_time - original_time))
 
+    # @profile
     def reconstruct(self):
         tpar = self.timespace.par
         mi = self.mapinfo
@@ -327,7 +328,7 @@ class Creconstruct:
                                                 tpar.phi12,
                                                 tpar.deltaE0)
                     else:
-                        test_c = True
+                        test_c = False
                         if not test_c:
                             xp, yp, turn_now = self.longtrack(
                                                     direction,
@@ -472,7 +473,7 @@ class Creconstruct:
         return xp, yp, k
 
     @staticmethod
-    @njit
+    @njit(fastmath=True)
     def longtrack(direction, nrep, yp, xp, dEbin, turn_now, x_origin,
                   h_num, omega_rev0, dtbin, phi0, yat0, c1, deltaE0,
                   vrf1, vrf1dot, vrf2, vrf2dot, time_at_turn,
@@ -510,7 +511,7 @@ class Creconstruct:
         return xp, yp, turn_now
 
     @staticmethod
-    @njit
+    @njit(fastmath=True)
     def longtrack_self(xp, yp, xorigin, h_num,
                        omegarev0, dtbin, phi0, yat0,
                        debin, turn_now, direction, dturns,
@@ -574,11 +575,11 @@ class Creconstruct:
         for p in range(profile_count):
             for i in range(imin, imax + 1):
                 for j in range(jmin[i], jmax[i]):
-                    _reversedweights(reversedweights[p, :],      # out
-                                  mapsweight[maps[p, i, j], :],  # in
-                                  mapsi[maps[p, i, j], :],       # in
-                                      fmlistlength,
-                                      npt)
+                    _reversedweights(reversedweights[p, :],         # out
+                                     mapsweight[maps[p, i, j], :],  # in
+                                     mapsi[maps[p, i, j], :],       # in
+                                     fmlistlength,
+                                     npt)
         return reversedweights * float(profile_count)
 
 @njit
@@ -596,40 +597,3 @@ def _reversedweights(reversedweights, mapsweightarr,
                 break
         else:
             raise NotImplementedError("Ext. maps not implemented.")
-
-
-
-# xp = np.genfromtxt("/home/cgrindhe/cpp_test/xp.dat", dtype=np.double)
-# jmin = np.genfromtxt("/home/cgrindhe/cpp_test/jmin.dat", dtype=np.int32)
-# jmax = np.genfromtxt("/home/cgrindhe/cpp_test/jmax.dat", dtype=np.int32)
-# imin = 2
-# imax = 203
-# mapsi = np.zeros(406272, dtype=np.int32)
-# mapsi -= 1
-# mapsw = np.zeros(406272, dtype=np.int32)
-# maps = np.zeros(42025, dtype=np.int32)
-# array_length = 16
-# profile_length = 205
-# fmlistlength = 16
-# actmaps = 0
-# npt = 16
-# nr_of_arrays = 25392
-
-# isOut = self.find_mapweight(xp, jmin, jmax,
-#                                 maps, mapsi, mapsw,
-#                                 array_length, imin, imax,
-#                                 npt, profile_length,
-#                                 fmlistlength, nr_of_arrays,
-#                                 actmaps)
-# a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsw.npy")
-# diff = a[nr_of_arrays: 2 * nr_of_arrays].flatten() - mapsw
-# del a
-# print(str(diff.any()))
-# a = np.load("/home/cgrindhe/tomo_v3/unit_tests/resources/C500MidPhaseNoise/mapsi.npy")
-# diff = a[nr_of_arrays: 2 * nr_of_arrays].flatten() - mapsi
-# print(str(diff.any()))
-# del a
-
-# print(isOut)
-# print(mapsi[0:16])
-# print(mapsw[0:16])
