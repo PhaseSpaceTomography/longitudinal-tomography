@@ -18,31 +18,57 @@ class Creconstruct:
         self.reversedweights = []
         self.fmlistlength = timespace.par.snpt**2
 
-        lib = ctypes.cdll.LoadLibrary('/home/cgrindhe/tomo_v3/tomo/cpp_files/map_weights.so')
-        lib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
-                                            ndpointer(ctypes.c_int),
-                                            ndpointer(ctypes.c_int),
-                                            ndpointer(ctypes.c_int),
-                                            ndpointer(ctypes.c_int),
-                                            ndpointer(ctypes.c_int),
-                                            ctypes.c_int,
-                                            ctypes.c_int,
-                                            ctypes.c_int,
-                                            ctypes.c_int,
-                                            ctypes.c_int]
+        wf_lib = ctypes.cdll.LoadLibrary('/home/cgrindhe/tomo_v3/tomo/cpp_files/map_weights.so')
+        wf_lib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
+                                               ndpointer(ctypes.c_int),
+                                               ndpointer(ctypes.c_int),
+                                               ndpointer(ctypes.c_int),
+                                               ndpointer(ctypes.c_int),
+                                               ndpointer(ctypes.c_int),
+                                               ctypes.c_int,
+                                               ctypes.c_int,
+                                               ctypes.c_int,
+                                               ctypes.c_int,
+                                               ctypes.c_int]
 
-        lib.first_map.argtypes = [ndpointer(ctypes.c_int),
-                                  ndpointer(ctypes.c_int),
-                                  ndpointer(ctypes.c_int),
-                                  ndpointer(ctypes.c_int),
-                                  ndpointer(ctypes.c_int),
-                                  ctypes.c_int,
-                                  ctypes.c_int,
-                                  ctypes.c_int,
-                                  ctypes.c_int]
+        wf_lib.first_map.argtypes = [ndpointer(ctypes.c_int),
+                                     ndpointer(ctypes.c_int),
+                                     ndpointer(ctypes.c_int),
+                                     ndpointer(ctypes.c_int),
+                                     ndpointer(ctypes.c_int),
+                                     ctypes.c_int,
+                                     ctypes.c_int,
+                                     ctypes.c_int,
+                                     ctypes.c_int]
 
-        self.find_mapweight = lib.weight_factor_array
-        self.first_map = lib.first_map
+        lt_lib = ctypes.cdll.LoadLibrary('/home/cgrindhe/tomo_v3/tomo/cpp_files/longtrack.so')
+        lt_lib.longtrack.argtypes = [ndpointer(ctypes.c_double),
+                                     ndpointer(ctypes.c_double),
+                                     ndpointer(ctypes.c_double),
+                                     ndpointer(ctypes.c_double),
+                                     ndpointer(ctypes.c_double),
+                                     ndpointer(ctypes.c_double),
+                                     ndpointer(ctypes.c_double),
+                                     ctypes.c_int,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_int,
+                                     ctypes.c_int,
+                                     ctypes.c_int,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_int,
+                                     ctypes.c_double]
+
+        self.find_mapweight = wf_lib.weight_factor_array
+        self.first_map = wf_lib.first_map
+        self.clt = lt_lib.longtrack
 
     def test_mw(self):
         xp = np.genfromtxt("/home/cgrindhe/cpp_test/xp.dat", dtype=np.double)
@@ -78,6 +104,136 @@ class Creconstruct:
         diff = a[nr_of_arrays: 2 * nr_of_arrays].flatten() - mapsi
         print(str(diff.any()))
         del a
+
+    def test_lt(self):
+        print("Testing longtrack")
+        tpar = self.timespace.par
+        mi = self.mapinfo
+
+        xpoints, ypoints = self._populate_bins(tpar.snpt)
+
+        needed_maps = self._needed_amount_maps(tpar.filmstart,
+                                               tpar.filmstop,
+                                               tpar.filmstep,
+                                               tpar.profile_count,
+                                               mi.imin,
+                                               mi.imax,
+                                               mi.jmin,
+                                               mi.jmax)
+
+        film = 0
+
+        # Initiating arrays.
+        (maps, mapsi,
+         mapsw) = self._init_arrays(tpar.profile_count,
+                                         tpar.profile_length,
+                                         needed_maps,
+                                         tpar.snpt**2)
+
+        # Calculating first map, indexes and weight factors.
+        nr_of_submaps = self.first_map(mi.jmin[film],
+                                       mi.jmax[film],
+                                       maps[film],
+                                       mapsi,
+                                       mapsw,
+                                       mi.imin[film],
+                                       mi.imax[film],
+                                       tpar.snpt**2,
+                                       tpar.profile_length)
+
+        # Set initial conditions for points to be tracked
+        # xp and yp: time and energy in pixels
+        # size: number of pixels pr profile
+
+        xp = np.zeros(int(np.ceil(needed_maps * tpar.snpt**2
+                                  / tpar.profile_count)))
+        yp = np.zeros(int(np.ceil(needed_maps * tpar.snpt**2
+                                  / tpar.profile_count)))
+
+        direction = 1
+        endprofile = tpar.profile_count
+
+        print("Running c++ version...")
+        (xp, yp,
+         last_pxlidx) = self._init_tracked_point(tpar.snpt,
+                                                 mi.imin[film],
+                                                 mi.imax[film],
+                                                 mi.jmin[film, :],
+                                                 mi.jmax[film, :],
+                                                 xp, yp,
+                                                 xpoints,
+                                                 ypoints)
+
+        turn_now = 0
+        t0 = tm.time()
+        for profile in range(film + direction, endprofile, direction):
+            turn_now = self.clt(xp[:last_pxlidx],
+                                yp[:last_pxlidx],
+                                tpar.omega_rev0,
+                                tpar.phi0,
+                                tpar.c1,
+                                tpar.time_at_turn,
+                                tpar.deltaE0,
+                                np.int32(last_pxlidx),
+                                tpar.x_origin,
+                                tpar.dtbin,
+                                mi.dEbin,
+                                tpar.yat0,
+                                tpar.phi12,
+                                direction,
+                                tpar.dturns,
+                                turn_now,
+                                tpar.q,
+                                tpar.vrf1,
+                                tpar.vrf1dot,
+                                tpar.vrf2,
+                                tpar.vrf2dot,
+                                np.int32(tpar.h_num),
+                                np.double(tpar.h_ratio))
+        cpp_time = (tm.time() - t0) / (tpar.profile_count - 1)
+
+        print("Running original...")
+        (xp, yp,
+         last_pxlidx) = self._init_tracked_point(tpar.snpt,
+                                                 mi.imin[film],
+                                                 mi.imax[film],
+                                                 mi.jmin[film, :],
+                                                 mi.jmax[film, :],
+                                                 xp, yp,
+                                                 xpoints,
+                                                 ypoints)
+        turn_now = 0
+        t0 = tm.time()
+        for profile in range(film + direction, endprofile, direction):
+            xp, yp, turn_now = self.longtrack(
+                                        direction,
+                                        tpar.dturns,
+                                        yp[:last_pxlidx],
+                                        xp[:last_pxlidx],
+                                        mi.dEbin,
+                                        turn_now,
+                                        tpar.x_origin,
+                                        tpar.h_num,
+                                        tpar.omega_rev0,
+                                        tpar.dtbin,
+                                        tpar.phi0,
+                                        tpar.yat0,
+                                        tpar.c1,
+                                        tpar.deltaE0,
+                                        tpar.vrf1,
+                                        tpar.vrf1dot,
+                                        tpar.vrf2,
+                                        tpar.vrf2dot,
+                                        tpar.time_at_turn,
+                                        tpar.h_ratio,
+                                        tpar.phi12,
+                                        tpar.q)
+        original_time = (tm.time() - t0) / (tpar.profile_count - 1)
+
+        print("mean iteration times: ")
+        print("numba: " + str(original_time))
+        print("c++: " + str(cpp_time))
+        print("c++ - numba: " + str(cpp_time - original_time))
 
     def reconstruct(self):
         tpar = self.timespace.par
@@ -171,29 +327,55 @@ class Creconstruct:
                                                 tpar.phi12,
                                                 tpar.deltaE0)
                     else:
-                        xp, yp, turn_now = self.longtrack(
+                        test_c = True
+                        if not test_c:
+                            xp, yp, turn_now = self.longtrack(
+                                                    direction,
+                                                    tpar.dturns,
+                                                    yp[:last_pxlidx],
+                                                    xp[:last_pxlidx],
+                                                    mi.dEbin,
+                                                    turn_now,
+                                                    tpar.x_origin,
+                                                    tpar.h_num,
+                                                    tpar.omega_rev0,
+                                                    tpar.dtbin,
+                                                    tpar.phi0,
+                                                    tpar.yat0,
+                                                    tpar.c1,
+                                                    tpar.deltaE0,
+                                                    tpar.vrf1,
+                                                    tpar.vrf1dot,
+                                                    tpar.vrf2,
+                                                    tpar.vrf2dot,
+                                                    tpar.time_at_turn,
+                                                    tpar.h_ratio,
+                                                    tpar.phi12,
+                                                    tpar.q)
+                        else:
+                            turn_now = self.clt(xp[:last_pxlidx],
+                                                yp[:last_pxlidx],
+                                                tpar.omega_rev0,
+                                                tpar.phi0,
+                                                tpar.c1,
+                                                tpar.time_at_turn,
+                                                tpar.deltaE0,
+                                                np.int32(last_pxlidx),
+                                                tpar.x_origin,
+                                                tpar.dtbin,
+                                                mi.dEbin,
+                                                tpar.yat0,
+                                                tpar.phi12,
                                                 direction,
                                                 tpar.dturns,
-                                                yp[:last_pxlidx],
-                                                xp[:last_pxlidx],
-                                                mi.dEbin,
                                                 turn_now,
-                                                tpar.x_origin,
-                                                tpar.h_num,
-                                                tpar.omega_rev0,
-                                                tpar.dtbin,
-                                                tpar.phi0,
-                                                tpar.yat0,
-                                                tpar.c1,
-                                                tpar.deltaE0,
+                                                tpar.q,
                                                 tpar.vrf1,
                                                 tpar.vrf1dot,
                                                 tpar.vrf2,
                                                 tpar.vrf2dot,
-                                                tpar.time_at_turn,
-                                                tpar.h_ratio,
-                                                tpar.phi12,
-                                                tpar.q)
+                                                np.int32(tpar.h_num),
+                                                np.double(tpar.h_ratio))
 
                     isOut = self.find_mapweight(xp,
                                                 mi.jmin[film],
