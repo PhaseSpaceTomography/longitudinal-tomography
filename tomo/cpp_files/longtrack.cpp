@@ -50,6 +50,7 @@ extern "C"{
                   int h_num, double h_ratio){
         double rfv1_at_turn;
         double rfv2_at_turn;
+        double temp_phi; 
 
         double * dphi = calculate_dphi(xp, xp_len, xorigin, h_num,
                                        omega_rev0[turn_now], dtbin,
@@ -68,6 +69,7 @@ extern "C"{
 
                 rfv1_at_turn = vrf1 + vrf1dot * turn_time[turn_now];
                 rfv2_at_turn = vrf2 + vrf2dot * turn_time[turn_now];
+                temp_phi = phi0[turn_now] - phi12;
                 
                 #pragma omp paralell for
                 for(j=0; j < xp_len; j++){
@@ -75,7 +77,7 @@ extern "C"{
                                        * sin(dphi[j] + phi0[turn_now])
                                        + rfv2_at_turn
                                        * sin(h_ratio 
-                                             * (dphi[j] + phi0[turn_now] - phi12))
+                                             * (dphi[j] + temp_phi))
                                        - deltaE0[turn_now]);
                 }
             }
@@ -87,13 +89,13 @@ extern "C"{
         #pragma omp paralell for
         for(i=0; i < xp_len; i++){
             xp[i] = (dphi[i] + phi0[turn_now])
-                    / (static_cast<double>(h_num) * omega_rev0[turn_now] * dtbin)
+                    / (h_num * omega_rev0[turn_now] * dtbin)
                     - xorigin;
         }
         
         #pragma omp paralell for
         for(i=0; i < xp_len; i++){
-            yp[i] = denergy[i] / static_cast<double>(dEbin) + yat0;
+            yp[i] = denergy[i] / dEbin + yat0;
         }
 
         delete[] dphi;
