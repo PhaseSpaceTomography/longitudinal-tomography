@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/tomo/compile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/compile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,13 +14,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tomo/compile.py">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="34" column="46" selection-start-line="34" selection-start-column="46" selection-end-line="34" selection-end-column="46" />
+            <state relative-caret-position="15">
+              <caret line="33" column="23" selection-start-line="33" selection-start-column="23" selection-end-line="33" selection-end-column="23" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="446">
+              <caret line="80" column="21" selection-start-line="80" selection-start-column="21" selection-end-line="80" selection-end-column="21" />
               <folding>
-                <element signature="e#0#9#0" expanded="true" />
+                <element signature="e#0#31#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -95,14 +106,14 @@
         <option value="$PROJECT_DIR$/environment.yaml" />
         <option value="$PROJECT_DIR$/tomo/Numeric.py" />
         <option value="$PROJECT_DIR$/tomo/MapInfo.py" />
-        <option value="$PROJECT_DIR$/tomo_action/main.py" />
-        <option value="$PROJECT_DIR$/tomo/Reconstruct.py" />
         <option value="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" />
         <option value="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" />
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
         <option value="$PROJECT_DIR$/tomo/compile.py" />
+        <option value="$PROJECT_DIR$/tomo/Reconstruct.py" />
+        <option value="$PROJECT_DIR$/tomo_action/main.py" />
       </list>
     </option>
   </component>
@@ -117,7 +128,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -136,10 +146,16 @@
               <item name="tomo" type="462c0819:PsiDirectoryNode" />
               <item name="cpp_files" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="tomo_action" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -163,7 +179,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.compile">
+  <component name="RunManager" selected="Python.main">
     <configuration name="Main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -265,8 +281,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.compile" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.compile" />
         <item itemvalue="Python.Main_testing" />
         <item itemvalue="Python.reconstruct_c" />
         <item itemvalue="Python tests.Nosetests in test_physics.py" />
@@ -529,7 +545,21 @@
       <option name="project" value="LOCAL" />
       <updated>1559740416095</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Small change in print functions">
+      <created>1559740691422</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1559740691422</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Commented away line profiler">
+      <created>1559740758449</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1559740758449</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -582,14 +612,14 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49525318" visible="true" weight="0.36108324" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49472573" visible="true" weight="0.36108324" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49630803" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50474685" side_tool="true" visible="true" weight="0.36108324" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50527424" side_tool="true" visible="true" weight="0.36108324" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
       <window_info anchor="bottom" id="Messages" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -598,8 +628,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Moved C500values from resources to unit_tests" />
-    <MESSAGE value="Adding directory to sys.path for correcting importing trouble&#10;&#10;Also changes in the import calls due to this change." />
     <MESSAGE value="tomo_action script now changes CWD to where the file is placed.&#10;&#10;tomo_action/main.py can now run from anywhere (hopefully)" />
     <MESSAGE value="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path" />
     <MESSAGE value="Added __init__.py in unit_tests" />
@@ -623,7 +651,9 @@
     <MESSAGE value="Now ignoring c++ compiled shared objects" />
     <MESSAGE value="Added compilation script" />
     <MESSAGE value="Added operating system test." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added operating system test." />
+    <MESSAGE value="Small change in print functions" />
+    <MESSAGE value="Commented away line profiler" />
+    <option name="LAST_COMMIT_MESSAGE" value="Commented away line profiler" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -876,35 +906,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
-          <caret line="39" column="19" selection-start-line="39" selection-start-column="19" selection-end-line="39" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="98" column="6" selection-start-line="98" selection-start-column="6" selection-end-line="98" selection-end-column="6" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/cpp_files/reversed_weights.cpp">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp">
       <provider selected="true" editor-type-id="text-editor">
@@ -932,20 +935,58 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6900">
+        <state relative-caret-position="1241">
           <caret line="460" column="38" lean-forward="true" selection-start-line="460" selection-start-column="38" selection-end-line="460" selection-end-column="38" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#3452#4868#0" />
+            <element signature="e#4901#10737#0" />
+            <element signature="e#10789#20426#0" />
+            <element signature="e#20569#21030#0" />
+            <element signature="e#21076#21342#0" />
+            <element signature="e#21457#21989#0" />
+            <element signature="e#22168#22513#0" />
+            <element signature="e#22806#24199#0" />
+            <element signature="e#24572#27009#0" />
+            <element signature="e#27232#27791#0" />
+            <element signature="e#27907#28387#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/compile.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
+        <state relative-caret-position="510">
           <caret line="34" column="46" selection-start-line="34" selection-start-column="46" selection-end-line="34" selection-end-column="46" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="367" column="37" selection-start-line="367" selection-start-column="37" selection-end-line="367" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="33" column="23" selection-start-line="33" selection-start-column="23" selection-end-line="33" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="446">
+          <caret line="80" column="21" selection-start-line="80" selection-start-column="21" selection-end-line="80" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>

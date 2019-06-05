@@ -79,13 +79,33 @@ extern "C"{
                                        * sin(dphi[j] + phi0[turn_now])
                                        + rfv2_at_turn
                                        * sin(h_ratio 
-                                             * (dphi[j] + temp_phi))
-                                       - deltaE0[turn_now]);
+                                             * (dphi[j] + temp_phi)))
+                                - deltaE0[turn_now];
                 }
             }
         }
         else{
-            throw new exception;
+            for(i=0; i < nreps; i++){
+                
+                rfv1_at_turn = vrf1 + vrf1dot * turn_time[turn_now];
+                rfv2_at_turn = vrf2 + vrf2dot * turn_time[turn_now];
+                temp_phi = phi0[turn_now] - phi12;
+            
+                #pragma omp paralell for
+                for(j=0; j < xp_len; j++){
+                    denergy[j] -= q * (rfv1_at_turn
+                                    * sin(dphi[j] + phi0[turn_now])
+                                    + rfv2_at_turn
+                                    * sin(h_ratio
+                                          * (dphi[j] + temp_phi)))
+                               - deltaE0[turn_now]; // Make as funk?
+                }
+                turn_now--;
+                #pragma omp paralell for
+                for(j=0; j < xp_len; j++){
+                    dphi[j] += c1[turn_now] * denergy[j];
+                }
+            }
         }
 
         #pragma omp paralell for
