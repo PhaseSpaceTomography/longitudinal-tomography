@@ -25,12 +25,17 @@ INPUT_NAMES = [                     # Nbr
 
 # TODO: Add option for custom input file.
 
+input_help_str = ""
+for i in range(len(INPUT_NAMES)):
+    input_help_str += f"{i}:\t{INPUT_NAMES[i]}\n"
+
 parser = argparse.ArgumentParser(description='Run tomo_action main to '
                                              'easily run the tomography '
-                                             'application with test inputs')
+                                             'application with test inputs\n\n'
+                                             + input_help_str)
 
 parser.add_argument('-a', '--analyse',
-                    default=True,
+                    default=False,
                     type=bool,
                     help='Show phase space plot and compare'
                          'python output with Fortran')
@@ -51,8 +56,8 @@ parser.add_argument('-end', '--end',
                     help="Last input file")
 
 
-def main(load_from_file=False,
-         analyze=True, start_file=0, end_file=len(INPUT_NAMES)):
+def main(load_from_file,
+         analyze, start_file, end_file):
 
     SysHandling.dir_exists(TMP_DIR)
     SysHandling.clear_dir(TMP_DIR)
@@ -104,8 +109,21 @@ def do_analyze(path, py_image, f_image, plot):
     Analyze.compare_profiles(path, py_image, f_image, plot)
 
 
+def check_args(args):
+    if args.start < 0 or args.start >= args.end or args.end > len(INPUT_NAMES):
+        raise SystemExit("\nBad start/end input\n"
+                         "start and end must be between "
+                         "0 and " + str(len(INPUT_NAMES))
+                         + "\nProgram stopped...")
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
+
+    check_args(args)
+
+    print(args.load)
+
     main(load_from_file=args.load,
          analyze=args.analyse,
          start_file=args.start,
