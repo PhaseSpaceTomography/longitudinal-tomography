@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/compile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/compile.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo/compile.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
+            <state relative-caret-position="420">
+              <caret line="34" column="46" selection-start-line="34" selection-start-column="46" selection-end-line="34" selection-end-column="46" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -523,7 +522,14 @@
       <option name="project" value="LOCAL" />
       <updated>1559739445314</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="Added operating system test.">
+      <created>1559740416095</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1559740416095</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -592,7 +598,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fix in imports. Unittests now runs from command prompt." />
     <MESSAGE value="Moved C500values from resources to unit_tests" />
     <MESSAGE value="Adding directory to sys.path for correcting importing trouble&#10;&#10;Also changes in the import calls due to this change." />
     <MESSAGE value="tomo_action script now changes CWD to where the file is placed.&#10;&#10;tomo_action/main.py can now run from anywhere (hopefully)" />
@@ -617,7 +622,8 @@
     <MESSAGE value="Optimizing" />
     <MESSAGE value="Now ignoring c++ compiled shared objects" />
     <MESSAGE value="Added compilation script" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added compilation script" />
+    <MESSAGE value="Added operating system test." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added operating system test." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -936,8 +942,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/compile.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
+        <state relative-caret-position="420">
+          <caret line="34" column="46" selection-start-line="34" selection-start-column="46" selection-end-line="34" selection-end-column="46" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
