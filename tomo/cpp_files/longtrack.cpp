@@ -16,7 +16,7 @@ extern "C"{
                       double omega_rev0, double dtbin,
                       double phi0){
         double * dphi = new double[xp_len];
-
+        #pragma omp paralell for
         for(int i=0; i < xp_len; i++){
             dphi[i] = (xp[i] + xorigin) * h_num * omega_rev0 * dtbin - phi0;
         }
@@ -24,9 +24,10 @@ extern "C"{
         return dphi;
     }
 
-    double* calculate_denergy(const double yp[], int yp_len,
+    double* calculate_denergy(const double * __restrict__ yp, int yp_len,
                           double yat0, double dEbin){
         double * denergy = new double[yp_len];
+        #pragma omp paralell for
         for(int i=0; i < yp_len; i++){
             denergy[i] = (yp[i] - yat0) * dEbin;
         }

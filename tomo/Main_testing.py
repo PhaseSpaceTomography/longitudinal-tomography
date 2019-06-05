@@ -21,6 +21,8 @@ mi.write_plotinfo_tofile(ts, mi, WORKING_DIR)
 
 # rec = Reconstruct(ts, mi)
 rec = Creconstruct(ts, mi)
+# rec.test_mw()
+
 t0 = tm.time()
 rec.reconstruct()
 print("full reconstruction time: " + str(tm.time() - t0))

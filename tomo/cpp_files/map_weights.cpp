@@ -14,27 +14,31 @@ extern "C"{
         return (sum_array_recursive(arr, n - 1) + arr[n - 1]);
     }
 
-    int sum_array_loop(int arr[], int arr_len){
+    int sum_array_loop(int * __restrict__ arr,
+                       int arr_len){
         int temp = 0;
-        for(int i=0; i < arr_len; i++)
+        // #pragma omp paralell for
+        for(int i=0; i < arr_len; i++){
             temp += arr[i];
+        }
     }
 
     int one_wf(int npt,
-               int mapsi[],         // inout
-               int mapsw[],         // inout
-               bool xlog[],         // inout
-               int xnumb[],         // inout
-               int xvec[],          // inout
+               int * __restrict__ mapsi,// inout
+               int * __restrict__ mapsw,// inout
+               bool * __restrict__ xlog,// inout
+               int * __restrict__ xnumb,// inout
+               int * __restrict__ xvec, // inout
                int profile_length,
                int fmlistlength,
-               double xp_segment[], // in
+               const double * __restrict__ xp_segment,     // in
                int submap){
 
         int isout = 0;
         int icount = 0;
         int start_index = submap * 16;
 
+        #pragma omp paralell for
         for(int i=0; i < npt; i++){
             xlog[i] = true;
             xnumb[i] = 0;
@@ -45,7 +49,8 @@ extern "C"{
             if(xlog[i]){
                 int xet = xvec[i];
                 int logsum = 0;
-
+                
+                #pragma omp paralell for
                 for(int j=0; j < npt; j++){
                     if(xvec[j] == xet & xlog[j]){
                         xnumb[j] = 1;
@@ -61,8 +66,8 @@ extern "C"{
                 else{
                     if (icount < fmlistlength){
                         mapsi[start_index + icount] = xet - 1;
-                        int temp = sum_array_recursive(xnumb, fmlistlength);
-                        mapsw[start_index + icount] = temp;
+                        mapsw[start_index + icount] = sum_array_recursive(xnumb, fmlistlength);
+                        #pragma omp paralell for
                         for(int j=0; j < npt; j++)
                             xnumb[j] = 0;
                     }
@@ -76,18 +81,18 @@ extern "C"{
         return isout;
     }
 
-    int weight_factor_array(double xp[],//In
-                        int jmin[],     //In
-                        int jmax[],     //In
-                        int maps[],     //Out
-                        int mapsi[],    //Out
-                        int mapsw[],    //Out
-                        int imin,
-                        int imax,
-                        int npt,
-                        int profile_length,
-                        int fmlistlength,
-                        int submap){   // out
+    int weight_factor_array(const double * __restrict__ xp, //In
+                            const int * __restrict__ jmin,  //In
+                            const int * __restrict__ jmax,  //In
+                            int * __restrict__ maps,        //Out
+                            int * __restrict__ mapsi,       //Out
+                            int * __restrict__ mapsw,       //Out
+                            int imin,
+                            int imax,
+                            int npt,
+                            int profile_length,
+                            int fmlistlength,
+                            int submap){                    // out
         int ioffset = 0;
         int isout = 0;
         int uplim = 0;
@@ -133,11 +138,11 @@ extern "C"{
         return isout;
     }
 
-    int first_map(int jmin[],     //In
-                  int jmax[],     //In
-                  int maps[],     //In/Out
-                  int mapsi[],    //In/Out
-                  int mapsw[],    //In/Out
+    int first_map(const int * __restrict__ jmin, //In
+                  const int * __restrict__ jmax, //In
+                  int * __restrict__ maps,       //In/Out
+                  int * __restrict__ mapsi,      //In/Out
+                  int * __restrict__ mapsw,      //In/Out
                   int imin,
                   int imax,
                   int npt,

@@ -328,7 +328,7 @@ class Creconstruct:
                                                 tpar.phi12,
                                                 tpar.deltaE0)
                     else:
-                        test_c = False
+                        test_c = True
                         if not test_c:
                             xp, yp, turn_now = self.longtrack(
                                                     direction,
