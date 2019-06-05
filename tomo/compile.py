@@ -20,10 +20,6 @@ cpp_files = [
 compiler = "g++"
 
 if __name__ == '__main__':
-    print('C++ Compiler: ', compiler)
-    print('Compiler flags: ', ' '.join(c_flags))
-    subprocess.call([compiler, '--version'])
-
     if 'posix' in os.name:
         c_flags += ['-fPIC']
         libname = os.path.join(basepath, 'tomolib.so')
@@ -34,6 +30,10 @@ if __name__ == '__main__':
         print('YOU ARE NOT USING A WINDOWS'
               'OR LINUX OPERATING SYSTEM. ABORTING...')
         sys.exit(-1)
+
+    print('C++ Compiler: ', compiler)
+    print('Compiler flags: ', ' '.join(c_flags))
+    subprocess.call([compiler, '--version'])
 
     try:
         os.remove(libname)
