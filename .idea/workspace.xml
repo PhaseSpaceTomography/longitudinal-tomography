@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo_action/analyze.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/analyze.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -25,10 +26,25 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="243">
-              <caret line="32" column="32" selection-start-line="32" selection-start-column="32" selection-end-line="32" selection-end-column="32" />
+            <state relative-caret-position="191">
+              <caret line="94" lean-forward="true" selection-start-line="94" selection-end-line="94" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
+                <element signature="e#1921#2049#0" />
+                <element signature="e#2103#2441#0" />
+                <element signature="e#3443#3568#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="341">
+              <caret line="50" column="51" selection-start-line="50" selection-start-column="51" selection-end-line="50" selection-end-column="51" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -59,7 +75,7 @@
       <find>maps</find>
       <find>profile</find>
       <find>cflags</find>
-      <find>cflags</find>
+      <find>analyze</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -98,7 +114,6 @@
         <option value="$PROJECT_DIR$/tomo_action/__init__.py" />
         <option value="$PROJECT_DIR$/tomo/__init__.py" />
         <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
-        <option value="$PROJECT_DIR$/tomo_action/analyze.py" />
         <option value="$PROJECT_DIR$/unit_tests/C500values.py" />
         <option value="$PROJECT_DIR$/unit_tests/__init__.py" />
         <option value="$PROJECT_DIR$/.gitlab-ci.yaml" />
@@ -112,6 +127,7 @@
         <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
         <option value="$PROJECT_DIR$/tomo/compile.py" />
         <option value="$PROJECT_DIR$/tomo/Reconstruct.py" />
+        <option value="$PROJECT_DIR$/tomo_action/analyze.py" />
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
       </list>
     </option>
@@ -565,7 +581,21 @@
       <option name="project" value="LOCAL" />
       <updated>1559742766323</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="Added args">
+      <created>1559744321576</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1559744321576</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Added argument checks">
+      <created>1559746163907</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1559746163907</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -613,19 +643,19 @@
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49472573" weight="0.36108324" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.4957806" visible="true" weight="0.3089268" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49419832" visible="true" weight="0.36108324" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4957806" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5042194" side_tool="true" visible="true" weight="0.3089268" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5058017" side_tool="true" visible="true" weight="0.36108324" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
       <window_info anchor="bottom" id="Messages" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -634,8 +664,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path" />
-    <MESSAGE value="Added __init__.py in unit_tests" />
     <MESSAGE value="Added __init__.py in tomo_action&#10;&#10;tomo_action main now runs as a package from tomo_v3" />
     <MESSAGE value="Added __init__.py in tomo" />
     <MESSAGE value="Implementing direct comparison of fortran and py + general improvements&#10;&#10; - Program now cleaner and do not any longer load images several times&#10; - Implementation of mean squared deviation" />
@@ -659,7 +687,9 @@
     <MESSAGE value="Small change in print functions" />
     <MESSAGE value="Commented away line profiler" />
     <MESSAGE value="Finished longtrack.cpp" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finished longtrack.cpp" />
+    <MESSAGE value="Added args" />
+    <MESSAGE value="Added argument checks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added argument checks" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -776,21 +806,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-4593">
           <caret line="4" column="5" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="58" lean-forward="true" selection-start-line="58" selection-end-line="58" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#244#729#0" />
-            <element signature="e#877#928#0" />
-            <element signature="e#1142#1770#0" />
-            <element signature="e#1815#1956#0" />
-            <element signature="e#1985#2264#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -987,12 +1002,25 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="341">
+          <caret line="50" column="51" selection-start-line="50" selection-start-column="51" selection-end-line="50" selection-end-column="51" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="32" column="32" selection-start-line="32" selection-start-column="32" selection-end-line="32" selection-end-column="32" />
+        <state relative-caret-position="191">
+          <caret line="94" lean-forward="true" selection-start-line="94" selection-end-line="94" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
+            <element signature="e#1921#2049#0" />
+            <element signature="e#2103#2441#0" />
+            <element signature="e#3443#3568#0" />
           </folding>
         </state>
       </provider>

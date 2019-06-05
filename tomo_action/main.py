@@ -37,12 +37,16 @@ parser = argparse.ArgumentParser(description='Run tomo_action main to '
 parser.add_argument('-a', '--analyse',
                     default=False,
                     type=bool,
+                    nargs='?',
+                    const=True,
                     help='Show phase space plot and compare'
                          'python output with Fortran')
 
 parser.add_argument('-l', '--load',
                     default=False,
                     type=bool,
+                    nargs='?',
+                    const=True,
                     help='Load already reconstructed image')
 
 parser.add_argument('-start', '--start',
@@ -109,7 +113,7 @@ def do_analyze(path, py_image, f_image, plot):
     Analyze.compare_profiles(path, py_image, f_image, plot)
 
 
-def check_args(args):
+def assert_args(args):
     if args.start < 0 or args.start >= args.end or args.end > len(INPUT_NAMES):
         raise SystemExit("\nBad start/end input\n"
                          "start and end must be between "
@@ -120,9 +124,7 @@ def check_args(args):
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    check_args(args)
-
-    print(args.load)
+    assert_args(args)
 
     main(load_from_file=args.load,
          analyze=args.analyse,
