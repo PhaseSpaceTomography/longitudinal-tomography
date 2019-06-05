@@ -1,15 +1,16 @@
- #include <iostream>
- #include <fstream>
- #include <stdlib.h>
- #include <cmath>
- #include <vector>
- #include <string>
-
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <cmath>
+#include <vector>
+#include <string>
+// g++ -std=c++11 -shared -fPIC -o longtrack.cpp longtrack.so
+// g++ -std=c++11 -fopenmp -shared -fPIC -O3 -march=native -ffast-math longtrack.cpp -o longtrack.so
  using namespace std;
 
 extern "C"{
 
-    double* calculate_dphi(const double xp[],
+    double* calculate_dphi(const double * __restrict__  xp,
                       int xp_len, 
                       double xorigin, int h_num,
                       double omega_rev0, double dtbin,
@@ -33,13 +34,13 @@ extern "C"{
     }
 
     // Returns current turn_now
-    int longtrack(double xp[],                  //inout
-                  double yp[],                  //inout
-                  const double omega_rev0[],    //in
-                  const double phi0[],          //in
-                  const double c1[],            //in
-                  const double turn_time[],     //in
-                  const double deltaE0[],       //in
+    int longtrack(double * __restrict__ xp,                  //inout
+                  double * __restrict__ yp,                  //inout
+                  const double  * __restrict__ omega_rev0,    //in
+                  const double  * __restrict__ phi0,          //in
+                  const double  * __restrict__ c1,            //in
+                  const double  * __restrict__ turn_time,     //in
+                  const double  * __restrict__ deltaE0,       //in
                   int xp_len, double xorigin, 
                   double dtbin, double dEbin,
                   double yat0, double phi12,

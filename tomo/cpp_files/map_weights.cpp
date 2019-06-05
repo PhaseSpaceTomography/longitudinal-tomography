@@ -14,6 +14,12 @@ extern "C"{
         return (sum_array_recursive(arr, n - 1) + arr[n - 1]);
     }
 
+    int sum_array_loop(int arr[], int arr_len){
+        int temp = 0;
+        for(int i=0; i < arr_len; i++)
+            temp += arr[i];
+    }
+
     int one_wf(int npt,
                int mapsi[],         // inout
                int mapsw[],         // inout
