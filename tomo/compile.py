@@ -6,13 +6,10 @@ import ctypes
 path = os.path.realpath(__file__)
 basepath = os.sep.join(path.split(os.sep)[:-1]) + "/cpp_files/"
 
-# print(basepath)
-# print(os.listdir(basepath + "/cpp_files"))
-
 # TODO: Add arguments?
 # TODO: Add compilation for windows?
 
-c_flags = ["-std=c++11", "-fopenmp", "-shared",  "-fPIC",
+c_flags = ["-std=c++11", "-fopenmp", "-shared",
            "-O3", "-march=native", "-ffast-math"]
 
 cpp_files = [
@@ -20,14 +17,23 @@ cpp_files = [
     os.path.join(basepath, "map_weights.cpp")
 ]
 
-libname = os.path.join(basepath, 'tomolib.so')
-
 compiler = "g++"
 
 if __name__ == '__main__':
     print('C++ Compiler: ', compiler)
     print('Compiler flags: ', ' '.join(c_flags))
     subprocess.call([compiler, '--version'])
+
+    if 'posix' in os.name:
+        c_flags += ['-fPIC']
+        libname = os.path.join(basepath, 'tomolib.so')
+    elif 'win' in sys.platform:
+        # TODO: Find out if this works
+        libname = os.path.join(basepath, 'tomolib.dll')
+    else:
+        print('YOU ARE NOT USING A WINDOWS'
+              'OR LINUX OPERATING SYSTEM. ABORTING...')
+        sys.exit(-1)
 
     try:
         os.remove(libname)
