@@ -1,7 +1,7 @@
 import numpy as np
 import time as tm
 import ctypes
-import line_profiler
+# import line_profiler
 from Physics import vrft
 from numba import njit
 from numpy.ctypeslib import ndpointer
@@ -18,57 +18,60 @@ class Creconstruct:
         self.reversedweights = []
         self.fmlistlength = timespace.par.snpt**2
 
-        wf_lib = ctypes.cdll.LoadLibrary('/home/cgrindhe/tomo_v3/tomo/cpp_files/map_weights.so')
-        wf_lib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
-                                               ndpointer(ctypes.c_int),
-                                               ndpointer(ctypes.c_int),
-                                               ndpointer(ctypes.c_int),
-                                               ndpointer(ctypes.c_int),
-                                               ndpointer(ctypes.c_int),
-                                               ctypes.c_int,
-                                               ctypes.c_int,
-                                               ctypes.c_int,
-                                               ctypes.c_int,
-                                               ctypes.c_int]
+        tomolib = ctypes.CDLL("/home/cgrindhe/tomo_v3/tomo/cpp_files/tomolib.so")
 
-        wf_lib.first_map.argtypes = [ndpointer(ctypes.c_int),
-                                     ndpointer(ctypes.c_int),
-                                     ndpointer(ctypes.c_int),
-                                     ndpointer(ctypes.c_int),
-                                     ndpointer(ctypes.c_int),
-                                     ctypes.c_int,
-                                     ctypes.c_int,
-                                     ctypes.c_int,
-                                     ctypes.c_int]
+        tomolib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
+                                                ndpointer(ctypes.c_int),
+                                                ndpointer(ctypes.c_int),
+                                                ndpointer(ctypes.c_int),
+                                                ndpointer(ctypes.c_int),
+                                                ndpointer(ctypes.c_int),
+                                                ctypes.c_int,
+                                                ctypes.c_int,
+                                                ctypes.c_int,
+                                                ctypes.c_int,
+                                                ctypes.c_int]
 
-        lt_lib = ctypes.cdll.LoadLibrary('/home/cgrindhe/tomo_v3/tomo/cpp_files/longtrack.so')
-        lt_lib.longtrack.argtypes = [ndpointer(ctypes.c_double),
-                                     ndpointer(ctypes.c_double),
-                                     ndpointer(ctypes.c_double),
-                                     ndpointer(ctypes.c_double),
-                                     ndpointer(ctypes.c_double),
-                                     ndpointer(ctypes.c_double),
-                                     ndpointer(ctypes.c_double),
-                                     ctypes.c_int,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_int,
-                                     ctypes.c_int,
-                                     ctypes.c_int,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_double,
-                                     ctypes.c_int,
-                                     ctypes.c_double]
+        tomolib.first_map.argtypes = [ndpointer(ctypes.c_int),
+                                      ndpointer(ctypes.c_int),
+                                      ndpointer(ctypes.c_int),
+                                      ndpointer(ctypes.c_int),
+                                      ndpointer(ctypes.c_int),
+                                      ctypes.c_int,
+                                      ctypes.c_int,
+                                      ctypes.c_int,
+                                      ctypes.c_int]
 
-        self.find_mapweight = wf_lib.weight_factor_array
-        self.first_map = wf_lib.first_map
-        self.clt = lt_lib.longtrack
+        tomolib.longtrack.argtypes = [ndpointer(ctypes.c_double),
+                                      ndpointer(ctypes.c_double),
+                                      ndpointer(ctypes.c_double),
+                                      ndpointer(ctypes.c_double),
+                                      ndpointer(ctypes.c_double),
+                                      ndpointer(ctypes.c_double),
+                                      ndpointer(ctypes.c_double),
+                                      ctypes.c_int,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_int,
+                                      ctypes.c_int,
+                                      ctypes.c_int,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_int,
+                                      ctypes.c_double]
+
+        self.find_mapweight = tomolib.weight_factor_array
+        self.first_map = tomolib.first_map
+        self.clt = tomolib.longtrack
+        # self.find_mapweight = wf_lib.weight_factor_array
+        # self.first_map = wf_lib.first_map
+        # self.clt = lt_lib.longtrack
 
     def test_mw(self):
         xp = np.genfromtxt("/home/cgrindhe/cpp_test/xp.dat", dtype=np.double)
