@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,8 +25,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="446">
-              <caret line="80" column="21" selection-start-line="80" selection-start-column="21" selection-end-line="80" selection-end-column="21" />
+            <state relative-caret-position="243">
+              <caret line="32" column="32" selection-start-line="32" selection-start-column="32" selection-end-line="32" selection-end-column="32" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -559,7 +558,14 @@
       <option name="project" value="LOCAL" />
       <updated>1559740758449</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Finished longtrack.cpp">
+      <created>1559742766322</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1559742766323</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -612,14 +618,14 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49472573" visible="true" weight="0.36108324" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49630803" weight="0.3089268" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49472573" weight="0.36108324" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.4957806" visible="true" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50527424" side_tool="true" visible="true" weight="0.36108324" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5042194" side_tool="true" visible="true" weight="0.3089268" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
       <window_info anchor="bottom" id="Messages" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -628,7 +634,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="tomo_action script now changes CWD to where the file is placed.&#10;&#10;tomo_action/main.py can now run from anywhere (hopefully)" />
     <MESSAGE value="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path" />
     <MESSAGE value="Added __init__.py in unit_tests" />
     <MESSAGE value="Added __init__.py in tomo_action&#10;&#10;tomo_action main now runs as a package from tomo_v3" />
@@ -653,7 +658,8 @@
     <MESSAGE value="Added operating system test." />
     <MESSAGE value="Small change in print functions" />
     <MESSAGE value="Commented away line profiler" />
-    <option name="LAST_COMMIT_MESSAGE" value="Commented away line profiler" />
+    <MESSAGE value="Finished longtrack.cpp" />
+    <option name="LAST_COMMIT_MESSAGE" value="Finished longtrack.cpp" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -983,8 +989,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="446">
-          <caret line="80" column="21" selection-start-line="80" selection-start-column="21" selection-end-line="80" selection-end-column="21" />
+        <state relative-caret-position="243">
+          <caret line="32" column="32" selection-start-line="32" selection-start-column="32" selection-end-line="32" selection-end-column="32" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>

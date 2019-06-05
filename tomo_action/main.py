@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import argparse
 from tomo_action.analyze import Analyze
 from tomo_action.system_handling import SysHandling
 
@@ -21,6 +22,33 @@ INPUT_NAMES = [                     # Nbr
     "noiseStructure1",              # 10
     "noiseStructure2"               # 11
 ]
+
+# TODO: Add option for custom input file.
+
+parser = argparse.ArgumentParser(description='Run tomo_action main to '
+                                             'easily run the tomography '
+                                             'application with test inputs')
+
+parser.add_argument('-a', '--analyse',
+                    default=True,
+                    type=bool,
+                    help='Show phase space plot and compare'
+                         'python output with Fortran')
+
+parser.add_argument('-l', '--load',
+                    default=False,
+                    type=bool,
+                    help='Load already reconstructed image')
+
+parser.add_argument('-start', '--start',
+                    default=0,
+                    type=int,
+                    help="First input file")
+
+parser.add_argument('-end', '--end',
+                    default=len(INPUT_NAMES),
+                    type=int,
+                    help="Last input file")
 
 
 def main(load_from_file=False,
@@ -77,7 +105,8 @@ def do_analyze(path, py_image, f_image, plot):
 
 
 if __name__ == '__main__':
-    main(load_from_file=False,
-         analyze=True,
-         start_file=0,
-         end_file=1)
+    args = parser.parse_args()
+    main(load_from_file=args.load,
+         analyze=args.analyse,
+         start_file=args.start,
+         end_file=args.end)
