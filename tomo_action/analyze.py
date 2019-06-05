@@ -50,9 +50,9 @@ class Analyze:
     @staticmethod
     def show_images(py_picture, ftr_picture, plot):
         plot.subplot(221)
-        plot.imshow(py_picture.T, cmap='hot', interpolation='nearest')
+        plot.imshow(py_picture.T, cmap='hot', interpolation='nearest', origin='lower')
         plot.title("Python output")
         plot.subplot(222)
-        plot.imshow(ftr_picture.T, cmap='hot', interpolation='nearest')
+        plot.imshow(ftr_picture.T, cmap='hot', interpolation='nearest', origin='lower')
         plot.title("Fortran output")
         return plot
