@@ -34,6 +34,14 @@ extern "C"{
         return denergy;
     }
 
+    double calc_denergy_at_turn(double phi0, double dphi, double deltaE0,
+                                double rfv1, double rfv2, double hratio,
+                                double delta_phi, double q){
+        return q * (rfv1 * sin(dphi + phi0)
+                    + rfv2 * sin(hratio * (dphi + delta_phi)))
+                - deltaE0;
+    }
+
     // Returns current turn_now
     int longtrack(double * __restrict__ xp,                  //inout
                   double * __restrict__ yp,                  //inout
@@ -50,6 +58,7 @@ extern "C"{
                   double vrf1, double vrf1dot,
                   double vrf2, double vrf2dot,
                   int h_num, double h_ratio){
+        
         double rfv1_at_turn;
         double rfv2_at_turn;
         double temp_phi; 
@@ -75,12 +84,10 @@ extern "C"{
                 
                 #pragma omp parallel for
                 for(j=0; j < xp_len; j++){
-                    denergy[j] += q * (rfv1_at_turn
-                                       * sin(dphi[j] + phi0[turn_now])
-                                       + rfv2_at_turn
-                                       * sin(h_ratio 
-                                             * (dphi[j] + temp_phi)))
-                                - deltaE0[turn_now];
+                    denergy[j] += calc_denergy_at_turn(
+                                    phi0[turn_now], dphi[j], deltaE0[turn_now],
+                                    rfv1_at_turn, rfv2_at_turn,
+                                    h_ratio, temp_phi, q); 
                 }
             }
         }
@@ -93,12 +100,10 @@ extern "C"{
             
                 #pragma omp parallel for
                 for(j=0; j < xp_len; j++){
-                    denergy[j] -= q * (rfv1_at_turn
-                                    * sin(dphi[j] + phi0[turn_now])
-                                    + rfv2_at_turn
-                                    * sin(h_ratio
-                                          * (dphi[j] + temp_phi)))
-                               - deltaE0[turn_now]; // Make as func?
+                    denergy[j] -= calc_denergy_at_turn(
+                                    phi0[turn_now], dphi[j], deltaE0[turn_now],
+                                    rfv1_at_turn, rfv2_at_turn,
+                                    h_ratio, temp_phi, q); 
                 }
                 turn_now--;
                 #pragma omp parallel for

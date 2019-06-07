@@ -2,6 +2,7 @@ import os
 import subprocess
 import logging
 import numpy as np
+import time as tm
 import re
 import sys
 
@@ -23,21 +24,28 @@ class SysHandling:
                    f"{self.input_list[index]}.dat input_v2.dat")
         os.system(command)
         # Running python script
+        tp = float('nan')
+        tf = float('nan')
         if python:
             print("Running python")
             # TODO: Catch exceptions
+            tp = tm.time()
             subprocess.call([sys.executable, self.py_main_path])
+            tp = tm.time() - tp
 
         # Running fortran script
         if fortran:
             print("running fortran")
             input_file = open("./input_v2.dat")
+            tf = tm.time()
             _ = subprocess.call(["./tomo_vo.intelmp"], stdin=input_file)
+            tf = tm.time() - tf
             # Retrieving Fortran output from /tmp/
             fortran_files = SysHandling.find_files("/tmp/")
             for file in fortran_files:
                 os.system("mv /tmp/" + file + " " + self.working_dir)
                 logging.info("collected " + file + " from /tmp/")
+        return tp, tf
 
     # Saving output in relevant folder.
     def move_to_resource_dir(self, index):

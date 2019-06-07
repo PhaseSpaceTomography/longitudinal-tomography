@@ -74,10 +74,12 @@ def main(load_from_file,
 
         if not load_from_file:
             in_path = TMP_DIR
-            sysh.run_programs(i, python=True, fortran=True)
+            time_py, time_f = sysh.run_programs(i, python=True, fortran=True)
             (py_image,
              f_image) = SysHandling.get_pics_from_file(in_path)
         else:
+            time_py = float('nan')
+            time_f = float('nan')
             print("\n!! loading from files !!")
             print("current input: " + INPUT_NAMES[i])
             in_path = create_out_dir_path(INPUT_NAMES[i])
@@ -87,6 +89,8 @@ def main(load_from_file,
         if analyze:
             Analyze.show_images(py_image, f_image, plt)
             do_analyze(in_path, py_image, f_image, plot=plt)
+            print("Execution time python: " + str(time_py))
+            print("Execution time fortran: " + str(time_f))
             plt.show()
 
         if not load_from_file:
