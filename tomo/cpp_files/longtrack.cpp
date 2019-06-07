@@ -4,8 +4,8 @@
 #include <cmath>
 #include <vector>
 #include <string>
-// g++ -std=c++11 -shared -fPIC -o longtrack.cpp longtrack.so
-// g++ -std=c++11 -fopenmp -shared -fPIC -O3 -march=native -ffast-math longtrack.cpp -o longtrack.so
+#include "omp.h"
+
  using namespace std;
 
 extern "C"{
@@ -16,7 +16,7 @@ extern "C"{
                       double omega_rev0, double dtbin,
                       double phi0){
         double * dphi = new double[xp_len];
-        #pragma omp paralell for
+        #pragma omp paralell for num_threads(4)
         for(int i=0; i < xp_len; i++){
             dphi[i] = (xp[i] + xorigin) * h_num * omega_rev0 * dtbin - phi0;
         }
@@ -27,7 +27,7 @@ extern "C"{
     double* calculate_denergy(const double * __restrict__ yp, int yp_len,
                           double yat0, double dEbin){
         double * denergy = new double[yp_len];
-        #pragma omp paralell for
+        #pragma omp paralell for num_threads(4)
         for(int i=0; i < yp_len; i++){
             denergy[i] = (yp[i] - yat0) * dEbin;
         }
@@ -63,7 +63,7 @@ extern "C"{
         if(direction > 0){
             for(i=0; i < nreps; i++){
                 
-                #pragma omp paralell for
+                #pragma omp parallel for
                 for(j=0; j < xp_len; j++){
                     dphi[j] -= c1[turn_now] * denergy[j];
                 }
@@ -73,7 +73,7 @@ extern "C"{
                 rfv2_at_turn = vrf2 + vrf2dot * turn_time[turn_now];
                 temp_phi = phi0[turn_now] - phi12;
                 
-                #pragma omp paralell for
+                #pragma omp parallel for
                 for(j=0; j < xp_len; j++){
                     denergy[j] += q * (rfv1_at_turn
                                        * sin(dphi[j] + phi0[turn_now])
@@ -91,37 +91,37 @@ extern "C"{
                 rfv2_at_turn = vrf2 + vrf2dot * turn_time[turn_now];
                 temp_phi = phi0[turn_now] - phi12;
             
-                #pragma omp paralell for
+                #pragma omp parallel for
                 for(j=0; j < xp_len; j++){
                     denergy[j] -= q * (rfv1_at_turn
                                     * sin(dphi[j] + phi0[turn_now])
                                     + rfv2_at_turn
                                     * sin(h_ratio
                                           * (dphi[j] + temp_phi)))
-                               - deltaE0[turn_now]; // Make as funk?
+                               - deltaE0[turn_now]; // Make as func?
                 }
                 turn_now--;
-                #pragma omp paralell for
+                #pragma omp parallel for
                 for(j=0; j < xp_len; j++){
                     dphi[j] += c1[turn_now] * denergy[j];
                 }
             }
         }
 
-        #pragma omp paralell for
+        #pragma omp parallel for
         for(i=0; i < xp_len; i++){
             xp[i] = (dphi[i] + phi0[turn_now])
                     / (h_num * omega_rev0[turn_now] * dtbin)
                     - xorigin;
         }
-        
-        #pragma omp paralell for
+                
         for(i=0; i < xp_len; i++){
             yp[i] = denergy[i] / dEbin + yat0;
         }
+        
 
         delete[] dphi;
-        delete[] denergy;
+        delete[] denergy;        
 
         return turn_now;
     }

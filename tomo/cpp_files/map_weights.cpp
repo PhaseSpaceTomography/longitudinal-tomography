@@ -3,6 +3,7 @@
  #include <stdlib.h>
  #include <cmath>
  #include <string>
+ #include <omp.h>
 
  using namespace std;
 
@@ -12,15 +13,6 @@ extern "C"{
         if(n <= 0)
             return 0;
         return (sum_array_recursive(arr, n - 1) + arr[n - 1]);
-    }
-
-    int sum_array_loop(int * __restrict__ arr,
-                       int arr_len){
-        int temp = 0;
-        // #pragma omp paralell for
-        for(int i=0; i < arr_len; i++){
-            temp += arr[i];
-        }
     }
 
     int one_wf(int npt,
@@ -38,7 +30,6 @@ extern "C"{
         int icount = 0;
         int start_index = submap * 16;
 
-        #pragma omp paralell for
         for(int i=0; i < npt; i++){
             xlog[i] = true;
             xnumb[i] = 0;
@@ -50,7 +41,6 @@ extern "C"{
                 int xet = xvec[i];
                 int logsum = 0;
                 
-                #pragma omp paralell for
                 for(int j=0; j < npt; j++){
                     if(xvec[j] == xet & xlog[j]){
                         xnumb[j] = 1;
@@ -67,7 +57,7 @@ extern "C"{
                     if (icount < fmlistlength){
                         mapsi[start_index + icount] = xet - 1;
                         mapsw[start_index + icount] = sum_array_recursive(xnumb, fmlistlength);
-                        #pragma omp paralell for
+
                         for(int j=0; j < npt; j++)
                             xnumb[j] = 0;
                     }
@@ -127,8 +117,6 @@ extern "C"{
             }
             ioffset = uplim;
         }
-
-        // save_array_to_file("mapsi.dat", mapsi, ARRAY_LENGTH * npt);
 
         delete[] xp_segment;
         delete[] xlog;
