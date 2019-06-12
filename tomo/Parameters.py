@@ -1,7 +1,7 @@
 import logging
 from Physics import *
 from Numeric import *
-
+from utils.assertions import TomoAssertions as ta
 
 class Parameters:
 
@@ -62,7 +62,7 @@ class Parameters:
         self.pickup_sensitivity = 0.0  # Effective pick-up sensitivity (in digitizer units per instantaneous Amp)
 
         # calculated parameters:
-        #-----------------------
+        # -----------------------
         self.time_at_turn = []        # Time at each turn relative to machine_ref_frame
         self.omega_rev0 = []          # Revolution frequency at each turn
         self.phi0 = []              # Synchronous phase angle at each turn
@@ -96,8 +96,13 @@ class Parameters:
         # Get parameters from file
         self.read_parameters_txt(file_name)
 
+        self._assert_input()
+
         # Make arrays with one zero for each turn
         allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
+        if allturns <= 0:
+            raise ValueError("Total number of turns is less than"
+                             "or equal to zero")
         self._init_arrays(allturns)
 
         # TODO: change names of these functions
@@ -351,3 +356,82 @@ class Parameters:
             profile_maxi = ((self.profile_length - self.imax_skip)
                             / self.rebin + 1)
         return int(profile_mini), int(profile_maxi)
+
+    def _assert_input(self):
+        # Note that some of the assertions is setting the lower limit as 1.
+        # This is because of calibrating from input files meant for Fortran,
+        #    where arrays by default starts from 1, to the Python version
+        #    with arrays starting from 0.
+
+        # Frame assertions
+        ta.assert_greater(self.framecount, "frame count", 0, InputError)
+        ta.assert_greater_or_equal(self.frame_skipcount, "frame skip-count",
+                                   0, InputError)
+        ta.assert_inrange(self.frame_skipcount, "frame skip-count",
+                          0, self.framecount, InputError)
+        ta.assert_greater(self.framelength, "frame length", 0, InputError)
+        ta.assert_inrange(self.preskip_length, "pre-skip length",
+                          0, self.framelength, InputError)
+        ta.assert_inrange(self.postskip_length, "post-skip length",
+                          0, self.framelength, InputError)
+
+        # Bin assertions
+        ta.assert_greater(self.dtbin, "dtbin", 0, InputError,
+                          'NB: dtbin is the difference of time in bin')
+        ta.assert_greater(self.dturns, "dturns", 0, InputError,
+                          'NB: dturns is the number of machine turns'
+                          'between each measurement')
+        ta.assert_inrange(self.imin_skip, 'imin skip',
+                          0, self.framelength, InputError)
+        ta.assert_inrange(self.imax_skip, 'imax skip',
+                          0, self.framelength, InputError)
+        ta.assert_greater_or_equal(self.rebin, 're-binning factor',
+                                   1, InputError)
+
+        # Assertions: profile to be reconstructed
+        ta.assert_greater_or_equal(self.filmstart, 'film start',
+                                   1, InputError)
+        ta.assert_greater_or_equal(self.filmstop, 'film stop',
+                                   self.filmstart, InputError)
+        ta.assert_less_or_equal(abs(self.filmstep), 'film step',
+                                abs(self.filmstop - self.filmstart + 1),
+                                InputError)
+
+        # Reconstruction parameter assertions
+        ta.assert_greater(self.num_iter, 'num iter', 0, InputError,
+                          'NB: num iter is the number of iterations of the '
+                          'reconstruction process')
+        ta.assert_greater(self.snpt, 'snpt', 0, InputError,
+                          'NB: snpt is the square root '
+                          'of #tracked particles.')
+
+        # Reference frame assertions
+        ta.assert_greater_or_equal(self.machine_ref_frame,
+                                   'machine ref. frame',
+                                   1, InputError)
+        ta.assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
+                                   1, InputError)
+
+        # Machine parameter assertion
+        ta.assert_greater_or_equal(self.h_num, 'harmonic number',
+                                   1, MachineParameterError)
+        ta.assert_greater_or_equal(self.h_num, 'harmonic ratio',
+                                   1, MachineParameterError)
+        ta.assert_greater(self.b0, 'B field (B0)',
+                          0, MachineParameterError)
+        ta.assert_greater(self.mean_orbit_rad, "mean orbit radius",
+                          0, MachineParameterError)
+        ta.assert_greater(self.bending_rad, "Bending radius",
+                          0, MachineParameterError)
+        ta.assert_greater(self.e_rest, 'rest energy',
+                          0, MachineParameterError)
+
+        # Space charge parameter assertion
+        ta.assert_greater_or_equal(self.zwall_over_n, 'z wall over n',
+                                   0, SpaceChargeParameterError)
+        ta.assert_greater_or_equal(self.pickup_sensitivity, 'pick-up sensitivity',
+                                   0, SpaceChargeParameterError)
+        ta.assert_greater_or_equal(self.g_coupling, 'g_coupling',
+                                   0, SpaceChargeParameterError,
+                                   'NB: g_coupling:'
+                                   'geometrical coupling coefficient')

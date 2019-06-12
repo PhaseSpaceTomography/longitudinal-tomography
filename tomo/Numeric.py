@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import scipy.special
+from utils.exceptions import *
 
 
 # Newtons method for finding roots of function, using function with given parameters
@@ -13,12 +14,12 @@ def newton(f, df, x0, const_params, rf_turn,
             return xn
         dfxn = df(xn, const_params, rf_turn)
         if dfxn == 0:
-            raise ArithmeticError("Derived of function = 0")
+            raise ZeroDivisionError
         xn -= float(fxn) / dfxn
-    raise ArithmeticError("Could not find root of function, with "
-                          + str(max_iter)
-                          + "iterations, and an precision of: "
-                          + str(epsilon))
+    raise OverMaxIterationsError("Could not find root of function, with "
+                                 + str(max_iter)
+                                 + "iterations, and an precision of: "
+                                 + str(epsilon))
 
 
 # Linear fitting
@@ -28,8 +29,7 @@ def lin_fit(x, y, sig=None):
         if np.size(x) == np.size(y) and np.size(x) == np.size(sig):
             ndim = np.size(x)
         else:
-            raise AssertionError("All elements in array are not equal"
-                                 "in linear fit")
+            raise ArrayElementsNotEqualError
 
         wt = 1 / sig ** 2
         ss = np.sum(wt)
@@ -40,8 +40,7 @@ def lin_fit(x, y, sig=None):
         if np.size(x) == np.size(y):
             ndim = np.size(x)
         else:
-            raise AssertionError("All elements in array are not equal"
-                                 "in linear fit")
+            raise ArrayElementsNotEqualError
 
         ss = ndim
         sx = np.sum(x)
