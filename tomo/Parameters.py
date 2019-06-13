@@ -3,6 +3,7 @@ from Physics import *
 from Numeric import *
 from utils.assertions import TomoAssertions as ta
 
+
 class Parameters:
 
     def __init__(self):
@@ -91,60 +92,15 @@ class Parameters:
         self.x_origin = 0.0  # absolute difference in bins between phase=0 and
                              # origin of  the reconstructed phase space coordinate system.
 
-    # This method receieve its parameters from a text file, and calculates the rest.
+    # Calculates parameters based on text file as input
     def get_parameters_txt(self, file_name):
-        # Get parameters from file
-        self.read_parameters_txt(file_name)
-
+        self._read_txt_input(file_name)
         self._assert_input()
-
-        # Make arrays with one zero for each turn
-        allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
-        if allturns <= 0:
-            raise ValueError("Total number of turns is less than"
-                             "or equal to zero")
-        self._init_arrays(allturns)
-
-        # TODO: change names of these functions
-        #  as it creates confusion of what is arrays and what is not.
-        # Calculate start-parameters
-        i0 = self._calc_startval_arrays()
-
-        # Calculate the rest of the parameters
-        self._calc_remaining_val_arrays(i0, allturns)
-
-        # Calculate phase slip factor at each turn
-        self.eta0 = phase_slip_factor(self)
-
-        # Calculates c1 for each turn
-        # TODO: what is c1?
-        self.c1 = find_c1(self)
-
-        # Calculate revolution frequency at each turn
-        self.omega_rev0 = revolution_freq(self)
-
-        # time binning
-        self.dtbin = self.dtbin * self.rebin
-        self.xat0 = self.xat0 / float(self.rebin)
-        self.profile_count = self.framecount - self.frame_skipcount
-
-        # Length of profile in bins/pixels
-        self.profile_length = (self.framelength - self.preskip_length
-                               - self.postskip_length)
-
-        # Finding min and max index in profiles.
-        #   The indexes outside of these are treated as 0
-        self.profile_mini, self.profile_maxi = self._find_imin_imax()
-
-        # Total number of data points in the 'raw' input file
-        self.all_data = self.framecount * self.framelength
-
-        # Find self field coefficient for each profile
-        self.sfc = calc_self_field_coeffs(self)
+        self._init_parameters()
 
     # For retrieving parameters from text-file.
     # To be replaced by another method.
-    def read_parameters_txt(self, file_name):
+    def _read_txt_input(self, file_name):
         skiplines_start = 12
 
         file = open(file_name, "r")
@@ -289,6 +245,52 @@ class Parameters:
             logging.info("Read successful from file: " + file_name)
         else:
             raise AssertionError("Could not open file: " + file_name)
+
+    # Subroutine for setting up parameters based on given input
+    def _init_parameters(self):
+        # Make arrays with one zero for each turn
+        allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
+        if allturns <= 0:
+            raise ValueError("Total number of turns is less than"
+                             "or equal to zero")
+        self._init_arrays(allturns)
+
+        # TODO: change names of these functions
+        #  as it creates confusion of what is arrays and what is not.
+        # Calculate start-parameters
+        i0 = self._calc_startval_arrays()
+
+        # Calculate the rest of the parameters
+        self._calc_remaining_val_arrays(i0, allturns)
+
+        # Calculate phase slip factor at each turn
+        self.eta0 = phase_slip_factor(self)
+
+        # Calculates c1 for each turn
+        # TODO: what is c1?
+        self.c1 = find_c1(self)
+
+        # Calculate revolution frequency at each turn
+        self.omega_rev0 = revolution_freq(self)
+
+        # time binning
+        self.dtbin = self.dtbin * self.rebin
+        self.xat0 = self.xat0 / float(self.rebin)
+        self.profile_count = self.framecount - self.frame_skipcount
+
+        # Length of profile in bins/pixels
+        self.profile_length = (self.framelength - self.preskip_length
+                               - self.postskip_length)
+
+        # Finding min and max index in profiles.
+        #   The indexes outside of these are treated as 0
+        self.profile_mini, self.profile_maxi = self._find_imin_imax()
+
+        # Total number of data points in the 'raw' input file
+        self.all_data = self.framecount * self.framelength
+
+        # Find self field coefficient for each profile
+        self.sfc = calc_self_field_coeffs(self)
 
     # Fills up arrays with zeroes, ready to use further.
     # + 1 to both include turn#0 and the very last turn.
