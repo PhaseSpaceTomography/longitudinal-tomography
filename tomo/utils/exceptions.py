@@ -1,16 +1,10 @@
 
-# Examples from BLonD:
-
-# ===============
-# Beam Exceptions
-# ===============
+# ================
+# Array Exceptions
+# ================
 
 
-class MassError(Exception):
-    pass
-
-
-class AllParticlesLost(Exception):
+class UnequalArrayShapes(Exception):
     pass
 
 # ====================
