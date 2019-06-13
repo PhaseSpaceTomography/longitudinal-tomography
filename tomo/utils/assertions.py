@@ -65,7 +65,7 @@ class TomoAssertions:
         if var < low_lim or var > up_lim:
             error_message = (f'\nInput parameter "{var_name}" has the '
                              f'unexpected value: {var}.\n'
-                             f'Expected value: {var_name} is outside area: '
+                             f'Expected value: {var_name} should be in area '
                              f'[{low_lim}, {up_lim}].')
             error_message += f'\n{extra_text}'
             raise error_class(error_message)

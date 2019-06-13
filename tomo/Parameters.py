@@ -95,6 +95,7 @@ class Parameters:
     # Calculates parameters based on text file as input
     def get_parameters_txt(self, file_name):
         self._read_txt_input(file_name)
+        self._assert_input()
         self._init_parameters()
         self._assert_parameters()
 
@@ -272,8 +273,8 @@ class Parameters:
 
     # Fills up arrays with zeroes, ready to use further.
     # + 1 to both include turn#0 and the very last turn.
-    def _init_arrays(self, allturns):
-        array_length = allturns + 1
+    def _init_arrays(self, all_turns):
+        array_length = all_turns + 1
         self.time_at_turn = np.zeros(array_length)
         self.omega_rev0 = np.zeros(array_length)
         self.phi0 = np.zeros(array_length)
@@ -295,11 +296,11 @@ class Parameters:
     # Filling up the rest of the parameter arrays:
     #   time_at_turn, e0, beta0, phi0, deltaE0
     def _calc_parameter_arrays(self):
-        allturns = self._calc_number_of_turns()
-        self._init_arrays(allturns)
+        all_turns = self._calc_number_of_turns()
+        self._init_arrays(all_turns)
         i0 = self._array_initial_values()
 
-        for i in range(i0 + 1, allturns + 1):
+        for i in range(i0 + 1, all_turns + 1):
             self.time_at_turn[i] = (self.time_at_turn[i - 1]
                                     + 2*np.pi*self.mean_orbit_rad
                                     / (self.beta0[i - 1]*C))
@@ -349,7 +350,7 @@ class Parameters:
                             / self.rebin + 1)
         return int(profile_mini), int(profile_maxi)
 
-    def _assert_parameters(self):
+    def _assert_input(self):
         # Note that some of the assertions is setting the lower limit as 1.
         # This is because of calibrating from input files meant for Fortran,
         #    where arrays by default starts from 1, to the Python version
@@ -357,8 +358,6 @@ class Parameters:
 
         # Frame assertions
         ta.assert_greater(self.framecount, "frame count", 0, InputError)
-        ta.assert_greater_or_equal(self.frame_skipcount, "frame skip-count",
-                                   0, InputError)
         ta.assert_inrange(self.frame_skipcount, "frame skip-count",
                           0, self.framecount, InputError)
         ta.assert_greater(self.framelength, "frame length", 0, InputError)
@@ -388,10 +387,11 @@ class Parameters:
         ta.assert_less_or_equal(abs(self.filmstep), 'film step',
                                 abs(self.filmstop - self.filmstart + 1),
                                 InputError)
+        ta.assert_not_equal(self.filmstep, 'film step', 0, InputError)
 
         # Reconstruction parameter assertions
-        ta.assert_greater(self.num_iter, 'num iter', 0, InputError,
-                          'NB: num iter is the number of iterations of the '
+        ta.assert_greater(self.num_iter, 'num_iter', 0, InputError,
+                          'NB: num_iter is the number of iterations of the '
                           'reconstruction process')
         ta.assert_greater(self.snpt, 'snpt', 0, InputError,
                           'NB: snpt is the square root '
@@ -407,7 +407,7 @@ class Parameters:
         # Machine parameter assertion
         ta.assert_greater_or_equal(self.h_num, 'harmonic number',
                                    1, MachineParameterError)
-        ta.assert_greater_or_equal(self.h_num, 'harmonic ratio',
+        ta.assert_greater_or_equal(self.h_ratio, 'harmonic ratio',
                                    1, MachineParameterError)
         ta.assert_greater(self.b0, 'B field (B0)',
                           0, MachineParameterError)
@@ -429,6 +429,7 @@ class Parameters:
                                    'NB: g_coupling:'
                                    'geometrical coupling coefficient')
 
+    def _assert_parameters(self):
         # Calculated parameters
         ta.assert_greater_or_equal(self.profile_length, 'profile length', 0,
                                    InputError,
@@ -458,8 +459,8 @@ class Parameters:
                                     (self._calc_number_of_turns() + 1, ))
 
     def _calc_number_of_turns(self):
-        allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
-        ta.assert_greater(allturns, 'allturns', 0, InputError,
+        all_turns = (self.framecount - self.frame_skipcount - 1) * self.dturns
+        ta.assert_greater(all_turns, 'all_turns', 0, InputError,
                           'Make sure that frame skip-count'
                           'do not exceed number of frames')
-        return allturns
+        return all_turns
