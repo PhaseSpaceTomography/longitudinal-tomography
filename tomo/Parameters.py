@@ -19,7 +19,7 @@ class Parameters:
         self.rawdata_file = ""		# Input data file
         self.output_dir = ""		# Directory in which to write all output
         self.framecount = 0			# Number of frames in input data
-        self.frmelength = 0		    # Length of each trace in the 'raw' input file - how many bins in each frame
+        self.framelength = 0		    # Length of each trace in the 'raw' input file - how many bins in each frame
         self.dtbin = 0.0			# Pixel width in seconds
         self.demax = 0.0			# maximum energy of reconstructed phase space
         self.dturns = 0				# Number of machine turns between each measurement
@@ -75,7 +75,7 @@ class Parameters:
         self.e0 = []                # Total energy of synchronous particle at each turn
 
         self.profile_count = 0       # Number of profiles
-        self.profile_length = 0      # Number of bins in a profile
+        self.profile_length = 0      # Length of profile in bins
 
         self.profile_mini = 0         # Index of first and last "active" index in profile
         self.profile_maxi = 0
@@ -95,8 +95,8 @@ class Parameters:
     # Calculates parameters based on text file as input
     def get_parameters_txt(self, file_name):
         self._read_txt_input(file_name)
-        self._assert_input()
         self._init_parameters()
+        self._assert_parameters()
 
     # For retrieving parameters from text-file.
     # To be replaced by another method.
@@ -248,37 +248,15 @@ class Parameters:
 
     # Subroutine for setting up parameters based on given input
     def _init_parameters(self):
-        # Make arrays with one zero for each turn
-        allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
-        if allturns <= 0:
-            raise ValueError("Total number of turns is less than"
-                             "or equal to zero")
-        self._init_arrays(allturns)
 
-        # TODO: change names of these functions
-        #  as it creates confusion of what is arrays and what is not.
-        # Calculate start-parameters
-        i0 = self._calc_startval_arrays()
+        # Calculate values for each turn for arrays:
+        #     time_at_turn, e0, beta0, phi0, eta0, c1, omega_rev0
+        self._calc_parameter_arrays()
 
-        # Calculate the rest of the parameters
-        self._calc_remaining_val_arrays(i0, allturns)
-
-        # Calculate phase slip factor at each turn
-        self.eta0 = phase_slip_factor(self)
-
-        # Calculates c1 for each turn
-        # TODO: what is c1?
-        self.c1 = find_c1(self)
-
-        # Calculate revolution frequency at each turn
-        self.omega_rev0 = revolution_freq(self)
-
-        # time binning
         self.dtbin = self.dtbin * self.rebin
         self.xat0 = self.xat0 / float(self.rebin)
         self.profile_count = self.framecount - self.frame_skipcount
 
-        # Length of profile in bins/pixels
         self.profile_length = (self.framelength - self.preskip_length
                                - self.postskip_length)
 
@@ -305,8 +283,7 @@ class Parameters:
         self.eta0 = np.zeros(array_length)
         self.e0 = np.zeros(array_length)
 
-    # Find start values for variables: time_at_turn, e0, beta0, phi0
-    def _calc_startval_arrays(self):
+    def _array_initial_values(self):
         i0 = (self.machine_ref_frame - 1) * self.dturns
         self.time_at_turn[i0] = 0
         self.e0[i0] = b_to_e(self)
@@ -317,8 +294,11 @@ class Parameters:
 
     # Filling up the rest of the parameter arrays:
     #   time_at_turn, e0, beta0, phi0, deltaE0
-    def _calc_remaining_val_arrays(self, i0, allturns):
-        # Array after i0:
+    def _calc_parameter_arrays(self):
+        allturns = self._calc_number_of_turns()
+        self._init_arrays(allturns)
+        i0 = self._array_initial_values()
+
         for i in range(i0 + 1, allturns + 1):
             self.time_at_turn[i] = (self.time_at_turn[i - 1]
                                     + 2*np.pi*self.mean_orbit_rad
@@ -348,6 +328,16 @@ class Parameters:
             self.phi0[i] = newton(rf_voltage, drf_voltage,
                                   self.phi0[i + 1], self, i, 0.001)
 
+        # Calculate phase slip factor at each turn
+        self.eta0 = phase_slip_factor(self)
+
+        # Calculates c1 for each turn
+        # TODO: what is c1?
+        self.c1 = find_c1(self)
+
+        # Calculate revolution frequency at each turn
+        self.omega_rev0 = revolution_freq(self)
+
     # Find profile_mini and profile_maxi
     def _find_imin_imax(self):
         profile_mini = self.imin_skip/self.rebin
@@ -359,7 +349,7 @@ class Parameters:
                             / self.rebin + 1)
         return int(profile_mini), int(profile_maxi)
 
-    def _assert_input(self):
+    def _assert_parameters(self):
         # Note that some of the assertions is setting the lower limit as 1.
         # This is because of calibrating from input files meant for Fortran,
         #    where arrays by default starts from 1, to the Python version
@@ -431,9 +421,27 @@ class Parameters:
         # Space charge parameter assertion
         ta.assert_greater_or_equal(self.zwall_over_n, 'z wall over n',
                                    0, SpaceChargeParameterError)
-        ta.assert_greater_or_equal(self.pickup_sensitivity, 'pick-up sensitivity',
+        ta.assert_greater_or_equal(self.pickup_sensitivity,
+                                   'pick-up sensitivity',
                                    0, SpaceChargeParameterError)
         ta.assert_greater_or_equal(self.g_coupling, 'g_coupling',
                                    0, SpaceChargeParameterError,
                                    'NB: g_coupling:'
                                    'geometrical coupling coefficient')
+
+        # Calculated parameters
+        ta.assert_greater_or_equal(self.profile_length, 'profile length', 0,
+                                   InputError,
+                                   f'Make sure that the sum of post- and'
+                                   f'pre-skip length is less'
+                                   f'than the frame length\n'
+                                   f'frame length: {self.framelength}\n'
+                                   f'pre-skip length: {self.preskip_length}\n'
+                                   f'post-skip length: {self.postskip_length}')
+
+    def _calc_number_of_turns(self):
+        allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
+        ta.assert_greater(allturns, 'allturns', 0, InputError,
+                          'Make sure that frame skip-count'
+                          'do not exceed number of frames')
+        return allturns
