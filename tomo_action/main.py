@@ -106,13 +106,14 @@ def create_out_dir_path(input_name):
 
 
 def do_analyze(path, py_image, f_image, plot):
-    plt.subplot(224)
+    plt.subplot(325)
     plt.axis('off')
     f_diff, py_diff = SysHandling.find_difference_files(path)
     Analyze.show_difference_to_original(f_diff, py_diff, plot)
 
     pf_diff = Analyze.compare_phase_space(py_image, f_image)
-    Analyze.show_difference_to_fortran(pf_diff, plot)
+    Analyze.write_difference_py_ftr(pf_diff, plot)
+    Analyze.plot_difference_py_ftr(py_image, f_image, plot)
 
     Analyze.compare_profiles(path, py_image, f_image, plot)
 

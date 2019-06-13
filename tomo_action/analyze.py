@@ -14,7 +14,7 @@ class Analyze:
                                                   r"^profile....data")
         original_profile = np.genfromtxt(o_profile_dir + o_prof_str[0])
 
-        plot.subplot(223)
+        plot.subplot(321)
         plot.plot(original_profile)
         plot.plot(np.sum(py_image.T, axis=0))
         plot.plot(np.sum(f_image.T, axis=0))
@@ -43,16 +43,24 @@ class Analyze:
         plot.text(0.0, 0.65, "  Python:  {:e}".format(py_diff[0, -1]))
 
     @staticmethod
-    def show_difference_to_fortran(pf_diff, plot):
+    def write_difference_py_ftr(pf_diff, plot):
         plot.text(0.0, 0.50, f"Difference Fortran - Python:")
         plot.text(0.0, 0.40, "  {:e}".format(pf_diff))
 
     @staticmethod
+    def plot_difference_py_ftr(py_image, f_image, plot):
+        plot.subplot(323)
+        plot.plot(np.sum(f_image.T, axis=0) - np.sum(py_image.T, axis=0))
+        plot.title("Difference Fortran - Python")
+
+    @staticmethod
     def show_images(py_picture, ftr_picture, plot):
-        plot.subplot(221)
-        plot.imshow(py_picture.T, cmap='hot', interpolation='nearest', origin='lower')
+        plot.subplot(324)
+        plot.imshow(py_picture.T, cmap='hot',
+                    interpolation='nearest', origin='lower')
         plot.title("Python output")
-        plot.subplot(222)
-        plot.imshow(ftr_picture.T, cmap='hot', interpolation='nearest', origin='lower')
+        plot.subplot(322)
+        plot.imshow(ftr_picture.T, cmap='hot',
+                    interpolation='nearest', origin='lower')
         plot.title("Fortran output")
         return plot
