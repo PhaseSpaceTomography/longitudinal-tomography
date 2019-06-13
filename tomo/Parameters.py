@@ -439,6 +439,24 @@ class Parameters:
                                    f'pre-skip length: {self.preskip_length}\n'
                                    f'post-skip length: {self.postskip_length}')
 
+        ta.assert_array_shape_equal([self.time_at_turn,
+                                     self.omega_rev0,
+                                     self.phi0,
+                                     self.c1,
+                                     self.deltaE0,
+                                     self.beta0,
+                                     self.eta0,
+                                     self.e0],
+                                    ['time_at_turn',
+                                     'omega_re0',
+                                     'phi0',
+                                     'c1',
+                                     'deltaE0',
+                                     'beta0',
+                                     'eta0',
+                                     'e0'],
+                                    (self._calc_number_of_turns() + 1, ))
+
     def _calc_number_of_turns(self):
         allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
         ta.assert_greater(allturns, 'allturns', 0, InputError,

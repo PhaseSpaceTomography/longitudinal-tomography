@@ -1,3 +1,5 @@
+from utils.exceptions import *
+
 
 class TomoAssertions:
 
@@ -33,7 +35,7 @@ class TomoAssertions:
         if var == limit:
             error_message = (f'\nInput parameter "{var_name}" has the '
                              f'unexpected value: {var}.\n'
-                             f'Expected value: {var_name} < {limit}.')
+                             f'Expected value: {var_name} != {limit}.')
             error_message += f'\n{extra_text}'
             raise error_class(error_message)
 
@@ -43,7 +45,7 @@ class TomoAssertions:
         if var > limit:
             error_message = (f'\nInput parameter "{var_name}" has the '
                              f'unexpected value: {var}.\n'
-                             f'Expected value: {var_name} < {limit}.')
+                             f'Expected value: {var_name} <= {limit}.')
             error_message += f'\n{extra_text}'
             raise error_class(error_message)
 
@@ -53,7 +55,7 @@ class TomoAssertions:
         if var < limit:
             error_message = (f'\nInput parameter "{var_name}" has the '
                              f'unexpected value: {var}.\n'
-                             f'Expected value: {var_name} < {limit}.')
+                             f'Expected value: {var_name} >= {limit}.')
             error_message += f'\n{extra_text}'
             raise error_class(error_message)
 
@@ -67,3 +69,29 @@ class TomoAssertions:
                              f'[{low_lim}, {up_lim}].')
             error_message += f'\n{extra_text}'
             raise error_class(error_message)
+
+    @staticmethod
+    def assert_array_shape_equal(arrays, array_names,
+                                demanded_shape, extra_text=''):
+
+        TomoAssertions.assert_greater_or_equal(len(arrays), 'number of arrays',
+                                               2, AssertionError,
+                                               f'Unable to compare arrays, '
+                                               f'since less than two '
+                                               f'arrays are given.')
+        ok = True
+        counter = 0
+        array_error_str = ''
+        for i in range(len(arrays)):
+            if demanded_shape != arrays[i].shape:
+                ok = False
+                array_error_str += (f'{array_names[i]} with '
+                                    f'shape: {arrays[i].shape}\n')
+                counter += 1
+
+        if not ok:
+            error_message = (f'\ndeviation from a desired array shape '
+                             f'of {demanded_shape} found in array(s):\n'
+                             f'{array_error_str}'
+                             f'{extra_text}')
+            raise UnequalArrayShapes(error_message)
