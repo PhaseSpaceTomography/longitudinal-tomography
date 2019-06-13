@@ -105,7 +105,7 @@ class SysHandling:
     @staticmethod
     def _assert_images_found(p_im, f_im):
         if len(p_im) > 1 or len(f_im) > 1:
-            raise AssertionError("Moore than two images were found.")
+            raise AssertionError("More than two images were found.")
         if len(p_im) == 0 and len(f_im) == 0:
             raise AssertionError("No images found")
         if len(p_im) == 0:
