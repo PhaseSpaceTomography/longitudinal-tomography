@@ -1,5 +1,5 @@
 from utils.exceptions import *
-
+import numpy as np
 
 class TomoAssertions:
 
@@ -67,6 +67,16 @@ class TomoAssertions:
                              f'unexpected value: {var}.\n'
                              f'Expected value: {var_name} should be in area '
                              f'[{low_lim}, {up_lim}].')
+            error_message += f'\n{extra_text}'
+            raise error_class(error_message)
+
+    @staticmethod
+    def assert_array_not_equal(array, array_name, limit,
+                               error_class, extra_text=''):
+        if np.all(array == 0):
+            error_message = (f'\nAll elements of the array "{array_name}" '
+                             f'has the unexpected value: {array}.\n'
+                             f'Expected value: {array_name} != {limit}.')
             error_message += f'\n{extra_text}'
             raise error_class(error_message)
 

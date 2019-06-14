@@ -42,3 +42,24 @@ class MachineParameterError(Exception):
 
 class SpaceChargeParameterError(Exception):
     pass
+
+
+class RawDataImportError(Exception):
+    pass
+
+# ===========================
+# Time space Exceptions
+# ===========================
+
+
+class RebinningError(Exception):
+    pass
+
+
+class ProfileReducedToZero(Exception):
+    pass
+
+
+class TangentFootError(Exception):
+    pass
+

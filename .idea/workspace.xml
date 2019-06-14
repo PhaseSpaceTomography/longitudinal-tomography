@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="Added assertion for equal array length. Editing error messages.">
+    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="Added assertions and exceptions for time space.&#10;&#10; - checking that data-files contains data&#10; - the percentage of the data which the baseline is&#10;     calculated from is now a parameter. This parameter is asserted to &#10;     be a number from 0 to 1&#10; - checking that re-binned profile length is larger than 0&#10; - asserting that al of the profile is not zero, after the function:&#10;     negative_profiles_zero&#10; - asserting that tangentfoot_low is less than tangentfoot_up&#10; &#10; - added assertion: assert_array_not_equal()">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/Parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Parameters.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/Time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Time_space.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/utils/assertions.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/utils/assertions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_tests/test_parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_parameters.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/utils/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/utils/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit_tests/test_time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_time_space.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,42 +21,61 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="90">
-                  <caret line="6" column="24" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="24" />
+                <state relative-caret-position="492">
+                  <caret line="62" selection-start-line="62" selection-end-line="62" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="224">
+                  <caret line="101" column="23" lean-forward="true" selection-start-line="101" selection-start-column="23" selection-end-line="101" selection-end-column="23" />
+                  <folding>
+                    <element signature="e#0#14#0" expanded="true" />
+                    <element signature="e#281#3789#0" />
+                    <element signature="e#3993#4395#0" />
+                    <element signature="e#4680#5315#0" />
+                    <element signature="e#5364#5843#0" />
+                    <element signature="e#5970#7263#0" />
+                    <element signature="e#8234#8566#0" />
+                    <element signature="e#7536#7630#0" />
+                    <element signature="e#7768#7832#0" />
+                    <element signature="e#7918#8404#0" />
+                    <element signature="e#8632#9870#0" />
+                    <element signature="e#10138#10436#0" />
+                    <element signature="e#10589#11208#0" />
+                    <element signature="e#11385#12892#0" />
+                    <element signature="e#13157#13672#0" />
+                    <element signature="e#13757#13849#0" />
+                    <element signature="e#13939#14506#0" />
+                    <element signature="e#14582#15126#0" />
+                    <element signature="e#15240#15375#0" />
+                  </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/tomo/Parameters.py">
+            <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="336">
-                  <caret line="294" lean-forward="true" selection-start-line="294" selection-end-line="294" />
+                <state relative-caret-position="-481">
+                  <caret line="34" column="53" lean-forward="true" selection-start-line="34" selection-start-column="6" selection-end-line="34" selection-end-column="53" />
                   <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                    <element signature="e#162#5532#0" />
-                    <element signature="e#5643#5769#0" />
-                    <element signature="e#7580#11572#0" />
-                    <element signature="e#10016#11670#0" />
-                    <element signature="e#11734#12119#0" />
-                    <element signature="e#12235#12551#0" />
-                    <element signature="e#11939#13841#0" />
-                    <element signature="e#14292#14689#0" />
-                    <element signature="e#14284#18361#0" />
-                    <element signature="e#18406#19831#0" />
-                    <element signature="e#19972#20061#0" />
+                    <element signature="e#0#15#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tomo/Physics.py">
+            <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="480">
-                  <caret line="144" column="31" selection-start-line="144" selection-start-column="31" selection-end-line="144" selection-end-column="31" />
+                <state relative-caret-position="391">
+                  <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
                   <folding>
-                    <element signature="e#49#70#0" expanded="true" />
+                    <element signature="e#0#14#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -64,31 +84,17 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="396">
-                  <caret line="67" column="75" selection-start-line="67" selection-start-column="75" selection-end-line="67" selection-end-column="75" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="165">
-                  <caret line="11" selection-start-line="11" selection-end-line="11" />
+                <state relative-caret-position="342">
+                  <caret line="75" column="24" selection-start-line="75" selection-start-column="24" selection-end-line="75" selection-end-column="24" />
                   <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="216">
-                  <caret line="17" selection-start-line="17" selection-end-line="17" />
-                  <folding>
-                    <element signature="e#0#14#0" expanded="true" />
+                    <element signature="e#0#30#0" expanded="true" />
+                    <element signature="e#156#466#0" />
+                    <element signature="e#565#875#0" />
+                    <element signature="e#975#1286#0" />
+                    <element signature="e#1838#2148#0" />
+                    <element signature="e#2291#2601#0" />
+                    <element signature="e#2736#3126#0" />
+                    <element signature="e#3273#4279#0" />
                   </folding>
                 </state>
               </provider>
@@ -97,61 +103,14 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tomo/Parameters.py">
+        <leaf>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-528">
-                  <caret line="117" column="27" selection-start-line="117" selection-start-column="27" selection-end-line="117" selection-end-column="27" />
+                <state relative-caret-position="276">
+                  <caret line="26" column="12" selection-start-line="26" selection-start-column="12" selection-end-line="26" selection-end-column="12" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-360">
-                  <caret line="6" selection-start-line="6" selection-end-line="6" />
-                  <folding>
-                    <element signature="e#0#15#0" expanded="true" />
-                    <element signature="e#218#235#0" />
-                    <element signature="e#290#302#0" />
-                    <element signature="e#369#470#0" />
-                    <element signature="e#401#5504#0" />
-                    <element signature="e#5684#6766#0" />
-                    <element signature="e#6708#8361#0" />
-                    <element signature="e#8421#9415#0" />
-                    <element signature="e#9206#9414#0" />
-                    <element signature="e#9464#9743#0" />
-                    <element signature="e#9870#9974#0" />
-                    <element signature="e#10110#10445#0" />
-                    <element signature="e#10205#10454#0" />
-                    <element signature="e#10494#10592#0" />
-                    <element signature="e#10633#10732#0" />
-                    <element signature="e#10776#11012#0" />
-                    <element signature="e#11057#11294#0" />
-                    <element signature="e#11334#11429#0" />
-                    <element signature="e#11444#11598#0" />
-                    <element signature="e#11621#11722#0" />
-                    <element signature="e#11771#12013#0" />
-                    <element signature="e#12017#12171#0" />
-                    <element signature="e#12208#12362#0" />
-                    <element signature="e#12399#12553#0" />
-                    <element signature="e#12460#12555#0" />
-                    <element signature="e#12604#12699#0" />
-                    <element signature="e#12748#12843#0" />
-                    <element signature="e#12925#13023#0" />
-                    <element signature="e#13060#13157#0" />
-                    <element signature="e#13206#13303#0" />
-                    <element signature="e#13352#13449#0" />
-                    <element signature="e#13540#13641#0" />
-                    <element signature="e#13694#13795#0" />
-                    <element signature="e#13840#13941#0" />
-                    <element signature="e#14018#14128#0" />
-                    <element signature="e#14198#15992#0" />
                   </folding>
                 </state>
               </provider>
@@ -233,7 +192,6 @@
         <option value="$PROJECT_DIR$/unit_tests/foo.txt" />
         <option value="$PROJECT_DIR$/tomo/Tomography.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_reconstruction.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_tomography.py" />
         <option value="$PROJECT_DIR$/unit_tests/resources/C500MidPhaseNoise/C500values.py" />
         <option value="$PROJECT_DIR$/tomo/Physics.py" />
@@ -257,11 +215,12 @@
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
         <option value="$PROJECT_DIR$/tomo/compile.py" />
         <option value="$PROJECT_DIR$/tomo/Numeric.py" />
-        <option value="$PROJECT_DIR$/tomo/Time_space.py" />
-        <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
-        <option value="$PROJECT_DIR$/tomo/utils/assertions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
         <option value="$PROJECT_DIR$/tomo/Parameters.py" />
+        <option value="$PROJECT_DIR$/tomo/utils/assertions.py" />
+        <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
+        <option value="$PROJECT_DIR$/tomo/Time_space.py" />
+        <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
       </list>
     </option>
   </component>
@@ -288,6 +247,17 @@
               <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
               <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
               <item name="tomo" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="tomo" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -316,7 +286,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests in test_parameters.py">
+  <component name="RunManager" selected="Python tests.Nosetests for test_time_space.TestTimeSpace">
     <configuration name="Main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -368,7 +338,7 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_parameters.TestParameters.test_bad_profile_length" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_time_space.TestTimeSpace" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -379,7 +349,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_parameters.TestParameters.test_bad_profile_length&quot;" />
+      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -400,11 +370,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace" />
+        <item itemvalue="Python.Main_testing" />
         <item itemvalue="Python tests.Nosetests in test_parameters.py" />
         <item itemvalue="Python tests.Nosetests for test_parameters.TestParameters.test_bad_g_coupling" />
-        <item itemvalue="Python.Main_testing" />
         <item itemvalue="Python tests.Nosetests for test_parameters.TestParameters.test_bad_array_lengths" />
-        <item itemvalue="Python tests.Nosetests for test_parameters.TestParameters.test_bad_profile_length" />
       </list>
     </recent_temporary>
   </component>
@@ -800,22 +770,22 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1680" y="0" width="1920" height="1200" extended-state="6" />
+    <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49261603" visible="true" weight="0.36071765" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49419832" weight="0.30878186" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49208862" visible="true" weight="0.36008024" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49367088" weight="0.30792376" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.4994726" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50052744" side_tool="true" weight="0.32998997" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5079114" side_tool="true" weight="0.36008024" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
       <window_info anchor="bottom" id="Messages" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -875,13 +845,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="10" selection-start-line="3" selection-start-column="10" selection-end-line="3" selection-end-column="10" />
         </state>
       </provider>
     </entry>
@@ -1129,6 +1092,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/unittest/case.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="207">
+          <caret line="202" selection-start-line="202" selection-end-line="202" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Physics.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="480">
@@ -1139,109 +1109,95 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
+    <entry file="file://$PROJECT_DIR$/tomo/Parameters.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="24" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="67" column="75" selection-start-line="67" selection-start-column="75" selection-end-line="67" selection-end-column="75" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
+        <state relative-caret-position="15">
+          <caret line="117" column="27" selection-start-line="117" selection-start-column="27" selection-end-line="117" selection-end-column="27" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#5643#5769#0" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="17" selection-start-line="17" selection-end-line="17" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/unittest/case.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="202" selection-start-line="202" selection-end-line="202" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-360">
+        <state relative-caret-position="90">
           <caret line="6" selection-start-line="6" selection-end-line="6" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
-            <element signature="e#218#235#0" />
-            <element signature="e#290#302#0" />
-            <element signature="e#369#470#0" />
-            <element signature="e#401#5504#0" />
-            <element signature="e#5684#6766#0" />
-            <element signature="e#6708#8361#0" />
-            <element signature="e#8421#9415#0" />
-            <element signature="e#9206#9414#0" />
-            <element signature="e#9464#9743#0" />
-            <element signature="e#9870#9974#0" />
-            <element signature="e#10110#10445#0" />
-            <element signature="e#10205#10454#0" />
-            <element signature="e#10494#10592#0" />
-            <element signature="e#10633#10732#0" />
-            <element signature="e#10776#11012#0" />
-            <element signature="e#11057#11294#0" />
-            <element signature="e#11334#11429#0" />
-            <element signature="e#11444#11598#0" />
-            <element signature="e#11621#11722#0" />
-            <element signature="e#11771#12013#0" />
-            <element signature="e#12017#12171#0" />
-            <element signature="e#12208#12362#0" />
-            <element signature="e#12399#12553#0" />
-            <element signature="e#12460#12555#0" />
-            <element signature="e#12604#12699#0" />
-            <element signature="e#12748#12843#0" />
-            <element signature="e#12925#13023#0" />
-            <element signature="e#13060#13157#0" />
-            <element signature="e#13206#13303#0" />
-            <element signature="e#13352#13449#0" />
-            <element signature="e#13540#13641#0" />
-            <element signature="e#13694#13795#0" />
-            <element signature="e#13840#13941#0" />
-            <element signature="e#14018#14128#0" />
-            <element signature="e#14198#15992#0" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Parameters.py">
+    <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="294" lean-forward="true" selection-start-line="294" selection-end-line="294" />
+        <state relative-caret-position="391">
+          <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-            <element signature="e#162#5532#0" />
-            <element signature="e#5643#5769#0" />
-            <element signature="e#7580#11572#0" />
-            <element signature="e#10016#11670#0" />
-            <element signature="e#11734#12119#0" />
-            <element signature="e#12235#12551#0" />
-            <element signature="e#11939#13841#0" />
-            <element signature="e#14292#14689#0" />
-            <element signature="e#14284#18361#0" />
-            <element signature="e#18406#19831#0" />
-            <element signature="e#19972#20061#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="75" column="24" selection-start-line="75" selection-start-column="24" selection-end-line="75" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+            <element signature="e#156#466#0" />
+            <element signature="e#565#875#0" />
+            <element signature="e#975#1286#0" />
+            <element signature="e#1838#2148#0" />
+            <element signature="e#2291#2601#0" />
+            <element signature="e#2736#3126#0" />
+            <element signature="e#3273#4279#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="492">
+          <caret line="62" selection-start-line="62" selection-end-line="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="101" column="23" lean-forward="true" selection-start-line="101" selection-start-column="23" selection-end-line="101" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#281#3789#0" />
+            <element signature="e#3993#4395#0" />
+            <element signature="e#4680#5315#0" />
+            <element signature="e#5364#5843#0" />
+            <element signature="e#5970#7263#0" />
+            <element signature="e#8234#8566#0" />
+            <element signature="e#7536#7630#0" />
+            <element signature="e#7768#7832#0" />
+            <element signature="e#7918#8404#0" />
+            <element signature="e#8632#9870#0" />
+            <element signature="e#10138#10436#0" />
+            <element signature="e#10589#11208#0" />
+            <element signature="e#11385#12892#0" />
+            <element signature="e#13157#13672#0" />
+            <element signature="e#13757#13849#0" />
+            <element signature="e#13939#14506#0" />
+            <element signature="e#14582#15126#0" />
+            <element signature="e#15240#15375#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-481">
+          <caret line="34" column="53" lean-forward="true" selection-start-line="34" selection-start-column="6" selection-end-line="34" selection-end-column="53" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
