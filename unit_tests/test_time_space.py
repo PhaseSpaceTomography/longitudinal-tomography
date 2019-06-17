@@ -1,4 +1,6 @@
 import unittest
+import unittest.mock as mock
+import warnings
 import numpy as np
 import numpy.testing as nptest
 from tomo.Time_space import TimeSpace
@@ -31,19 +33,6 @@ class TestTimeSpace(unittest.TestCase):
                                            cv["init_profile_length"])
         nptest.assert_almost_equal(data, comparison_data,
                                    err_msg="Error in calculation of baseline")
-
-    # def test_subtract_baseline_bad_input_C500(self):
-    #     cv = TestTimeSpace.c500.values
-    #     with self.assertRaises(AssertionError):
-    #         data = []
-    #         _ = TimeSpace.subtract_baseline(data,
-    #                                         cv["frame_skipcount"],
-    #                                         cv["beam_ref_frame"],
-    #                                         cv["frame_length"],
-    #                                         cv["preskip_length"],
-    #                                         cv["init_profile_length"])
-    #     self.assertTrue("No data found, unable to calculate baseline",
-    #                     msg="Unexpected behaviour when input data = []")
 
     # Testing conversion from raw-data to finished profile
     def test_rawdata_to_profiles_C500(self):
@@ -235,6 +224,50 @@ class TestTimeSpace(unittest.TestCase):
 
         # To be written
         pass
+
+    # Negative tests
+    def test_subtract_baseline_bad_data(self):
+        with self.assertRaises(Exception):
+            warnings.filterwarnings("ignore")
+            TimeSpace.get_indata_txt('resources/empty.dat', '')
+
+    def test_bad_rebin(self):
+        ca = TestTimeSpace.c500.arrays
+        cv = TestTimeSpace.c500.values
+        bad_rebin = cv["init_profile_length"] + 2
+
+        with self.assertRaises(Exception):
+            _, _ = TimeSpace.rebin(ca["raw_profiles"], bad_rebin,
+                                   cv["init_profile_length"],
+                                   cv["profile_count"])
+
+    def test_bad_percentage_input_subtr_baseline(self):
+        path = TestTimeSpace.c500.path
+        cv = TestTimeSpace.c500.values
+        data = TimeSpace.get_indata_txt("pipe",
+                                        path + "C500MidPhaseNoise.dat")
+        with self.assertRaises(Exception):
+            _ = TimeSpace.subtract_baseline(data,
+                                            cv["frame_skipcount"],
+                                            cv["beam_ref_frame"],
+                                            cv["frame_length"],
+                                            cv["preskip_length"],
+                                            cv["init_profile_length"],
+                                            percentage=-0.01)
+        with self.assertRaises(Exception):
+            _ = TimeSpace.subtract_baseline(data,
+                                            cv["frame_skipcount"],
+                                            cv["beam_ref_frame"],
+                                            cv["frame_length"],
+                                            cv["preskip_length"],
+                                            cv["init_profile_length"],
+                                            percentage=1.01)
+
+    def test_all_negative_raw_data(self):
+        negative_array = -np.ones(100)
+        with self.assertRaises(Exception):
+            TimeSpace.negative_profiles_zero(negative_array)
+
 
 if __name__ == '__main__':
     unittest.main()

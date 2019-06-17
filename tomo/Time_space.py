@@ -149,7 +149,7 @@ class TimeSpace:
             new_profile_length = int(profile_length / rebin_factor) + 1
 
         ta.assert_greater(new_profile_length,
-                          'rebinned profile length', 0,
+                          'rebinned profile length', 1,
                           RebinningError,
                           f'The length of the profiles after re-binning'
                           f'is not valid...\nMake sure that the re-binning '
@@ -279,7 +279,8 @@ class TimeSpace:
             if profile[ibin] < threshold:
                 tangent_bin_up = ibin - 1
                 break
-        # t_low = np.argwhere(np.flip(profile) < threshold) : TODO: Try this
+        # Possible solution?
+        # t_low = np.argwhere(np.flip(profile) < threshold)
         # t_up = np.argwhere(np.flip(profile) < threshold)
 
         return tangent_bin_up, tangent_bin_low
