@@ -63,3 +63,18 @@ class ProfileReducedToZero(Exception):
 class TangentFootError(Exception):
     pass
 
+# ============================
+# MapInfo exceptions
+# ============================
+
+
+class EnergyBinningError(Exception):
+    pass
+
+
+class EnergyLimitsError(Exception):
+    pass
+
+
+class PhaseLimitsError(Exception):
+    pass

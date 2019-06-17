@@ -1,4 +1,5 @@
 from Physics import *
+from utils.assertions import TomoAssertions as ta
 import numpy as np
 import logging
 
@@ -41,12 +42,13 @@ class MapInfo:
                                 timespace.par.filmstep,
                                 timespace.par.profile_mini,
                                 timespace.par.profile_maxi)
+        self._assert_correct_arrays(timespace)
 
     # This procedure calculates and sets the limits
     # 	in i (phase) and j (energy).
     # The i-j coordinate system is the one used locally
     # 	(reconstructed phase space).
-    # acts as "Main function" for this class
+    # This is the main function of the class
     def _find_ijlimits(self, beam_ref_frame, dturns, profile_length,
                        full_pp_flag, x_origin, dtbin, h_num, omega_rev0,
                        vrf1, vrf1dot, vrf2, vrf2dot, yat0, c1, q, e0,
@@ -87,6 +89,8 @@ class MapInfo:
                                      phases,
                                      turn_now)
 
+        ta.assert_greater(dEbin, 'dEbin', 0, EnergyBinningError)
+
         if full_pp_flag == 1:
             # Calculates limits for tracking all pixels
             (jmin,
@@ -122,6 +126,8 @@ class MapInfo:
                                                           h_ratio,
                                                           phi12,
                                                           time_at_turn)
+
+
 
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
@@ -304,6 +310,8 @@ class MapInfo:
             jmax[i] = min([jmax_up[i], jmax_up[i + 1],
                            jmax_low[i], jmax_low[i + 1],
                            profile_length])
+
+
         return jmax
 
     # Function for finding jmin for each bin in profile
@@ -360,12 +368,14 @@ class MapInfo:
                 jmin[film, :] = np.ceil(2.0 * yat0 - jmax[film, :] + 0.5)
             else:
                 imin[film] = allbin_min[film]
+
             if profile_maxi < allbin_max[film] or full_pp_flag:
                 imax[film] = profile_maxi
                 jmax[film, profile_maxi: profile_length] = np.floor(yat0)
                 jmin[film, :] = np.ceil(2.0 * yat0 - jmax[film, :] + 0.5)
             else:
                 imax[film] = allbin_max[film]
+
         return jmin, jmax, imin, imax
 
     # Returns an array of phases for the given turn
@@ -383,6 +393,38 @@ class MapInfo:
                       * h_num
                       * omega_rev0_at_turn)
         return phases
+
+    def _assert_correct_arrays(self, ts):
+        for film in range(ts.par.filmstart - 1,
+                          ts.par.filmstop,
+                          ts.par.filmstep):
+
+            # Testing imin and imax
+            ta.assert_inrange(self.imin[film], 'imin', 0, self.imax[film],
+                              PhaseLimitsError,
+                              f'imin and imax out of bounds '
+                              f'at film: {film}')
+            ta.assert_less_or_equal(self.imax[film], 'imax',
+                                    self.jmax[film].size,
+                                    PhaseLimitsError,
+                                    f'imin and imax out of bounds '
+                                    f'at film: {film}')
+
+            # Testing jmin and jmax
+            ta.assert_array_in_range(self.jmin[self.imin[film]:
+                                               self.imax[film]],
+                                     0,
+                                     self.jmax[self.imin[film]:
+                                               self.imax[film]],
+                                     EnergyLimitsError,
+                                     f'jmin and jmax out of bounds '
+                                     f'at film: {film}')
+            ta.assert_array_less_eq(self.jmax[self.imin[film]:
+                                              self.imax[film]],
+                                    ts.par.profile_length,
+                                    EnergyLimitsError,
+                                    f'jmin and jmax out of bounds '
+                                    f'at film: {film}')
 
     # This is a trajectory height calculator given a phase and energy.
     @staticmethod

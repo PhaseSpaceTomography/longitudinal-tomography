@@ -1,6 +1,7 @@
 from utils.exceptions import *
 import numpy as np
 
+
 class TomoAssertions:
 
     @staticmethod
@@ -105,3 +106,29 @@ class TomoAssertions:
                              f'{array_error_str}'
                              f'{extra_text}')
             raise UnequalArrayShapes(error_message)
+
+    @staticmethod
+    def assert_array_in_range(array, low_lim, up_lim, error_class, msg=''):
+        if not np.where(np.logical_or(array < low_lim,
+                                      array > up_lim), False, True).all():
+            raise error_class(msg)
+
+    @staticmethod
+    def assert_array_greater(array, limit, error_class, msg=''):
+        if not np.where(array <= limit, False, True).all():
+            raise error_class(msg)
+
+    @staticmethod
+    def assert_array_greater_eq(array, limit, error_class, msg=''):
+        if not np.where(array < limit, False, True).all():
+            raise error_class(msg)
+
+    @staticmethod
+    def assert_array_less(array, limit, error_class, msg=''):
+        if not np.where(array >= limit, False, True).all():
+            raise error_class(msg)
+
+    @staticmethod
+    def assert_array_less_eq(array, limit, error_class, msg=''):
+        if not np.where(array > limit, False, True).all():
+            raise error_class(msg)
