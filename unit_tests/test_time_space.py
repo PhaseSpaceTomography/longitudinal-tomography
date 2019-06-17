@@ -215,15 +215,13 @@ class TestTimeSpace(unittest.TestCase):
         self.assertEqual(TimeSpace._find_yat0(205), 102.5,
                          msg="Error in calculation of yat0")
 
-    def test_filter(self):
+    # def test_filter(self):
+    #     # To be written
+    #     pass
 
-        # To be written
-        pass
-
-    def test_calc_self_field(self):
-
-        # To be written
-        pass
+    # def test_calc_self_field(self):
+    #     # To be written
+    #     pass
 
     # Negative tests
     def test_subtract_baseline_bad_data(self):

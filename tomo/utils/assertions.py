@@ -108,27 +108,55 @@ class TomoAssertions:
             raise UnequalArrayShapes(error_message)
 
     @staticmethod
-    def assert_array_in_range(array, low_lim, up_lim, error_class, msg=''):
-        if not np.where(np.logical_or(array < low_lim,
-                                      array > up_lim), False, True).all():
-            raise error_class(msg)
+    def assert_array_in_range(array, low_lim, up_lim, error_class,
+                              msg='', index_offset=0):
+        log_arr = np.where(np.logical_or(array < low_lim, array > up_lim),
+                            False, True)
+        TomoAssertions._assert_log_arr(log_arr,
+                                       error_class,
+                                       index_offset,
+                                       msg)
 
     @staticmethod
-    def assert_array_greater(array, limit, error_class, msg=''):
-        if not np.where(array <= limit, False, True).all():
-            raise error_class(msg)
+    def assert_array_greater(array, limit, error_class,
+                             msg='', index_offset=''):
+        log_arr = np.where(array <= limit, False, True)
+        TomoAssertions._assert_log_arr(log_arr,
+                                       error_class,
+                                       index_offset,
+                                       msg)
 
     @staticmethod
-    def assert_array_greater_eq(array, limit, error_class, msg=''):
-        if not np.where(array < limit, False, True).all():
-            raise error_class(msg)
+    def assert_array_greater_eq(array, limit, error_class,
+                             msg='', index_offset=''):
+        log_arr = np.where(array < limit, False, True)
+        TomoAssertions._assert_log_arr(log_arr,
+                                       error_class,
+                                       index_offset,
+                                       msg)
 
     @staticmethod
-    def assert_array_less(array, limit, error_class, msg=''):
-        if not np.where(array >= limit, False, True).all():
-            raise error_class(msg)
+    def assert_array_less(array, limit, error_class,
+                             msg='', index_offset=''):
+        log_arr = np.where(array >= limit, False, True)
+        TomoAssertions._assert_log_arr(log_arr,
+                                       error_class,
+                                       index_offset,
+                                       msg)
 
     @staticmethod
-    def assert_array_less_eq(array, limit, error_class, msg=''):
-        if not np.where(array > limit, False, True).all():
-            raise error_class(msg)
+    def assert_array_less_eq(array, limit, error_class,
+                             msg='', index_offset=''):
+        log_arr = np.where(array > limit, False, True)
+        TomoAssertions._assert_log_arr(log_arr,
+                                       error_class,
+                                       index_offset,
+                                       msg)
+
+
+    @staticmethod
+    def _assert_log_arr(log_array_ok, error_class, index_offset, msg):
+        if not log_array_ok.all():
+            error_msg = f'\nError found at index: ' \
+                f'{np.argwhere(log_array_ok == False).flatten() + index_offset}\n'
+            raise error_class(error_msg + msg)

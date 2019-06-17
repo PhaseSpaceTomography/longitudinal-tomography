@@ -411,15 +411,18 @@ class MapInfo:
                                     f'at film: {film}')
 
             # Testing jmin and jmax
-            ta.assert_array_in_range(self.jmin[self.imin[film]:
-                                               self.imax[film]],
-                                     0,
-                                     self.jmax[self.imin[film]:
+            ta.assert_array_in_range(self.jmin[film,
+                                               self.imin[film]:
+                                               self.imax[film]], 0,
+                                     self.jmax[film,
+                                               self.imin[film]:
                                                self.imax[film]],
                                      EnergyLimitsError,
-                                     f'jmin and jmax out of bounds '
-                                     f'at film: {film}')
-            ta.assert_array_less_eq(self.jmax[self.imin[film]:
+                                     msg=f'jmin and jmax out of bounds '
+                                         f'at film: {film}',
+                                     index_offset=self.imin[film])
+            ta.assert_array_less_eq(self.jmax[film,
+                                              self.imin[film]:
                                               self.imax[film]],
                                     ts.par.profile_length,
                                     EnergyLimitsError,

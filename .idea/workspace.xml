@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/unit_tests/resources/empty.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/Time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Time_space.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/MapInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/MapInfo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/utils/assertions.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/utils/assertions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit_tests/test_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_map.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/unit_tests/test_time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_time_space.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,25 +18,37 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/tomo/MapInfo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="417">
-                  <caret line="268" column="60" selection-start-line="268" selection-start-column="60" selection-end-line="268" selection-end-column="60" />
+                <state relative-caret-position="254">
+                  <caret line="423" column="26" selection-start-line="423" selection-start-column="26" selection-end-line="423" selection-end-column="26" />
                   <folding>
-                    <element signature="e#0#15#0" expanded="true" />
+                    <element signature="e#0#21#0" expanded="true" />
+                    <element signature="e#7112#9661#0" />
+                    <element signature="e#10106#12174#0" />
+                    <element signature="e#12480#14706#0" />
+                    <element signature="e#14884#15115#0" />
+                    <element signature="e#15242#15352#0" />
+                    <element signature="e#15434#15552#0" />
+                    <element signature="e#15719#16172#0" />
+                    <element signature="e#16756#17721#0" />
+                    <element signature="e#17742#18143#0" />
+                    <element signature="e#18432#19657#0" />
+                    <element signature="e#19742#20245#0" />
+                    <element signature="e#20334#23085#0" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="5775">
-                  <caret line="389" selection-start-line="389" selection-end-line="390" selection-end-column="41" />
+                <state relative-caret-position="492">
+                  <caret line="162" lean-forward="true" selection-start-line="162" selection-end-line="162" />
                   <folding>
-                    <element signature="e#0#15#0" expanded="true" />
+                    <element signature="e#0#30#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -44,32 +57,27 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+        <leaf>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
+            <entry file="file://$PROJECT_DIR$/unit_tests/test_map.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-16">
-                  <caret line="124" column="25" lean-forward="true" selection-start-line="124" selection-start-column="25" selection-end-line="124" selection-end-column="25" />
+                <state relative-caret-position="404">
+                  <caret line="219" column="31" selection-start-line="219" selection-start-column="31" selection-end-line="219" selection-end-column="31" />
                   <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                    <element signature="e#337#3843#0" />
-                    <element signature="e#3991#4463#0" />
-                    <element signature="e#4695#5402#0" />
-                    <element signature="e#5698#6255#0" />
-                    <element signature="e#6382#8120#0" />
-                    <element signature="e#8234#8586#0" />
-                    <element signature="e#8703#8797#0" />
-                    <element signature="e#8935#8999#0" />
-                    <element signature="e#9085#9571#0" />
-                    <element signature="e#9799#11037#0" />
-                    <element signature="e#11305#11603#0" />
-                    <element signature="e#11756#12375#0" />
-                    <element signature="e#12552#14654#0" />
-                    <element signature="e#14919#15434#0" />
-                    <element signature="e#15519#15611#0" />
-                    <element signature="e#15701#16268#0" />
-                    <element signature="e#16344#16888#0" />
-                    <element signature="e#17002#17137#0" />
+                    <element signature="e#0#15#0" expanded="true" />
+                    <element signature="e#225#410#0" />
+                    <element signature="e#460#1295#0" />
+                    <element signature="e#1342#1853#0" />
+                    <element signature="e#1910#2906#0" />
+                    <element signature="e#2963#3559#0" />
+                    <element signature="e#3606#4500#0" />
+                    <element signature="e#4547#5867#0" />
+                    <element signature="e#5907#6481#0" />
+                    <element signature="e#6521#6826#0" />
+                    <element signature="e#6872#7222#0" />
+                    <element signature="e#7268#7610#0" />
+                    <element signature="e#7729#8760#0" />
+                    <element signature="e#8802#9899#0" />
                   </folding>
                 </state>
               </provider>
@@ -114,9 +122,10 @@
       <find>rebin</find>
       <find>dtbin</find>
       <find>assert_array_length_equal</find>
-      <find>ta</find>
       <find>_assert_input</find>
       <find>allturns</find>
+      <find>ta</find>
+      <find>where</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -154,7 +163,6 @@
         <option value="$PROJECT_DIR$/unit_tests/test_tomography.py" />
         <option value="$PROJECT_DIR$/unit_tests/resources/C500MidPhaseNoise/C500values.py" />
         <option value="$PROJECT_DIR$/tomo/Physics.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_physics.py" />
         <option value="$PROJECT_DIR$/tomo_action/__init__.py" />
         <option value="$PROJECT_DIR$/tomo/__init__.py" />
@@ -162,7 +170,6 @@
         <option value="$PROJECT_DIR$/unit_tests/__init__.py" />
         <option value="$PROJECT_DIR$/.gitlab-ci.yaml" />
         <option value="$PROJECT_DIR$/environment.yaml" />
-        <option value="$PROJECT_DIR$/tomo/MapInfo.py" />
         <option value="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" />
         <option value="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" />
         <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
@@ -175,11 +182,13 @@
         <option value="$PROJECT_DIR$/tomo/Numeric.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
         <option value="$PROJECT_DIR$/tomo/Parameters.py" />
-        <option value="$PROJECT_DIR$/tomo/utils/assertions.py" />
-        <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/tomo/Time_space.py" />
+        <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
+        <option value="$PROJECT_DIR$/tomo/MapInfo.py" />
+        <option value="$PROJECT_DIR$/tomo/utils/assertions.py" />
+        <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
       </list>
     </option>
   </component>
@@ -234,6 +243,13 @@
               <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
               <item name="resources" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
+              <item name="C500MidPhaseNoise" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -262,8 +278,29 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests for test_time_space.TestTimeSpace.test_all_negative_raw_data">
-    <configuration name="Nosetests for test_time_space.TestTimeSpace.test_all_negative_raw_data" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Nosetests for test_map.TestMap">
+    <configuration name="Main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="tomo_v3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tomo" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tomo/Main_testing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests for test_map.TestMap" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -274,11 +311,11 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace.test_all_negative_raw_data&quot;" />
+      <option name="_new_target" value="&quot;test_map.TestMap&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_map.TestMap.test_bad_ilimits" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -289,11 +326,11 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline&quot;" />
+      <option name="_new_target" value="&quot;test_map.TestMap.test_bad_ilimits&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_rebin" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -304,22 +341,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace.test_bad_rebin&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests for test_time_space.TestTimeSpace.test_subtract_baseline_bad_data" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="tomo_v3" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace.test_subtract_baseline_bad_data&quot;" />
+      <option name="_new_target" value="&quot;test_map.TestMap.test_bad_jlimits&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -340,11 +362,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace.test_all_negative_raw_data" />
+        <item itemvalue="Python tests.Nosetests for test_map.TestMap" />
+        <item itemvalue="Python tests.Nosetests for test_map.TestMap.test_bad_jlimits" />
+        <item itemvalue="Python tests.Nosetests for test_map.TestMap.test_bad_ilimits" />
+        <item itemvalue="Python.Main_testing" />
         <item itemvalue="Python tests.Nosetests in test_time_space.py" />
-        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" />
-        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace.test_subtract_baseline_bad_data" />
-        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace.test_bad_rebin" />
       </list>
     </recent_temporary>
   </component>
@@ -358,20 +380,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00001" summary="Testing repos">
-      <created>1558339603695</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1558339603695</updated>
-    </task>
-    <task id="LOCAL-00002" summary="Testing repos">
-      <created>1558339704374</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1558339704374</updated>
     </task>
     <task id="LOCAL-00003" summary="tomo_action script for running tomography is now integrated in repos">
       <created>1558356634770</created>
@@ -702,39 +710,53 @@
       <option name="project" value="LOCAL" />
       <updated>1560522381605</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="Added negative tests for TimeSpace class">
+      <created>1560755901989</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1560755901990</updated>
+    </task>
+    <task id="LOCAL-00051" summary="Added assertions for MapInfo class&#10;&#10; - added more assertions for arrays in assertions module&#10; - added MapInfo exceptions in exceptions module&#10; - path - bug fix in TimeSpace">
+      <created>1560764657179</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1560764657179</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_rebin - 2019.06.14 at 17h 21m 46s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_rebin" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 36m 07s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_rebin - 2019.06.14 at 17h 22m 17s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_rebin" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 40m 54s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_subtract_baseline_bad_data - 2019.06.14 at 17h 22m 20s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_subtract_baseline_bad_data" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 41m 58s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_percentage_input_subtr_baseline - 2019.06.14 at 17h 27m 42s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 43m 15s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_percentage_input_subtr_baseline - 2019.06.14 at 17h 27m 56s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 45m 53s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_percentage_input_subtr_baseline - 2019.06.14 at 17h 28m 19s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 46m 42s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_percentage_input_subtr_baseline - 2019.06.14 at 17h 28m 35s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 47m 00s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_bad_percentage_input_subtr_baseline - 2019.06.14 at 17h 28m 58s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_bad_percentage_input_subtr_baseline" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 12h 48m 40s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_time_space_py - 2019.06.14 at 17h 30m 19s.xml">
-      <configuration name="Nosetests in test_time_space.py" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 14h 03m 49s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_time_space_TestTimeSpace_test_all_negative_raw_data - 2019.06.17 at 08h 59m 00s.xml">
-      <configuration name="Nosetests for test_time_space.TestTimeSpace.test_all_negative_raw_data" configurationId="tests" />
+    <history-entry file="Nosetests_for_test_map_TestMap_test_bad_jlimits - 2019.06.17 at 14h 17m 19s.xml">
+      <configuration name="Nosetests for test_map.TestMap.test_bad_jlimits" configurationId="tests" />
     </history-entry>
   </component>
   <component name="TodoView">
@@ -771,8 +793,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="c_reconstruct tested and working, for many cases&#10;&#10;  problem with cases where profile to be reconstructed is not 0" />
-    <MESSAGE value="reconstruct_c module now working equivalent to earlier python version." />
     <MESSAGE value="Removed input_v2.dat, hopefully git ignore will now work" />
     <MESSAGE value="Merged flags: &quot;analyze&quot; and &quot;show_picture&quot; to &quot;analyze&quot;" />
     <MESSAGE value="Added c++ version of longtrack.&#10;&#10; - c++ longtrack now only works in forward direction.&#10; - added function for testing c++ and numba longtrack separated." />
@@ -796,7 +816,9 @@
     <MESSAGE value="Added exception: UnequalArrayShapes" />
     <MESSAGE value="Added assertion for equal array length. Editing error messages." />
     <MESSAGE value="Added assertions and exceptions for time space.&#10;&#10; - checking that data-files contains data&#10; - the percentage of the data which the baseline is&#10;     calculated from is now a parameter. This parameter is asserted to &#10;     be a number from 0 to 1&#10; - checking that re-binned profile length is larger than 0&#10; - asserting that al of the profile is not zero, after the function:&#10;     negative_profiles_zero&#10; - asserting that tangentfoot_low is less than tangentfoot_up&#10; &#10; - added assertion: assert_array_not_equal()&#10; &#10; - removed test: test_subtract_baseline_bad_input_C500" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added assertions and exceptions for time space.&#10;&#10; - checking that data-files contains data&#10; - the percentage of the data which the baseline is&#10;     calculated from is now a parameter. This parameter is asserted to &#10;     be a number from 0 to 1&#10; - checking that re-binned profile length is larger than 0&#10; - asserting that al of the profile is not zero, after the function:&#10;     negative_profiles_zero&#10; - asserting that tangentfoot_low is less than tangentfoot_up&#10; &#10; - added assertion: assert_array_not_equal()&#10; &#10; - removed test: test_subtract_baseline_bad_input_C500" />
+    <MESSAGE value="Added negative tests for TimeSpace class" />
+    <MESSAGE value="Added assertions for MapInfo class&#10;&#10; - added more assertions for arrays in assertions module&#10; - added MapInfo exceptions in exceptions module&#10; - path - bug fix in TimeSpace" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added assertions for MapInfo class&#10;&#10; - added more assertions for arrays in assertions module&#10; - added MapInfo exceptions in exceptions module&#10; - path - bug fix in TimeSpace" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -818,50 +840,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="930">
-          <caret line="62" lean-forward="true" selection-start-line="62" selection-end-line="62" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
           <caret line="10" selection-start-line="10" selection-end-line="10" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_map.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="163" column="64" lean-forward="true" selection-start-line="163" selection-start-column="64" selection-end-line="163" selection-end-column="64" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-            <element signature="e#225#410#0" />
-            <element signature="e#460#1295#0" />
-            <element signature="e#1342#1853#0" />
-            <element signature="e#1910#2906#0" />
-            <element signature="e#2963#3559#0" />
-            <element signature="e#3606#4500#0" />
-            <element signature="e#4547#5867#0" />
-            <element signature="e#5907#6481#0" />
-            <element signature="e#6521#6826#0" />
-            <element signature="e#6872#7222#0" />
-            <element signature="e#7268#7610#0" />
           </folding>
         </state>
       </provider>
@@ -996,27 +980,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/C500values.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="34" selection-start-line="34" selection-end-line="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret column="10" selection-start-column="10" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="37" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="37" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1036,28 +1003,6 @@
           <caret line="7" column="4" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="4" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="113" selection-start-line="113" selection-end-line="113" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#13422#14052#0" />
-            <element signature="e#14107#14427#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/MapInfo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="216" selection-start-line="216" selection-end-line="216" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1093,40 +1038,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="75" column="24" selection-start-line="75" selection-start-column="24" selection-end-line="75" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-            <element signature="e#156#466#0" />
-            <element signature="e#565#875#0" />
-            <element signature="e#975#1286#0" />
-            <element signature="e#1838#2148#0" />
-            <element signature="e#2291#2601#0" />
-            <element signature="e#2736#3126#0" />
-            <element signature="e#3273#4279#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="492">
-          <caret line="62" selection-start-line="62" selection-end-line="62" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/resources/C500MidPhaseNoise/empty.dat" />
     <entry file="file://$PROJECT_DIR$/unit_tests/resources/empty.dat">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/unittest/case.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="265">
-          <caret line="614" selection-start-line="614" selection-end-line="614" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
@@ -1135,20 +1049,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
+    <entry file="file://$PROJECT_DIR$/tomo/Tomography.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5775">
-          <caret line="389" selection-start-line="389" selection-end-line="390" selection-end-column="41" />
+        <state relative-caret-position="215">
+          <caret line="172" column="30" selection-start-line="172" selection-start-column="25" selection-end-line="172" selection-end-column="30" />
           <folding>
-            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-16">
-          <caret line="124" column="25" lean-forward="true" selection-start-line="124" selection-start-column="25" selection-end-line="124" selection-end-column="25" />
+        <state relative-caret-position="-241">
+          <caret line="141" column="28" lean-forward="true" selection-start-line="141" selection-start-column="28" selection-end-line="141" selection-end-column="28" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
             <element signature="e#337#3843#0" />
@@ -1162,23 +1076,149 @@
             <element signature="e#9085#9571#0" />
             <element signature="e#9799#11037#0" />
             <element signature="e#11305#11603#0" />
-            <element signature="e#11756#12375#0" />
-            <element signature="e#12552#14654#0" />
-            <element signature="e#14919#15434#0" />
-            <element signature="e#15519#15611#0" />
-            <element signature="e#15701#16268#0" />
-            <element signature="e#16344#16888#0" />
-            <element signature="e#17002#17137#0" />
+            <element signature="e#11756#12387#0" />
+            <element signature="e#12564#14666#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="268" column="60" selection-start-line="268" selection-start-column="60" selection-end-line="268" selection-end-column="60" />
+        <state relative-caret-position="1816">
+          <caret line="203" column="62" selection-start-line="203" selection-start-column="62" selection-end-line="203" selection-end-column="62" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2700">
+          <caret line="180" column="29" lean-forward="true" selection-start-line="180" selection-start-column="29" selection-end-line="180" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1335">
+          <caret line="89" column="49" lean-forward="true" selection-start-line="89" selection-start-column="49" selection-end-line="89" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="17" column="8" selection-start-line="17" selection-start-column="8" selection-end-line="17" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="544">
+          <caret line="524" selection-start-line="524" selection-end-line="524" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#4931#5128#0" />
+            <element signature="e#5200#13273#0" />
+            <element signature="e#13422#14052#0" />
+            <element signature="e#14107#14427#0" />
+            <element signature="e#14543#14775#0" />
+            <element signature="e#14898#15428#0" />
+            <element signature="e#15487#15612#0" />
+            <element signature="e#15743#16031#0" />
+            <element signature="e#16210#16555#0" />
+            <element signature="e#16833#18226#0" />
+            <element signature="e#18584#21021#0" />
+            <element signature="e#21270#22233#0" />
+            <element signature="e#22455#23007#0" />
+            <element signature="e#23148#23795#0" />
+            <element signature="e#23911#24391#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="724">
+          <caret line="66" column="13" selection-start-line="66" selection-start-column="13" selection-end-line="66" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/C500values.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="8" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/unittest/case.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="265">
+          <caret line="614" selection-start-line="614" selection-end-line="614" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/MapInfo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="254">
+          <caret line="423" column="26" selection-start-line="423" selection-start-column="26" selection-end-line="423" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+            <element signature="e#7112#9661#0" />
+            <element signature="e#10106#12174#0" />
+            <element signature="e#12480#14706#0" />
+            <element signature="e#14884#15115#0" />
+            <element signature="e#15242#15352#0" />
+            <element signature="e#15434#15552#0" />
+            <element signature="e#15719#16172#0" />
+            <element signature="e#16756#17721#0" />
+            <element signature="e#17742#18143#0" />
+            <element signature="e#18432#19657#0" />
+            <element signature="e#19742#20245#0" />
+            <element signature="e#20334#23085#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="492">
+          <caret line="162" lean-forward="true" selection-start-line="162" selection-end-line="162" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_map.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="404">
+          <caret line="219" column="31" selection-start-line="219" selection-start-column="31" selection-end-line="219" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#225#410#0" />
+            <element signature="e#460#1295#0" />
+            <element signature="e#1342#1853#0" />
+            <element signature="e#1910#2906#0" />
+            <element signature="e#2963#3559#0" />
+            <element signature="e#3606#4500#0" />
+            <element signature="e#4547#5867#0" />
+            <element signature="e#5907#6481#0" />
+            <element signature="e#6521#6826#0" />
+            <element signature="e#6872#7222#0" />
+            <element signature="e#7268#7610#0" />
+            <element signature="e#7729#8760#0" />
+            <element signature="e#8802#9899#0" />
           </folding>
         </state>
       </provider>
