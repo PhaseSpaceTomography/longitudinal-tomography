@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
-from tomo.Tomography import Tomography
+from tomo.tomography import Tomography
 from unit_tests.C500values import C500
 
 

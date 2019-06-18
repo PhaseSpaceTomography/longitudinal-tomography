@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
-from tomo.Parameters import Parameters
+from tomo.parameters import Parameters
 from unit_tests.C500values import C500
 
 

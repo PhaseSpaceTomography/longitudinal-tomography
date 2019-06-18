@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Numeric import *
+from numeric import *
 
 
 class TestPhysics(unittest.TestCase):

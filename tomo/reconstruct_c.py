@@ -2,7 +2,7 @@ import numpy as np
 import time as tm
 import ctypes
 # import line_profiler
-from Physics import vrft
+from physics import vrft
 from numba import njit
 from numpy.ctypeslib import ndpointer
 

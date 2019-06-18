@@ -3,7 +3,7 @@ import logging
 import time as tm
 # from line_profiler import LineProfiler
 from numba import njit
-from Physics import vrft
+from physics import vrft
 
 
 """

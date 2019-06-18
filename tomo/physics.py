@@ -3,7 +3,7 @@
                     """
 import numpy as np
 from numba import njit
-from Numeric import newton
+from numeric import newton
 
 # Constants:
 C = 2.99792458e8

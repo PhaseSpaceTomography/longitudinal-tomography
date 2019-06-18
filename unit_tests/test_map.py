@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
-from tomo.MapInfo import MapInfo
-from tomo.Time_space import TimeSpace
-from tomo.Parameters import Parameters
+from tomo.map_info import MapInfo
+from tomo.time_space import TimeSpace
+from tomo.parameters import Parameters
 from unit_tests.C500values import C500
 
 

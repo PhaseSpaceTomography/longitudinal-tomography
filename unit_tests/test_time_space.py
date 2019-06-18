@@ -2,7 +2,7 @@ import unittest
 import warnings
 import numpy as np
 import numpy.testing as nptest
-from tomo.Time_space import TimeSpace
+from tomo.time_space import TimeSpace
 from unit_tests.C500values import C500
 
 noiseStruct_path = r"resources/noiseStructure2/"
