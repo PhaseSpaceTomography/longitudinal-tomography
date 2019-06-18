@@ -1,7 +1,8 @@
-from Physics import *
-from utils.assertions import TomoAssertions as ta
 import numpy as np
 import logging
+from Physics import *
+from utils.assertions import TomoAssertions as ta
+from utils.exceptions import *
 
 class MapInfo:
 
