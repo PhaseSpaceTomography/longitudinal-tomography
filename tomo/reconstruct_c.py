@@ -1,6 +1,8 @@
 import numpy as np
 import time as tm
 import ctypes
+from utils.assertions import TomoAssertions as ta
+from utils.exceptions import *
 # import line_profiler
 from physics import vrft
 from numba import njit
@@ -17,6 +19,10 @@ class ReconstructCpp:
         self.mapweights = []
         self.reversedweights = []
         self.fmlistlength = timespace.par.snpt**2
+
+        ta.assert_equal(self.mapinfo.jmin.shape, 'jmin',
+                        self.mapinfo.jmax.shape, ArrayLengthError,
+                        'jmin and jmax should have the same shape')
 
         tomolib = ctypes.CDLL("/home/cgrindhe/tomo_v3/tomo/cpp_files/tomolib.so")
 
@@ -92,9 +98,9 @@ class ReconstructCpp:
             # Initiating arrays.
             (maps, mapsi,
              mapsw) = self._init_arrays(tpar.profile_count,
-                                             tpar.profile_length,
-                                             needed_maps,
-                                             tpar.snpt**2)
+                                        tpar.profile_length,
+                                        needed_maps,
+                                        tpar.snpt**2)
 
             # Calculating first map, indexes and weight factors.
             nr_of_submaps = self.first_map(mi.jmin[film],
@@ -134,6 +140,7 @@ class ReconstructCpp:
                                                          xp, yp,
                                                          xpoints,
                                                          ypoints)
+
                 for profile in range(film + direction, endprofile, direction):
 
                     if tpar.self_field_flag:
@@ -187,19 +194,19 @@ class ReconstructCpp:
                                                       np.int32(tpar.h_num),
                                                       np.double(tpar.h_ratio))
 
-                    isOut = self.find_mapweight(xp,
-                                                mi.jmin[film],
-                                                mi.jmax[film],
-                                                maps[profile],
-                                                mapsi,
-                                                mapsw,
-                                                mi.imin[film],
-                                                mi.imax[film],
-                                                tpar.snpt ** 2,
-                                                tpar.profile_length,
-                                                tpar.snpt ** 2,
-                                                start_submap)
-                    print(str(profile) + ": " + str(isOut))
+                    is_out = self.find_mapweight(xp,
+                                                 mi.jmin[film],
+                                                 mi.jmax[film],
+                                                 maps[profile],
+                                                 mapsi,
+                                                 mapsw,
+                                                 mi.imin[film],
+                                                 mi.imax[film],
+                                                 tpar.snpt ** 2,
+                                                 tpar.profile_length,
+                                                 tpar.snpt ** 2,
+                                                 start_submap)
+                    print(str(profile) + ": " + str(is_out))
                     start_submap += nr_of_submaps
 
                 direction = -1
