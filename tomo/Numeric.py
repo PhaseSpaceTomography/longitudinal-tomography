@@ -22,7 +22,8 @@ def newton(f, df, x0, const_params, rf_turn,
                                  + str(epsilon))
 
 
-# Linear fitting
+# Linear fitting (from Numeric Recipies 3.ed)
+# Not used anymore, changed to np.polyfit
 def lin_fit(x, y, sig=None):
     if sig is not None:
 

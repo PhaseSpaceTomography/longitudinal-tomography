@@ -301,15 +301,18 @@ class TimeSpace:
         logging.info("findxat0: beam.ref.indx.: " + str(refprofile_index)
                      + ", threshold: " + str(threshold))
 
-        al, bl, _, _, _, _ = lin_fit(index_array[tangent_bin_low - 2:
-                                                 tangent_bin_low + 2],
-                                     profile[tangent_bin_low - 2:
-                                             tangent_bin_low + 2])
+        [bl, al] = np.polyfit(index_array[tangent_bin_low - 2:
+                                          tangent_bin_low + 2],
+                              profile[tangent_bin_low - 2:
+                                      tangent_bin_low + 2],
+                              deg=1)
 
-        au, bu, _, _, _, _ = lin_fit(index_array[tangent_bin_up - 1:
-                                                 tangent_bin_up + 3],
-                                     profile[tangent_bin_up - 1:
-                                             tangent_bin_up + 3])
+        [bu, au] = np.polyfit(index_array[tangent_bin_up - 1:
+                                          tangent_bin_up + 3],
+                              profile[tangent_bin_up - 1:
+                                      tangent_bin_up + 3],
+                              deg=1)
+
         tangentfoot_low = -1 * al / bl
         tangentfoot_up = -1 * au / bu
 

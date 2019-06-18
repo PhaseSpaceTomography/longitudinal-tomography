@@ -1,5 +1,4 @@
 import unittest
-import unittest.mock as mock
 import warnings
 import numpy as np
 import numpy.testing as nptest
@@ -180,10 +179,12 @@ class TestTimeSpace(unittest.TestCase):
         tan_up, tan_low = TimeSpace._calc_tangentfeet(
                             profiles[0], refprofile_index=0,
                             profile_length=87, threshold_value=0.15)
-        self.assertEqual(tan_low, 12.514238253440908,
-                         msg="Error in calculation of lower foot tangent")
-        self.assertEqual(tan_up, 69.1855852950661,
-                         msg="Error in calculation of lower foot tangent")
+        self.assertAlmostEqual(tan_low, 12.514238253440908,
+                               msg="Error in calculation of"
+                                   "lower foot tangent")
+        self.assertAlmostEqual(tan_up, 69.1855852950661,
+                               msg="Error in calculation of"
+                                   "lower foot tangent")
 
     def test_find_wraplength_C500(self):
         cv = TestTimeSpace.c500.values
