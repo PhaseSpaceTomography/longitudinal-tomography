@@ -1,9 +1,10 @@
 import logging
 import scipy.signal._savitzky_golay as savgol
+import numpy as np
 from utils.assertions import TomoAssertions as ta
 from utils.assertions import *
 from Parameters import Parameters
-from Physics import *
+import Physics
 from Numeric import newton
 
 
@@ -202,7 +203,7 @@ class TimeSpace:
     # Calculate the total charge in profile
     @staticmethod
     def total_profilecharge(ref_prof, dtbin, rebin, pickup_sens):
-        return np.sum(ref_prof) * dtbin / (rebin * e_UNIT * pickup_sens)
+        return np.sum(ref_prof) * dtbin / (rebin * Physics.e_UNIT * pickup_sens)
 
     def find_xat0(self, profiles, ref_profile_index, threshold_value=0.15):
         if self.par.xat0 < 0:
@@ -239,7 +240,7 @@ class TimeSpace:
         xstart_newt = self.par.phi0[thisturn] - self.par.bunch_phaselength / 2.0
 
         # phaselow and dPhaseLow are functions from Physics module
-        phil = newton(phase_low, dphase_low, xstart_newt,
+        phil = newton(Physics.phase_low, Physics.dphase_low, xstart_newt,
                       self.par, thisturn, 0.0001)
 
         fit_xat0 = (tangentfoot_low + (self.par.phi0[thisturn] - phil)

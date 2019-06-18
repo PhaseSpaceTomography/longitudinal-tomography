@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from Physics import *
+import Physics
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import *
 
@@ -157,7 +157,7 @@ class MapInfo:
                         phi12, time_at_turn, phases, turn):
         delta_e_known = 0.0
         if demax < 0.0:
-            if vrft(vrf2, vrf2dot, turn) != 0.0:
+            if Physics.vrft(vrf2, vrf2dot, turn) != 0.0:
                 # finding maximum energy starting from lowest phase
                 # 	and uppermost phase respectively
                 energies_low = self.trajectoryheight(phases,
@@ -196,7 +196,7 @@ class MapInfo:
                 return (beta0[turn]
                         * np.sqrt(e0[turn]
                                   * q
-                                  * vrft(vrf1, vrf1dot, turn)
+                                  * Physics.vrft(vrf1, vrf1dot, turn)
                                   * np.cos(phi0[turn])
                                   / (2 * np.pi * h_num * eta0[turn]))
                         * dtbin
@@ -437,23 +437,18 @@ class MapInfo:
                          h_ratio, phi12, time_at_turn, turn_now):
         temp1 = delta_e_known**2
         temp2 = 2.0 * q / float(c1[turn_now])
-        temp3 = (vrft(vrf1, vrf1dot, turn_now)
+        temp3 = (Physics.vrft(vrf1, vrf1dot, turn_now)
                  * (np.cos(phi) - np.cos(phi_known))
-                 + vrft(vrf2, vrf2dot, turn_now)
+                 + Physics.vrft(vrf2, vrf2dot, turn_now)
                  * (np.cos(h_ratio * (phi - phi12))
                     - np.cos(h_ratio
                              * (phi_known - phi12)))
                  / h_ratio
                  + (phi - phi_known)
-                 * short_rf_voltage_formula(phi0[turn_now],
-                                            vrf1,
-                                            vrf1dot,
-                                            vrf2,
-                                            vrf2dot,
-                                            h_ratio,
-                                            phi12,
-                                            time_at_turn,
-                                            turn_now))
+                 * Physics.short_rf_voltage_formula(
+                            phi0[turn_now], vrf1, vrf1dot, vrf2, vrf2dot,
+                            h_ratio, phi12, time_at_turn, turn_now))
+
         ans = temp1 + temp2 * temp3
 
         if np.size(ans) > 1:

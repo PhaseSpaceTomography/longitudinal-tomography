@@ -1,7 +1,11 @@
 import logging
-from Physics import *
-from Numeric import *
+import Physics
+import numpy as np
+from Numeric import newton
 from utils.assertions import TomoAssertions as ta
+from utils.exceptions import (InputError,
+                              MachineParameterError,
+                              SpaceChargeParameterError)
 
 
 class Parameters:
@@ -269,7 +273,7 @@ class Parameters:
         self.all_data = self.framecount * self.framelength
 
         # Find self field coefficient for each profile
-        self.sfc = calc_self_field_coeffs(self)
+        self.sfc = Physics.calc_self_field_coeffs(self)
 
     # Fills up arrays with zeroes, ready to use further.
     # + 1 to both include turn#0 and the very last turn.
@@ -287,10 +291,11 @@ class Parameters:
     def _array_initial_values(self):
         i0 = (self.machine_ref_frame - 1) * self.dturns
         self.time_at_turn[i0] = 0
-        self.e0[i0] = b_to_e(self)
-        self.beta0[i0] = lorenz_beta(self, i0)
-        phi_lower, phi_upper = find_phi_lower_upper(self, i0)
-        self.phi0[i0] = find_synch_phase(self, i0, phi_lower, phi_upper)
+        self.e0[i0] = Physics.b_to_e(self)
+        self.beta0[i0] = Physics.lorenz_beta(self, i0)
+        phi_lower, phi_upper = Physics.find_phi_lower_upper(self, i0)
+        self.phi0[i0] = Physics.find_synch_phase(self, i0, phi_lower,
+                                                 phi_upper)
         return i0
 
     # Filling up the rest of the parameter arrays:
@@ -303,14 +308,14 @@ class Parameters:
         for i in range(i0 + 1, all_turns + 1):
             self.time_at_turn[i] = (self.time_at_turn[i - 1]
                                     + 2*np.pi*self.mean_orbit_rad
-                                    / (self.beta0[i - 1]*C))
+                                    / (self.beta0[i - 1]*Physics.C))
 
-            self.phi0[i] = newton(rf_voltage, drf_voltage,
+            self.phi0[i] = newton(Physics.rf_voltage, Physics.drf_voltage,
                                   self.phi0[i - 1], self, i, 0.001)
 
             self.e0[i] = (self.e0[i - 1]
                           + self.q
-                          * short_rf_voltage_formula(
+                          * Physics.short_rf_voltage_formula(
                                 self.phi0[i], self.vrf1, self.vrf1dot,
                                 self.vrf2, self.vrf2dot, self.h_ratio,
                                 self.phi12, self.time_at_turn, i))
@@ -320,24 +325,25 @@ class Parameters:
         for i in range(i0 - 1, 0, -1):
             self.e0[i] = (self.e0[i + i]
                           - self.q
-                          * short_rf_voltage_formula(self.phi0[i], self, i))
+                          * Physics.short_rf_voltage_formula(self.phi0[i],
+                                                             self, i))
             self.beta0[i] = np.sqrt(1.0 * -(self.e_rest/self.e0[i])**2)
             self.deltaE0[i] = self.e0[i + 1] - self.e0[i]
             self.time_at_turn[i] = (self.time_at_turn[i + 1]
                                     - 2 * np.pi * self.mean_orbit_rad
-                                    / (self.beta0[i] * C))
-            self.phi0[i] = newton(rf_voltage, drf_voltage,
+                                    / (self.beta0[i] * Physics.C))
+            self.phi0[i] = newton(Physics.rf_voltage, Physics.drf_voltage,
                                   self.phi0[i + 1], self, i, 0.001)
 
         # Calculate phase slip factor at each turn
-        self.eta0 = phase_slip_factor(self)
+        self.eta0 = Physics.phase_slip_factor(self)
 
         # Calculates c1 for each turn
         # TODO: what is c1?
-        self.c1 = find_c1(self)
+        self.c1 = Physics.find_c1(self)
 
         # Calculate revolution frequency at each turn
-        self.omega_rev0 = revolution_freq(self)
+        self.omega_rev0 = Physics.revolution_freq(self)
 
     # Find profile_mini and profile_maxi
     def _find_imin_imax(self):
