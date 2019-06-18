@@ -1,6 +1,4 @@
 import sys
-import numpy as np
-import scipy.special
 from utils.exceptions import *
 
 
