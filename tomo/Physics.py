@@ -1,8 +1,9 @@
 """
     Physics formulas
                     """
-from Numeric import *
+import numpy as np
 from numba import njit
+from Numeric import newton
 
 # Constants:
 C = 2.99792458e8
@@ -75,7 +76,7 @@ def short_rf_voltage_formula(phi, vrf1, vrf1dot, vrf2, vrf2dot,
     return temp
 
 # Calculates the RF peak voltage at turn rf_turn
-#   assuming a linear voltage function vrft=vrfdot*time+vrf.
+#   assuming a linear voltage function
 #   time=0 at machine_ref_frame.
 @njit
 def vrft(vrf, vrfDot, turn_time):
@@ -173,7 +174,3 @@ def dphase_low(phase, parameters, rf_turn):
                 - np.sin(parameters.h_ratio * (phase - parameters.phi12)))
             - parameters.vrf1
             * (np.sin(phase + parameters.bunch_phaselength) - np.sin(phase)))
-
-
-
-
