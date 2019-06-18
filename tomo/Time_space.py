@@ -301,18 +301,15 @@ class TimeSpace:
         logging.info("findxat0: beam.ref.indx.: " + str(refprofile_index)
                      + ", threshold: " + str(threshold))
 
-        al, bl, sigal, sigbl, chil, ql = lin_fit(index_array[
-                                                  tangent_bin_low - 2:
-                                                  tangent_bin_low + 2],
-                                                 profile[
-                                                  tangent_bin_low - 2:
-                                                  tangent_bin_low + 2])
-        au, bu, sigau, sigbu, chiu, qu = lin_fit(index_array[
-                                                  tangent_bin_up - 1:
-                                                  tangent_bin_up + 3],
-                                                 profile[
-                                                  tangent_bin_up - 1:
-                                                  tangent_bin_up + 3])
+        al, bl, _, _, _, _ = lin_fit(index_array[tangent_bin_low - 2:
+                                                 tangent_bin_low + 2],
+                                     profile[tangent_bin_low - 2:
+                                             tangent_bin_low + 2])
+
+        au, bu, _, _, _, _ = lin_fit(index_array[tangent_bin_up - 1:
+                                                 tangent_bin_up + 3],
+                                     profile[tangent_bin_up - 1:
+                                             tangent_bin_up + 3])
         tangentfoot_low = -1 * al / bl
         tangentfoot_up = -1 * au / bu
 
