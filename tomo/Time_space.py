@@ -3,7 +3,7 @@ import scipy.signal._savitzky_golay as savgol
 from utils.assertions import TomoAssertions as ta
 from Parameters import Parameters
 from Physics import *
-from Numeric import lin_fit, newton
+from Numeric import newton
 
 
 # Handles import and processing of data in time domain.

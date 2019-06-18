@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/unit_tests/test_numeric.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/Numeric.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Numeric.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/Time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/Time_space.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit_tests/test_time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_time_space.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,10 +19,11 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tomo/Numeric.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="960">
-                  <caret line="64" selection-start-line="64" selection-end-line="64" />
+                <state relative-caret-position="390">
+                  <caret line="78" column="36" selection-start-line="78" selection-start-column="36" selection-end-line="78" selection-end-column="36" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
+                    <element signature="e#843#1989#0" />
                   </folding>
                 </state>
               </provider>
@@ -32,7 +33,7 @@
             <entry file="file://$PROJECT_DIR$/tomo/Physics.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="503">
-                  <caret line="161" column="24" lean-forward="true" selection-start-line="161" selection-start-column="24" selection-end-line="161" selection-end-column="24" />
+                  <caret line="161" column="24" selection-start-line="161" selection-start-column="24" selection-end-line="161" selection-end-column="24" />
                   <folding>
                     <element signature="e#49#70#0" expanded="true" />
                   </folding>
@@ -43,8 +44,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="194">
-                  <caret line="303" column="33" lean-forward="true" selection-start-line="303" selection-start-column="33" selection-end-line="303" selection-end-column="33" />
+                <state relative-caret-position="-528">
+                  <caret line="324" column="57" selection-start-line="324" selection-start-column="57" selection-end-line="324" selection-end-column="57" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -57,14 +58,29 @@
       <split-second>
         <leaf>
           <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="210">
+                  <caret line="14" column="16" selection-start-line="14" selection-start-column="16" selection-end-line="14" selection-end-column="16" />
+                  <folding>
+                    <element signature="e#0#15#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/unit_tests/test_numeric.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="240">
-                  <caret line="23" column="41" selection-start-line="23" selection-start-column="41" selection-end-line="23" selection-end-column="41" />
+                <state relative-caret-position="270">
+                  <caret line="32" selection-start-line="32" selection-end-line="32" />
                   <folding>
                     <element signature="e#0#15#0" expanded="true" />
                     <element signature="e#154#273#0" />
                     <element signature="e#331#510#0" />
+                    <element signature="e#542#787#0" />
+                    <element signature="e#229#250#0" />
+                    <element signature="e#330#345#0" />
                   </folding>
                 </state>
               </provider>
@@ -166,17 +182,17 @@
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
         <option value="$PROJECT_DIR$/tomo/compile.py" />
-        <option value="$PROJECT_DIR$/tomo/Numeric.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
         <option value="$PROJECT_DIR$/tomo/Parameters.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
         <option value="$PROJECT_DIR$/tomo/MapInfo.py" />
         <option value="$PROJECT_DIR$/tomo/utils/assertions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
-        <option value="$PROJECT_DIR$/tomo/Time_space.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_numeric.py" />
+        <option value="$PROJECT_DIR$/tomo/Time_space.py" />
+        <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
+        <option value="$PROJECT_DIR$/tomo/Numeric.py" />
       </list>
     </option>
   </component>
@@ -248,7 +264,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests for test_numeric.TestPhysics.test_linear_fit">
+  <component name="RunManager" selected="Python.Main_testing">
     <configuration name="Main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -285,21 +301,6 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_numeric.TestPhysics.test_newton_basic" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="tomo_v3" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_numeric.TestPhysics.test_newton_basic&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="Nosetests for test_numeric.TestPhysics.test_newton_iter_limit" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -330,13 +331,28 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="Nosetests in test_time_space.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="tomo_v3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/unit_tests/test_time_space.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests for test_numeric.TestPhysics.test_linear_fit" />
         <item itemvalue="Python.Main_testing" />
+        <item itemvalue="Python tests.Nosetests in test_time_space.py" />
+        <item itemvalue="Python tests.Nosetests for test_numeric.TestPhysics.test_linear_fit" />
         <item itemvalue="Python tests.Nosetests for test_numeric.TestPhysics.test_newton_precision" />
         <item itemvalue="Python tests.Nosetests for test_numeric.TestPhysics.test_newton_iter_limit" />
-        <item itemvalue="Python tests.Nosetests for test_numeric.TestPhysics.test_newton_basic" />
       </list>
     </recent_temporary>
   </component>
@@ -350,20 +366,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00004" summary="Now making sure that working_dir exist.&#10;&#10;Deleted tmp folder in tomo">
-      <created>1558357529562</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1558357529562</updated>
-    </task>
-    <task id="LOCAL-00005" summary="Now making sure that working_dir exist.&#10;&#10;Deleted tmp folder in tomo">
-      <created>1558357687372</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1558357687372</updated>
     </task>
     <task id="LOCAL-00006" summary="Git now ignores .dat, .data nd .npy files">
       <created>1558357823592</created>
@@ -694,16 +696,24 @@
       <option name="project" value="LOCAL" />
       <updated>1560774218881</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="Added tests for numeric module">
+      <created>1560845382274</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1560845382275</updated>
+    </task>
+    <task id="LOCAL-00054" summary="Changed lin fit function from Numeric Recipes to np.polyfit&#10;&#10;  also changed one test for TimeSpace to assertALMOSTequal">
+      <created>1560847497205</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1560847497205</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_numeric_TestPhysics_test_newton_precision - 2019.06.18 at 09h 49m 49s.xml">
-      <configuration name="Nosetests for test_numeric.TestPhysics.test_newton_precision" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_numeric_TestPhysics_test_linear_fit - 2019.06.18 at 10h 00m 57s.xml">
-      <configuration name="Nosetests for test_numeric.TestPhysics.test_linear_fit" configurationId="tests" />
-    </history-entry>
     <history-entry file="Nosetests_for_test_numeric_TestPhysics_test_linear_fit - 2019.06.18 at 10h 02m 35s.xml">
       <configuration name="Nosetests for test_numeric.TestPhysics.test_linear_fit" configurationId="tests" />
     </history-entry>
@@ -728,6 +738,12 @@
     <history-entry file="Nosetests_for_test_numeric_TestPhysics_test_linear_fit - 2019.06.18 at 10h 08m 34s.xml">
       <configuration name="Nosetests for test_numeric.TestPhysics.test_linear_fit" configurationId="tests" />
     </history-entry>
+    <history-entry file="Nosetests_in_test_time_space_py - 2019.06.18 at 10h 36m 52s.xml">
+      <configuration name="Nosetests in test_time_space.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_time_space_py - 2019.06.18 at 10h 38m 34s.xml">
+      <configuration name="Nosetests in test_time_space.py" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -742,12 +758,12 @@
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.36008024" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.36008024" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" weight="0.30792376" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -763,8 +779,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Merged flags: &quot;analyze&quot; and &quot;show_picture&quot; to &quot;analyze&quot;" />
-    <MESSAGE value="Added c++ version of longtrack.&#10;&#10; - c++ longtrack now only works in forward direction.&#10; - added function for testing c++ and numba longtrack separated." />
     <MESSAGE value="Very small changes" />
     <MESSAGE value="A tiny bit of optimization" />
     <MESSAGE value="Optimizing" />
@@ -788,7 +802,9 @@
     <MESSAGE value="Added negative tests for TimeSpace class" />
     <MESSAGE value="Added assertions for MapInfo class&#10;&#10; - added more assertions for arrays in assertions module&#10; - added MapInfo exceptions in exceptions module&#10; - path - bug fix in TimeSpace" />
     <MESSAGE value="Changes in array assertions, written negative tests for MapInfo&#10;&#10; - Minor changes in TimeSpace testing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changes in array assertions, written negative tests for MapInfo&#10;&#10; - Minor changes in TimeSpace testing" />
+    <MESSAGE value="Added tests for numeric module" />
+    <MESSAGE value="Changed lin fit function from Numeric Recipes to np.polyfit&#10;&#10;  also changed one test for TimeSpace to assertALMOSTequal" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed lin fit function from Numeric Recipes to np.polyfit&#10;&#10;  also changed one test for TimeSpace to assertALMOSTequal" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -797,11 +813,6 @@
           <url>file://$PROJECT_DIR$/tomo_action/system_handling.py</url>
           <line>138</line>
           <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tomo/Numeric.py</url>
-          <line>64</line>
-          <option name="timeStamp" value="39" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1145,30 +1156,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="579">
-          <caret line="203" column="62" selection-start-line="203" selection-start-column="62" selection-end-line="203" selection-end-column="62" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Physics.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="503">
-          <caret line="161" column="24" lean-forward="true" selection-start-line="161" selection-start-column="24" selection-end-line="161" selection-end-column="24" />
+          <caret line="161" column="24" selection-start-line="161" selection-start-column="24" selection-end-line="161" selection-end-column="24" />
           <folding>
             <element signature="e#49#70#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_numeric.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="32" selection-start-line="32" selection-end-line="32" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#154#273#0" />
+            <element signature="e#331#510#0" />
+            <element signature="e#542#787#0" />
+            <element signature="e#229#250#0" />
+            <element signature="e#330#345#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pycharm/teamcity/diff_tools.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="203">
+          <caret line="37" selection-start-line="37" selection-end-line="37" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Time_space.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="303" column="33" lean-forward="true" selection-start-line="303" selection-start-column="33" selection-end-line="303" selection-end-column="33" />
+        <state relative-caret-position="-528">
+          <caret line="324" column="57" selection-start-line="324" selection-start-column="57" selection-end-line="324" selection-end-column="57" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -1177,22 +1200,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Numeric.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="960">
-          <caret line="64" selection-start-line="64" selection-end-line="64" />
+        <state relative-caret-position="390">
+          <caret line="78" column="36" selection-start-line="78" selection-start-column="36" selection-end-line="78" selection-end-column="36" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
+            <element signature="e#843#1989#0" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_numeric.py">
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="23" column="41" selection-start-line="23" selection-start-column="41" selection-end-line="23" selection-end-column="41" />
+        <state relative-caret-position="210">
+          <caret line="14" column="16" selection-start-line="14" selection-start-column="16" selection-end-line="14" selection-end-column="16" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
-            <element signature="e#154#273#0" />
-            <element signature="e#331#510#0" />
           </folding>
         </state>
       </provider>
