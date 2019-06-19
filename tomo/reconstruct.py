@@ -3,7 +3,7 @@ import logging
 import time as tm
 # from line_profiler import LineProfiler
 from numba import njit
-from Physics import vrft
+from physics import vrft
 
 
 """
@@ -85,7 +85,7 @@ in relation to the gain achieved from it. My solution
 """
 
 
-class Reconstruct:
+class Reconstruct:  # pragma: no cover
 
     def __init__(self, timespace, mapinfo):
         self.timespace = timespace

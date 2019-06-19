@@ -1,7 +1,8 @@
 import unittest
+import warnings
 import numpy as np
 import numpy.testing as nptest
-from tomo.Time_space import TimeSpace
+from tomo.time_space import TimeSpace
 from unit_tests.C500values import C500
 
 noiseStruct_path = r"resources/noiseStructure2/"
@@ -31,19 +32,6 @@ class TestTimeSpace(unittest.TestCase):
                                            cv["init_profile_length"])
         nptest.assert_almost_equal(data, comparison_data,
                                    err_msg="Error in calculation of baseline")
-
-    def test_subtract_baseline_bad_input_C500(self):
-        cv = TestTimeSpace.c500.values
-        with self.assertRaises(AssertionError):
-            data = []
-            _ = TimeSpace.subtract_baseline(data,
-                                            cv["frame_skipcount"],
-                                            cv["beam_ref_frame"],
-                                            cv["frame_length"],
-                                            cv["preskip_length"],
-                                            cv["init_profile_length"])
-        self.assertTrue("No data found, unable to calculate baseline",
-                        msg="Unexpected behaviour when input data = []")
 
     # Testing conversion from raw-data to finished profile
     def test_rawdata_to_profiles_C500(self):
@@ -191,10 +179,12 @@ class TestTimeSpace(unittest.TestCase):
         tan_up, tan_low = TimeSpace._calc_tangentfeet(
                             profiles[0], refprofile_index=0,
                             profile_length=87, threshold_value=0.15)
-        self.assertEqual(tan_low, 12.514238253440908,
-                         msg="Error in calculation of lower foot tangent")
-        self.assertEqual(tan_up, 69.1855852950661,
-                         msg="Error in calculation of lower foot tangent")
+        self.assertAlmostEqual(tan_low, 12.514238253440908,
+                               msg="Error in calculation of"
+                                   "lower foot tangent")
+        self.assertAlmostEqual(tan_up, 69.1855852950661,
+                               msg="Error in calculation of"
+                                   "lower foot tangent")
 
     def test_find_wraplength_C500(self):
         cv = TestTimeSpace.c500.values
@@ -226,15 +216,57 @@ class TestTimeSpace(unittest.TestCase):
         self.assertEqual(TimeSpace._find_yat0(205), 102.5,
                          msg="Error in calculation of yat0")
 
-    def test_filter(self):
+    # def test_filter(self):
+    #     # To be written
+    #     pass
 
-        # To be written
-        pass
+    # def test_calc_self_field(self):
+    #     # To be written
+    #     pass
 
-    def test_calc_self_field(self):
+    # Negative tests
+    def test_subtract_baseline_bad_data(self):
+        with self.assertRaises(Exception):
+            warnings.filterwarnings("ignore")
+            TimeSpace.get_indata_txt('resources/empty.dat', '')
 
-        # To be written
-        pass
+    def test_bad_rebin(self):
+        ca = TestTimeSpace.c500.arrays
+        cv = TestTimeSpace.c500.values
+        bad_rebin = cv["init_profile_length"] + 2
+
+        with self.assertRaises(Exception):
+            _, _ = TimeSpace.rebin(ca["raw_profiles"], bad_rebin,
+                                   cv["init_profile_length"],
+                                   cv["profile_count"])
+
+    def test_bad_percentage_input_subtr_baseline(self):
+        path = TestTimeSpace.c500.path
+        cv = TestTimeSpace.c500.values
+        data = TimeSpace.get_indata_txt("pipe",
+                                        path + "C500MidPhaseNoise.dat")
+        with self.assertRaises(Exception):
+            _ = TimeSpace.subtract_baseline(data,
+                                            cv["frame_skipcount"],
+                                            cv["beam_ref_frame"],
+                                            cv["frame_length"],
+                                            cv["preskip_length"],
+                                            cv["init_profile_length"],
+                                            percentage=-0.01)
+        with self.assertRaises(Exception):
+            _ = TimeSpace.subtract_baseline(data,
+                                            cv["frame_skipcount"],
+                                            cv["beam_ref_frame"],
+                                            cv["frame_length"],
+                                            cv["preskip_length"],
+                                            cv["init_profile_length"],
+                                            percentage=1.01)
+
+    def test_all_negative_raw_data(self):
+        negative_array = -np.ones(100)
+        with self.assertRaises(Exception):
+            TimeSpace.negative_profiles_zero(negative_array)
+
 
 if __name__ == '__main__':
     unittest.main()

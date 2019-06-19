@@ -1,7 +1,9 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
-from tomo.MapInfo import MapInfo
+from tomo.map_info import MapInfo
+from tomo.time_space import TimeSpace
+from tomo.parameters import Parameters
 from unit_tests.C500values import C500
 
 
@@ -184,6 +186,68 @@ class TestMap(unittest.TestCase):
 
         nptest.assert_equal(allbin_max, cv["allbin_max"],
                             err_msg="Find allbin_max function failed")
+
+    def test_bad_ilimits(self):
+        ts = TimeSpace.__new__(TimeSpace)
+        ts.par = Parameters.__new__(Parameters)
+
+        ts.par.filmstart = self.c500.values['filmstart']
+        ts.par.filmstop = self.c500.values['filmstop']
+        ts.par.filmstep = self.c500.values['filmstep']
+        ts.par.profile_length = self.c500.values['reb_profile_length']
+
+        mi = MapInfo.__new__(MapInfo)
+        mi.jmin = np.array([self.c500.arrays['jmin']])
+        mi.jmax = np.array([self.c500.arrays['jmax']])
+
+        # Too low imin
+        mi.imin = np.array([-1])
+        mi.imax = self.c500.arrays['imax']
+        with self.assertRaises(Exception):
+            mi._assert_correct_arrays(ts)
+
+        # Too low imax
+        mi.imin = self.c500.arrays['imin']
+        mi.imax = np.array([1])
+        with self.assertRaises(Exception):
+            mi._assert_correct_arrays(ts)
+
+        mi.imin = self.c500.arrays['imin']
+        mi.imax = np.array([self.c500.arrays['jmax'].size + 1])
+        with self.assertRaises(Exception):
+            mi._assert_correct_arrays(ts)
+
+    def test_bad_jlimits(self):
+        ts = TimeSpace.__new__(TimeSpace)
+        ts.par = Parameters.__new__(Parameters)
+
+        ts.par.filmstart = self.c500.values['filmstart']
+        ts.par.filmstop = self.c500.values['filmstop']
+        ts.par.filmstep = self.c500.values['filmstep']
+        ts.par.profile_length = self.c500.values['reb_profile_length']
+
+        mi = MapInfo.__new__(MapInfo)
+        mi.jmin = np.array([self.c500.arrays['jmin']])
+        mi.jmax = np.array([self.c500.arrays['jmax']])
+        mi.imin = self.c500.arrays['imin']
+        mi.imax = self.c500.arrays['imax']
+
+        # Too low jmin
+        mi.jmin[0, 100] = -3
+        with self.assertRaises(Exception):
+            mi._assert_correct_arrays(ts)
+        mi.jmin = np.array([self.c500.arrays['jmin']])
+
+        # Too low jmax
+        mi.jmax[0, 5] = 50
+        with self.assertRaises(Exception):
+            mi._assert_correct_arrays(ts)
+        mi.jmax = np.array([self.c500.arrays['jmax']])
+
+        # Too high jmax
+        mi.jmax[0, 177] = ts.par.profile_length + 1
+        with self.assertRaises(Exception):
+            mi._assert_correct_arrays(ts)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
-from Physics import *
 import numpy as np
 import logging
+import physics
+from utils.assertions import TomoAssertions as ta
+from utils.exceptions import *
 
 class MapInfo:
 
@@ -41,12 +43,13 @@ class MapInfo:
                                 timespace.par.filmstep,
                                 timespace.par.profile_mini,
                                 timespace.par.profile_maxi)
+        self._assert_correct_arrays(timespace)
 
     # This procedure calculates and sets the limits
     # 	in i (phase) and j (energy).
     # The i-j coordinate system is the one used locally
     # 	(reconstructed phase space).
-    # acts as "Main function" for this class
+    # This is the main function of the class
     def _find_ijlimits(self, beam_ref_frame, dturns, profile_length,
                        full_pp_flag, x_origin, dtbin, h_num, omega_rev0,
                        vrf1, vrf1dot, vrf2, vrf2dot, yat0, c1, q, e0,
@@ -87,6 +90,8 @@ class MapInfo:
                                      phases,
                                      turn_now)
 
+        ta.assert_greater(dEbin, 'dEbin', 0, EnergyBinningError)
+
         if full_pp_flag == 1:
             # Calculates limits for tracking all pixels
             (jmin,
@@ -123,6 +128,8 @@ class MapInfo:
                                                           phi12,
                                                           time_at_turn)
 
+
+
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
         (jmin,
@@ -150,7 +157,7 @@ class MapInfo:
                         phi12, time_at_turn, phases, turn):
         delta_e_known = 0.0
         if demax < 0.0:
-            if vrft(vrf2, vrf2dot, turn) != 0.0:
+            if physics.vrft(vrf2, vrf2dot, turn) != 0.0:
                 # finding maximum energy starting from lowest phase
                 # 	and uppermost phase respectively
                 energies_low = self.trajectoryheight(phases,
@@ -189,7 +196,7 @@ class MapInfo:
                 return (beta0[turn]
                         * np.sqrt(e0[turn]
                                   * q
-                                  * vrft(vrf1, vrf1dot, turn)
+                                  * physics.vrft(vrf1, vrf1dot, turn)
                                   * np.cos(phi0[turn])
                                   / (2 * np.pi * h_num * eta0[turn]))
                         * dtbin
@@ -304,6 +311,8 @@ class MapInfo:
             jmax[i] = min([jmax_up[i], jmax_up[i + 1],
                            jmax_low[i], jmax_low[i + 1],
                            profile_length])
+
+
         return jmax
 
     # Function for finding jmin for each bin in profile
@@ -360,12 +369,14 @@ class MapInfo:
                 jmin[film, :] = np.ceil(2.0 * yat0 - jmax[film, :] + 0.5)
             else:
                 imin[film] = allbin_min[film]
+
             if profile_maxi < allbin_max[film] or full_pp_flag:
                 imax[film] = profile_maxi
                 jmax[film, profile_maxi: profile_length] = np.floor(yat0)
                 jmin[film, :] = np.ceil(2.0 * yat0 - jmax[film, :] + 0.5)
             else:
                 imax[film] = allbin_max[film]
+
         return jmin, jmax, imin, imax
 
     # Returns an array of phases for the given turn
@@ -384,6 +395,41 @@ class MapInfo:
                       * omega_rev0_at_turn)
         return phases
 
+    def _assert_correct_arrays(self, ts):
+        for film in range(ts.par.filmstart - 1,
+                          ts.par.filmstop,
+                          ts.par.filmstep):
+
+            # Testing imin and imax
+            ta.assert_inrange(self.imin[film], 'imin', 0, self.imax[film],
+                              PhaseLimitsError,
+                              f'imin and imax out of bounds '
+                              f'at film: {film}')
+            ta.assert_less_or_equal(self.imax[film], 'imax',
+                                    self.jmax[film].size,
+                                    PhaseLimitsError,
+                                    f'imin and imax out of bounds '
+                                    f'at film: {film}')
+
+            # Testing jmin and jmax
+            ta.assert_array_in_range(self.jmin[film,
+                                               self.imin[film]:
+                                               self.imax[film]], 0,
+                                     self.jmax[film,
+                                               self.imin[film]:
+                                               self.imax[film]],
+                                     EnergyLimitsError,
+                                     msg=f'jmin and jmax out of bounds '
+                                         f'at film: {film}',
+                                     index_offset=self.imin[film])
+            ta.assert_array_less_eq(self.jmax[film,
+                                              self.imin[film]:
+                                              self.imax[film]],
+                                    ts.par.profile_length,
+                                    EnergyLimitsError,
+                                    f'jmin and jmax out of bounds '
+                                    f'at film: {film}')
+
     # This is a trajectory height calculator given a phase and energy.
     @staticmethod
     def trajectoryheight(phi, phi_known, delta_e_known, q, c1,
@@ -391,23 +437,18 @@ class MapInfo:
                          h_ratio, phi12, time_at_turn, turn_now):
         temp1 = delta_e_known**2
         temp2 = 2.0 * q / float(c1[turn_now])
-        temp3 = (vrft(vrf1, vrf1dot, turn_now)
+        temp3 = (physics.vrft(vrf1, vrf1dot, turn_now)
                  * (np.cos(phi) - np.cos(phi_known))
-                 + vrft(vrf2, vrf2dot, turn_now)
+                 + physics.vrft(vrf2, vrf2dot, turn_now)
                  * (np.cos(h_ratio * (phi - phi12))
                     - np.cos(h_ratio
                              * (phi_known - phi12)))
                  / h_ratio
                  + (phi - phi_known)
-                 * short_rf_voltage_formula(phi0[turn_now],
-                                            vrf1,
-                                            vrf1dot,
-                                            vrf2,
-                                            vrf2dot,
-                                            h_ratio,
-                                            phi12,
-                                            time_at_turn,
-                                            turn_now))
+                 * physics.short_rf_voltage_formula(
+                            phi0[turn_now], vrf1, vrf1dot, vrf2, vrf2dot,
+                            h_ratio, phi12, time_at_turn, turn_now))
+
         ans = temp1 + temp2 * temp3
 
         if np.size(ans) > 1:

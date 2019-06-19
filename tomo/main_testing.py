@@ -1,10 +1,10 @@
 import logging
 import time as tm
-from Time_space import TimeSpace
-from MapInfo import MapInfo
-from Reconstruct import Reconstruct
-from reconstruct_c import Creconstruct
-from Tomography import Tomography
+from time_space import TimeSpace
+from map_info import MapInfo
+from reconstruct import Reconstruct
+from reconstruct_c import ReconstructCpp
+from tomography import Tomography
 logging.basicConfig(level=logging.DEBUG)
 PARAMETER_FILE = r"../tomo_action/input_v2.dat"
 WORKING_DIR = r"../tomo_action/tmp/"
@@ -20,8 +20,7 @@ mi.write_jmax_tofile(ts, mi, WORKING_DIR)
 mi.write_plotinfo_tofile(ts, mi, WORKING_DIR)
 
 # rec = Reconstruct(ts, mi)
-rec = Creconstruct(ts, mi)
-# rec.test_mw()
+rec = ReconstructCpp(ts, mi)
 
 t0 = tm.time()
 rec.reconstruct()

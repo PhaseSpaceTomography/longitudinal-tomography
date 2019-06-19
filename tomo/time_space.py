@@ -1,8 +1,12 @@
 import logging
 import scipy.signal._savitzky_golay as savgol
-from Parameters import Parameters
-from Physics import *
-from Numeric import lin_fit, newton
+import numpy as np
+from utils.assertions import TomoAssertions as ta
+from utils.assertions import *
+from parameters import Parameters
+import physics
+from numeric import newton
+
 
 # Handles import and processing of data in time domain.
 class TimeSpace:
@@ -71,8 +75,6 @@ class TimeSpace:
                                 self.par.omega_rev0, self.par.dtbin,
                                 self.par.xat0)
 
-
-
         (self.par.phiwrap,
          self.par.wrap_length) = self._find_wrap_length(
                                     self.par.profile_count, self.par.dturns,
@@ -91,29 +93,35 @@ class TimeSpace:
     @staticmethod
     def get_indata_txt(filename, par_file_path, skiplines=98):
         if filename != "pipe":
-            return np.genfromtxt(filename, dtype=float)
-        return np.genfromtxt(par_file_path,
-                             skip_header=skiplines, dtype=float)
+            inn_data = np.genfromtxt(filename, dtype=float)
+        else:
+            inn_data = np.genfromtxt(par_file_path,
+                                     skip_header=skiplines, dtype=float)
+        ta.assert_greater(len(inn_data),
+                          'number of importedraw data elements',
+                          0, RawDataImportError,
+                          f'No raw data was found in file: {filename}')
+        return inn_data
 
     # Original function for subtracting baseline
     @staticmethod
-    def subtract_baseline(data, frame_skipcount, beam_ref_frame,
-                          frame_length, preskip_length, profile_length):
-        # Find the baseline from the first 5% of beam reference profile.
-        # Skip some of the frame data to the start of the reference profile:
-        if len(data) > 0:
-            i0 = int((frame_skipcount + beam_ref_frame - 1) * frame_length
-                     + preskip_length)
+    def subtract_baseline(data, frame_skipcount, beam_ref_frame, frame_length,
+                          preskip_length, profile_length, percentage=0.05):
+        # Find the baseline from the first 5% (by default) of
+        # beam reference profile.
+        i0 = int((frame_skipcount + beam_ref_frame - 1) * frame_length
+                 + preskip_length)
 
-            i_five_percent = int(np.floor(i0 + 0.05 * profile_length + 1))
-            baseline = (np.sum(data[i0:i_five_percent])
-                        / np.real(np.floor(0.05 * profile_length + 1)))
+        ta.assert_inrange(percentage, 'percentage', 0.0, 1.0, InputError,
+                          'The chosen percentage of data to create baseline'
+                          'from is not valid')
 
-            logging.debug("A baseline was found"
-                          "with the value of: " + str(baseline))
-            return data - baseline
-        else:
-            raise AssertionError("No data found, unable to calculate baseline")
+        i_five_percent = int(np.floor(i0 + percentage * profile_length + 1))
+        baseline = (np.sum(data[i0:i_five_percent])
+                    / np.real(np.floor(percentage * profile_length + 1)))
+
+        logging.debug(f"A baseline was found with the value: {str(baseline)}")
+        return data - baseline
 
     # Turns list of raw data into list of profiles.
     # Deletes list of raw data
@@ -128,7 +136,9 @@ class TimeSpace:
             profile_end = ((frame_skipcount + i + 1) * framelength
                            - postskip_length)
             profiles[i, :] = data[profile_start:profile_end]
-        logging.info(str(profile_length) + " profiles created from raw data")
+        logging.info(f'{str(profile_count)} profiles '
+                     f'with length {profile_length} '
+                     f'created from raw data')
         return profiles
 
     # Re-binning of profiles
@@ -140,6 +150,14 @@ class TimeSpace:
         else:
             new_profile_length = int(profile_length / rebin_factor) + 1
 
+        ta.assert_greater(new_profile_length,
+                          'rebinned profile length', 1,
+                          RebinningError,
+                          f'The length of the profiles after re-binning'
+                          f'is not valid...\nMake sure that the re-binning '
+                          f'factor ({rebin_factor}) is not larger than'
+                          f'the original profile length ({profile_length})')
+
         # Re-binning profiles until second last bin
         new_profilelist = np.zeros((profile_count, new_profile_length))
         for p in range(profile_count):
@@ -149,7 +167,7 @@ class TimeSpace:
                     binvalue += profiles[p, i * rebin_factor + bincounter]
                 new_profilelist[p, i] = binvalue
 
-        # Re-binning last profile bin
+        # Re-binning last profile bins
         for p in range(profile_count):
             binvalue = 0.0
             for i in range((new_profile_length - 1) * rebin_factor, profile_length):
@@ -168,7 +186,12 @@ class TimeSpace:
     # Setting all negative profiles to zero
     @staticmethod
     def negative_profiles_zero(profiles):
-        return np.where(profiles < 0, 0, profiles)
+        new_profile = np.where(profiles < 0, 0, profiles)
+        ta.assert_array_not_equal(new_profile,
+                                  'profile without negative numbers', 0,
+                                  'The whole profile was reduced to zeroes '
+                                  'when changing negative numbers to zeroes.')
+        return new_profile
 
     # Normalize profiles to number between 0 and 1
     @staticmethod
@@ -180,7 +203,7 @@ class TimeSpace:
     # Calculate the total charge in profile
     @staticmethod
     def total_profilecharge(ref_prof, dtbin, rebin, pickup_sens):
-        return np.sum(ref_prof) * dtbin / (rebin * e_UNIT * pickup_sens)
+        return np.sum(ref_prof) * dtbin / (rebin * physics.e_UNIT * pickup_sens)
 
     def find_xat0(self, profiles, ref_profile_index, threshold_value=0.15):
         if self.par.xat0 < 0:
@@ -217,7 +240,7 @@ class TimeSpace:
         xstart_newt = self.par.phi0[thisturn] - self.par.bunch_phaselength / 2.0
 
         # phaselow and dPhaseLow are functions from Physics module
-        phil = newton(phase_low, dphase_low, xstart_newt,
+        phil = newton(physics.phase_low, physics.dphase_low, xstart_newt,
                       self.par, thisturn, 0.0001)
 
         fit_xat0 = (tangentfoot_low + (self.par.phi0[thisturn] - phil)
@@ -258,7 +281,8 @@ class TimeSpace:
             if profile[ibin] < threshold:
                 tangent_bin_up = ibin - 1
                 break
-        # t_low = np.argwhere(np.flip(profile) < threshold) : TODO: Try this
+        # Possible solution?
+        # t_low = np.argwhere(np.flip(profile) < threshold)
         # t_up = np.argwhere(np.flip(profile) < threshold)
 
         return tangent_bin_up, tangent_bin_low
@@ -279,20 +303,30 @@ class TimeSpace:
         logging.info("findxat0: beam.ref.indx.: " + str(refprofile_index)
                      + ", threshold: " + str(threshold))
 
-        al, bl, sigal, sigbl, chil, ql = lin_fit(index_array[
-                                                  tangent_bin_low - 2:
-                                                  tangent_bin_low + 2],
-                                                 profile[
-                                                  tangent_bin_low - 2:
-                                                  tangent_bin_low + 2])
-        au, bu, sigau, sigbu, chiu, qu = lin_fit(index_array[
-                                                  tangent_bin_up - 1:
-                                                  tangent_bin_up + 3],
-                                                 profile[
-                                                  tangent_bin_up - 1:
-                                                  tangent_bin_up + 3])
+        [bl, al] = np.polyfit(index_array[tangent_bin_low - 2:
+                                          tangent_bin_low + 2],
+                              profile[tangent_bin_low - 2:
+                                      tangent_bin_low + 2],
+                              deg=1)
+
+        [bu, au] = np.polyfit(index_array[tangent_bin_up - 1:
+                                          tangent_bin_up + 3],
+                              profile[tangent_bin_up - 1:
+                                      tangent_bin_up + 3],
+                              deg=1)
+
         tangentfoot_low = -1 * al / bl
         tangentfoot_up = -1 * au / bu
+
+        ta.assert_greater(tangentfoot_up, 'upper tangent foot',
+                          tangentfoot_low, TangentFootError,
+                          f'The lower tangent foot has a higher '
+                          f'value than the upper tangent foot.\n'
+                          f'The following info may be helpful:'
+                          f'tangent foot lower: {tangentfoot_low}\n'
+                          f'tangent bin lower: {tangent_bin_low}\n'
+                          f'tangent foot upper: {tangentfoot_up}\n'
+                          f'tangent bin upper: {tangent_bin_up}\n')
 
         logging.debug("tangent_foot_low = " + str(tangentfoot_low)
                       + ", tangent_foot_up = " + str(tangentfoot_up))

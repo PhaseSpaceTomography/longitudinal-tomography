@@ -1,8 +1,8 @@
 import unittest
 import numpy.testing as nptest
 import numpy as np
-from tomo.Reconstruct import Reconstruct
-from tomo.MapInfo import MapInfo
+from tomo.reconstruct import Reconstruct
+from tomo.map_info import MapInfo
 from unit_tests.C500values import C500
 
 

@@ -1,6 +1,6 @@
 import unittest
-from Physics import *
-from Parameters import Parameters
+from physics import *
+from parameters import Parameters
 
 # In this test-suite i am testing individual physics formulas,
 #  mostly using made-up values

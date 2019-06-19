@@ -6,7 +6,7 @@ from tomo_action.system_handling import SysHandling
 TMP_DIR = r"tmp"
 RESOURCES_DIR = r"test_resources"
 OUTPUT_DIR = r"saved_output"
-PY_MAIN_PATH = r"../tomo/Main_testing.py"
+PY_MAIN_PATH = r"../tomo/main_testing.py"
 
 INPUT_NAMES = [                     # Nbr
     "C500MidPhaseNoise",            # 0

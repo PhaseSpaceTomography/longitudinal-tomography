@@ -1,6 +1,11 @@
 import logging
-from Physics import *
-from Numeric import *
+import physics
+import numpy as np
+from numeric import newton
+from utils.assertions import TomoAssertions as ta
+from utils.exceptions import (InputError,
+                              MachineParameterError,
+                              SpaceChargeParameterError)
 
 
 class Parameters:
@@ -18,7 +23,7 @@ class Parameters:
         self.rawdata_file = ""		# Input data file
         self.output_dir = ""		# Directory in which to write all output
         self.framecount = 0			# Number of frames in input data
-        self.frmelength = 0		    # Length of each trace in the 'raw' input file - how many bins in each frame
+        self.framelength = 0		    # Length of each trace in the 'raw' input file - how many bins in each frame
         self.dtbin = 0.0			# Pixel width in seconds
         self.demax = 0.0			# maximum energy of reconstructed phase space
         self.dturns = 0				# Number of machine turns between each measurement
@@ -62,7 +67,7 @@ class Parameters:
         self.pickup_sensitivity = 0.0  # Effective pick-up sensitivity (in digitizer units per instantaneous Amp)
 
         # calculated parameters:
-        #-----------------------
+        # -----------------------
         self.time_at_turn = []        # Time at each turn relative to machine_ref_frame
         self.omega_rev0 = []          # Revolution frequency at each turn
         self.phi0 = []              # Synchronous phase angle at each turn
@@ -74,7 +79,7 @@ class Parameters:
         self.e0 = []                # Total energy of synchronous particle at each turn
 
         self.profile_count = 0       # Number of profiles
-        self.profile_length = 0      # Number of bins in a profile
+        self.profile_length = 0      # Length of profile in bins
 
         self.profile_mini = 0         # Index of first and last "active" index in profile
         self.profile_maxi = 0
@@ -91,55 +96,16 @@ class Parameters:
         self.x_origin = 0.0  # absolute difference in bins between phase=0 and
                              # origin of  the reconstructed phase space coordinate system.
 
-    # This method receieve its parameters from a text file, and calculates the rest.
+    # Calculates parameters based on text file as input
     def get_parameters_txt(self, file_name):
-        # Get parameters from file
-        self.read_parameters_txt(file_name)
-
-        # Make arrays with one zero for each turn
-        allturns = (self.framecount - self.frame_skipcount - 1) * self.dturns
-        self._init_arrays(allturns)
-
-        # TODO: change names of these functions
-        #  as it creates confusion of what is arrays and what is not.
-        # Calculate start-parameters
-        i0 = self._calc_startval_arrays()
-
-        # Calculate the rest of the parameters
-        self._calc_remaining_val_arrays(i0, allturns)
-
-        # Calculate phase slip factor at each turn
-        self.eta0 = phase_slip_factor(self)
-
-        # Calculates c1 for each turn
-        # TODO: what is c1?
-        self.c1 = find_c1(self)
-
-        # Calculate revolution frequency at each turn
-        self.omega_rev0 = revolution_freq(self)
-
-        # time binning
-        self.dtbin = self.dtbin * self.rebin
-        self.xat0 = self.xat0 / float(self.rebin)
-        self.profile_count = self.framecount - self.frame_skipcount
-
-        # Length of profile in bins/pixels
-        self.profile_length = (self.framelength - self.preskip_length
-                               - self.postskip_length)
-
-        # Finding min and max index in profiles.
-        #   The indexes outside of these are treated as 0
-        self.profile_mini, self.profile_maxi = self._find_imin_imax()
-
-        # Total number of data points in the 'raw' input file
-        self.all_data = self.framecount * self.framelength
-
-        # Find self field coefficient for each profile
-        self.sfc = calc_self_field_coeffs(self)
+        self._read_txt_input(file_name)
+        self._assert_input()
+        self._init_parameters()
+        self._assert_parameters()
 
     # For retrieving parameters from text-file.
     # To be replaced by another method.
-    def read_parameters_txt(self, file_name):
+    def _read_txt_input(self, file_name):
         skiplines_start = 12
 
         file = open(file_name, "r")
@@ -285,10 +251,34 @@ class Parameters:
         else:
             raise AssertionError("Could not open file: " + file_name)
 
+    # Subroutine for setting up parameters based on given input
+    def _init_parameters(self):
+
+        # Calculate values for each turn for arrays:
+        #     time_at_turn, e0, beta0, phi0, eta0, c1, omega_rev0
+        self._calc_parameter_arrays()
+
+        self.dtbin = self.dtbin * self.rebin
+        self.xat0 = self.xat0 / float(self.rebin)
+        self.profile_count = self.framecount - self.frame_skipcount
+
+        self.profile_length = (self.framelength - self.preskip_length
+                               - self.postskip_length)
+
+        # Finding min and max index in profiles.
+        #   The indexes outside of these are treated as 0
+        self.profile_mini, self.profile_maxi = self._find_imin_imax()
+
+        # Total number of data points in the 'raw' input file
+        self.all_data = self.framecount * self.framelength
+
+        # Find self field coefficient for each profile
+        self.sfc = physics.calc_self_field_coeffs(self)
+
     # Fills up arrays with zeroes, ready to use further.
     # + 1 to both include turn#0 and the very last turn.
-    def _init_arrays(self, allturns):
-        array_length = allturns + 1
+    def _init_arrays(self, all_turns):
+        array_length = all_turns + 1
         self.time_at_turn = np.zeros(array_length)
         self.omega_rev0 = np.zeros(array_length)
         self.phi0 = np.zeros(array_length)
@@ -298,31 +288,34 @@ class Parameters:
         self.eta0 = np.zeros(array_length)
         self.e0 = np.zeros(array_length)
 
-    # Find start values for variables: time_at_turn, e0, beta0, phi0
-    def _calc_startval_arrays(self):
+    def _array_initial_values(self):
         i0 = (self.machine_ref_frame - 1) * self.dturns
         self.time_at_turn[i0] = 0
-        self.e0[i0] = b_to_e(self)
-        self.beta0[i0] = lorenz_beta(self, i0)
-        phi_lower, phi_upper = find_phi_lower_upper(self, i0)
-        self.phi0[i0] = find_synch_phase(self, i0, phi_lower, phi_upper)
+        self.e0[i0] = physics.b_to_e(self)
+        self.beta0[i0] = physics.lorenz_beta(self, i0)
+        phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
+        self.phi0[i0] = physics.find_synch_phase(self, i0, phi_lower,
+                                                 phi_upper)
         return i0
 
     # Filling up the rest of the parameter arrays:
     #   time_at_turn, e0, beta0, phi0, deltaE0
-    def _calc_remaining_val_arrays(self, i0, allturns):
-        # Array after i0:
-        for i in range(i0 + 1, allturns + 1):
-            self.time_at_turn[i] = (self.time_at_turn[i - 1]
-                                    + 2*np.pi*self.mean_orbit_rad
-                                    / (self.beta0[i - 1]*C))
+    def _calc_parameter_arrays(self):
+        all_turns = self._calc_number_of_turns()
+        self._init_arrays(all_turns)
+        i0 = self._array_initial_values()
 
-            self.phi0[i] = newton(rf_voltage, drf_voltage,
+        for i in range(i0 + 1, all_turns + 1):
+            self.time_at_turn[i] = (self.time_at_turn[i - 1]
+                                    + 2 * np.pi * self.mean_orbit_rad
+                                    / (self.beta0[i - 1] * physics.C))
+
+            self.phi0[i] = newton(physics.rf_voltage, physics.drf_voltage,
                                   self.phi0[i - 1], self, i, 0.001)
 
             self.e0[i] = (self.e0[i - 1]
                           + self.q
-                          * short_rf_voltage_formula(
+                          * physics.short_rf_voltage_formula(
                                 self.phi0[i], self.vrf1, self.vrf1dot,
                                 self.vrf2, self.vrf2dot, self.h_ratio,
                                 self.phi12, self.time_at_turn, i))
@@ -332,14 +325,25 @@ class Parameters:
         for i in range(i0 - 1, 0, -1):
             self.e0[i] = (self.e0[i + i]
                           - self.q
-                          * short_rf_voltage_formula(self.phi0[i], self, i))
+                          * physics.short_rf_voltage_formula(self.phi0[i],
+                                                             self, i))
             self.beta0[i] = np.sqrt(1.0 * -(self.e_rest/self.e0[i])**2)
             self.deltaE0[i] = self.e0[i + 1] - self.e0[i]
             self.time_at_turn[i] = (self.time_at_turn[i + 1]
                                     - 2 * np.pi * self.mean_orbit_rad
-                                    / (self.beta0[i] * C))
-            self.phi0[i] = newton(rf_voltage, drf_voltage,
+                                    / (self.beta0[i] * physics.C))
+            self.phi0[i] = newton(physics.rf_voltage, physics.drf_voltage,
                                   self.phi0[i + 1], self, i, 0.001)
+
+        # Calculate phase slip factor at each turn
+        self.eta0 = physics.phase_slip_factor(self)
+
+        # Calculates c1 for each turn
+        # TODO: what is c1?
+        self.c1 = physics.find_c1(self)
+
+        # Calculate revolution frequency at each turn
+        self.omega_rev0 = physics.revolution_freq(self)
 
     # Find profile_mini and profile_maxi
     def _find_imin_imax(self):
@@ -351,3 +355,118 @@ class Parameters:
             profile_maxi = ((self.profile_length - self.imax_skip)
                             / self.rebin + 1)
         return int(profile_mini), int(profile_maxi)
+
+    def _assert_input(self):
+        # Note that some of the assertions is setting the lower limit as 1.
+        # This is because of calibrating from input files meant for Fortran,
+        #    where arrays by default starts from 1, to the Python version
+        #    with arrays starting from 0.
+
+        # Frame assertions
+        ta.assert_greater(self.framecount, "frame count", 0, InputError)
+        ta.assert_inrange(self.frame_skipcount, "frame skip-count",
+                          0, self.framecount, InputError)
+        ta.assert_greater(self.framelength, "frame length", 0, InputError)
+        ta.assert_inrange(self.preskip_length, "pre-skip length",
+                          0, self.framelength, InputError)
+        ta.assert_inrange(self.postskip_length, "post-skip length",
+                          0, self.framelength, InputError)
+
+        # Bin assertions
+        ta.assert_greater(self.dtbin, "dtbin", 0, InputError,
+                          'NB: dtbin is the difference of time in bin')
+        ta.assert_greater(self.dturns, "dturns", 0, InputError,
+                          'NB: dturns is the number of machine turns'
+                          'between each measurement')
+        ta.assert_inrange(self.imin_skip, 'imin skip',
+                          0, self.framelength, InputError)
+        ta.assert_inrange(self.imax_skip, 'imax skip',
+                          0, self.framelength, InputError)
+        ta.assert_greater_or_equal(self.rebin, 're-binning factor',
+                                   1, InputError)
+
+        # Assertions: profile to be reconstructed
+        ta.assert_greater_or_equal(self.filmstart, 'film start',
+                                   1, InputError)
+        ta.assert_greater_or_equal(self.filmstop, 'film stop',
+                                   self.filmstart, InputError)
+        ta.assert_less_or_equal(abs(self.filmstep), 'film step',
+                                abs(self.filmstop - self.filmstart + 1),
+                                InputError)
+        ta.assert_not_equal(self.filmstep, 'film step', 0, InputError)
+
+        # Reconstruction parameter assertions
+        ta.assert_greater(self.num_iter, 'num_iter', 0, InputError,
+                          'NB: num_iter is the number of iterations of the '
+                          'reconstruction process')
+        ta.assert_greater(self.snpt, 'snpt', 0, InputError,
+                          'NB: snpt is the square root '
+                          'of #tracked particles.')
+
+        # Reference frame assertions
+        ta.assert_greater_or_equal(self.machine_ref_frame,
+                                   'machine ref. frame',
+                                   1, InputError)
+        ta.assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
+                                   1, InputError)
+
+        # Machine parameter assertion
+        ta.assert_greater_or_equal(self.h_num, 'harmonic number',
+                                   1, MachineParameterError)
+        ta.assert_greater_or_equal(self.h_ratio, 'harmonic ratio',
+                                   1, MachineParameterError)
+        ta.assert_greater(self.b0, 'B field (B0)',
+                          0, MachineParameterError)
+        ta.assert_greater(self.mean_orbit_rad, "mean orbit radius",
+                          0, MachineParameterError)
+        ta.assert_greater(self.bending_rad, "Bending radius",
+                          0, MachineParameterError)
+        ta.assert_greater(self.e_rest, 'rest energy',
+                          0, MachineParameterError)
+
+        # Space charge parameter assertion
+        ta.assert_greater_or_equal(self.zwall_over_n, 'z wall over n',
+                                   0, SpaceChargeParameterError)
+        ta.assert_greater_or_equal(self.pickup_sensitivity,
+                                   'pick-up sensitivity',
+                                   0, SpaceChargeParameterError)
+        ta.assert_greater_or_equal(self.g_coupling, 'g_coupling',
+                                   0, SpaceChargeParameterError,
+                                   'NB: g_coupling:'
+                                   'geometrical coupling coefficient')
+
+    def _assert_parameters(self):
+        # Calculated parameters
+        ta.assert_greater_or_equal(self.profile_length, 'profile length', 0,
+                                   InputError,
+                                   f'Make sure that the sum of post- and'
+                                   f'pre-skip length is less'
+                                   f'than the frame length\n'
+                                   f'frame length: {self.framelength}\n'
+                                   f'pre-skip length: {self.preskip_length}\n'
+                                   f'post-skip length: {self.postskip_length}')
+
+        ta.assert_array_shape_equal([self.time_at_turn,
+                                     self.omega_rev0,
+                                     self.phi0,
+                                     self.c1,
+                                     self.deltaE0,
+                                     self.beta0,
+                                     self.eta0,
+                                     self.e0],
+                                    ['time_at_turn',
+                                     'omega_re0',
+                                     'phi0',
+                                     'c1',
+                                     'deltaE0',
+                                     'beta0',
+                                     'eta0',
+                                     'e0'],
+                                    (self._calc_number_of_turns() + 1, ))
+
+    def _calc_number_of_turns(self):
+        all_turns = (self.framecount - self.frame_skipcount - 1) * self.dturns
+        ta.assert_greater(all_turns, 'all_turns', 0, InputError,
+                          'Make sure that frame skip-count'
+                          'do not exceed number of frames')
+        return all_turns
