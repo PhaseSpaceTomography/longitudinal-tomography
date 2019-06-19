@@ -47,6 +47,10 @@ class SpaceChargeParameterError(Exception):
 class RawDataImportError(Exception):
     pass
 
+
+class ArgumentError(Exception):
+    pass
+
 # ===========================
 # Time space Exceptions
 # ===========================
@@ -78,3 +82,13 @@ class EnergyLimitsError(Exception):
 
 class PhaseLimitsError(Exception):
     pass
+
+# ============================
+# TOMOGRAPHY EXCEPTIONS
+# ============================
+
+
+class PhaseSpaceReducedToZeroes(Exception):
+    pass
+
+

@@ -1,7 +1,11 @@
 import unittest
 import numpy as np
 import numpy.testing as nptest
+from tomo.reconstruct_c import ReconstructCpp
+from tomo.map_info import MapInfo
+from tomo.time_space import TimeSpace
 from tomo.tomography import Tomography
+from tomo.parameters import Parameters
 from unit_tests.C500values import C500
 
 
@@ -98,6 +102,33 @@ class TestTomography(unittest.TestCase):
                                    err_msg="Error in suppression and "
                                            "normalization of phase space")
 
+    def test_surpress_zeroes_bad_input(self):
+        phase_space = np.zeros((100, 100))
+        phase_space[51] = -1
+        with self.assertRaises(Exception):
+            _ = Tomography.supress_zeroes_and_normalize(phase_space)
+
+    def test_bad_reconstruction_input(self):
+        rec = ReconstructCpp.__new__(ReconstructCpp)
+        rec.mapinfo = MapInfo.__new__(MapInfo)
+        rec.timespace = TimeSpace.__new__(TimeSpace)
+        rec.timespace.par = Parameters.__new__(Parameters)
+
+        rec.timespace.par.profile_count = 100
+        rec.timespace.par.profile_length = 150
+        rec.mapsi = np.zeros((100, 10))
+        rec.mapweights = np.zeros((111, 10))
+
+        # Testing mapsi and mapweights of unequal lengths
+        with self.assertRaises(Exception):
+            Tomography(rec)
+
+        rec.mapweights = np.zeros((100, 10))
+        rec.maps = np.zeros((19, 150, 150))
+
+        # Testing maps array with unexpected value
+        with self.assertRaises(Exception):
+            Tomography(rec)
 
 
 if __name__ == '__main__':

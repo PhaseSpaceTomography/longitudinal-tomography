@@ -2,6 +2,10 @@ import numpy as np
 import logging
 import time as tm
 from numba import njit
+from utils.assertions import TomoAssertions as ta
+from utils.exceptions import (ArrayLengthError,
+                              ArgumentError,
+                              PhaseSpaceReducedToZeroes)
 
 
 class Tomography:
@@ -13,7 +17,23 @@ class Tomography:
         self.darray = None
         self.picture = None
 
+        ta.assert_equal(self.rd.mapsi.shape, 'mapsi shape',
+                        self.rd.mapweights.shape,
+                        ArrayLengthError,
+                        'mapsi should be of the same shape as mapsw')
+        ta.assert_equal(self.rd.maps.shape, 'maps shape',
+                        (self.ts.par.profile_count,
+                         self.ts.par.profile_length,
+                         self.ts.par.profile_length),
+                        ArrayLengthError)
+
+
     def run(self, reconst_profile_idx):
+
+        ta.assert_inrange(reconst_profile_idx,
+                          'index of profile to reconstruct',
+                          0, self.ts.par.filmstop, ArgumentError)
+
         darray = np.zeros(self.ts.par.num_iter + 1)
         phase_space = np.zeros((self.ts.par.profile_length,
                                 self.ts.par.profile_length))
@@ -72,7 +92,7 @@ class Tomography:
 
             phase_space = self.supress_zeroes_and_normalize(phase_space)
 
-            logging.info(f"Iteration lasted {tm.process_time() - t} sek")
+            logging.info(f"Iteration lasted {tm.process_time() - t} seconds")
 
         # Calculate discrepancy for the last projection and write to file
         diffprofiles = (self.ts.profiles
@@ -168,11 +188,11 @@ class Tomography:
     def discrepancy(diffprofiles, profile_length, profile_count):
         return np.sqrt(np.sum(diffprofiles**2)/(profile_length*profile_count))
 
-    @staticmethod  # TODO: speed up?
+    @staticmethod
     def supress_zeroes_and_normalize(phase_space):
         phase_space = np.where(phase_space < 0.0, 0.0, phase_space)
-        if np.sum(phase_space) <= 0.0:
-            raise SystemExit("Phase space reduced to zeroes!")
+        if np.all(phase_space <= 0.0):
+            raise PhaseSpaceReducedToZeroes("Phase space reduced to zeroes!")
         else:
             phase_space /= float(np.sum(phase_space))
         return phase_space
