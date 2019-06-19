@@ -1,6 +1,7 @@
 import numpy as np
 import time as tm
 import ctypes
+import os
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import *
 # import line_profiler
@@ -24,7 +25,9 @@ class ReconstructCpp:
                         self.mapinfo.jmax.shape, ArrayLengthError,
                         'jmin and jmax should have the same shape')
 
-        tomolib = ctypes.CDLL("/home/cgrindhe/tomo_v3/tomo/cpp_files/tomolib.so")
+        tomolib = ctypes.CDLL(
+                    os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
+                    + '/cpp_files/tomolib.so')
 
         tomolib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
                                                 ndpointer(ctypes.c_int),
