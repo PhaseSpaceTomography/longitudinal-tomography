@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="Added assertion and written tests for reconstruct_c module">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tomography.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tomography.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/utils/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/utils/exceptions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_tests/test_tomography.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_tomography.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,56 +11,45 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
-      <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="197">
-                  <caret line="34" column="65" selection-start-line="34" selection-start-column="65" selection-end-line="34" selection-end-column="65" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#1244#3305#0" />
-                    <element signature="e#4762#6160#0" />
-                    <element signature="e#6521#8053#0" />
-                    <element signature="e#8212#8282#0" />
-                    <element signature="e#9278#9549#0" />
-                    <element signature="e#8701#9015#0" />
-                    <element signature="e#9069#9286#0" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="507">
-                  <caret line="94" selection-start-line="94" selection-end-line="94" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="447">
-                  <caret line="132" selection-start-line="132" selection-end-line="132" />
-                  <folding>
-                    <element signature="e#0#15#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="197">
+              <caret line="34" column="65" selection-start-line="34" selection-start-column="65" selection-end-line="34" selection-end-column="65" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#1244#3305#0" />
+                <element signature="e#4762#6160#0" />
+                <element signature="e#6521#8053#0" />
+                <element signature="e#8212#8282#0" />
+                <element signature="e#9278#9549#0" />
+                <element signature="e#8701#9015#0" />
+                <element signature="e#9069#9286#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="4" column="5" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="507">
+              <caret line="94" selection-start-line="94" selection-end-line="94" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -155,7 +141,6 @@
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
         <option value="$PROJECT_DIR$/tomo/compile.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/tomo/utils/assertions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
@@ -174,6 +159,7 @@
         <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_tomography.py" />
         <option value="$PROJECT_DIR$/tomo/tomography.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -200,23 +186,6 @@
               <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
               <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
               <item name="tomo" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-              <item name="tomo" type="462c0819:PsiDirectoryNode" />
-              <item name="utils" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-              <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-              <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
-              <item name="resources" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -695,9 +664,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_surpress_zeroes_bad_input - 2019.06.19 at 14h 51m 54s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_surpress_zeroes_bad_input" configurationId="tests" />
-    </history-entry>
     <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.19 at 15h 06m 46s.xml">
       <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
     </history-entry>
@@ -725,6 +691,9 @@
     <history-entry file="Nosetests_in_test_tomography_py - 2019.06.19 at 15h 56m 19s.xml">
       <configuration name="Nosetests in test_tomography.py" configurationId="tests" />
     </history-entry>
+    <history-entry file="Nosetests_in_test_tomography_py - 2019.06.19 at 16h 24m 39s.xml">
+      <configuration name="Nosetests in test_tomography.py" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -739,12 +708,12 @@
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.36008024" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.36008024" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" weight="0.30792376" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -908,13 +877,6 @@
     <entry file="file://$PROJECT_DIR$/unit_tests/resources/C500MidPhaseNoise/empty.dat" />
     <entry file="file://$PROJECT_DIR$/unit_tests/resources/empty.dat">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="4" lean-forward="true" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="4" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1204,16 +1166,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="447">
-          <caret line="132" selection-start-line="132" selection-end-line="132" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="197">
@@ -1228,6 +1180,23 @@
             <element signature="e#8701#9015#0" />
             <element signature="e#9069#9286#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="133" column="26" lean-forward="true" selection-start-line="133" selection-start-column="26" selection-end-line="133" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="5" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
         </state>
       </provider>
     </entry>
