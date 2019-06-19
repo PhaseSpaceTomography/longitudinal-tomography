@@ -7,5 +7,5 @@ tomo/cpp_files/.vscode
 *.dat
 *.data
 *.npy
-*.so
+# *.so
 
