@@ -20,9 +20,11 @@ class TestRec(unittest.TestCase):
         # Making MapInfo object for calling functions
         cls.rec = ReconstructCpp.__new__(ReconstructCpp)
 
-        tomolib = ctypes.CDLL(
-            os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
-            + '/cpp_files/tomolib.so')
+        # tomolib = ctypes.CDLL(
+        #     os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
+        #     + '/cpp_files/tomolib.so')
+
+        tomolib = ctypes.CDLL('./../tomo/cpp_files/tomolib.so')
 
         tomolib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
                                                 ndpointer(ctypes.c_int),
