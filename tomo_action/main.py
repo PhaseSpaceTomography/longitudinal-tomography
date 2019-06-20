@@ -23,57 +23,31 @@ INPUT_NAMES = [                     # Nbr
     "noiseStructure2"               # 11
 ]
 
-# TODO: Add option for custom input file.
 
-input_help_str = ""
-for i in range(len(INPUT_NAMES)):
-    input_help_str += f"{i}:\t{INPUT_NAMES[i]}\n"
-
-parser = argparse.ArgumentParser(description='Run tomo_action main to '
-                                             'easily run the tomography '
-                                             'application with test inputs\n\n'
-                                             + input_help_str)
-
-parser.add_argument('-a', '--analyse',
-                    default=False,
-                    type=bool,
-                    nargs='?',
-                    const=True,
-                    help='Show phase space plot and compare'
-                         'python output with Fortran')
-
-parser.add_argument('-l', '--load',
-                    default=False,
-                    type=bool,
-                    nargs='?',
-                    const=True,
-                    help='Load already reconstructed image')
-
-parser.add_argument('-start', '--start',
-                    default=0,
-                    type=int,
-                    help="First input file")
-
-parser.add_argument('-end', '--end',
-                    default=len(INPUT_NAMES),
-                    type=int,
-                    help="Last input file")
-
-
-def main(load_from_file,
-         analyze, start_file, end_file):
+def main(load_image, analyze, start_file, end_file, custom_input):
+    custom_in_flag = False
+    if len(custom_input) > 0:
+        input_list = custom_input
+        resources_dir = ''
+        custom_in_flag = True
+        start_file = 0
+        end_file = len(custom_input)
+    else:
+        input_list = INPUT_NAMES
+        resources_dir = RESOURCES_DIR
 
     SysHandling.dir_exists(TMP_DIR)
     SysHandling.clear_dir(TMP_DIR)
-    sysh = SysHandling(INPUT_NAMES, TMP_DIR, RESOURCES_DIR, PY_MAIN_PATH)
+    sysh = SysHandling(input_list, TMP_DIR, resources_dir, PY_MAIN_PATH)
 
     for i in range(start_file, end_file):
 
-        plt.figure(INPUT_NAMES[i])
+        plt.figure(input_list[i])
         plt.clf()
 
-        if not load_from_file:
+        if not load_image:
             in_path = TMP_DIR
+
             time_py, time_f = sysh.run_programs(i, python=True, fortran=True)
             (py_image,
              f_image) = SysHandling.get_pics_from_file(in_path)
@@ -81,8 +55,8 @@ def main(load_from_file,
             time_py = float('nan')
             time_f = float('nan')
             print("\n!! loading from files !!")
-            print("current input: " + INPUT_NAMES[i])
-            in_path = create_out_dir_path(INPUT_NAMES[i])
+            print("current input: " + input_list[i])
+            in_path = create_out_dir_path(input_list[i])
             (py_image,
              f_image) = SysHandling.get_pics_from_file(in_path)
 
@@ -93,7 +67,7 @@ def main(load_from_file,
             print("Execution time fortran: " + str(time_f))
             plt.show()
 
-        if not load_from_file:
+        if not load_image and not custom_in_flag:
             sysh.move_to_resource_dir(i)
 
 
@@ -126,12 +100,57 @@ def assert_args(args):
                          + "\nProgram stopped...")
 
 
+def create_parser():
+    input_help_str = ""
+    for i in range(len(INPUT_NAMES)):
+        input_help_str += f"{i}:\t{INPUT_NAMES[i]}\n"
+
+    parser = argparse.ArgumentParser(description='Run tomo_action main to '
+                                                 'easily run the tomography '
+                                                 'application with test '
+                                                 'inputs\n\n'
+                                                 + input_help_str)
+
+    parser.add_argument('-a', '--analyse',
+                        default=False,
+                        type=bool,
+                        nargs='?',
+                        const=True,
+                        help='Show phase space plot and compare'
+                             'python output with Fortran')
+
+    parser.add_argument('-l', '--load',
+                        default=False,
+                        type=bool,
+                        nargs='?',
+                        const=True,
+                        help='Load already reconstructed image')
+
+    parser.add_argument('-start', '--start',
+                        default=0,
+                        type=int,
+                        help="First input file")
+
+    parser.add_argument('-end', '--end',
+                        default=len(INPUT_NAMES),
+                        type=int,
+                        help="Last input file")
+
+    parser.add_argument('-ci', '--custom_input',
+                        default=[],
+                        nargs='+')
+
+    return parser
+
+
 if __name__ == '__main__':
+    parser = create_parser()
     args = parser.parse_args()
 
     assert_args(args)
 
-    main(load_from_file=args.load,
+    main(load_image=args.load,
          analyze=args.analyse,
          start_file=args.start,
-         end_file=args.end)
+         end_file=args.end,
+         custom_input=args.custom_input)

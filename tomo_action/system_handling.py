@@ -17,11 +17,14 @@ class SysHandling:
         self.py_main_path = py_main_path
 
     def run_programs(self, index, fortran=True, python=True):
-        print("current input: " + self.input_list[index])
+        print('current input: ' + self.input_list[index])
         # Retrieving input file from given folder.
-        os.system("rm input_v2.dat")
-        command = (f"cp {self.resources_dir}/{self.input_list[index]}/"
-                   f"{self.input_list[index]}.dat input_v2.dat")
+        os.system('rm input_v2.dat')
+        if self.resources_dir == '':
+            command = f'cp {self.input_list[index]} input_v2.dat'
+        else:
+            command = (f'cp {self.resources_dir}/{self.input_list[index]}/'
+                       f'{self.input_list[index]}.dat input_v2.dat')
         os.system(command)
         # Running python script
         tp = float('nan')
