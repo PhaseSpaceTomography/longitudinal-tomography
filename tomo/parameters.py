@@ -15,8 +15,8 @@ class Parameters:
         # Parameters to be collected from file:
         # -------------------------------------
         self.xat0 = 0.0				# Synchronous phase in bins in beam_ref_frame
-        # Read form file as time (in frame bins) from the lower profile bound to the synchronous phase
-        # (if < 0, a fit is performed) in the "bunch reference" frame
+                                    # Read form file as time (in frame bins) from the lower profile bound to the synchronous phase
+                                    # (if < 0, a fit is performed) in the "bunch reference" frame
         self.yat0 = 0.0				# Synchronous energy (0 in relative terms) in reconstructed phase space coordinate system
 
         self.rebin = 0				# Rebinning factor - Number of frame bins to rebin into one profile bin
@@ -92,7 +92,7 @@ class Parameters:
         self.tangentfoot_up = 0.0
         self.phiwrap = 0.0
         self.wrap_length = 0
-        self.fit_xat0 = 0.0
+        self.fit_xat0 = 0.0  # value of fit for xat0
         self.x_origin = 0.0  # absolute difference in bins between phase=0 and
                              # origin of  the reconstructed phase space coordinate system.
 
@@ -104,7 +104,6 @@ class Parameters:
         self._assert_parameters()
 
     # For retrieving parameters from text-file.
-    # To be replaced by another method.
     def _read_txt_input(self, file_name):
         skiplines_start = 12
 
@@ -254,29 +253,26 @@ class Parameters:
     # Subroutine for setting up parameters based on given input
     def _init_parameters(self):
 
-        # Calculate values for each turn for arrays:
-        #     time_at_turn, e0, beta0, phi0, eta0, c1, omega_rev0
         self._calc_parameter_arrays()
 
+        # Changes due to re-bin factor > 1
         self.dtbin = self.dtbin * self.rebin
         self.xat0 = self.xat0 / float(self.rebin)
-        self.profile_count = self.framecount - self.frame_skipcount
 
+        self.profile_count = self.framecount - self.frame_skipcount
         self.profile_length = (self.framelength - self.preskip_length
                                - self.postskip_length)
 
-        # Finding min and max index in profiles.
-        #   The indexes outside of these are treated as 0
         self.profile_mini, self.profile_maxi = self._find_imin_imax()
 
-        # Total number of data points in the 'raw' input file
+        # calculating total number of data points in the input file
         self.all_data = self.framecount * self.framelength
 
         # Find self field coefficient for each profile
         self.sfc = physics.calc_self_field_coeffs(self)
 
-    # Fills up arrays with zeroes, ready to use further.
-    # + 1 to both include turn#0 and the very last turn.
+    # Initiating arrays in order to store information about parameters
+    # that has a different value every turn.
     def _init_arrays(self, all_turns):
         array_length = all_turns + 1
         self.time_at_turn = np.zeros(array_length)
@@ -288,6 +284,10 @@ class Parameters:
         self.eta0 = np.zeros(array_length)
         self.e0 = np.zeros(array_length)
 
+    # Calculating start-values for the parameters that changes with time.
+    # The reference frame where the start-values are calculated is the
+    # machine reference frame.
+    # (machine ref. frame -1 to adjust for fortran input files)
     def _array_initial_values(self):
         i0 = (self.machine_ref_frame - 1) * self.dturns
         self.time_at_turn[i0] = 0
@@ -298,8 +298,11 @@ class Parameters:
                                                  phi_upper)
         return i0
 
-    # Filling up the rest of the parameter arrays:
-    #   time_at_turn, e0, beta0, phi0, deltaE0
+    # The values that changes with time are calculated at i0
+    # (index of machine ref. frame). Based on this value are the rest
+    # of the values calculated. First upwards from i0
+    # to total number of turns + 1,
+    # and then downwards from i0 to 0 (first turn).
     def _calc_parameter_arrays(self):
         all_turns = self._calc_number_of_turns()
         self._init_arrays(all_turns)
@@ -345,7 +348,8 @@ class Parameters:
         # Calculate revolution frequency at each turn
         self.omega_rev0 = physics.revolution_freq(self)
 
-    # Find profile_mini and profile_maxi
+    # Finding min and max index in profiles.
+    # The indexes outside of these are treated as 0
     def _find_imin_imax(self):
         profile_mini = self.imin_skip/self.rebin
         if (self.profile_length - self.imax_skip) % self.rebin == 0:
@@ -356,6 +360,7 @@ class Parameters:
                             / self.rebin + 1)
         return int(profile_mini), int(profile_maxi)
 
+    # Asserting that the input parameters from user are valid
     def _assert_input(self):
         # Note that some of the assertions is setting the lower limit as 1.
         # This is because of calibrating from input files meant for Fortran,
@@ -435,6 +440,7 @@ class Parameters:
                                    'NB: g_coupling:'
                                    'geometrical coupling coefficient')
 
+    # Asserting that some of the parameters calculated are valid
     def _assert_parameters(self):
         # Calculated parameters
         ta.assert_greater_or_equal(self.profile_length, 'profile length', 0,
@@ -464,6 +470,7 @@ class Parameters:
                                      'e0'],
                                     (self._calc_number_of_turns() + 1, ))
 
+    # Calculating number of machine turns
     def _calc_number_of_turns(self):
         all_turns = (self.framecount - self.frame_skipcount - 1) * self.dturns
         ta.assert_greater(all_turns, 'all_turns', 0, InputError,
