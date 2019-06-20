@@ -170,7 +170,9 @@ class Tomography:
                         if fl < fmlistlength:
                             if mapsi[maps[p, i, j], fl] > 0:
                                 if reversedweight[p, mapsi[maps[p, i, j], fl]] <= 0:
-                                    raise AssertionError('EXIT: Would have divided by zero in backproject.')
+                                    raise AssertionError('EXIT: Would have '
+                                                         'divided by zero '
+                                                         'in backproject.')
                                 back_proj[i, j] \
                                     += (float(mapsweight[maps[p, i, j], fl])
                                         / float(numpts)

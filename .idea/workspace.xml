@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/system_handling.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/system_handling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tomography.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tomography.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,15 +16,12 @@
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
+            <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="357">
-                  <caret line="147" column="30" lean-forward="true" selection-start-line="147" selection-start-column="30" selection-end-line="147" selection-end-column="30" />
+                <state relative-caret-position="345">
+                  <caret line="23" lean-forward="true" selection-start-line="23" selection-end-line="23" />
                   <folding>
-                    <element signature="e#0#31#0" expanded="true" />
-                    <element signature="e#3370#3498#0" />
-                    <element signature="e#3552#3947#0" />
-                    <element signature="e#3977#4270#0" />
+                    <element signature="e#0#14#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -36,12 +32,12 @@
       <split-second>
         <leaf>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
+            <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="390">
-                  <caret line="26" column="16" selection-start-line="26" selection-start-column="16" selection-end-line="26" selection-end-column="16" />
+                <state relative-caret-position="105">
+                  <caret line="13" column="36" lean-forward="true" selection-start-line="13" selection-start-column="36" selection-end-line="13" selection-end-column="36" />
                   <folding>
-                    <element signature="e#0#9#0" expanded="true" />
+                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -134,6 +130,7 @@
         <option value="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" />
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
         <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
+        <option value="$PROJECT_DIR$/tomo/tomography.py" />
       </list>
     </option>
   </component>
@@ -159,7 +156,7 @@
             <path>
               <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
               <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-              <item name="tomo_action" type="462c0819:PsiDirectoryNode" />
+              <item name="tomo" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -693,12 +690,12 @@
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49261603" visible="true" weight="0.36008024" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49261603" visible="true" weight="0.36008024" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49419832" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -921,16 +918,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/.idea/test" />
-    <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="16" lean-forward="true" selection-start-line="17" selection-start-column="16" selection-end-line="17" selection-end-column="16" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -980,8 +967,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="26" column="16" selection-start-line="26" selection-start-column="16" selection-end-line="26" selection-end-column="16" />
+        <state relative-caret-position="870">
+          <caret line="58" column="15" selection-start-line="58" selection-start-column="15" selection-end-line="58" selection-end-column="15" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -990,13 +977,30 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="147" column="30" lean-forward="true" selection-start-line="147" selection-start-column="30" selection-end-line="147" selection-end-column="30" />
+        <state relative-caret-position="2340">
+          <caret line="156" lean-forward="true" selection-start-line="156" selection-end-line="156" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#3370#3498#0" />
-            <element signature="e#3552#3947#0" />
-            <element signature="e#3977#4270#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="13" column="36" lean-forward="true" selection-start-line="13" selection-start-column="36" selection-end-line="13" selection-end-column="36" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" lean-forward="true" selection-start-line="23" selection-end-line="23" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
