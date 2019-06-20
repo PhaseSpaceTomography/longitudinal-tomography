@@ -85,7 +85,7 @@ in relation to the gain achieved from it. My solution
 """
 
 
-class Reconstruct:  # pragma: no cover
+class Reconstruct:
 
     def __init__(self, timespace, mapinfo):
         self.timespace = timespace
