@@ -7,11 +7,41 @@ from numeric import newton
 from utils.assertions import TomoAssertions as ta
 from utils.assertions import (RawDataImportError,
                               InputError,
-                              RebinningError,
-                              TangentFootError)
+                              RebinningError)
 
 
-# Handles import and processing of data in time domain.
+# The TimeSpace class handles import and processing of data in time domain.
+#  - importing raw data, and converting it to profiles, specified by input parameters.
+#  - calculation of total charge in profile
+#  - if xat0, from input parameters, is less than 0 wil a fit be performed to find xat0
+#  - calculations of yat0, phi wrap, xorigin
+#  - if self field flag is true will self fields be included in the reconstruction.
+#       in the time space class will a savitzky-golay smoothing filter be applied to the profiles
+#       and the self field voltage will be calculated.
+
+# Variables used in this class are retrieved from a parameter object,
+#   which stores the input parameters for the reconstruction.
+#   A description of all the input and time space variables can be found in the parameters module.
+
+# TimeSpace variables:
+# ===================
+# par               parameter object (for more info, see parameters module)
+# profiles          a profile-count * profile-length sized matrix containing profile data, ready for reconstruction.
+# profile_charge    Total charge in reference profile
+# bunch_phaselength Bunch phase length in beam reference profile
+# tangentfoot_low   Used for estimation of bunch duration
+# tangentfoot_up
+# phiwrap           Phase covering the an integer of rf periods
+# wrap_length       Maximum number of bins to cover an integer number of rf periods
+# fit_xat0          Value of (if) fitted xat0
+# x_origin = 0.0    absolute difference in bins between phase=0
+#                       and origin of the reconstructed phase-space coordinate system.
+#
+# Self field variables:
+# ---------------------
+# vself             Self-field voltage
+# dsprofiles        Smoothed derivative of profiles
+
 class TimeSpace:
 
     def __init__(self, parameter_file_path):
@@ -23,11 +53,14 @@ class TimeSpace:
         self.vself = None            # Self-field voltage
         self.dsprofiles = None       # Smoothed derivative of profiles
 
+        self.run_time_space(parameter_file_path)
+
+    # Main function for the time space class
+    def run_time_space(self, parameter_file_path):
         self.par.get_parameters_txt(parameter_file_path)
         self.get_profiles(parameter_file_path)
         self.adjust_profiles()
 
-        # Total charge of beam-reference-profile
         self.profile_charge = self.total_profilecharge(
                                 self.profiles[self.par.beam_ref_frame - 1],
                                 self.par.dtbin, self.par.rebin,
@@ -83,8 +116,7 @@ class TimeSpace:
                             self.par.framelength, self.par.preskip_length,
                             self.par.postskip_length)
 
-    # Subroutine for re-binning profiles and converting
-    # negative values to zeros.
+    # Subroutine for re-binning profiles and converting negative values to zeros.
     def adjust_profiles(self):
         if self.par.rebin > 1:
             (self.profiles,
@@ -132,6 +164,34 @@ class TimeSpace:
                        * self.par.dtbin))
 
         return fit_xat0, tangentfoot_low, tangentfoot_up, self.par.bunch_phaselength
+
+    # Savitzky-Golay smoothing filter (if self_field_flag is True)
+    def _filter(self):
+        filtered_profiles = savgol.savgol_filter(x=self.profiles,
+                                                 window_length=7,
+                                                 polyorder=4,
+                                                 deriv=1)
+        return filtered_profiles
+
+    # Calculate self-field voltage (if self_field_flag is True)
+    def _calculate_self(self):
+        vself = np.zeros((self.par.profile_count - 1,
+                          self.par.wrap_length),
+                         dtype=float)
+        for i in range(self.par.profile_count - 1):
+            vself[i, 0:self.par.profile_length]\
+                = (0.5
+                   * self.profile_charge
+                   * (self.par.sfc[i]
+                      * self.dsprofiles[i, :self.par.profile_length]
+                      + self.par.sfc[i + 1]
+                      * self.dsprofiles[i + 1, :self.par.profile_length]))
+        return vself
+
+    # Write files to text file.
+    def save_profiles_text(self, profiles, output_directory, filename):
+        np.savetxt(output_directory + filename, profiles.flatten().T)
+        logging.info("Saved profiles to: " + output_directory + filename)
 
     # Read data from separate text file or as extension of parameter file
     @staticmethod
@@ -338,38 +398,3 @@ class TimeSpace:
         yat0 = profile_length / 2.0
         logging.debug("yat0 = " + str(yat0))
         return yat0
-
-    # Savitzky-Golay smoothing filter (if self_field_flag is True)
-    def _filter(self):
-        filtered_profiles = savgol.savgol_filter(x=self.profiles,
-                                                 window_length=7,
-                                                 polyorder=4,
-                                                 deriv=1)
-        # TEMP - show derived profile.
-        # x_axis = np.arange(0, ts.par.profile_length, 1, dtype=int)
-        # plt.plot(x_axis, filtered_profile)
-        # plt.plot(x_axis, ts.profiles[0])
-        # plt.gca().legend(('Filtered', 'Unfiltered'))
-        # plt.show()
-        # END TEMP
-        return filtered_profiles
-
-    # Calculate self-field voltage (if self_field_flag is True)
-    def _calculate_self(self):
-        vself = np.zeros((self.par.profile_count - 1,
-                          self.par.wrap_length),
-                         dtype=float)
-        for i in range(self.par.profile_count - 1):
-            vself[i, 0:self.par.profile_length]\
-                = (0.5
-                   * self.profile_charge
-                   * (self.par.sfc[i]
-                      * self.dsprofiles[i, :self.par.profile_length]
-                      + self.par.sfc[i + 1]
-                      * self.dsprofiles[i + 1, :self.par.profile_length]))
-        return vself
-
-    # Write files to text file.
-    def save_profiles_text(self, profiles, output_directory, filename):
-        np.savetxt(output_directory + filename, profiles.flatten().T)
-        logging.info("Saved profiles to: " + output_directory + filename)

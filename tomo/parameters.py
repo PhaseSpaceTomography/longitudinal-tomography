@@ -90,7 +90,7 @@ from utils.exceptions import (InputError,
 # all_data          Total number of data points in the 'raw' input file
 #
 # Beam reference profile parameters (calculated in TimeSpace):
-# ----------------------------------------------------
+# -------------------------------------------------------------
 # bunch_phaselength     Bunch phase length in beam reference profile
 # tangentfoot_low       Used for estimation of bunch duration
 # tangentfoot_up

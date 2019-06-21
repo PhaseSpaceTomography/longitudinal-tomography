@@ -63,10 +63,6 @@ class RebinningError(Exception):
 class ProfileReducedToZero(Exception):
     pass
 
-
-class TangentFootError(Exception):
-    pass
-
 # ============================
 # MapInfo exceptions
 # ============================
