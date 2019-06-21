@@ -522,15 +522,15 @@ class Parameters:
                           0, MachineParameterError)
 
         # Space charge parameter assertion
-        ta.assert_greater_or_equal(self.zwall_over_n, 'z wall over n',
-                                   0, SpaceChargeParameterError)
-        ta.assert_greater(self.pickup_sensitivity,
-                          'pick-up sensitivity',
-                          0, SpaceChargeParameterError)
-        ta.assert_greater_or_equal(self.g_coupling, 'g_coupling',
-                                   0, SpaceChargeParameterError,
-                                   'NB: g_coupling:'
-                                   'geometrical coupling coefficient')
+        # ta.assert_greater_or_equal(self.zwall_over_n, 'z wall over n',
+        #                            0, SpaceChargeParameterError)
+        # ta.assert_greater(self.pickup_sensitivity,
+        #                   'pick-up sensitivity',
+        #                   0, SpaceChargeParameterError)
+        # ta.assert_greater_or_equal(self.g_coupling, 'g_coupling',
+        #                            0, SpaceChargeParameterError,
+        #                            'NB: g_coupling:'
+        #                            'geometrical coupling coefficient')
 
     # Asserting that some of the parameters calculated are valid
     def _assert_parameters(self):
