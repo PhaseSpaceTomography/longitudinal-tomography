@@ -28,6 +28,14 @@ from utils.assertions import (RawDataImportError,
 # par               parameter object (for more info, see parameters module)
 # profiles          a profile-count * profile-length sized matrix containing profile data, ready for reconstruction.
 # profile_charge    Total charge in reference profile
+#
+# Self field variables:
+# ---------------------
+# vself             Self-field voltage
+# dsprofiles        Smoothed derivative of profiles
+#
+# saved in parameters:
+# - - - - - - - - - - -
 # bunch_phaselength Bunch phase length in beam reference profile
 # tangentfoot_low   Used for estimation of bunch duration
 # tangentfoot_up
@@ -37,10 +45,7 @@ from utils.assertions import (RawDataImportError,
 # x_origin = 0.0    absolute difference in bins between phase=0
 #                       and origin of the reconstructed phase-space coordinate system.
 #
-# Self field variables:
-# ---------------------
-# vself             Self-field voltage
-# dsprofiles        Smoothed derivative of profiles
+
 
 class TimeSpace:
 
