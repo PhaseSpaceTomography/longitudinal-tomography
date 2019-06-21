@@ -160,7 +160,7 @@ class ReconstructCpp:
                                                 turn_now,
                                                 direction,
                                                 tpar.dturns,
-                                                tpar.c1,
+                                                tpar.dphase,
                                                 tpar.phiwrap,
                                                 self.timespace.vself,
                                                 tpar.q,
@@ -177,7 +177,7 @@ class ReconstructCpp:
                                                       yp[:last_pxlidx],
                                                       tpar.omega_rev0,
                                                       tpar.phi0,
-                                                      tpar.c1,
+                                                      tpar.dphase,
                                                       tpar.time_at_turn,
                                                       tpar.deltaE0,
                                                       np.int32(last_pxlidx),
@@ -296,7 +296,7 @@ class ReconstructCpp:
     def longtrack_self(xp, yp, xorigin, h_num,
                        omegarev0, dtbin, phi0, yat0,
                        debin, turn_now, direction, dturns,
-                       c1, phiwrap, vself, q,
+                       dphase, phiwrap, vself, q,
                        vrf1, vrf1dot, vrf2, vrf2dot,
                        time_at_turn, hratio, phi12, deltae0):
         selfvolt = np.zeros(len(xp))
@@ -306,7 +306,7 @@ class ReconstructCpp:
         if direction > 0:
             profile = int(turn_now / dturns)
             for i in range(dturns):
-                dphi -= c1[turn_now] * denergy
+                dphi -= dphase[turn_now] * denergy
                 turn_now += 1
                 xp = (dphi + phi0[turn_now]
                       - xorigin * h_num * omegarev0[turn_now] * dtbin)
@@ -338,7 +338,7 @@ class ReconstructCpp:
                                 + selfvolt
                                 ) - deltae0[turn_now]
                 turn_now -= 1
-                dphi += c1[turn_now] * denergy
+                dphi += dphase[turn_now] * denergy
                 xp = (dphi + phi0[turn_now]
                       - xorigin * h_num * omegarev0[turn_now] * dtbin)
                 xp = (xp - phiwrap * np.floor(xp / phiwrap)

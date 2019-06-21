@@ -168,7 +168,7 @@ class TestRec(unittest.TestCase):
         yp = np.copy(rv["init_yp"][:406272])
 
         turn_now = self.longtrack_cpp(
-                                xp, yp, ca["omegarev0"], ca["phi0"], ca["c1"],
+                                xp, yp, ca["omegarev0"], ca["phi0"], ca["dphase"],
                                 ca["time_at_turn"], ca["deltaE0"],
                                 np.int32(406272), cv["xorigin"], cv["dtbin"],
                                 cv["debin"], cv["yat0"], cv["phi12"], direction,
@@ -197,7 +197,7 @@ class TestRec(unittest.TestCase):
         yp = np.copy(rv["init_yp"][:406272])
 
         turn_now = self.longtrack_cpp(
-                                xp, yp, ca["omegarev0"], ca["phi0"], ca["c1"],
+                                xp, yp, ca["omegarev0"], ca["phi0"], ca["dphase"],
                                 ca["time_at_turn"], ca["deltaE0"],
                                 np.int32(406272), cv["xorigin"], cv["dtbin"],
                                 cv["debin"], cv["yat0"], cv["phi12"], direction,

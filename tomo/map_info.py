@@ -28,7 +28,7 @@ class MapInfo:
                                 timespace.par.vrf2,
                                 timespace.par.vrf2dot,
                                 timespace.par.yat0,
-                                timespace.par.c1,
+                                timespace.par.dphase,
                                 timespace.par.q,
                                 timespace.par.e0,
                                 timespace.par.phi0,
@@ -52,7 +52,7 @@ class MapInfo:
     # This is the main function of the class
     def _find_ijlimits(self, beam_ref_frame, dturns, profile_length,
                        full_pp_flag, x_origin, dtbin, h_num, omega_rev0,
-                       vrf1, vrf1dot, vrf2, vrf2dot, yat0, c1, q, e0,
+                       vrf1, vrf1dot, vrf2, vrf2dot, yat0, dphase, q, e0,
                        phi0, eta0, demax, beta0, h_ratio, phi12,
                        time_at_turn, filmstart, filmstop, filmstep,
                        profile_mini, profile_maxi):
@@ -73,7 +73,7 @@ class MapInfo:
                                      vrf2,
                                      vrf2dot,
                                      yat0,
-                                     c1,
+                                     dphase,
                                      profile_length,
                                      q,
                                      e0,
@@ -118,7 +118,7 @@ class MapInfo:
                                                           h_num,
                                                           yat0,
                                                           q,
-                                                          c1,
+                                                          dphase,
                                                           phi0,
                                                           vrf1,
                                                           vrf1dot,
@@ -151,7 +151,7 @@ class MapInfo:
         return jmin, jmax, imin, imax, dEbin, allbin_min, allbin_max
 
     # Calculates, and returns dEbin
-    def _energy_binning(self, vrf1, vrf1dot, vrf2, vrf2dot, yat0, c1,
+    def _energy_binning(self, vrf1, vrf1dot, vrf2, vrf2dot, yat0, dphase,
                         profile_length, q, e0, phi0, h_num, eta0,
                         dtbin, omega_rev0, demax, beta0, h_ratio,
                         phi12, time_at_turn, phases, turn):
@@ -164,7 +164,7 @@ class MapInfo:
                                                      phases[0],
                                                      delta_e_known,
                                                      q,
-                                                     c1,
+                                                     dphase,
                                                      phi0,
                                                      vrf1,
                                                      vrf1dot,
@@ -179,7 +179,7 @@ class MapInfo:
                                                     phases[profile_length],
                                                     delta_e_known,
                                                     q,
-                                                    c1,
+                                                    dphase,
                                                     phi0,
                                                     vrf1,
                                                     vrf1dot,
@@ -209,7 +209,7 @@ class MapInfo:
     def _extrema_active_pxlenergy(self, filmstart, filmstop, filmstep,
                                   dturns, profile_length, indarr, dEbin,
                                   x_origin, dtbin, omega_rev0, h_num, yat0,
-                                  q, c1, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
+                                  q, dphase, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
                                   h_ratio, phi12, time_at_turn):
         # index of min and max energy (in bins)
         allbin_min = np.zeros(filmstop, dtype=int)
@@ -232,7 +232,7 @@ class MapInfo:
             jmax[film, :] = self._find_jmax(profile_length,
                                             yat0,
                                             q,
-                                            c1,
+                                            dphase,
                                             phi0,
                                             vrf1,
                                             vrf1dot,
@@ -260,7 +260,7 @@ class MapInfo:
 
     # Function for finding jmax for each bin in profile
     # Variable inputs for each profile are turn and phases
-    def _find_jmax(self, profile_length, yat0, q, c1, phi0,
+    def _find_jmax(self, profile_length, yat0, q, dphase, phi0,
                    vrf1, vrf1dot, vrf2, vrf2dot, h_ratio,
                    phi12, time_at_turn, phases, turn, dEbin):
 
@@ -276,7 +276,7 @@ class MapInfo:
                                             phases[0],
                                             energy,
                                             q,
-                                            c1,
+                                            dphase,
                                             phi0,
                                             vrf1,
                                             vrf1dot,
@@ -294,7 +294,7 @@ class MapInfo:
                                             phases[profile_length],
                                             energy,
                                             q,
-                                            c1,
+                                            dphase,
                                             phi0,
                                             vrf1,
                                             vrf1dot,
@@ -432,11 +432,11 @@ class MapInfo:
 
     # This is a trajectory height calculator given a phase and energy.
     @staticmethod
-    def trajectoryheight(phi, phi_known, delta_e_known, q, c1,
+    def trajectoryheight(phi, phi_known, delta_e_known, q, dphase,
                          phi0, vrf1, vrf1dot, vrf2, vrf2dot,
                          h_ratio, phi12, time_at_turn, turn_now):
         temp1 = delta_e_known**2
-        temp2 = 2.0 * q / float(c1[turn_now])
+        temp2 = 2.0 * q / float(dphase[turn_now])
         temp3 = (physics.vrft(vrf1, vrf1dot, turn_now)
                  * (np.cos(phi) - np.cos(phi_known))
                  + physics.vrft(vrf2, vrf2dot, turn_now)

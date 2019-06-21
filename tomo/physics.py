@@ -114,8 +114,8 @@ def phase_slip_factor(parameters):
     return (1.0 - parameters.beta0**2) - parameters.trans_gamma**(-2)
 
 
-# Find coefficient "c1" at each turn, TODO: find out what it is.
-def find_c1(parameters):
+# Find dphase at each turn
+def find_dphase(parameters):
     return (2 * np.pi * parameters.h_num * parameters.eta0
             / (parameters.e0 * parameters.beta0**2))
 

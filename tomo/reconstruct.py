@@ -172,7 +172,7 @@ class Reconstruct:
                                                 turn_now,
                                                 direction,
                                                 timespace.par.dturns,
-                                                timespace.par.c1,
+                                                timespace.par.dphase,
                                                 timespace.par.phiwrap,
                                                 timespace.vself,
                                                 timespace.par.q,
@@ -198,7 +198,7 @@ class Reconstruct:
                                                 timespace.par.dtbin,
                                                 timespace.par.phi0,
                                                 timespace.par.yat0,
-                                                timespace.par.c1,
+                                                timespace.par.dphase,
                                                 timespace.par.deltaE0,
                                                 timespace.par.vrf1,
                                                 timespace.par.vrf1dot,
@@ -344,7 +344,7 @@ class Reconstruct:
     @staticmethod
     @njit
     def longtrack(direction, nrep, yp, xp, dEbin, turn_now, x_origin,
-                  h_num, omega_rev0, dtbin, phi0, yat0, c1, deltaE0,
+                  h_num, omega_rev0, dtbin, phi0, yat0, dphase, deltaE0,
                   vrf1, vrf1dot, vrf2, vrf2dot, time_at_turn,
                   h_ratio, phi12, q):
 
@@ -354,7 +354,7 @@ class Reconstruct:
 
         if direction > 0:
             for i in range(nrep):
-                dphi -= c1[turn_now] * denergy
+                dphi -= dphase[turn_now] * denergy
                 turn_now += 1
                 denergy += q * (vrft(vrf1, vrf1dot, time_at_turn[turn_now])
                                 * np.sin(dphi + phi0[turn_now])
@@ -371,7 +371,7 @@ class Reconstruct:
                                          * (dphi + phi0[turn_now] - phi12))
                                 ) - deltaE0[turn_now]
                 turn_now -= 1
-                dphi += c1[turn_now] * denergy
+                dphi += dphase[turn_now] * denergy
         xp = ((dphi + phi0[turn_now])
               / (float(h_num) * omega_rev0[turn_now] * dtbin)
               - x_origin)
@@ -384,7 +384,7 @@ class Reconstruct:
     def longtrack_self(xp, yp, xorigin, h_num,
                        omegarev0, dtbin, phi0, yat0,
                        debin, turn_now, direction, dturns,
-                       c1, phiwrap, vself, q,
+                       dphase, phiwrap, vself, q,
                        vrf1, vrf1dot, vrf2, vrf2dot,
                        time_at_turn, hratio, phi12, deltae0):
         selfvolt = np.zeros(len(xp))
@@ -394,7 +394,7 @@ class Reconstruct:
         if direction > 0:
             profile = int(turn_now / dturns)
             for i in range(dturns):
-                dphi -= c1[turn_now] * denergy
+                dphi -= dphase[turn_now] * denergy
                 turn_now += 1
                 xp = (dphi + phi0[turn_now]
                       - xorigin * h_num * omegarev0[turn_now] * dtbin)
@@ -426,7 +426,7 @@ class Reconstruct:
                                 + selfvolt
                                 ) - deltae0[turn_now]
                 turn_now -= 1
-                dphi += c1[turn_now] * denergy
+                dphi += dphase[turn_now] * denergy
                 xp = (dphi + phi0[turn_now]
                       - xorigin * h_num * omegarev0[turn_now] * dtbin)
                 xp = (xp - phiwrap * np.floor(xp / phiwrap)
