@@ -15,24 +15,43 @@
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
+            <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1920">
-                  <caret line="548" column="46" selection-start-line="548" selection-start-column="46" selection-end-line="548" selection-end-column="46" />
+                <state relative-caret-position="1511">
+                  <caret line="303" selection-start-line="303" selection-end-line="303" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
+                    <element signature="e#4450#5240#0" />
+                    <element signature="e#5363#5769#0" />
+                    <element signature="e#5888#6012#0" />
+                    <element signature="e#6203#7457#0" />
+                    <element signature="e#7557#7833#0" />
+                    <element signature="e#7938#8482#0" />
+                    <element signature="e#8596#8731#0" />
+                    <element signature="e#8896#9368#0" />
+                    <element signature="e#9628#10335#0" />
+                    <element signature="e#10628#11185#0" />
+                    <element signature="e#11403#13141#0" />
+                    <element signature="e#13263#13606#0" />
+                    <element signature="e#13727#13780#0" />
+                    <element signature="e#13918#13990#0" />
+                    <element signature="e#14258#14583#0" />
+                    <element signature="e#14784#15165#0" />
+                    <element signature="e#15418#16651#0" />
+                    <element signature="e#16916#17431#0" />
+                    <element signature="e#17495#17587#0" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
+            <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="314">
-                  <caret line="343" lean-forward="true" selection-start-line="343" selection-end-line="343" />
+                <state relative-caret-position="138">
+                  <caret line="520" column="53" selection-start-line="520" selection-start-column="53" selection-end-line="520" selection-end-column="53" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -43,7 +62,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tomo/physics.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="685">
+                <state relative-caret-position="2265">
                   <caret line="153" column="33" selection-start-line="153" selection-start-column="33" selection-end-line="153" selection-end-column="33" />
                 </state>
               </provider>
@@ -52,12 +71,15 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="505">
-                  <caret line="336" column="36" lean-forward="true" selection-start-line="336" selection-start-column="36" selection-end-line="336" selection-end-column="36" />
+                <state relative-caret-position="355">
+                  <caret line="326" column="4" selection-start-line="326" selection-start-column="4" selection-end-line="326" selection-end-column="4" />
+                  <caret line="327" column="4" selection-start-line="327" selection-start-column="4" selection-end-line="327" selection-end-column="4" />
+                  <caret line="328" column="4" selection-start-line="328" selection-start-column="4" selection-end-line="328" selection-end-column="4" />
+                  <caret line="329" column="4" selection-start-line="329" selection-start-column="4" selection-end-line="329" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#15#0" expanded="true" />
                     <element signature="e#238#255#0" />
@@ -82,7 +104,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>INPUT_DIR</find>
       <find>make_out_dir</find>
       <find>find_input_path</find>
       <find>dirr</find>
@@ -112,6 +133,7 @@
       <find>deltaE0</find>
       <find>c1</find>
       <find>bunch_phaselength</find>
+      <find>g_coupling</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -174,8 +196,8 @@
         <option value="$PROJECT_DIR$/tomo/physics.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_physics.py" />
         <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
-        <option value="$PROJECT_DIR$/tomo/parameters.py" />
         <option value="$PROJECT_DIR$/tomo/time_space.py" />
+        <option value="$PROJECT_DIR$/tomo/parameters.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
       </list>
     </option>
@@ -338,13 +360,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00006" summary="Git now ignores .dat, .data nd .npy files">
-      <created>1558357823592</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1558357823592</updated>
     </task>
     <task id="LOCAL-00007" summary="Ready to run">
       <created>1558358132302</created>
@@ -682,7 +697,14 @@
       <option name="project" value="LOCAL" />
       <updated>1561124684048</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="Disabled assertions for self field parameter input">
+      <created>1561130862015</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1561130862015</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -736,13 +758,13 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49261603" weight="0.36008024" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49419832" visible="true" weight="0.3089268" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49419832" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50738394" side_tool="true" visible="true" weight="0.36208627" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50738394" side_tool="true" visible="true" weight="0.36308926" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
       <window_info anchor="bottom" id="Messages" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -751,7 +773,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added c++ version of longtrack.&#10;&#10; - c++ longtrack now only works in forward direction.&#10; - added function for testing c++ and numba longtrack separated." />
     <MESSAGE value="Very small changes" />
     <MESSAGE value="A tiny bit of optimization" />
     <MESSAGE value="Optimizing" />
@@ -776,7 +797,8 @@
     <MESSAGE value="Namechanges, documentation and a small bugfix&#10;&#10;- c1 is now dphi&#10;- written documentation for parameters and time space module&#10;- bugfix in calculating machine parameters when m.ref.frame &gt; 1&#10;- .so files are again ignored" />
     <MESSAGE value="Added description of class" />
     <MESSAGE value="More documentation" />
-    <option name="LAST_COMMIT_MESSAGE" value="More documentation" />
+    <MESSAGE value="Disabled assertions for self field parameter input" />
+    <option name="LAST_COMMIT_MESSAGE" value="Disabled assertions for self field parameter input" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -1068,27 +1090,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/physics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="685">
-          <caret line="153" column="33" selection-start-line="153" selection-start-column="33" selection-end-line="153" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
           <caret line="14" column="62" lean-forward="true" selection-start-line="14" selection-start-column="62" selection-end-line="14" selection-end-column="62" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1920">
-          <caret line="548" column="46" selection-start-line="548" selection-start-column="46" selection-end-line="548" selection-end-column="46" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -1102,10 +1107,46 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/physics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2265">
+          <caret line="153" column="33" selection-start-line="153" selection-start-column="33" selection-end-line="153" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="343" lean-forward="true" selection-start-line="343" selection-end-line="343" />
+        <state relative-caret-position="1511">
+          <caret line="303" selection-start-line="303" selection-end-line="303" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#4450#5240#0" />
+            <element signature="e#5363#5769#0" />
+            <element signature="e#5888#6012#0" />
+            <element signature="e#6203#7457#0" />
+            <element signature="e#7557#7833#0" />
+            <element signature="e#7938#8482#0" />
+            <element signature="e#8596#8731#0" />
+            <element signature="e#8896#9368#0" />
+            <element signature="e#9628#10335#0" />
+            <element signature="e#10628#11185#0" />
+            <element signature="e#11403#13141#0" />
+            <element signature="e#13263#13606#0" />
+            <element signature="e#13727#13780#0" />
+            <element signature="e#13918#13990#0" />
+            <element signature="e#14258#14583#0" />
+            <element signature="e#14784#15165#0" />
+            <element signature="e#15418#16651#0" />
+            <element signature="e#16916#17431#0" />
+            <element signature="e#17495#17587#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="138">
+          <caret line="520" column="53" selection-start-line="520" selection-start-column="53" selection-end-line="520" selection-end-column="53" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -1114,8 +1155,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="505">
-          <caret line="336" column="36" lean-forward="true" selection-start-line="336" selection-start-column="36" selection-end-line="336" selection-end-column="36" />
+        <state relative-caret-position="355">
+          <caret line="326" column="4" selection-start-line="326" selection-start-column="4" selection-end-line="326" selection-end-column="4" />
+          <caret line="327" column="4" selection-start-line="327" selection-start-column="4" selection-end-line="327" selection-end-column="4" />
+          <caret line="328" column="4" selection-start-line="328" selection-start-column="4" selection-end-line="328" selection-end-column="4" />
+          <caret line="329" column="4" selection-start-line="329" selection-start-column="4" selection-end-line="329" selection-end-column="4" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
             <element signature="e#238#255#0" />

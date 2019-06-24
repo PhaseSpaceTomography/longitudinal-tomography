@@ -318,20 +318,16 @@ class TestParameters(unittest.TestCase):
         with self.assertRaises(Exception):
             self.par._assert_input()
 
-    # def test_bad_zwall_over_n(self):
-    #     self.par.zwall_over_n = -0.01
-    #     with self.assertRaises(Exception):
-    #         self.par._assert_input()
 
-    # def test_bad_pickup_sensitivity(self):
-    #     self.par.pickup_sensitivity = -1.0
-    #     with self.assertRaises(Exception):
-    #         self.par._assert_input()
+    def test_bad_pickup_sensitivity(self):
+        self.par.pickup_sensitivity = -1.0
+        with self.assertRaises(Exception):
+            self.par._assert_input()
 
-    # def test_bad_g_coupling(self):
-    #     self.par.g_coupling = -10.0
-    #     with self.assertRaises(Exception):
-    #         self.par._assert_input()
+    def test_bad_g_coupling(self):
+        self.par.g_coupling = -10.0
+        with self.assertRaises(Exception):
+            self.par._assert_input()
 
     def test_bad_profile_length(self):
         self.par.profile_length = -1
