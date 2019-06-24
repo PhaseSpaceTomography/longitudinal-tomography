@@ -70,15 +70,15 @@ from utils.exceptions import (InputError,
 # ======================
 # Arrays with information for each machine turn:
 # ----------------------------------------------
-# time_at_turn      Time at each turn, relative to machine_ref_frame
+# time_at_turn      Time at each turn, relative to machine_ref_frame at the end of each turn
 # omega_rev0        Revolution frequency at each turn
-# phi0              Synchronous phase angle at each turn
+# phi0              Synchronous phase angle at the end of each turn
 # dphase            Coefficient used for calculating difference from phase n to phase n + 1.
 #                       needed in trajectory height calculator and longtrack.
 # sfc               Self-field_coefficient
-# beta0             Lorenz beta factor (v/c) at each turn
+# beta0             Lorenz beta factor (v/c) at the end of each turn
 # eta0              Phase slip factor at each turn
-# e0                Total energy of synchronous particle at each turn
+# e0                Total energy of synchronous particle at the end of each turn
 # deltaE0           Difference between total energy at the end of the turns n and n-1
 #
 # calculated variables:
@@ -338,9 +338,9 @@ class Parameters:
         else:
             raise AssertionError("Could not open file: " + file_name)
 
-    # Subroutine for setting up parameters based on given input
+    # Subroutine for setting up parameters based on given input file.
+    # Values are calculated immediately after the 'single' cavity of the ring
     def _init_parameters(self):
-
         self._calc_parameter_arrays()
 
         # Changes due to re-bin factor > 1
@@ -381,6 +381,7 @@ class Parameters:
         self.e0[i0] = physics.b_to_e(self)
         self.beta0[i0] = physics.lorenz_beta(self, i0)
         phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
+        # Synchronous phase of a particle on the nominal orbit
         self.phi0[i0] = physics.find_synch_phase(self, i0, phi_lower,
                                                  phi_upper)
         return i0
