@@ -92,6 +92,8 @@ class MapInfo:
                                 timespace.par.filmstep,
                                 timespace.par.profile_mini,
                                 timespace.par.profile_maxi)
+
+        # Ensuring that the array shapes are valid
         self._assert_correct_arrays(timespace)
 
     # Main function for the class. finds limits in i and j axis.
