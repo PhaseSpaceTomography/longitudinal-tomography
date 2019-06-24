@@ -79,6 +79,10 @@ class EnergyLimitsError(Exception):
 class PhaseLimitsError(Exception):
     pass
 
+
+class MapCreationError(Exception):
+    pass
+
 # ============================
 # TOMOGRAPHY EXCEPTIONS
 # ============================

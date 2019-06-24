@@ -94,7 +94,7 @@ class TestMap(unittest.TestCase):
 
         (jmin, jmax,
          allbin_min,
-         allbin_max) = MapInfo._limits_track_allpxl(
+         allbin_max) = MapInfo._limits_track_all_pxl(
                             MapInfo, cv["filmstop"],
                             cv["reb_profile_length"], cv["yat0"])
 
@@ -117,7 +117,7 @@ class TestMap(unittest.TestCase):
         (jmin,
          jmax,
          allbin_min,
-         allbin_max) = TestMap.mi._extrema_active_pxlenergy(
+         allbin_max) = TestMap.mi._limits_track_active_pxl(
                                 cv["filmstart"], cv["filmstop"],
                                 cv["filmstep"], cv["dturns"],
                                 cv["reb_profile_length"], indarr,

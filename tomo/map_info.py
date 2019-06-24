@@ -2,18 +2,67 @@ import numpy as np
 import logging
 import physics
 from utils.assertions import TomoAssertions as ta
-from utils.exceptions import *
+from utils.exceptions import (EnergyBinningError,
+                              EnergyLimitsError,
+                              PhaseLimitsError,
+                              MapCreationError)
+# ===============
+# About the class
+# ===============
+# There are two reference systems in the tomography routine:
+#    i) The reconstructed phase space coordinate system which has its origin at some minimum phase,
+#        where the x-bins are dtbin wide and the y-bins are dEbin wide.
+#    ii) The physical coordinates expressed in energy energy and phase wrt. the sync. particle
+#
+#
+# This class produces and sets the limits in i (phase) and j (energy).
+# The i-j coordinate system is the one used locally for the reconstructed phase space.
+#
+# =======
+# Example
+# =======
+#
+#
+# ^ j (energy)
+# |xxxxxxxxxxxxxxxxxxxx
+# |xxxxxxxxxxxxxxxxxxxx
+# |xxxxxxxx...xxxxxxxxx
+# |xxxxxx.......xxxxxxx
+# |xxxxx.........xxxxxx
+# |xxxxxx.......xxxxxxx
+# |xxxxxxxx...xxxxxxxxx
+# |xxxxxxxxxxxxxxxxxxxx     i (phase)
+# -------------------------->
+#
+# x - not active pixel (unless full_pp_flag)
+# o - active pixel
+#
+# If full_pp_flag is true will all the pixels, marked both wit 'x' and '.' be tracked.
+# Else, will only the picels marked with '.' be tracked.
+# The tracked area is made by the out of the combination of the i and j limits.
+#
+# ================
+# Object variables
+# ================
+#
+# imin, imax        Lower and upper limit in 'i' (phase) of the i-j coordinate system.
+# jmin, jmax        Lower and upper limit in 'j' (energy) of the i-j coordinate system.
+# dEbin             Phase space pixel height (in j direction) [MeV]
+# allbin_min/max    imin and imax as calculated from jmax and jmin.
+#                     Used unless they fall outside the borders of profile_mini or -_maxi stated in parameters,
+#                     or if full_pp_flag (track all pixels) is true.
+
 
 class MapInfo:
 
     def __init__(self, timespace):
 
-        (self.jmin,         # minimum energy
-         self.jmax,         # maximum energy
-         self.imin,         # Minimum phase in profile
-         self.imax,         # Maximum phase in profile
-         self.dEbin,        # Phase space pixel height
-         self.allbin_min,   # imin and imax as calculated from jmax and jmin
+        (self.jmin,
+         self.jmax,
+         self.imin,
+         self.imax,
+         self.dEbin,
+         self.allbin_min,
          self.allbin_max) = self._find_ijlimits(
                                 timespace.par.beam_ref_frame,
                                 timespace.par.dturns,
@@ -45,11 +94,11 @@ class MapInfo:
                                 timespace.par.profile_maxi)
         self._assert_correct_arrays(timespace)
 
-    # This procedure calculates and sets the limits
-    # 	in i (phase) and j (energy).
-    # The i-j coordinate system is the one used locally
-    # 	(reconstructed phase space).
-    # This is the main function of the class
+    # Main function for the class. finds limits in i and j axis.
+    # Local variables:
+    #   - turn_now: machine turn (=0 at profile = 0)
+    #   - indarr: array holding numbers from 0 to (profile length + 1)
+    #   - phases: phase at the edge of each bin along the i-axis
     def _find_ijlimits(self, beam_ref_frame, dturns, profile_length,
                        full_pp_flag, x_origin, dtbin, h_num, omega_rev0,
                        vrf1, vrf1dot, vrf2, vrf2dot, yat0, dphase, q, e0,
@@ -57,7 +106,7 @@ class MapInfo:
                        time_at_turn, filmstart, filmstop, filmstep,
                        profile_mini, profile_maxi):
 
-        turn_now = (beam_ref_frame - 1)*dturns
+        turn_now = (beam_ref_frame - 1) * dturns
         indarr = np.arange(profile_length + 1)
 
         phases = self.calculate_phases_turn(x_origin,
@@ -67,7 +116,6 @@ class MapInfo:
                                             profile_length,
                                             indarr)
 
-        # Calculate  energy pixel size [MeV]
         dEbin = self._energy_binning(vrf1,
                                      vrf1dot,
                                      vrf2,
@@ -90,45 +138,41 @@ class MapInfo:
                                      phases,
                                      turn_now)
 
-        ta.assert_greater(dEbin, 'dEbin', 0, EnergyBinningError)
+        ta.assert_greater(dEbin, 'dEbin', 0.0, EnergyBinningError)
 
         if full_pp_flag == 1:
-            # Calculates limits for tracking all pixels
             (jmin,
              jmax,
              allbin_min,
-             allbin_max) = self._limits_track_allpxl(filmstop,
-                                                     profile_length,
-                                                     yat0)
+             allbin_max) = self._limits_track_all_pxl(filmstop,
+                                                      profile_length,
+                                                      yat0)
         else:
-            # Finding limits for tracking all active pixels
             (jmin,
              jmax,
              allbin_min,
-             allbin_max) = self._extrema_active_pxlenergy(filmstart,
-                                                          filmstop,
-                                                          filmstep,
-                                                          dturns,
-                                                          profile_length,
-                                                          indarr,
-                                                          dEbin,
-                                                          x_origin,
-                                                          dtbin,
-                                                          omega_rev0,
-                                                          h_num,
-                                                          yat0,
-                                                          q,
-                                                          dphase,
-                                                          phi0,
-                                                          vrf1,
-                                                          vrf1dot,
-                                                          vrf2,
-                                                          vrf2dot,
-                                                          h_ratio,
-                                                          phi12,
-                                                          time_at_turn)
-
-
+             allbin_max) = self._limits_track_active_pxl(filmstart,
+                                                         filmstop,
+                                                         filmstep,
+                                                         dturns,
+                                                         profile_length,
+                                                         indarr,
+                                                         dEbin,
+                                                         x_origin,
+                                                         dtbin,
+                                                         omega_rev0,
+                                                         h_num,
+                                                         yat0,
+                                                         q,
+                                                         dphase,
+                                                         phi0,
+                                                         vrf1,
+                                                         vrf1dot,
+                                                         vrf2,
+                                                         vrf2dot,
+                                                         h_ratio,
+                                                         phi12,
+                                                         time_at_turn)
 
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
@@ -150,16 +194,19 @@ class MapInfo:
 
         return jmin, jmax, imin, imax, dEbin, allbin_min, allbin_max
 
-    # Calculates, and returns dEbin
+    # Calculating the difference of energy of one pixel.
+    # This will be the height of each pixel in the physical coordinate system
     def _energy_binning(self, vrf1, vrf1dot, vrf2, vrf2dot, yat0, dphase,
                         profile_length, q, e0, phi0, h_num, eta0,
                         dtbin, omega_rev0, demax, beta0, h_ratio,
                         phi12, time_at_turn, phases, turn):
         delta_e_known = 0.0
+        ta.assert_not_equal(demax, 'dEmax',
+                            0.0, EnergyBinningError,
+                            'The specified maximum energy of '
+                            'reconstructed phase space is invalid.')
         if demax < 0.0:
             if physics.vrft(vrf2, vrf2dot, turn) != 0.0:
-                # finding maximum energy starting from lowest phase
-                # 	and uppermost phase respectively
                 energies_low = self.trajectoryheight(phases,
                                                      phases[0],
                                                      delta_e_known,
@@ -205,17 +252,30 @@ class MapInfo:
         else:
             return float(demax) / (profile_length - yat0)
 
-    # Extrema of active pixels in energy (j-index or y-index) direction.
-    def _extrema_active_pxlenergy(self, filmstart, filmstop, filmstep,
+    # Finding limits for tracking all pixels in reconstructed phase space.
+    def _limits_track_all_pxl(self, filmstop, profile_length, yat0):
+        allbin_min = np.zeros(filmstop, dtype=np.int32)
+        allbin_max = np.zeros(filmstop, dtype=np.int32)
+
+        jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
+        jmin = np.copy(jmax)
+
+        jmax[:, :] = profile_length
+        jmin[:, :] = np.ceil(2.0 * yat0 - jmax[:] + 0.5)
+
+        allbin_min[0] = np.int32(0)
+        allbin_max[0] = np.int32(profile_length)
+        return jmin, jmax, allbin_min, allbin_max
+
+    # Finding limits for tracking active pixels (stated in parameters)
+    def _limits_track_active_pxl(self, filmstart, filmstop, filmstep,
                                   dturns, profile_length, indarr, dEbin,
                                   x_origin, dtbin, omega_rev0, h_num, yat0,
                                   q, dphase, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
                                   h_ratio, phi12, time_at_turn):
-        # index of min and max energy (in bins)
-        allbin_min = np.zeros(filmstop, dtype=int)
-        allbin_max = np.zeros(filmstop, dtype=int)
+        allbin_min = np.zeros(filmstop)
+        allbin_max = np.zeros(filmstop)
 
-        # initializing matrix with zeroes.
         jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
         jmin = np.copy(jmax)
 
@@ -258,8 +318,7 @@ class MapInfo:
 
         return jmin, jmax, allbin_min, allbin_max
 
-    # Function for finding jmax for each bin in profile
-    # Variable inputs for each profile are turn and phases
+    # Function for finding maximum energy (j max) for each bin in the profile
     def _find_jmax(self, profile_length, yat0, q, dphase, phi0,
                    vrf1, vrf1dot, vrf2, vrf2dot, h_ratio,
                    phi12, time_at_turn, phases, turn, dEbin):
@@ -311,55 +370,34 @@ class MapInfo:
             jmax[i] = min([jmax_up[i], jmax_up[i + 1],
                            jmax_low[i], jmax_low[i + 1],
                            profile_length])
-
-
         return jmax
 
-    # Function for finding jmin for each bin in profile
-    # Variable input for each profile is array of jmax
+    # Function for finding minimum energy (j min) for each bin in profile
+    # Checking each element if less than threshold, in such cases will threshold be used.
     def _find_jmin(self, yat0, jmax_array, threshold=1):
         jmin_array = np.ceil(2.0 * yat0 - jmax_array[:] - 0.5)
-        #  Check each element if less than threshold,
-        #  	if true, threshold will be used.
         return np.where(jmin_array[:] >= threshold, jmin_array[:], threshold)
 
-    # Finding minimum and maximum of all bin
+    # Finding index for minimum phase for profile
     def _find_allbin_min(self, jmin_array, jmax_array, profile_length):
         for i in range(0, profile_length):
             if jmax_array[i] - jmin_array[i] >= 0:
                 return i
 
+    # Finding index for maximum phase for profile
     def _find_allbin_max(self, jmin_array, jmax_array, profile_length):
         for i in range(profile_length - 1, 0, -1):
             if jmax_array[i] - jmin_array[i] >= 0:
                 return i
 
-    # Set limits in i and j if full_PP_track flag is high\
-    # Will track all pixels.
-    def _limits_track_allpxl(self, filmstop, profile_length, yat0):
-
-        # initializing matrix with zeroes.
-        allbin_min = np.zeros(filmstop, dtype=int)
-        allbin_max = np.zeros(filmstop, dtype=int)
-        jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
-        jmin = np.copy(jmax)
-
-        jmax[:, :] = profile_length
-        jmin[:, :] = np.ceil(2.0 * yat0 - jmax[:] + 0.5)
-
-        allbin_min[0] = int(0)
-        allbin_max[0] = int(profile_length)
-        return jmin, jmax, allbin_min, allbin_max
-
     # Adjustment of limits in relation to
     # 	specified input min/max index and found max/min in profile.
-    # 	E.g. if profileMinIndex is greater than allbin_min, use profileMinIndex.
+    # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates limits in i axis.
     def _adjust_limits(self, filmstart, filmstop, filmstep,
                        full_pp_flag, profile_mini, profile_maxi,
                        yat0, profile_length, jmax, jmin,
                        allbin_min, allbin_max):
-        # imin, imax: Minimum and maximum values at phase axis for profiles
         imin = np.zeros(filmstop, dtype=int)
         imax = np.zeros(filmstop, dtype=int)
         for film in range(filmstart - 1, filmstop, filmstep):
@@ -379,20 +417,20 @@ class MapInfo:
 
         return jmin, jmax, imin, imax
 
-    # Returns an array of phases for the given turn
+    # Returns an array of phases for a given turn
     def calculate_phases_turn(self, x_origin, dtbin, h_num,
                               omega_rev0_at_turn, profile_length,
                               indarr):
-        # phases: phase at the edge of each bin along the i-axis
-        phases = np.zeros(profile_length + 1)
-        phases[0] = (x_origin
-                     * dtbin
-                     * h_num
-                     * omega_rev0_at_turn)
-        phases[0:] = ((x_origin + indarr)
-                      * dtbin
-                      * h_num
-                      * omega_rev0_at_turn)
+        ta.assert_equal(len(indarr),
+                        'index array length',
+                        profile_length + 1,
+                        MapCreationError,
+                        'The index array should have length '
+                        'profile_length + 1')
+        phases = ((x_origin + indarr)
+                  * dtbin
+                  * h_num
+                  * omega_rev0_at_turn)
         return phases
 
     def _assert_correct_arrays(self, ts):
@@ -430,7 +468,7 @@ class MapInfo:
                                     f'jmin and jmax out of bounds '
                                     f'at film: {film}')
 
-    # This is a trajectory height calculator given a phase and energy.
+    # Trajectory height calculator
     @staticmethod
     def trajectoryheight(phi, phi_known, delta_e_known, q, dphase,
                          phi0, vrf1, vrf1dot, vrf2, vrf2dot,
