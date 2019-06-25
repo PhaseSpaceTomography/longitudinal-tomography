@@ -21,10 +21,6 @@ class ReconstructCpp:
         self.reversedweights = []
         self.fmlistlength = timespace.par.snpt**2
 
-        ta.assert_equal(self.mapinfo.jmin.shape, 'jmin',
-                        self.mapinfo.jmax.shape, ArrayLengthError,
-                        'jmin and jmax should have the same shape')
-
         tomolib = ctypes.CDLL(
                     os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
                     + '/cpp_files/tomolib.so')

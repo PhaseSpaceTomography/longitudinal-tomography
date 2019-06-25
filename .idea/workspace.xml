@@ -4,6 +4,7 @@
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/map_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/map_info.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/reconstruct_c.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_c.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,12 +13,12 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="25" column="67" lean-forward="true" selection-start-line="25" selection-start-column="67" selection-end-line="25" selection-end-column="67" />
+            <state relative-caret-position="180">
+              <caret line="21" column="49" selection-start-line="21" selection-start-column="49" selection-end-line="21" selection-end-column="49" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -28,23 +29,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo/map_info.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="479">
-              <caret line="95" column="8" selection-start-line="95" selection-start-column="8" selection-end-line="95" selection-end-column="8" />
+            <state relative-caret-position="387">
+              <caret line="498" column="29" lean-forward="true" selection-start-line="498" selection-start-column="29" selection-end-line="498" selection-end-column="29" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#8930#11612#0" />
-                <element signature="e#11766#12197#0" />
-                <element signature="e#12643#14602#0" />
-                <element signature="e#14875#17109#0" />
-                <element signature="e#17340#17472#0" />
-                <element signature="e#17651#17714#0" />
-                <element signature="e#17846#17964#0" />
-                <element signature="e#18422#19227#0" />
-                <element signature="e#19452#19872#0" />
-                <element signature="e#19924#21697#0" />
-                <element signature="e#21954#22913#0" />
-                <element signature="e#22998#23501#0" />
-                <element signature="e#23590#26341#0" />
               </folding>
             </state>
           </provider>
@@ -146,7 +134,6 @@
         <option value="$PROJECT_DIR$/tomo/tomography.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
         <option value="$PROJECT_DIR$/tomo/reconstruct.py" />
-        <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/tomo/physics.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_physics.py" />
@@ -155,6 +142,7 @@
         <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
         <option value="$PROJECT_DIR$/tomo/parameters.py" />
+        <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
         <option value="$PROJECT_DIR$/tomo/map_info.py" />
       </list>
     </option>
@@ -318,13 +306,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00010" summary="Moved C500values from resources to unit_tests">
-      <created>1558428186391</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1558428186391</updated>
     </task>
     <task id="LOCAL-00011" summary="Adding directory to sys.path for correcting importing trouble&#10;&#10;Also changes in the import calls due to this change.">
       <created>1558446036171</created>
@@ -662,7 +643,14 @@
       <option name="project" value="LOCAL" />
       <updated>1561384220353</updated>
     </task>
-    <option name="localTasksCounter" value="59" />
+    <task id="LOCAL-00059" summary="More documentation">
+      <created>1561387189085</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1561387189085</updated>
+    </task>
+    <option name="localTasksCounter" value="60" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -715,14 +703,14 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49156117" visible="true" weight="0.36008024" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49156117" weight="0.36008024" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49314347" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5084388" side_tool="true" visible="true" weight="0.36008024" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5084388" side_tool="true" visible="true" weight="0.36108324" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
       <window_info anchor="bottom" id="Messages" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -1143,8 +1131,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="25" column="67" lean-forward="true" selection-start-line="25" selection-start-column="67" selection-end-line="25" selection-end-column="67" />
+        <state relative-caret-position="180">
+          <caret line="21" column="49" selection-start-line="21" selection-start-column="49" selection-end-line="21" selection-end-column="49" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -1153,23 +1141,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/map_info.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="479">
-          <caret line="95" column="8" selection-start-line="95" selection-start-column="8" selection-end-line="95" selection-end-column="8" />
+        <state relative-caret-position="387">
+          <caret line="498" column="29" lean-forward="true" selection-start-line="498" selection-start-column="29" selection-end-line="498" selection-end-column="29" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#8930#11612#0" />
-            <element signature="e#11766#12197#0" />
-            <element signature="e#12643#14602#0" />
-            <element signature="e#14875#17109#0" />
-            <element signature="e#17340#17472#0" />
-            <element signature="e#17651#17714#0" />
-            <element signature="e#17846#17964#0" />
-            <element signature="e#18422#19227#0" />
-            <element signature="e#19452#19872#0" />
-            <element signature="e#19924#21697#0" />
-            <element signature="e#21954#22913#0" />
-            <element signature="e#22998#23501#0" />
-            <element signature="e#23590#26341#0" />
           </folding>
         </state>
       </provider>

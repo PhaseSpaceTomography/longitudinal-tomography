@@ -5,7 +5,8 @@ from utils.assertions import TomoAssertions as ta
 from utils.exceptions import (EnergyBinningError,
                               EnergyLimitsError,
                               PhaseLimitsError,
-                              MapCreationError)
+                              MapCreationError,
+                              ArrayLengthError)
 # ===============
 # About the class
 # ===============
@@ -469,6 +470,9 @@ class MapInfo:
                                     EnergyLimitsError,
                                     f'jmin and jmax out of bounds '
                                     f'at film: {film}')
+            ta.assert_equal(self.jmin.shape, 'jmin',
+                            self.jmax.shape, ArrayLengthError,
+                            'jmin and jmax should have the same shape')
 
     # Trajectory height calculator
     @staticmethod
