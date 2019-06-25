@@ -94,7 +94,7 @@ class TestRec(unittest.TestCase):
         mi.jmin = np.array([ca["jmin"]])
         mi.jmax = np.array([ca["jmax"]])
 
-        needed_maps = TestRec.rec._needed_amount_maps(
+        needed_maps = TestRec.rec._submaps_needed(
                         cv["filmstart"], cv["filmstop"],
                         cv["filmstep"], cv["profile_count"],
                         ca["imin"], ca["imax"],
