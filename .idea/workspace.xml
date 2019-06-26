@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/reconstruct_c.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_c.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_reconstruct_c.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -33,11 +32,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="390">
-              <caret line="26" column="36" lean-forward="true" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
+              <caret line="32" column="22" lean-forward="true" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -46,12 +45,35 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py">
+        <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="13" selection-start-line="13" selection-end-line="13" />
+            <state relative-caret-position="357">
+              <caret line="39" column="28" lean-forward="true" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_c.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="273">
+              <caret line="157" column="62" lean-forward="true" selection-start-line="157" selection-start-column="62" selection-end-line="157" selection-end-column="62" />
+              <folding>
+                <element signature="e#0#15#0" expanded="true" />
+                <element signature="e#367#3590#0" />
+                <element signature="e#3645#3828#0" />
+                <element signature="e#3873#4578#0" />
+                <element signature="e#4622#4860#0" />
+                <element signature="e#4902#5717#0" />
+                <element signature="e#5766#6873#0" />
+                <element signature="e#6921#8247#0" />
+                <element signature="e#8296#9523#0" />
+                <element signature="e#9572#10320#0" />
+                <element signature="e#10369#12148#0" />
+                <element signature="e#12193#13841#0" />
               </folding>
             </state>
           </provider>
@@ -240,7 +262,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests for test_reconstruction.TestRec">
+  <component name="RunManager" selected="Python tests.Nosetests for test_reconstruct_c.TestRec.test_number_of_maps">
     <configuration name="main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -277,7 +299,7 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_map.TestMap.test_track_active_pxl" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_reconstruct_c.TestRec.test_number_of_maps" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -288,22 +310,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_map.TestMap.test_track_active_pxl&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests for test_reconstruct_cpp.TestRec" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="tomo_v3" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_reconstruct_cpp.TestRec&quot;" />
+      <option name="_new_target" value="&quot;test_reconstruct_c.TestRec.test_number_of_maps&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -322,13 +329,28 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="Nosetests for unit_tests.test_reconstruct_c.TestRec" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="tomo_v3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;unit_tests.test_reconstruct_c.TestRec&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Nosetests for test_reconstruct_c.TestRec.test_number_of_maps" />
         <item itemvalue="Python tests.Nosetests for test_reconstruction.TestRec" />
-        <item itemvalue="Python tests.Nosetests for test_reconstruct_cpp.TestRec" />
+        <item itemvalue="Python tests.Nosetests for unit_tests.test_reconstruct_c.TestRec" />
         <item itemvalue="Python.main_testing" />
         <item itemvalue="Python tests.Nosetests for test_map.TestMap" />
-        <item itemvalue="Python tests.Nosetests for test_map.TestMap.test_track_active_pxl" />
       </list>
     </recent_temporary>
   </component>
@@ -342,13 +364,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00012" summary="tomo_action script now changes CWD to where the file is placed.&#10;&#10;tomo_action/main.py can now run from anywhere (hopefully)">
-      <created>1558448413600</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1558448413600</updated>
     </task>
     <task id="LOCAL-00013" summary="test_physics.py can now be ran from anywhere.&#10;&#10;appended .../tomo_v3/tomo in sys.path">
       <created>1558450809961</created>
@@ -686,13 +701,17 @@
       <option name="project" value="LOCAL" />
       <updated>1561445590988</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="Added documentation">
+      <created>1561478534509</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1561478534509</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_parameters_TestParameters_test_remaining_array_values_C500_inn - 2019.06.21 at 10h 40m 03s.xml">
-      <configuration name="Nosetests for test_parameters.TestParameters.test_remaining_array_values_C500_inn" configurationId="tests" />
-    </history-entry>
     <history-entry file="Nosetests_for_test_map_TestMap - 2019.06.24 at 15h 16m 40s.xml">
       <configuration name="Nosetests for test_map.TestMap" configurationId="tests" />
     </history-entry>
@@ -720,6 +739,9 @@
     <history-entry file="Nosetests_for_test_reconstruction_TestRec - 2019.06.25 at 17h 38m 16s.xml">
       <configuration name="Nosetests for test_reconstruction.TestRec" configurationId="tests" />
     </history-entry>
+    <history-entry file="Nosetests_for_test_reconstruct_c_TestRec_test_number_of_maps - 2019.06.26 at 08h 43m 50s.xml">
+      <configuration name="Nosetests for test_reconstruct_c.TestRec.test_number_of_maps" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -734,12 +756,12 @@
     <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49894515" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.36008024" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.36008024" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -755,7 +777,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Now ignoring c++ compiled shared objects" />
     <MESSAGE value="Added compilation script" />
     <MESSAGE value="Added operating system test." />
     <MESSAGE value="Small change in print functions" />
@@ -780,7 +801,8 @@
     <MESSAGE value="Added documentation and assertions for map info module" />
     <MESSAGE value="More documentation" />
     <MESSAGE value="Moved assertion from reconstruct_c to map_info" />
-    <option name="LAST_COMMIT_MESSAGE" value="Moved assertion from reconstruct_c to map_info" />
+    <MESSAGE value="Added documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added documentation" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -1134,26 +1156,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1020">
-          <caret line="37" column="32" lean-forward="true" selection-start-line="37" selection-start-column="32" selection-end-line="37" selection-end-column="32" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="519">
@@ -1184,9 +1186,40 @@
     <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
-          <caret line="26" column="36" lean-forward="true" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
+          <caret line="32" column="22" lean-forward="true" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="39" column="28" lean-forward="true" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_c.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="157" column="62" lean-forward="true" selection-start-line="157" selection-start-column="62" selection-end-line="157" selection-end-column="62" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#367#3590#0" />
+            <element signature="e#3645#3828#0" />
+            <element signature="e#3873#4578#0" />
+            <element signature="e#4622#4860#0" />
+            <element signature="e#4902#5717#0" />
+            <element signature="e#5766#6873#0" />
+            <element signature="e#6921#8247#0" />
+            <element signature="e#8296#9523#0" />
+            <element signature="e#9572#10320#0" />
+            <element signature="e#10369#12148#0" />
+            <element signature="e#12193#13841#0" />
           </folding>
         </state>
       </provider>
