@@ -9,21 +9,26 @@
 
 extern "C"{
 
+    // Function for finding the sum of an array.
     int sum_array_recursive(int arr[], int n){
         if(n <= 0)
             return 0;
         return (sum_array_recursive(arr, n - 1) + arr[n - 1]);
     }
 
+    // Function for calculating one weight factor, and is called by the weight_factor_array function.
+    // The function takes a segment of the xp array and saves the coordinates as integers
+    // to the mapsi array. The values in the mapsi index will be the bins used in the tomography.
+    // the function also saves the weight (number of particles) in each bin to the array mapsw.
     int one_wf(int npt,
-               int * __restrict__ mapsi,// inout
-               int * __restrict__ mapsw,// inout
-               bool * __restrict__ xlog,// inout
-               int * __restrict__ xnumb,// inout
-               int * __restrict__ xvec, // inout
+               int * __restrict__ mapsi, // inout
+               int * __restrict__ mapsw, // inout
+               bool * __restrict__ xlog, // inout
+               int * __restrict__ xnumb, // inout
+               int * __restrict__ xvec,  // inout
                int profile_length,
                int fmlistlength,
-               const double * __restrict__ xp_segment,     // in
+               const double * __restrict__ xp_segment, // in
                int submap){
 
         int isout = 0;
@@ -71,6 +76,8 @@ extern "C"{
         return isout;
     }
 
+    // Iterates through all bins in profile to fill maps with submap indexes,
+    //   mapsi with bin indexes and mapsw with map weights.
     int weight_factor_array(const double * __restrict__ xp, //In
                             const int * __restrict__ jmin,  //In
                             const int * __restrict__ jmax,  //In
@@ -126,6 +133,8 @@ extern "C"{
         return isout;
     }
 
+    // Creates the first map, which has homogeneously distributed particles.
+    // This means that all submaps have npt particles.
     int first_map(const int * __restrict__ jmin, //In
                   const int * __restrict__ jmax, //In
                   int * __restrict__ maps,       //In/Out
@@ -149,5 +158,5 @@ extern "C"{
             }
         }
         return submap;
-    }//firstmap
+    }
 }

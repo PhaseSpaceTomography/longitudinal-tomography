@@ -10,6 +10,7 @@
 
 extern "C"{
 
+    // Calculating array containing differences between bin in i direction
     double* calculate_dphi(const double * __restrict__  xp,
                       int xp_len, 
                       double xorigin, int h_num,
@@ -24,6 +25,7 @@ extern "C"{
         return dphi;
     }
 
+    // Calculating array containing differences in energy between each bin in j direction.
     double* calculate_denergy(const double * __restrict__ yp, int yp_len,
                           double yat0, double dEbin){
         double * denergy = new double[yp_len];
@@ -42,7 +44,11 @@ extern "C"{
                 - deltaE0;
     }
 
-    // Returns current turn_now
+    // Tracking the particles between two profile measurements.
+    // The number of machine turns between the measurements is given by nreps
+    // The direction is for tracking both forward and backward in time
+    // The function will return x and y coordinates of the particles in the bunch (xp, yp)
+    // and the last tracked machine turn.
     int longtrack(double * __restrict__ xp,                  //inout
                   double * __restrict__ yp,                  //inout
                   const double  * __restrict__ omega_rev0,    //in
