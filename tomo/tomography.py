@@ -7,6 +7,21 @@ from utils.exceptions import (ArrayLengthError,
                               ArgumentError,
                               PhaseSpaceReducedToZeroes)
 
+# ===============
+# ABOUT THE CLASS
+# ===============
+#
+# The tomography class is using the ART algorithm.
+# to perform tomography based on the profiles from a timeSpace object
+# and the particle tracking from a Reconstruction object.
+#
+# ========================
+# VARIABLES FOR THIS CLASS
+# ========================
+#
+# darray        Array containing the difference between projections and actual measured profile
+# phase_space   Phase space to be reconstructed. Saved in object as picture as the final output of the program.
+#
 
 class Tomography:
 
@@ -17,25 +32,14 @@ class Tomography:
         self.darray = None
         self.picture = None
 
-        # ta.assert_equal(self.rd.mapsi.shape, 'mapsi shape',
-        #                 self.rd.mapweights.shape,
-        #                 ArrayLengthError,
-        #                 'mapsi should be of the same shape as mapsw')
-        # ta.assert_equal(self.rd.maps.shape, 'maps shape',
-        #                 (self.ts.par.profile_count,
-        #                  self.ts.par.profile_length,
-        #                  self.ts.par.profile_length),
-        #                 ArrayLengthError)
-
+    # The function to be run. Going through the iterative process of the tomography
+    # algorithm. Returns the final recreated picture 'picture' and a history of
+    # the convergence of the recreate phase space in comparison to the actual profile.
     def run(self, reconst_profile_idx):
 
-        ta.assert_inrange(reconst_profile_idx,
-                          'index of profile to reconstruct',
-                          0, self.ts.par.filmstop, ArgumentError)
+        self.validate_reconstruction(reconst_profile_idx)
 
-        darray = np.zeros(self.ts.par.num_iter + 1)
-        phase_space = np.zeros((self.ts.par.profile_length,
-                                self.ts.par.profile_length))
+        darray, phase_space = self.init_arrays()
 
         self.backproject(self.ts.profiles,
                          phase_space,
@@ -52,11 +56,8 @@ class Tomography:
                          self.ts.par.snpt)
 
         print("Iterating...")
-
         for i in range(self.ts.par.num_iter):
-            logging.info("iteration #" + str(i + 1) + " of " + str(self.ts.par.num_iter))
-            t = tm.process_time()
-            # Project and find difference from last projection
+            print(f'iteration #{str(i + 1)} of {str(self.ts.par.num_iter)}')
             diffprofiles = (self.ts.profiles
                             - self.project(phase_space,
                                            self.mi.imin[reconst_profile_idx],
@@ -91,9 +92,7 @@ class Tomography:
 
             phase_space = self.supress_zeroes_and_normalize(phase_space)
 
-            logging.info(f"Iteration lasted {tm.process_time() - t} seconds")
-
-        # Calculate discrepancy for the last projection and write to file
+        # Calculate discrepancy for the last projection, before returning final picture.
         diffprofiles = (self.ts.profiles
                         - self.project(phase_space,
                                        self.mi.imin[reconst_profile_idx],
@@ -114,9 +113,10 @@ class Tomography:
                                             self.ts.par.profile_count)
         return darray, phase_space
 
-    # Project phasespace onto profile_count profiles
     @staticmethod
     @njit
+    # Projecting back to the one dimensional arrays in order to compare
+    # reconstructed phase space to the original measured profile.
     def project(picture,
                 imin, imax, jmin, jmax,
                 maps, mapsi, mapsweight,
@@ -136,8 +136,9 @@ class Tomography:
                         if fl < fmlistlength:
                             if mapsi[maps[p, i, j], fl] > 0:
                                 project[p, mapsi[maps[p, i, j], fl]] \
-                                    += float(mapsweight[maps[p, i, j], fl]) \
-                                       / numpts * picture[i, j]
+                                    += (float(mapsweight[maps[p, i, j], fl])
+                                        / numpts
+                                        * picture[i, j])
                             else:
                                 break
                         else:
@@ -147,10 +148,11 @@ class Tomography:
                                                       + "yet implemented")
         return project
 
-    # Backproject profile_count profiles onto
-    # profile_length**2 phasespace
+
     @staticmethod
     @njit
+    #  Back projecting all bins of all profiles
+    #  to give an approximation to the original distribution.
     def backproject(profiles, back_proj,
                     imin, imax, jmin, jmax,
                     maps, mapsi, mapsweight,
@@ -184,8 +186,9 @@ class Tomography:
                                                       + "extended maps not "
                                                       + "yet implemented")
 
-    # Calculate the discrepancy between projections and profiles
+
     @staticmethod
+    # Calculate the discrepancy between projected and measured profiles.
     def discrepancy(diffprofiles, profile_length, profile_count):
         return np.sqrt(np.sum(diffprofiles**2)/(profile_length*profile_count))
 
@@ -197,6 +200,27 @@ class Tomography:
         else:
             phase_space /= float(np.sum(phase_space))
         return phase_space
+
+    # Validating input from reconstruction
+    def validate_reconstruction(self, rec_idx):
+        ta.assert_equal(self.rd.mapsi.shape, 'mapsi shape',
+                        self.rd.mapweights.shape,
+                        ArrayLengthError,
+                        'mapsi should be of the same shape as mapsw')
+        ta.assert_equal(self.rd.maps.shape, 'maps shape',
+                        (self.ts.par.profile_count,
+                         self.ts.par.profile_length,
+                         self.ts.par.profile_length),
+                        ArrayLengthError)
+        ta.assert_inrange(rec_idx,
+                          'index of profile to reconstruct',
+                          0, self.ts.par.filmstop, ArgumentError)
+
+    def init_arrays(self):
+        darray = np.zeros(self.ts.par.num_iter + 1)
+        phase_space = np.zeros((self.ts.par.profile_length,
+                                self.ts.par.profile_length))
+        return darray, phase_space
 
     def out_darray_txtfile(self, file_path, film_idx):
         full_file_path = (file_path + "py_d" + str(film_idx + 1) + ".dat")

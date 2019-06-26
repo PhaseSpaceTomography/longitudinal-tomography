@@ -80,7 +80,7 @@ However, at this time i find this method unnecessarily complex
 in relation to the gain achieved from it. My solution
  is to set the fmlistlength = snpt**2. In this way the arrays will never overflow.
  points in which the map extension was being used is marked with 
-  'raise NotImplementedError("Ext. maps not implemented.")'
+  'raise NotImplementedError("Ext. maps not implemented.")' in this class and the tomography class.
  
 """
 
