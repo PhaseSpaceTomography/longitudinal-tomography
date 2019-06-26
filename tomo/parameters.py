@@ -10,9 +10,10 @@ from utils.exceptions import (InputError,
 # ================
 # About the class:
 # ================
-# The parameter module receives input parameters for reconstruction and machine settings.
-# From theses parameters are many of the base parameters for the reconstruction calculated.
-# The parameter class stores information to be used, and created in time space calculations
+# The parameter class receives input parameters and machine settings for the reconstruction.
+# These parameters creates the basis of the interpretation of the measured profiles in the time_space class,
+# and the particle tracking in the reconstruction class. The parameter class also stores
+# information created in time space calculations.
 #
 # =====================================
 # Parameters to be collected from file:
