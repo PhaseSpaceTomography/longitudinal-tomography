@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/reconstruct.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tomography.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tomography.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/parameters.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,56 +13,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="258" column="35" selection-start-line="258" selection-start-column="35" selection-end-line="258" selection-end-column="35" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+        <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="94" column="88" selection-start-line="94" selection-start-column="88" selection-end-line="94" selection-end-column="88" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#5625#7023#0" />
-                <element signature="e#9195#9265#0" />
-                <element signature="e#9344#9615#0" />
-                <element signature="e#9302#9995#0" />
-                <element signature="e#9897#10096#0" />
-                <element signature="e#9680#9994#0" />
-                <element signature="e#10048#10265#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="297">
-              <caret line="27" column="46" selection-start-line="27" selection-start-column="46" selection-end-line="27" selection-end-column="46" />
+            <state relative-caret-position="129">
+              <caret line="11" column="18" selection-start-line="11" selection-start-column="18" selection-end-line="11" selection-end-column="18" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tomo/reconstruct.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="453">
-              <caret line="82" column="99" selection-start-line="82" selection-start-column="99" selection-end-line="82" selection-end-column="99" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -80,7 +36,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>maps</find>
       <find>profile</find>
       <find>cflags</find>
       <find>analyze</find>
@@ -110,6 +65,7 @@
       <find>_needed_amount_maps</find>
       <find>start_submap</find>
       <find>hom</find>
+      <find>calculate</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -153,8 +109,6 @@
         <option value="$PROJECT_DIR$/environment.yaml" />
         <option value="$PROJECT_DIR$/tomo/Numeric.py" />
         <option value="$PROJECT_DIR$/tomo/MapInfo.py" />
-        <option value="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" />
-        <option value="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" />
         <option value="$PROJECT_DIR$/tomo/Reconstruct.py" />
         <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
         <option value="$PROJECT_DIR$/tomo/compile.py" />
@@ -171,12 +125,14 @@
         <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
         <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
-        <option value="$PROJECT_DIR$/tomo/parameters.py" />
         <option value="$PROJECT_DIR$/tomo/map_info.py" />
         <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
         <option value="$PROJECT_DIR$/tomo/main_testing.py" />
         <option value="$PROJECT_DIR$/tomo/reconstruct.py" />
         <option value="$PROJECT_DIR$/tomo/tomography.py" />
+        <option value="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" />
+        <option value="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" />
+        <option value="$PROJECT_DIR$/tomo/parameters.py" />
       </list>
     </option>
   </component>
@@ -203,6 +159,12 @@
               <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
               <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
               <item name="tomo" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
+              <item name="tomo" type="462c0819:PsiDirectoryNode" />
+              <item name="cpp_files" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
@@ -343,20 +305,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00014" summary="Added __init__.py in unit_tests">
-      <created>1558451168217</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1558451168217</updated>
-    </task>
-    <task id="LOCAL-00015" summary="Added __init__.py in tomo_action&#10;&#10;tomo_action main now runs as a package from tomo_v3">
-      <created>1558507945540</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1558507945540</updated>
     </task>
     <task id="LOCAL-00016" summary="Added __init__.py in tomo">
       <created>1558508245723</created>
@@ -687,7 +635,21 @@
       <option name="project" value="LOCAL" />
       <updated>1561541885316</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <task id="LOCAL-00063" summary="Added documentation to the tomography class">
+      <created>1561549919591</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1561549919591</updated>
+    </task>
+    <task id="LOCAL-00064" summary="Added documentation">
+      <created>1561551733735</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1561551733735</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -756,7 +718,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added operating system test." />
     <MESSAGE value="Small change in print functions" />
     <MESSAGE value="Commented away line profiler" />
     <MESSAGE value="Finished longtrack.cpp" />
@@ -779,9 +740,10 @@
     <MESSAGE value="Added documentation and assertions for map info module" />
     <MESSAGE value="More documentation" />
     <MESSAGE value="Moved assertion from reconstruct_c to map_info" />
-    <MESSAGE value="Added documentation" />
     <MESSAGE value="Restructured main_testing and reconstruct_c&#10;&#10;reconstruct_c.reconstruct() now takes the index of the&#10;profile to be reconstructed as input. In this way will it work&#10;in the same manner as tomography.run().&#10;&#10;Added documentation to main testing." />
-    <option name="LAST_COMMIT_MESSAGE" value="Restructured main_testing and reconstruct_c&#10;&#10;reconstruct_c.reconstruct() now takes the index of the&#10;profile to be reconstructed as input. In this way will it work&#10;in the same manner as tomography.run().&#10;&#10;Added documentation to main testing." />
+    <MESSAGE value="Added documentation to the tomography class" />
+    <MESSAGE value="Added documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added documentation" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -843,22 +805,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Physics.py" />
     <entry file="file://$PROJECT_DIR$/tomo/cpp_files/reversed_weights.cpp" />
-    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="48" selection-start-line="48" selection-end-line="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py" />
     <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py" />
-    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="495">
-          <caret line="33" column="23" selection-start-line="33" selection-start-column="23" selection-end-line="33" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo_action/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
@@ -1037,19 +985,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2876">
-          <caret line="374" column="31" lean-forward="true" selection-start-line="374" selection-start-column="31" selection-end-line="374" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <element signature="e#5709#7750#0" />
-            <element signature="e#13024#13414#0" />
-            <element signature="e#16861#17258#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="375">
@@ -1154,12 +1089,49 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2130">
+          <caret line="142" column="27" lean-forward="true" selection-start-line="142" selection-start-column="27" selection-end-line="142" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="675">
+          <caret line="64" column="46" selection-start-line="64" selection-start-column="46" selection-end-line="64" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#4734#0" />
+            <element signature="e#0#4734#0" />
+            <element signature="e#0#4734#0" />
+            <element signature="e#0#4734#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="297">
-          <caret line="27" column="46" selection-start-line="27" selection-start-column="46" selection-end-line="27" selection-end-column="46" />
+        <state relative-caret-position="450">
+          <caret line="30" column="22" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="94" column="88" selection-start-line="94" selection-start-column="88" selection-end-line="94" selection-end-column="88" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#5625#7023#0" />
+            <element signature="e#9195#9265#0" />
+            <element signature="e#9344#9615#0" />
+            <element signature="e#9302#9995#0" />
+            <element signature="e#9897#10096#0" />
+            <element signature="e#9680#9994#0" />
+            <element signature="e#10048#10265#0" />
           </folding>
         </state>
       </provider>
@@ -1184,19 +1156,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+    <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="94" column="88" selection-start-line="94" selection-start-column="88" selection-end-line="94" selection-end-column="88" />
+        <state relative-caret-position="129">
+          <caret line="11" column="18" selection-start-line="11" selection-start-column="18" selection-end-line="11" selection-end-column="18" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#5625#7023#0" />
-            <element signature="e#9195#9265#0" />
-            <element signature="e#9344#9615#0" />
-            <element signature="e#9302#9995#0" />
-            <element signature="e#9897#10096#0" />
-            <element signature="e#9680#9994#0" />
-            <element signature="e#10048#10265#0" />
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>

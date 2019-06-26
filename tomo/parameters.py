@@ -7,10 +7,13 @@ from utils.exceptions import (InputError,
                               MachineParameterError,
                               SpaceChargeParameterError)
 
+# ================
+# About the class:
+# ================
 # The parameter module receives input parameters for reconstruction and machine settings.
 # From theses parameters are many of the base parameters for the reconstruction calculated.
 # The parameter class stores information to be used, and created in time space calculations
-
+#
 # =====================================
 # Parameters to be collected from file:
 # =====================================
