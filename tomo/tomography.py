@@ -17,16 +17,15 @@ class Tomography:
         self.darray = None
         self.picture = None
 
-        ta.assert_equal(self.rd.mapsi.shape, 'mapsi shape',
-                        self.rd.mapweights.shape,
-                        ArrayLengthError,
-                        'mapsi should be of the same shape as mapsw')
-        ta.assert_equal(self.rd.maps.shape, 'maps shape',
-                        (self.ts.par.profile_count,
-                         self.ts.par.profile_length,
-                         self.ts.par.profile_length),
-                        ArrayLengthError)
-
+        # ta.assert_equal(self.rd.mapsi.shape, 'mapsi shape',
+        #                 self.rd.mapweights.shape,
+        #                 ArrayLengthError,
+        #                 'mapsi should be of the same shape as mapsw')
+        # ta.assert_equal(self.rd.maps.shape, 'maps shape',
+        #                 (self.ts.par.profile_count,
+        #                  self.ts.par.profile_length,
+        #                  self.ts.par.profile_length),
+        #                 ArrayLengthError)
 
     def run(self, reconst_profile_idx):
 

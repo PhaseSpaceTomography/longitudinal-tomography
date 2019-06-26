@@ -100,7 +100,7 @@ class ReconstructCpp:
         self.longtrack_cpp = tomolib.longtrack
 
     # @profile
-    def reconstruct(self):
+    def reconstruct(self, film):
         tpar = self.timespace.par
         mi = self.mapinfo
 
@@ -115,122 +115,123 @@ class ReconstructCpp:
                                            mi.jmin,
                                            mi.jmax)
 
-        for film in range(tpar.filmstart - 1, tpar.filmstop, tpar.filmstep):
-            print("Image" + str(film) + ": ")
+        print("Image" + str(film) + ": ")
 
-            (maps, mapsi,
-             mapsw) = self._init_arrays(tpar.profile_count,
-                                        tpar.profile_length,
-                                        needed_maps,
-                                        tpar.snpt**2)
+        (maps, mapsi,
+         mapsw) = self._init_arrays(tpar.profile_count,
+                                    tpar.profile_length,
+                                    needed_maps,
+                                    tpar.snpt**2)
 
-            nr_of_submaps = self.first_map(mi.jmin[film],
-                                           mi.jmax[film],
-                                           maps[film],
-                                           mapsi,
-                                           mapsw,
-                                           mi.imin[film],
-                                           mi.imax[film],
-                                           tpar.snpt**2,
-                                           tpar.profile_length)
+        nr_of_submaps = self.first_map(mi.jmin[film],
+                                       mi.jmax[film],
+                                       maps[film],
+                                       mapsi,
+                                       mapsw,
+                                       mi.imin[film],
+                                       mi.imax[film],
+                                       tpar.snpt**2,
+                                       tpar.profile_length)
 
-            # Setting initial conditions for points to be tracked
-            # xp and yp: time and energy in pixels
-            # size: number of pixels pr profile
-            xp = np.zeros(int(np.ceil(needed_maps * tpar.snpt**2
-                                      / tpar.profile_count)))
-            yp = np.zeros(int(np.ceil(needed_maps * tpar.snpt**2
-                                      / tpar.profile_count)))
+        # Setting initial conditions for points to be tracked
+        # xp and yp: time and energy in pixels
+        # size: number of pixels pr profile
+        xp = np.zeros(int(np.ceil(needed_maps * tpar.snpt**2
+                                  / tpar.profile_count)))
+        yp = np.zeros(int(np.ceil(needed_maps * tpar.snpt**2
+                                  / tpar.profile_count)))
 
-            direction = 1
-            endprofile = tpar.profile_count
-            submap_start = nr_of_submaps
+        direction = 1
+        endprofile = tpar.profile_count
+        submap_start = nr_of_submaps
 
-            t0 = tm.time()
-            for twice in range(2):
+        t0 = tm.time()
+        for twice in range(2):
 
-                turn_now = film * tpar.dturns
+            turn_now = film * tpar.dturns
 
-                (xp, yp,
-                 last_pxlidx) = self._init_tracked_point(tpar.snpt,
-                                                         mi.imin[film],
-                                                         mi.imax[film],
-                                                         mi.jmin[film, :],
-                                                         mi.jmax[film, :],
-                                                         xp, yp,
-                                                         xpoints,
-                                                         ypoints)
+            (xp, yp,
+             last_pxlidx) = self._init_tracked_point(tpar.snpt,
+                                                     mi.imin[film],
+                                                     mi.imax[film],
+                                                     mi.jmin[film, :],
+                                                     mi.jmax[film, :],
+                                                     xp, yp,
+                                                     xpoints,
+                                                     ypoints)
 
-                for profile in range(film + direction, endprofile, direction):
+            for profile in range(film + direction, endprofile, direction):
 
-                    if tpar.self_field_flag:
-                        xp, yp, turn_now = self.longtrack_self(
-                                                xp[:last_pxlidx],
-                                                yp[:last_pxlidx],
-                                                tpar.x_origin,
-                                                tpar.h_num,
-                                                tpar.omega_rev0,
-                                                tpar.dtbin,
-                                                tpar.phi0,
-                                                tpar.yat0,
-                                                mi.dEbin,
-                                                turn_now,
-                                                direction,
-                                                tpar.dturns,
-                                                tpar.dphase,
-                                                tpar.phiwrap,
-                                                self.timespace.vself,
-                                                tpar.q,
-                                                tpar.vrf1,
-                                                tpar.vrf1dot,
-                                                tpar.vrf2,
-                                                tpar.vrf2dot,
-                                                tpar.time_at_turn,
-                                                tpar.h_ratio,
-                                                tpar.phi12,
-                                                tpar.deltaE0)
-                    else:
-                        turn_now = self.longtrack_cpp(xp[:last_pxlidx],
-                                                      yp[:last_pxlidx],
-                                                      tpar.omega_rev0,
-                                                      tpar.phi0,
-                                                      tpar.dphase,
-                                                      tpar.time_at_turn,
-                                                      tpar.deltaE0,
-                                                      np.int32(last_pxlidx),
-                                                      tpar.x_origin,
-                                                      tpar.dtbin,
-                                                      mi.dEbin,
-                                                      tpar.yat0,
-                                                      tpar.phi12,
-                                                      direction,
-                                                      tpar.dturns,
-                                                      turn_now,
-                                                      tpar.q,
-                                                      tpar.vrf1,
-                                                      tpar.vrf1dot,
-                                                      tpar.vrf2,
-                                                      tpar.vrf2dot,
-                                                      np.int32(tpar.h_num),
-                                                      np.double(tpar.h_ratio))
+                if tpar.self_field_flag:
+                    xp, yp, turn_now = self.longtrack_self(
+                                            xp[:last_pxlidx],
+                                            yp[:last_pxlidx],
+                                            tpar.x_origin,
+                                            tpar.h_num,
+                                            tpar.omega_rev0,
+                                            tpar.dtbin,
+                                            tpar.phi0,
+                                            tpar.yat0,
+                                            mi.dEbin,
+                                            turn_now,
+                                            direction,
+                                            tpar.dturns,
+                                            tpar.dphase,
+                                            tpar.phiwrap,
+                                            self.timespace.vself,
+                                            tpar.q,
+                                            tpar.vrf1,
+                                            tpar.vrf1dot,
+                                            tpar.vrf2,
+                                            tpar.vrf2dot,
+                                            tpar.time_at_turn,
+                                            tpar.h_ratio,
+                                            tpar.phi12,
+                                            tpar.deltaE0)
+                else:
+                    turn_now = self.longtrack_cpp(xp[:last_pxlidx],
+                                                  yp[:last_pxlidx],
+                                                  tpar.omega_rev0,
+                                                  tpar.phi0,
+                                                  tpar.dphase,
+                                                  tpar.time_at_turn,
+                                                  tpar.deltaE0,
+                                                  np.int32(last_pxlidx),
+                                                  tpar.x_origin,
+                                                  tpar.dtbin,
+                                                  mi.dEbin,
+                                                  tpar.yat0,
+                                                  tpar.phi12,
+                                                  direction,
+                                                  tpar.dturns,
+                                                  turn_now,
+                                                  tpar.q,
+                                                  tpar.vrf1,
+                                                  tpar.vrf1dot,
+                                                  tpar.vrf2,
+                                                  tpar.vrf2dot,
+                                                  np.int32(tpar.h_num),
+                                                  np.double(tpar.h_ratio))
 
-                    is_out = self.find_mapweight(xp,
-                                                 mi.jmin[film],
-                                                 mi.jmax[film],
-                                                 maps[profile],
-                                                 mapsi,
-                                                 mapsw,
-                                                 mi.imin[film],
-                                                 mi.imax[film],
-                                                 tpar.snpt ** 2,
-                                                 tpar.profile_length,
-                                                 tpar.snpt ** 2,
-                                                 submap_start)
-                    print(str(profile) + ": " + str(is_out))
-                    submap_start += nr_of_submaps
+                is_out = self.find_mapweight(xp,
+                                             mi.jmin[film],
+                                             mi.jmax[film],
+                                             maps[profile],
+                                             mapsi,
+                                             mapsw,
+                                             mi.imin[film],
+                                             mi.imax[film],
+                                             tpar.snpt ** 2,
+                                             tpar.profile_length,
+                                             tpar.snpt ** 2,
+                                             submap_start)
+                print(f'Tracking from time slice {str(film)} to '
+                      f'{str(profile)} , {str(100 * is_out / last_pxlidx)}'
+                      f'% went outside the image width. ')
+                submap_start += nr_of_submaps
 
-                direction = -1
-                endprofile = -1
+            direction = -1
+            endprofile = -1
             print("mean iteration time: " +
                   str((tm.time() - t0) / tpar.profile_count))
 

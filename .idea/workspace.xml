@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
+    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="Restructured main_testing and reconstruct_c&#10;&#10;reconstruct_c.reconstruct() now takes the index of the&#10;profile to be reconstructed as input. In this way will it work&#10;in the same manner as tomography.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_reconstruct_c.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/main_testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/reconstruct_c.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_c.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tomography.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tomography.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,20 +15,25 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2973">
-              <caret line="438" column="72" selection-start-line="438" selection-start-column="72" selection-end-line="438" selection-end-column="72" />
+            <state relative-caret-position="1005">
+              <caret line="310" column="48" selection-start-line="310" selection-start-column="48" selection-end-line="310" selection-end-column="48" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#13657#13923#0" />
-                <element signature="e#12863#13324#0" />
-                <element signature="e#13751#14283#0" />
-                <element signature="e#14462#14807#0" />
-                <element signature="e#15184#17629#0" />
-                <element signature="e#17852#18411#0" />
-                <element signature="e#18527#19007#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1407">
+              <caret line="19" column="10" selection-start-line="19" selection-start-column="10" selection-end-line="19" selection-end-column="10" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -35,8 +42,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="32" column="22" lean-forward="true" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
+            <state relative-caret-position="462">
+              <caret line="34" column="30" lean-forward="true" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -45,45 +52,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="357">
-              <caret line="39" column="28" lean-forward="true" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
-              <folding>
-                <element signature="e#0#15#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_c.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="273">
-              <caret line="157" column="62" lean-forward="true" selection-start-line="157" selection-start-column="62" selection-end-line="157" selection-end-column="62" />
-              <folding>
-                <element signature="e#0#15#0" expanded="true" />
-                <element signature="e#367#3590#0" />
-                <element signature="e#3645#3828#0" />
-                <element signature="e#3873#4578#0" />
-                <element signature="e#4622#4860#0" />
-                <element signature="e#4902#5717#0" />
-                <element signature="e#5766#6873#0" />
-                <element signature="e#6921#8247#0" />
-                <element signature="e#8296#9523#0" />
-                <element signature="e#9572#10320#0" />
-                <element signature="e#10369#12148#0" />
-                <element signature="e#12193#13841#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tomo/reconstruct.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1290">
-              <caret line="143" column="36" selection-start-line="143" selection-start-column="36" selection-end-line="143" selection-end-column="36" />
+            <state relative-caret-position="153">
+              <caret line="227" column="20" selection-start-line="227" selection-start-column="20" selection-end-line="229" selection-end-column="62" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -153,7 +125,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="Removing_main_test" />
       </map>
     </option>
   </component>
@@ -185,7 +157,6 @@
         <option value="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" />
         <option value="$PROJECT_DIR$/tomo_action/main.py" />
         <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
-        <option value="$PROJECT_DIR$/tomo/tomography.py" />
         <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
         <option value="$PROJECT_DIR$/tomo/reconstruct.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
@@ -197,7 +168,9 @@
         <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
         <option value="$PROJECT_DIR$/tomo/parameters.py" />
         <option value="$PROJECT_DIR$/tomo/map_info.py" />
+        <option value="$PROJECT_DIR$/tomo/tomography.py" />
         <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
+        <option value="$PROJECT_DIR$/tomo/main_testing.py" />
       </list>
     </option>
   </component>
@@ -262,7 +235,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests for test_reconstruct_c.TestRec.test_number_of_maps">
+  <component name="RunManager" selected="Python.main_testing">
     <configuration name="main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -284,7 +257,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_map.TestMap" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_reconstruct_c.TestRec" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -295,7 +268,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_map.TestMap&quot;" />
+      <option name="_new_target" value="&quot;test_reconstruct_c.TestRec&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -346,11 +319,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests for test_reconstruct_c.TestRec.test_number_of_maps" />
-        <item itemvalue="Python tests.Nosetests for test_reconstruction.TestRec" />
-        <item itemvalue="Python tests.Nosetests for unit_tests.test_reconstruct_c.TestRec" />
         <item itemvalue="Python.main_testing" />
-        <item itemvalue="Python tests.Nosetests for test_map.TestMap" />
+        <item itemvalue="Python tests.Nosetests for unit_tests.test_reconstruct_c.TestRec" />
+        <item itemvalue="Python tests.Nosetests for test_reconstruction.TestRec" />
+        <item itemvalue="Python tests.Nosetests for test_reconstruct_c.TestRec.test_number_of_maps" />
+        <item itemvalue="Python tests.Nosetests for test_reconstruct_c.TestRec" />
       </list>
     </recent_temporary>
   </component>
@@ -1110,9 +1083,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/about_map_ext.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/about_map_ext.txt" />
     <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
@@ -1136,26 +1107,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="187" column="64" lean-forward="true" selection-start-line="187" selection-start-column="64" selection-end-line="187" selection-end-column="64" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/reconstruct.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1290">
-          <caret line="143" column="36" selection-start-line="143" selection-start-column="36" selection-end-line="143" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="519">
@@ -1166,47 +1117,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2973">
-          <caret line="438" column="72" selection-start-line="438" selection-start-column="72" selection-end-line="438" selection-end-column="72" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#13657#13923#0" />
-            <element signature="e#12863#13324#0" />
-            <element signature="e#13751#14283#0" />
-            <element signature="e#14462#14807#0" />
-            <element signature="e#15184#17629#0" />
-            <element signature="e#17852#18411#0" />
-            <element signature="e#18527#19007#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="32" column="22" lean-forward="true" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="39" column="28" lean-forward="true" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_c.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="157" column="62" lean-forward="true" selection-start-line="157" selection-start-column="62" selection-end-line="157" selection-end-column="62" />
+        <state relative-caret-position="345">
+          <caret line="112" lean-forward="true" selection-start-line="112" selection-end-line="112" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
             <element signature="e#367#3590#0" />
@@ -1220,6 +1134,56 @@
             <element signature="e#9572#10320#0" />
             <element signature="e#10369#12148#0" />
             <element signature="e#12193#13841#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="39" column="28" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/reconstruct.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="227" column="20" selection-start-line="227" selection-start-column="20" selection-end-line="229" selection-end-column="62" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="34" column="30" lean-forward="true" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1407">
+          <caret line="19" column="10" selection-start-line="19" selection-start-column="10" selection-end-line="19" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1005">
+          <caret line="310" column="48" selection-start-line="310" selection-start-column="48" selection-end-line="310" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
