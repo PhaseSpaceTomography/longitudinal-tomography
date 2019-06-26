@@ -100,7 +100,7 @@ class ReconstructCpp:
         self.longtrack_cpp = tomolib.longtrack
 
     # @profile
-    def reconstruct(self, film):
+    def run(self, film):
         tpar = self.timespace.par
         mi = self.mapinfo
 
