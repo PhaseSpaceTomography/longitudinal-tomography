@@ -9,7 +9,9 @@ from utils.assertions import (RawDataImportError,
                               InputError,
                               RebinningError)
 
-
+# ================
+# About TimeSpace:
+# ================
 # The TimeSpace class handles import and processing of data in time domain.
 #  - importing raw data, and converting it to profiles, specified by input parameters.
 #  - calculation of total charge in profile
@@ -18,16 +20,17 @@ from utils.assertions import (RawDataImportError,
 #  - if self field flag is true will self fields be included in the reconstruction.
 #       in the time space class will a savitzky-golay smoothing filter be applied to the profiles
 #       and the self field voltage will be calculated.
-
+#
 # Variables used in this class are retrieved from a parameter object,
 #   which stores the input parameters for the reconstruction.
 #   A description of all the input and time space variables can be found in the parameters module.
-
+#
+# ====================
 # TimeSpace variables:
-# ===================
+# ====================
 # par               parameter object (for more info, see parameters module)
-# profiles          a profile-count * profile-length sized matrix containing profile data, ready for reconstruction.
-# profile_charge    Total charge in reference profile
+# profiles          a (profile-count, profile-length) shaped matrix containing profile data, ready for tomography.
+# profile_charge    Total charge in the reference profile
 #
 # Self field variables:
 # ---------------------
@@ -58,12 +61,12 @@ class TimeSpace:
         self.vself = None            # Self-field voltage
         self.dsprofiles = None       # Smoothed derivative of profiles
 
-        self.run_time_space(parameter_file_path)
+        self.run(parameter_file_path)
 
     # Main function for the time space class
-    def run_time_space(self, parameter_file_path):
+    def run(self, parameter_file_path):
         self.par.get_parameters_txt(parameter_file_path)
-        self.get_profiles(parameter_file_path)
+        self.get_profiles_txt(parameter_file_path)
         self.adjust_profiles()
 
         self.profile_charge = self.total_profilecharge(
@@ -100,9 +103,9 @@ class TimeSpace:
         if self.par.self_field_flag:
             self._calc_using_self_field()
 
-    # Subroutine for reading raw data (from text file), subtracting baseline
+    # Subroutine for reading raw data from text file, subtracting baseline
     # and splitting the raw data to profiles.
-    def get_profiles(self, parameter_file_path):
+    def get_profiles_txt(self, parameter_file_path):
 
         # collecting profile raw data
         data = self.get_indata_txt(self.par.rawdata_file,
