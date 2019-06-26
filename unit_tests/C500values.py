@@ -1,5 +1,7 @@
 import numpy as np
 
+# Class for having easy access to resources during testing.
+# All values are gathered from the execution of the input file 'C500MidPhaseNoise.dat'
 
 class C500:
     def __init__(self):
