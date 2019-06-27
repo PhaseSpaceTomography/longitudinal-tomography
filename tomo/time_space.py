@@ -1,66 +1,82 @@
 import logging
 import scipy.signal._savitzky_golay as savgol
 import numpy as np
-from utils.assertions import TomoAssertions as ta
-from utils.assertions import *
 from parameters import Parameters
 import physics
 from numeric import newton
+from utils.assertions import TomoAssertions as ta
+from utils.assertions import (RawDataImportError,
+                              InputError,
+                              RebinningError)
+
+# ================
+# About TimeSpace:
+# ================
+# The TimeSpace class handles import and processing of data in time domain.
+#  - importing raw data, and converting it to profiles, specified by input parameters.
+#  - calculation of total charge in profile
+#  - if xat0, from input parameters, is less than 0 wil a fit be performed to find xat0
+#  - calculations of yat0, phi wrap, xorigin
+#  - if self field flag is true will self fields be included in the reconstruction.
+#       in the time space class will a savitzky-golay smoothing filter be applied to the profiles
+#       and the self field voltage will be calculated.
+#
+# Variables used in this class are retrieved from a parameter object,
+#   which stores the input parameters for the reconstruction.
+#   A description of all the input and time space variables can be found in the parameters module.
+#
+# ====================
+# TimeSpace variables:
+# ====================
+# par               parameter object (for more info, see parameters module)
+# profiles          a (profile-count, profile-length) shaped matrix containing profile data, ready for tomography.
+# profile_charge    Total charge in the reference profile
+#
+# Self field variables:
+# ---------------------
+# vself             Self-field voltage
+# dsprofiles        Smoothed derivative of profiles
+#
+# saved in parameters:
+# - - - - - - - - - - -
+# bunch_phaselength Bunch phase length in beam reference profile
+# tangentfoot_low   Used for estimation of bunch duration
+# tangentfoot_up
+# phiwrap           Phase covering the an integer of rf periods
+# wrap_length       Maximum number of bins to cover an integer number of rf periods
+# fit_xat0          Value of (if) fitted xat0
+# x_origin = 0.0    absolute difference in bins between phase=0
+#                       and origin of the reconstructed phase-space coordinate system.
+#
 
 
-# Handles import and processing of data in time domain.
 class TimeSpace:
 
     def __init__(self, parameter_file_path):
-        self.par = Parameters()		 # All parameters
-        self.profiles = []			 # All profiles
-        self.dsprofiles = None       # Smoothed derivative of profiles
+        self.par = Parameters()
+        self.profiles = np.array([])
         self.profile_charge = None	 # Total charge in profile
+
+        # Self field variables:
         self.vself = None            # Self-field voltage
+        self.dsprofiles = None       # Smoothed derivative of profiles
 
-        # Collecting data from file, calculating and storing parameters
+        self.run(parameter_file_path)
+
+    # Main function for the time space class
+    def run(self, parameter_file_path):
         self.par.get_parameters_txt(parameter_file_path)
+        self.get_profiles_txt(parameter_file_path)
+        self.adjust_profiles()
 
-        # collecting raw data for profiles
-        data = self.get_indata_txt(self.par.rawdata_file,
-                                   parameter_file_path)
-
-        # Subtracting baseline from raw data
-        data = self.subtract_baseline(
-                        data, self.par.frame_skipcount,
-                        self.par.beam_ref_frame, self.par.framelength,
-                        self.par.preskip_length, self.par.profile_length)
-
-        # Splitting up raw data to profiles
-        self.profiles = self.rawdata_to_profiles(
-                            data, self.par.profile_count,
-                            self.par.profile_length, self.par.frame_skipcount,
-                            self.par.framelength, self.par.preskip_length,
-                            self.par.postskip_length)
-
-        # re-binning from original amount of bins,
-        # 	to new amount of bins, stated in parameters
-        if self.par.rebin > 1:
-            (self.profiles,
-             self.par.profile_length) = self.rebin(self.profiles,
-                                                   self.par.rebin,
-                                                   self.par.profile_length,
-                                                   self.par.profile_count)
-
-        # Replacing negative elements with 0
-        self.profiles = self.negative_profiles_zero(self.profiles)
-
-        # Finding total charge of beam reference profile
         self.profile_charge = self.total_profilecharge(
                                 self.profiles[self.par.beam_ref_frame - 1],
                                 self.par.dtbin, self.par.rebin,
                                 self.par.pickup_sensitivity)
 
-        # Normalize profiles
         self.profiles = self.normalize_profiles(self.profiles)
 
         if self.par.xat0 < 0:
-            # Performing a linear fit
             idx = self.par.beam_ref_frame - 1
             (self.par.fit_xat0,
              self.par.tangentfoot_low,
@@ -85,11 +101,107 @@ class TimeSpace:
         self.par.yat0 = self._find_yat0(self.par.profile_length)
 
         if self.par.self_field_flag:
-            logging.info("Calculating self-fields")
-            self.dsprofiles = self._filter()
-            self.vself = self._calculate_self()
+            self._calc_using_self_field()
 
-    # Read collected raw data, Saves directly to object.
+    # Subroutine for reading raw data from text file, subtracting baseline
+    # and splitting the raw data to profiles.
+    def get_profiles_txt(self, parameter_file_path):
+
+        # collecting profile raw data
+        data = self.get_indata_txt(self.par.rawdata_file,
+                                   parameter_file_path)
+
+        # Subtracting baseline from raw data
+        data = self.subtract_baseline(
+                        data, self.par.frame_skipcount,
+                        self.par.beam_ref_frame, self.par.framelength,
+                        self.par.preskip_length, self.par.profile_length)
+
+        # Splitting up raw data to profiles
+        self.profiles = self.rawdata_to_profiles(
+                            data, self.par.profile_count,
+                            self.par.profile_length, self.par.frame_skipcount,
+                            self.par.framelength, self.par.preskip_length,
+                            self.par.postskip_length)
+
+    # Subroutine for re-binning profiles and converting negative values to zeros.
+    def adjust_profiles(self):
+        if self.par.rebin > 1:
+            (self.profiles,
+             self.par.profile_length) = self.rebin(self.profiles,
+                                                   self.par.rebin,
+                                                   self.par.profile_length,
+                                                   self.par.profile_count)
+
+        self.profiles = self.negative_profile_data_zero(self.profiles)
+
+    # Contains functions for calculations using the self-field voltage
+    def _calc_using_self_field(self):
+        logging.info("Calculating self-fields")
+        self.dsprofiles = self._filter()
+        self.vself = self._calculate_self()
+
+    # Perform at fit for finding x at 0
+    # Set bunch_phaselength variable, needed for phaselow function
+    def _fit_xat0(self, profile, refprofile_index, threshold_value=0.15):
+        logging.info("Performing fit for xat0")
+
+        tangentfoot_up, tangentfoot_low = self._calc_tangentfeet(
+                                                profile, refprofile_index,
+                                                self.par.profile_length,
+                                                threshold_value)
+
+        thisturn = refprofile_index * self.par.dturns
+
+        bunch_duration = (tangentfoot_up - tangentfoot_low) * self.par.dtbin
+
+        # bunch_phase_length is needed in phaselow
+        self.par.bunch_phaselength = (self.par.h_num * bunch_duration
+                                      * self.par.omega_rev0[thisturn])
+
+        # Find roots of phaselow function
+        xstart_newt = self.par.phi0[thisturn] - self.par.bunch_phaselength / 2.0
+
+        # phaselow and dPhaseLow are functions from Physics module
+        phil = newton(physics.phase_low, physics.dphase_low, xstart_newt,
+                      self.par, thisturn, 0.0001)
+
+        fit_xat0 = (tangentfoot_low + (self.par.phi0[thisturn] - phil)
+                    / (self.par.h_num
+                       * self.par.omega_rev0[thisturn]
+                       * self.par.dtbin))
+
+        return fit_xat0, tangentfoot_low, tangentfoot_up, self.par.bunch_phaselength
+
+    # Savitzky-Golay smoothing filter (if self_field_flag is True)
+    def _filter(self):
+        filtered_profiles = savgol.savgol_filter(x=self.profiles,
+                                                 window_length=7,
+                                                 polyorder=4,
+                                                 deriv=1)
+        return filtered_profiles
+
+    # Calculate self-field voltage (if self_field_flag is True)
+    def _calculate_self(self):
+        vself = np.zeros((self.par.profile_count - 1,
+                          self.par.wrap_length),
+                         dtype=float)
+        for i in range(self.par.profile_count - 1):
+            vself[i, 0:self.par.profile_length]\
+                = (0.5
+                   * self.profile_charge
+                   * (self.par.sfc[i]
+                      * self.dsprofiles[i, :self.par.profile_length]
+                      + self.par.sfc[i + 1]
+                      * self.dsprofiles[i + 1, :self.par.profile_length]))
+        return vself
+
+    # Write files to text file.
+    def save_profiles_text(self, profiles, output_directory, filename):
+        np.savetxt(output_directory + filename, profiles.flatten().T)
+        logging.info("Saved profiles to: " + output_directory + filename)
+
+    # Read data from separate text file or as extension of parameter file
     @staticmethod
     def get_indata_txt(filename, par_file_path, skiplines=98):
         if filename != "pipe":
@@ -103,7 +215,7 @@ class TimeSpace:
                           f'No raw data was found in file: {filename}')
         return inn_data
 
-    # Original function for subtracting baseline
+    # Original function for subtracting baseline of raw data input profiles.
     @staticmethod
     def subtract_baseline(data, frame_skipcount, beam_ref_frame, frame_length,
                           preskip_length, profile_length, percentage=0.05):
@@ -123,8 +235,7 @@ class TimeSpace:
         logging.debug(f"A baseline was found with the value: {str(baseline)}")
         return data - baseline
 
-    # Turns list of raw data into list of profiles.
-    # Deletes list of raw data
+    # Turns list of raw data into (profile count, profile length) shaped array.
     @staticmethod
     def rawdata_to_profiles(data, profile_count, profile_length,
                             frame_skipcount, framelength, preskip_length,
@@ -141,7 +252,8 @@ class TimeSpace:
                      f'created from raw data')
         return profiles
 
-    # Re-binning of profiles
+    # Re-binning of profiles from original number of bins to smaller number of
+    # bins specified in input parameters
     @staticmethod
     def rebin(profiles, rebin_factor, profile_length, profile_count):
         # Find new profile length
@@ -183,82 +295,35 @@ class TimeSpace:
 
         return new_profilelist, new_profile_length
 
-    # Setting all negative profiles to zero
+    # Setting all negative profile data to zero
     @staticmethod
-    def negative_profiles_zero(profiles):
-        new_profile = np.where(profiles < 0, 0, profiles)
-        ta.assert_array_not_equal(new_profile,
+    def negative_profile_data_zero(profiles):
+        profiles = np.where(profiles < 0, 0, profiles)
+        ta.assert_array_not_equal(profiles,
                                   'profile without negative numbers', 0,
                                   'The whole profile was reduced to zeroes '
                                   'when changing negative numbers to zeroes.')
-        return new_profile
-
-    # Normalize profiles to number between 0 and 1
-    @staticmethod
-    def normalize_profiles(profiles):
-        for profile in profiles:
-            profile /= float(np.sum(profile))
         return profiles
 
-    # Calculate the total charge in profile
+    # Normalize profile data to number between 0 and 1
+    @staticmethod
+    def normalize_profiles(profiles):
+        return profiles / np.vstack(np.sum(profiles, axis=1))
+
+    # Calculate the total charge of profile
     @staticmethod
     def total_profilecharge(ref_prof, dtbin, rebin, pickup_sens):
         return np.sum(ref_prof) * dtbin / (rebin * physics.e_UNIT * pickup_sens)
 
-    def find_xat0(self, profiles, ref_profile_index, threshold_value=0.15):
-        if self.par.xat0 < 0:
-            # Performing a linear fit
-            profile = profiles[ref_profile_index, :]
-            (self.par.fit_xat0,
-             self.par.tangentfoot_low,
-             self.par.tangentfoot_up,
-             self.par.bunch_phaselength) = self._fit_xat0(profile,
-                                                          ref_profile_index,
-                                                          threshold_value)
-            self.par.xat0 = self.par.fit_xat0
-
-    # Perform at fit for finding x at 0
-    # Set bunch_phaselength variable, needed for phaselow function
-    #  Find another way of doing it.
-    def _fit_xat0(self, profile, refprofile_index, threshold_value=0.15):
-        logging.info("Performing fit for xat0")
-
-        tangentfoot_up, tangentfoot_low = self._calc_tangentfeet(
-                                                profile, refprofile_index,
-                                                self.par.profile_length,
-                                                threshold_value)
-
-        thisturn = refprofile_index * self.par.dturns
-
-        bunch_duration = (tangentfoot_up - tangentfoot_low) * self.par.dtbin
-
-        # bunch_phase_length is needed in phaselow
-        self.par.bunch_phaselength = (self.par.h_num * bunch_duration
-                                      * self.par.omega_rev0[thisturn])
-
-        # Find roots of phaselow function
-        xstart_newt = self.par.phi0[thisturn] - self.par.bunch_phaselength / 2.0
-
-        # phaselow and dPhaseLow are functions from Physics module
-        phil = newton(physics.phase_low, physics.dphase_low, xstart_newt,
-                      self.par, thisturn, 0.0001)
-
-        fit_xat0 = (tangentfoot_low + (self.par.phi0[thisturn] - phil)
-                    / (self.par.h_num
-                       * self.par.omega_rev0[thisturn]
-                       * self.par.dtbin))
-
-        return fit_xat0, tangentfoot_low, tangentfoot_up, self.par.bunch_phaselength
-
-    # Calculate the absolute difference in bins between phase=0 and
-    # 	origin of  the reconstructed phase space coordinate system.
+    # Calculate the absolute difference (in bins) between phase=0 and
+    # origin of the reconstructed phase space coordinate system.
     @staticmethod
     def calc_xorigin(beam_ref_frame, dturns, phi0,
                      h_num, omega_rev0, dtbin, xat0):
-        index = beam_ref_frame * dturns
-        x_origin = (phi0[index]
+        reference_turn = beam_ref_frame * dturns
+        x_origin = (phi0[reference_turn]
                     / (h_num
-                       * omega_rev0[index]
+                       * omega_rev0[reference_turn]
                        * dtbin)
                     - xat0)
 
@@ -266,12 +331,10 @@ class TimeSpace:
 
         return x_origin
 
-    # Find upper and lower border to threshold value in bins
+    # return index of last bins to the left and right of max valued bin,
+    # with value over the threshold.
     @staticmethod
     def _calc_tangentbins(profile, profile_length, threshold):
-
-        # Last bins to the left and right of max value bin,
-        #   with value over the threshold
         maxbin = np.argmax(profile)
         for ibin in range(maxbin, 0, -1):
             if profile[ibin] < threshold:
@@ -281,17 +344,14 @@ class TimeSpace:
             if profile[ibin] < threshold:
                 tangent_bin_up = ibin - 1
                 break
-        # Possible solution?
-        # t_low = np.argwhere(np.flip(profile) < threshold)
-        # t_up = np.argwhere(np.flip(profile) < threshold)
 
         return tangent_bin_up, tangent_bin_low
 
-    # Find foot tangents of profile
+    # Find foot tangents of profile. Needed to estimate bunch duration
+    # when performing a fit to find xat0
     @staticmethod
     def _calc_tangentfeet(profile, refprofile_index,
                           profile_length, threshold_value):
-        # Fill up index array
         index_array = np.arange(profile_length, dtype=float) + 0.5
 
         threshold = threshold_value * np.max(profile.data)
@@ -318,23 +378,13 @@ class TimeSpace:
         tangentfoot_low = -1 * al / bl
         tangentfoot_up = -1 * au / bu
 
-        ta.assert_greater(tangentfoot_up, 'upper tangent foot',
-                          tangentfoot_low, TangentFootError,
-                          f'The lower tangent foot has a higher '
-                          f'value than the upper tangent foot.\n'
-                          f'The following info may be helpful:'
-                          f'tangent foot lower: {tangentfoot_low}\n'
-                          f'tangent bin lower: {tangent_bin_low}\n'
-                          f'tangent foot upper: {tangentfoot_up}\n'
-                          f'tangent bin upper: {tangent_bin_up}\n')
-
         logging.debug("tangent_foot_low = " + str(tangentfoot_low)
                       + ", tangent_foot_up = " + str(tangentfoot_up))
 
         return tangentfoot_up, tangentfoot_low
 
     # Calculate the number of bins in the first
-    # 	integer number of rf periods larger than the image width.
+    # integer number of rf periods, larger than the image width.
     @staticmethod
     def _find_wrap_length(profile_count, dturns, dtbin, h_num, omega_rev0,
                           profile_length, bdot):
@@ -351,44 +401,8 @@ class TimeSpace:
                       f" wrap_length =  {str(wrap_length)}")
         return phiwrap, wrap_length
 
-    # Calculate yat0
     @staticmethod
     def _find_yat0(profile_length):
         yat0 = profile_length / 2.0
         logging.debug("yat0 = " + str(yat0))
         return yat0
-
-    # Savitzky-Golay smoothing filter if self_field_flag
-    def _filter(self):
-        filtered_profiles = savgol.savgol_filter(x=self.profiles,
-                                                 window_length=7,
-                                                 polyorder=4,
-                                                 deriv=1)
-        # TEMP - show derived profile.
-        # x_axis = np.arange(0, ts.par.profile_length, 1, dtype=int)
-        # plt.plot(x_axis, filtered_profile)
-        # plt.plot(x_axis, ts.profiles[0])
-        # plt.gca().legend(('Filtered', 'Unfiltered'))
-        # plt.show()
-        # END TEMP
-        return filtered_profiles
-
-    # Calculate self-field voltage
-    def _calculate_self(self):
-        vself = np.zeros((self.par.profile_count - 1,
-                          self.par.wrap_length),
-                         dtype=float)
-        for i in range(self.par.profile_count - 1):
-            vself[i, 0:self.par.profile_length]\
-                = (0.5
-                   * self.profile_charge
-                   * (self.par.sfc[i]
-                      * self.dsprofiles[i, :self.par.profile_length]
-                      + self.par.sfc[i + 1]
-                      * self.dsprofiles[i + 1, :self.par.profile_length]))
-        return vself
-
-    # Write files to text file.
-    def save_profiles_text(self, profiles, output_directory, filename):
-        np.savetxt(output_directory + filename, profiles.flatten().T)
-        logging.info("Saved profiles to: " + output_directory + filename)

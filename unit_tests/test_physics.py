@@ -136,14 +136,14 @@ class TestPhysics(unittest.TestCase):
                                msg="Error in calculation of "
                                    "phase_slip_factor")
 
-    def test_find_c1(self):
+    def test_find_dphase(self):
         self.par.h_num = 12
         self.par.eta0 = np.array([0.45672345])
         self.par.e0 = np.array([0.93995544E9])
         self.par.beta0 = np.array([0.7235633223])
-        self.assertAlmostEqual(find_c1(self.par)[0],
+        self.assertAlmostEqual(find_dphase(self.par)[0],
                                6.997679876644275e-08,
-                               msg="Error in calculation of c1")
+                               msg="Error in calculation of dphase")
 
     def test_revolution_freq(self):
         self.par.beta0 = np.array([0.7235633223])

@@ -1,5 +1,7 @@
 import numpy as np
 
+# Class for having easy access to resources during testing.
+# All values are gathered from the execution of the input file 'C500MidPhaseNoise.dat'
 
 class C500:
     def __init__(self):
@@ -25,7 +27,7 @@ class C500:
             "profiles": np.genfromtxt(self.path + "profiles.dat"),
             "sfc": np.genfromtxt(self.path + "sfc.dat"),
             "time_at_turn": np.genfromtxt(self.path + "time_at_turn.dat"),
-            "c1": np.genfromtxt(self.path + "c1.dat"),
+            "dphase": np.genfromtxt(self.path + "dphase.dat"),
             "phases": np.genfromtxt(self.path + "phases.dat"),
             "imin": np.load(self.path + "imin.npy"),
             "imax": np.load(self.path + "imax.npy"),

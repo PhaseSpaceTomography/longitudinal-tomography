@@ -108,74 +108,78 @@ class TestParameters(unittest.TestCase):
                               msg="pickUpSensitivity is not a float")
 
     def test_initialization_of_arrays_C500_inn(self):
+        param = Parameters()
+        param.get_parameters_txt(self.c500.path + "C500MidPhaseNoise.dat")
 
-        allturns = ((self.par.framecount - self.par.frame_skipcount - 1)
-                    * self.par.dturns)
+        allturns = ((param.framecount - param.frame_skipcount - 1)
+                    * param.dturns)
 
-        self.assertEqual(len(self.par.time_at_turn), allturns + 1,
+        self.assertEqual(len(param.time_at_turn), allturns + 1,
                          msg="Error in length of array: time_at_turn ")
 
         # Calculating initial index
-        i0 = (self.par.machine_ref_frame - 1) * self.par.dturns
+        i0 = (param.machine_ref_frame - 1) * param.dturns
 
         # Testing initial values of arrays
-        self.assertEqual(self.par.time_at_turn[i0], 0,
+        self.assertEqual(param.time_at_turn[i0], 0,
                          msg="Error in initial value of time_at_turn array")
-        self.assertAlmostEqual(self.par.e0[i0], 1335012859.7126765,
+        self.assertAlmostEqual(param.e0[i0], 1335012859.7126765,
                                msg="Error in initial value of e0 array")
-        self.assertAlmostEqual(self.par.beta0[i0], 0.7113687870661543,
+        self.assertAlmostEqual(param.beta0[i0], 0.7113687870661543,
                                msg="Error in initial value of beta0 array")
-        self.assertAlmostEqual(self.par.phi0[i0], 0.3116495273168101,
+        self.assertAlmostEqual(param.phi0[i0], 0.3116495273168101,
                                msg="Error in initial value of phi0 array")
 
     def test_remaining_array_values_C500_inn(self):
+        param = Parameters()
+        param.get_parameters_txt(self.c500.path + "C500MidPhaseNoise.dat")
         ca = self.c500.arrays
 
-        nptest.assert_almost_equal(self.par.beta0, ca["beta0"],
+        nptest.assert_almost_equal(param.beta0, ca["beta0"],
                                    err_msg="Error in calculation of"
                                            " beta0 array")
-        nptest.assert_almost_equal(self.par.deltaE0, ca["deltaE0"],
+        nptest.assert_almost_equal(param.deltaE0, ca["deltaE0"],
                                    err_msg="Error in calculation of"
                                            " deltaE0 array")
-        nptest.assert_almost_equal(self.par.e0, ca["e0"],
+        nptest.assert_almost_equal(param.e0, ca["e0"],
                                    err_msg="Error in calculation of"
                                            " e0 array")
-        nptest.assert_almost_equal(self.par.time_at_turn, ca["time_at_turn"],
+        nptest.assert_almost_equal(param.time_at_turn, ca["time_at_turn"],
                                    err_msg="Error in calculation of"
                                            " time_at_turn array")
-        nptest.assert_almost_equal(self.par.phi0, ca["phi0"],
+        nptest.assert_almost_equal(param.phi0, ca["phi0"],
                                    err_msg="Error in calculation of"
                                            " phi0 array")
-        nptest.assert_almost_equal(self.par.eta0, ca["eta0"],
+        nptest.assert_almost_equal(param.eta0, ca["eta0"],
                                    err_msg="Error in calculation of"
                                            " eta0 array")
-        nptest.assert_almost_equal(self.par.c1, ca["c1"],
+        nptest.assert_almost_equal(param.dphase, ca["dphase"],
                                    err_msg="Error in calculation of"
-                                           " c1 array")
-        nptest.assert_almost_equal(self.par.omega_rev0, ca["omegarev0"],
+                                           " dphase array")
+        nptest.assert_almost_equal(param.omega_rev0, ca["omegarev0"],
                                    err_msg="Error in calculation of"
                                            " omega_rev0 array")
 
     def test_remaining_parameters_C500_inn(self):
+        param = Parameters()
+        param.get_parameters_txt(self.c500.path + "C500MidPhaseNoise.dat")
         ca = self.c500.arrays
 
-        self.assertAlmostEqual(self.par.dtbin, 1.9999999999999997e-09,
+        self.assertAlmostEqual(param.dtbin, 1.9999999999999997e-09,
                                msg="Error in calculation of dtbin")
-        self.assertAlmostEqual(self.par.xat0, 88.00000000000001,
+        self.assertAlmostEqual(param.xat0, 88.00000000000001,
                                msg="Error in calculation of xat0")
-        self.assertEqual(self.par.profile_count, 100,
+        self.assertEqual(param.profile_count, 100,
                          msg="Error in calculation of profile_count")
-        self.assertEqual(self.par.profile_mini, 0,
+        self.assertEqual(param.profile_mini, 0,
                          msg="Error in calculation of profile_mini")
-        self.assertEqual(self.par.profile_maxi, 205,
+        self.assertEqual(param.profile_maxi, 205,
                          msg="Error in calculation of profile_maxi")
-        self.assertEqual(self.par.all_data, 100000,
+        self.assertEqual(param.all_data, 100000,
                          msg="Error in calculation of all_data")
-        nptest.assert_almost_equal(self.par.sfc, ca["sfc"],
+        nptest.assert_almost_equal(param.sfc, ca["sfc"],
                                    err_msg="Error in calculation of sfc array")
 
-    # TODO: Later, when pipelining is implemented, make test
-    #  to verify that the asserion funtions are actually implemented
     # Testing bad input
     def test_bad_framecount(self):
         # Testing frame count
@@ -314,10 +318,6 @@ class TestParameters(unittest.TestCase):
         with self.assertRaises(Exception):
             self.par._assert_input()
 
-    def test_bad_zwall_over_n(self):
-        self.par.zwall_over_n = -0.01
-        with self.assertRaises(Exception):
-            self.par._assert_input()
 
     def test_bad_pickup_sensitivity(self):
         self.par.pickup_sensitivity = -1.0
@@ -356,12 +356,12 @@ class TestParameters(unittest.TestCase):
             self.par._assert_parameters()
         self.par.phi0 = temp
 
-        # testing c1
-        temp = np.copy(self.par.c1)
-        self.par.c1 = np.zeros((1189, 1))
+        # testing dphase
+        temp = np.copy(self.par.dphase)
+        self.par.dphase = np.zeros((1189, 1))
         with self.assertRaises(Exception):
             self.par._assert_parameters()
-        self.par.c1 = temp
+        self.par.dphase = temp
 
         # testing deltaE0
         temp = np.copy(self.par.deltaE0)

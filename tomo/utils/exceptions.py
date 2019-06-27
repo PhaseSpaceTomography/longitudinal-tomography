@@ -63,10 +63,6 @@ class RebinningError(Exception):
 class ProfileReducedToZero(Exception):
     pass
 
-
-class TangentFootError(Exception):
-    pass
-
 # ============================
 # MapInfo exceptions
 # ============================
@@ -81,6 +77,10 @@ class EnergyLimitsError(Exception):
 
 
 class PhaseLimitsError(Exception):
+    pass
+
+
+class MapCreationError(Exception):
     pass
 
 # ============================

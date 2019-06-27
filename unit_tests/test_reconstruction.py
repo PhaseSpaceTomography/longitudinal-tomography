@@ -131,7 +131,7 @@ class TestRec(unittest.TestCase):
                                 rv["init_xp"][:406272],
                                 cv["debin"], turn_now, cv["xorigin"],
                                 cv["h_num"], ca["omegarev0"], cv["dtbin"],
-                                ca["phi0"], cv["yat0"], ca["c1"],
+                                ca["phi0"], cv["yat0"], ca["dphase"],
                                 ca["deltaE0"], cv["vrf1"], cv["vrf1dot"],
                                 cv["vrf2"], cv["vrf2dot"], ca["time_at_turn"],
                                 cv["hratio"], cv["phi12"], cv["q"])
@@ -157,7 +157,7 @@ class TestRec(unittest.TestCase):
                                 rv["init_xp"][:406272],
                                 cv["debin"], turn_now, cv["xorigin"],
                                 cv["h_num"], ca["omegarev0"], cv["dtbin"],
-                                ca["phi0"], cv["yat0"], ca["c1"],
+                                ca["phi0"], cv["yat0"], ca["dphase"],
                                 ca["deltaE0"], cv["vrf1"], cv["vrf1dot"],
                                 cv["vrf2"], cv["vrf2dot"], ca["time_at_turn"],
                                 cv["hratio"], cv["phi12"], cv["q"])

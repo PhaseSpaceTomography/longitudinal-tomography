@@ -24,7 +24,7 @@ class TestMap(unittest.TestCase):
         debin = MapInfo._energy_binning(
                                 MapInfo, cv["vrf1"], cv["vrf1dot"],
                                 cv["vrf2"], cv["vrf2dot"], cv["yat0"],
-                                ca["c1"], cv["reb_profile_length"],
+                                ca["dphase"], cv["reb_profile_length"],
                                 cv["q"], ca["e0"], ca["phi0"],
                                 cv["h_num"], ca["eta0"], cv["dtbin"],
                                 ca["omegarev0"], cv["demax"], ca["beta0"],
@@ -57,7 +57,7 @@ class TestMap(unittest.TestCase):
 
         ans = MapInfo.trajectoryheight(
                         ca["phases"], ca["phases"][0],
-                        energy, cv["q"], ca["c1"], ca["phi0"],
+                        energy, cv["q"], ca["dphase"], ca["phi0"],
                         cv["vrf1"], cv["vrf1dot"], cv["vrf2"], cv["vrf2dot"],
                         cv["hratio"], cv["phi12"], ca["time_at_turn"],
                         turn)
@@ -81,7 +81,7 @@ class TestMap(unittest.TestCase):
 
         ans = MapInfo.trajectoryheight(
                         ca["phases"][1], ca["phases"][0],
-                        energy, cv["q"], ca["c1"], ca["phi0"],
+                        energy, cv["q"], ca["dphase"], ca["phi0"],
                         cv["vrf1"], cv["vrf1dot"], cv["vrf2"], cv["vrf2dot"],
                         cv["hratio"], cv["phi12"], ca["time_at_turn"],
                         turn)
@@ -94,7 +94,7 @@ class TestMap(unittest.TestCase):
 
         (jmin, jmax,
          allbin_min,
-         allbin_max) = MapInfo._limits_track_allpxl(
+         allbin_max) = MapInfo._limits_track_all_pxl(
                             MapInfo, cv["filmstop"],
                             cv["reb_profile_length"], cv["yat0"])
 
@@ -117,13 +117,13 @@ class TestMap(unittest.TestCase):
         (jmin,
          jmax,
          allbin_min,
-         allbin_max) = TestMap.mi._extrema_active_pxlenergy(
+         allbin_max) = TestMap.mi._limits_track_active_pxl(
                                 cv["filmstart"], cv["filmstop"],
                                 cv["filmstep"], cv["dturns"],
                                 cv["reb_profile_length"], indarr,
                                 cv["debin"], cv["xorigin"],
                                 cv["dtbin"], ca["omegarev0"], cv["h_num"],
-                                cv["yat0"], cv["q"], ca["c1"], ca["phi0"],
+                                cv["yat0"], cv["q"], ca["dphase"], ca["phi0"],
                                 cv["vrf1"], cv["vrf1dot"], cv["vrf2"],
                                 cv["vrf2dot"], cv["hratio"], cv["phi12"],
                                 ca["time_at_turn"])
@@ -144,7 +144,7 @@ class TestMap(unittest.TestCase):
 
         jmax = MapInfo._find_jmax(
                     MapInfo, cv["reb_profile_length"],
-                    cv["yat0"], cv["q"], ca["c1"], ca["phi0"],
+                    cv["yat0"], cv["q"], ca["dphase"], ca["phi0"],
                     cv["vrf1"], cv["vrf1dot"],
                     cv["vrf2"], cv["vrf2dot"],
                     cv["hratio"], cv["phi12"],

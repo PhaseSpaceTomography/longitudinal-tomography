@@ -93,7 +93,7 @@ class TestTimeSpace(unittest.TestCase):
         comparing_profiles = ca["profiles"]
         inn_profiles = ca["rebinned_profiles_even"]
 
-        profiles = TimeSpace.negative_profiles_zero(inn_profiles)
+        profiles = TimeSpace.negative_profile_data_zero(inn_profiles)
         profiles = TimeSpace.normalize_profiles(profiles)
         np.testing.assert_almost_equal(profiles, comparing_profiles,
                                        err_msg="error in normalisation and"
@@ -106,7 +106,7 @@ class TestTimeSpace(unittest.TestCase):
         cv = TestTimeSpace.c500.values
 
         profiles = ca["rebinned_profiles_even"]
-        profiles = TimeSpace.negative_profiles_zero(profiles)
+        profiles = TimeSpace.negative_profile_data_zero(profiles)
         ref_beam = 0
         expected = 1597936374926.2097
         self.assertAlmostEqual(TimeSpace.total_profilecharge(

@@ -66,6 +66,8 @@ def drf_voltage(phi, parameters, rf_turn):
             * np.cos(parameters.h_ratio
                      * (phi - parameters.phi12)))
 
+
+# RF voltage formula without calculating the difference in E0
 def short_rf_voltage_formula(phi, vrf1, vrf1dot, vrf2, vrf2dot,
                              h_ratio, phi12, time_at_turn, rf_turn):
     turn_time = time_at_turn[rf_turn]
@@ -75,10 +77,11 @@ def short_rf_voltage_formula(phi, vrf1, vrf1dot, vrf2, vrf2dot,
     temp += v2 * np.sin(h_ratio * (phi - phi12))
     return temp
 
-# Calculates the RF peak voltage at turn rf_turn
-#   assuming a linear voltage function
-#   time=0 at machine_ref_frame.
+
 @njit
+# Calculates the RF peak voltage at turn rf_turn
+# assuming a linear voltage function
+# time=0 at machine_ref_frame.
 def vrft(vrf, vrfDot, turn_time):
     #   time_at_turn: time at turn for which the RF voltage should be calculated
     #   vrf: Volts
@@ -114,8 +117,8 @@ def phase_slip_factor(parameters):
     return (1.0 - parameters.beta0**2) - parameters.trans_gamma**(-2)
 
 
-# Find coefficient "c1" at each turn, TODO: find out what it is.
-def find_c1(parameters):
+# Find dphase at each turn
+def find_dphase(parameters):
     return (2 * np.pi * parameters.h_num * parameters.eta0
             / (parameters.e0 * parameters.beta0**2))
 
@@ -139,7 +142,7 @@ def calc_self_field_coeffs(parameters):
     return sfc
 
 
-# Calculates potential energy in phase? TODO: Find better explanation
+# Calculates potential energy in phase
 def phase_low(phase, parameters, rf_turn):
     term1 = (parameters.vrf2
              * (np.cos(parameters.h_ratio
@@ -165,7 +168,7 @@ def phase_low(phase, parameters, rf_turn):
     return term1 + term2 + term3
 
 
-# Calculates derivative of phase_low() TODO: Find better expl.
+# Calculates derivative of the phase_low function.
 # Third argument is needed for newton func.
 def dphase_low(phase, parameters, rf_turn):
     return (-1.0 * parameters.vrf2

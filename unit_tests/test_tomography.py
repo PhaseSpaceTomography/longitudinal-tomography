@@ -13,23 +13,6 @@ class TestTomography(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # cls.C500_arrays = {
-        #     "profiles": np.genfromtxt(C500_path + "profiles.dat"),
-        #     "maps": np.load(C500_path + "maps.npy"),
-        #     "mapsi": np.load(C500_path + "mapsi.npy"),
-        #     "mapsw": np.load(C500_path + "mapsw.npy"),
-        #     "rev_mapsw":  np.load(C500_path + "reversedweights.npy"),
-        #     "imin": np.load(C500_path + "imin.npy"),
-        #     "imax": np.load(C500_path + "imax.npy"),
-        #     "jmin": np.load(C500_path + "jmin.npy"),
-        #     "jmax": np.load(C500_path + "jmax.npy"),
-        #     "back_proj0": np.load(C500_path + "first_backproj.npy"),
-        #     "diff_prof0": np.load(C500_path + "first_diffprofiles.npy"),
-        #     "ps_before_norm": np.load(C500_path
-        #                               + "phase_space0_to_norm.npy"),
-        #     "ps_after_norm": np.load(C500_path
-        #                              + "phase_space0_after_norm.npy")
-        # }
         cls.c500 = C500()
         cls.rec_vals = cls.c500.get_reconstruction_values()
         cls.tomo_vals = cls.c500.get_tomography_values()
@@ -119,16 +102,22 @@ class TestTomography(unittest.TestCase):
         rec.mapsi = np.zeros((100, 10))
         rec.mapweights = np.zeros((111, 10))
 
+        test_tomo = Tomography(rec)
+
         # Testing mapsi and mapweights of unequal lengths
         with self.assertRaises(Exception):
-            Tomography(rec)
-
+            test_tomo.validate_reconstruction(0)
         rec.mapweights = np.zeros((100, 10))
         rec.maps = np.zeros((19, 150, 150))
 
         # Testing maps array with unexpected value
         with self.assertRaises(Exception):
-            Tomography(rec)
+            test_tomo.validate_reconstruction(0)
+        rec.maps = np.zeros((19, 100, 150))
+
+        # Bad profile to reconstruct argument
+        with self.assertRaises(Exception):
+            test_tomo.validate_reconstruction(-1)
 
 
 if __name__ == '__main__':

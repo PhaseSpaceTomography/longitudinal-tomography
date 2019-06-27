@@ -1,5 +1,4 @@
 tomo_action/tmp
-tomo_action/input_v2.dat
 tomo/cpp_files/.vscode
 # tomo_action/test_resources
 
@@ -7,5 +6,5 @@ tomo/cpp_files/.vscode
 *.dat
 *.data
 *.npy
-# *.so
+*.so
 
