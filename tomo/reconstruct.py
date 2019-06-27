@@ -6,85 +6,80 @@ from numba import njit
 from physics import vrft
 
 
-"""
-SOME VARIABLES USED IN THIS CLASS:
-----------------------------------
-
-maps: 		 	Array in three dimensions. The first refer to the projection. The two last to 
-                the i and j coordinates of the physical square area in which the picture 
-                will be reconstructed. The map contains an integer
-                which is is the index of the arrays, maps and mapsweight which in turn
-                holds the actual data.
-mapsi: 		 	Array in number of active points in maps and depth, mapsi holds the i in which 
-                mapsweight number of the orginally tracked Npt**2 number of points ended up.
-mapsweight:  	Array in active points in maps and depth, see mapsi
-
-reverseweight: 	Array in profile_count and profile_length, holds the sum of tracked
-                points at a certain i divided by the total number of tracked points 
-                launched (and still within valid limits)
-fmlistlength: 	Initial depth of maps
-
-SOME VARIABLES USED IN THE ORIGINAL FORTRAN VERSION
-BUT NOT IN THE PYTHON VERSION - MAP EXTENSION:
-----------------------------------------------------
-mapsweightx: 	Array in number of extended mapsweight vectors and depth, holds the
-                overflow from mapsweight
-mapsix: 	 	Array in number of extended mapsi vectors and depth, mapsix holds the overflow
-                from mapsi (last element dimension depth in mapsi holds the first index for
-                mapsix
-xlength: 		The number of extended vectors in maps
-xunit: 			The number of vectors additionally allocated every time a new allocation
-                takes place
-                
-MAP EXTENSIONS
-----------------
-In the original program the calculation of the depth of the maps, fmlistlength,
- was calculated in the following way (see function _depth_maps):
-        arg1 = max(4, np.floor(0.1 * profile_length))
-        arg2 = min(snpt**2, profile_length)
-        fmlistlength = int(min(arg1, arg2))
-In normal cases the profile length is much larger than the number of tracked points
- in a cell. In these cases the fmlistlength, which is the number of elements in the
- mapsi and mapsweight function, are set to the number of tracked points in each cell.
- In cases where the number of tracked points are very large and/or the profile length
- are very small, there is a chance that fmlistlength will be set to another smaller number.
- This is in many cases unproblematic but not for all.
-In the function '_calc_weightfactors', there is loaded a vector 'xvec' into the
- function '_calc_one_weightfactor'. If the square root of the number of tracked points (snpt)
- equals three, then xvec could be something like [2, 2, 2, 3, 3, 2, 2, 4, 4]
- In the first iteration through the array the corresponding xet = xvec[0] = 2.
- The corresponding xnum would then be [1, 1, 1, 0, 0, 1, 1, 0, 0].
- The sum of this vector (in this case 5) would be the mapweight[0]
- The integer, with is a rounded down x-coordinate is saved in mapsi[0]
- The next 'xet' would in this case be 3, and so on.
- The calculate_one_weightfactor contiues in this way until
-  there are no more unused numbers in the xvec.
- After saving the xet to mapsi[0] and the sum of the xnum vector to mapsweight[0]
-  an counter is raised with the value of one, pointing at the next element in both arrays.
-In cases where fmlistlength = snpt**2, the length of the mapsi and mapsweight
- arrays will be snpt**2. Since the xvec always has the size snpt**2, there can never be
-  an overflow of the mapsi and mapsweight arrays. A new example:
-  If the xvec array is [1, 2, 3, 4, 5, 6, 7, 8, 9] then the final
-  mapsi in this case be [1, 2, 3, 4, 5, 6, 7, 8, 9] 
-  and mapweight [1, 1, 1, 1, 1, 1 ,1, 1, 1].
-The example over is a case which would be a problem is fmlistlength is sat to
- less than snpt**2. If for some reason fmlistlength would be in this case set to 6,
- then mapsi and mapsweight would have length (in axis=1) to be 6.
- This would result in an overflow, and a need for a map extension of 3 elements.
-The positive thing with such a solution is the saving of memory.
- Since the mapsi and mapsweight arrays is initiated with the shape (number of maps, fmlistlength)
- there is large potential to save some memory if only the two-three elements in a very long
- array is being used. Mabye the mapsi array will be initiated as shape (1 000 000, 16), when only
- (1 000 000, 8) would be needed.
-However, at this time i find this method unnecessarily complex
-in relation to the gain achieved from it. My solution
- is to set the fmlistlength = snpt**2. In this way the arrays will never overflow.
- points in which the map extension was being used is marked with 
-  'raise NotImplementedError("Ext. maps not implemented.")' in this class and the tomography class.
- 
-"""
-
-
+# SOME VARIABLES USED IN THIS CLASS:
+# ----------------------------------
+#
+# maps: 		 	Array in three dimensions. The first refer to the projection. The two last to
+#                 the i and j coordinates of the physical square area in which the picture
+#                 will be reconstructed. The map contains an integer
+#                 which is is the index of the arrays, maps and mapsweight which in turn
+#                 holds the actual data.
+# mapsi: 		 	Array in number of active points in maps and depth, mapsi holds the i in which
+#                 mapsweight number of the orginally tracked Npt**2 number of points ended up.
+# mapsweight:  	Array in active points in maps and depth, see mapsi
+#
+# reverseweight: 	Array in profile_count and profile_length, holds the sum of tracked
+#                 points at a certain i divided by the total number of tracked points
+#                 launched (and still within valid limits)
+# fmlistlength: 	Initial depth of maps
+#
+# SOME VARIABLES USED IN THE ORIGINAL FORTRAN VERSION
+# BUT NOT IN THE PYTHON VERSION - MAP EXTENSION:
+# ----------------------------------------------------
+# mapsweightx: 	Array in number of extended mapsweight vectors and depth, holds the
+#                 overflow from mapsweight
+# mapsix: 	 	Array in number of extended mapsi vectors and depth, mapsix holds the overflow
+#                 from mapsi (last element dimension depth in mapsi holds the first index for
+#                 mapsix
+# xlength: 		The number of extended vectors in maps
+# xunit: 			The number of vectors additionally allocated every time a new allocation
+#                 takes place
+#
+# MAP EXTENSIONS
+# ----------------
+# In the original program the calculation of the depth of the maps, fmlistlength,
+#  was calculated in the following way (see function _depth_maps):
+#         arg1 = max(4, np.floor(0.1 * profile_length))
+#         arg2 = min(snpt**2, profile_length)
+#         fmlistlength = int(min(arg1, arg2))
+# In normal cases the profile length is much larger than the number of tracked points
+#  in a cell. In these cases the fmlistlength, which is the number of elements in the
+#  mapsi and mapsweight function, are set to the number of tracked points in each cell.
+#  In cases where the number of tracked points are very large and/or the profile length
+#  are very small, there is a chance that fmlistlength will be set to another smaller number.
+#  This is in many cases unproblematic but not for all.
+# In the function '_calc_weightfactors', there is loaded a vector 'xvec' into the
+#  function '_calc_one_weightfactor'. If the square root of the number of tracked points (snpt)
+#  equals three, then xvec could be something like [2, 2, 2, 3, 3, 2, 2, 4, 4]
+#  In the first iteration through the array the corresponding xet = xvec[0] = 2.
+#  The corresponding xnum would then be [1, 1, 1, 0, 0, 1, 1, 0, 0].
+#  The sum of this vector (in this case 5) would be the mapweight[0]
+#  The integer, with is a rounded down x-coordinate is saved in mapsi[0]
+#  The next 'xet' would in this case be 3, and so on.
+#  The calculate_one_weightfactor contiues in this way until
+#   there are no more unused numbers in the xvec.
+#  After saving the xet to mapsi[0] and the sum of the xnum vector to mapsweight[0]
+#   an counter is raised with the value of one, pointing at the next element in both arrays.
+# In cases where fmlistlength = snpt**2, the length of the mapsi and mapsweight
+#  arrays will be snpt**2. Since the xvec always has the size snpt**2, there can never be
+#   an overflow of the mapsi and mapsweight arrays. A new example:
+#   If the xvec array is [1, 2, 3, 4, 5, 6, 7, 8, 9] then the final
+#   mapsi in this case be [1, 2, 3, 4, 5, 6, 7, 8, 9]
+#   and mapweight [1, 1, 1, 1, 1, 1 ,1, 1, 1].
+# The example over is a case which would be a problem is fmlistlength is sat to
+#  less than snpt**2. If for some reason fmlistlength would be in this case set to 6,
+#  then mapsi and mapsweight would have length (in axis=1) to be 6.
+#  This would result in an overflow, and a need for a map extension of 3 elements.
+# The positive thing with such a solution is the saving of memory.
+#  Since the mapsi and mapsweight arrays is initiated with the shape (number of maps, fmlistlength)
+#  there is large potential to save some memory if only the two-three elements in a very long
+#  array is being used. Mabye the mapsi array will be initiated as shape (1 000 000, 16), when only
+#  (1 000 000, 8) would be needed.
+# However, at this time i find this method unnecessarily complex
+# in relation to the gain achieved from it. My solution
+#  is to set the fmlistlength = snpt**2. In this way the arrays will never overflow.
+#  points in which the map extension was being used is marked with
+#   'raise NotImplementedError("Ext. maps not implemented.")' in this class and the tomography class.
 class Reconstruct:
 
     def __init__(self, timespace, mapinfo):
