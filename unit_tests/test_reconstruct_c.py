@@ -2,7 +2,6 @@ import unittest
 import numpy.testing as nptest
 import numpy as np
 import ctypes
-import os
 from numpy.ctypeslib import ndpointer
 from tomo.reconstruct_c import ReconstructCpp
 from tomo.map_info import MapInfo

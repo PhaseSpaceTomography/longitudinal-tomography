@@ -83,6 +83,7 @@ from physics import vrft
 class Reconstruct:
 
     def __init__(self, timespace, mapinfo):
+        logging.info("Running reconstruct_py")
         self.timespace = timespace
         self.mapinfo = mapinfo
         self.maps = []
@@ -92,154 +93,153 @@ class Reconstruct:
         self.fmlistlength = 0
 
     # @profile
-    def reconstruct(self, timespace, mapinfo):
-        npt = timespace.par.snpt**2
+    def run(self, film):
+        mi = self.mapinfo
+        ts = self.timespace
+        tpar = self.timespace.par
+        npt = tpar.snpt**2
 
         (points, nr_of_maps,
-         fmlistlength) = self._init_reconstruction(timespace, mapinfo)
+         fmlistlength) = self._init_reconstruction(ts, mi)
 
         xpoints = points[0]
         ypoints = points[1]
 
-        for film in range(timespace.par.filmstart - 1,
-                          timespace.par.filmstop,
-                          timespace.par.filmstep):
+        print("Image" + str(film) + ": ")
 
-            print("Image" + str(film) + ": ")
+        # Initiating arrays
+        (maps, mapsi,
+         mapsweight) = self._init_arrays(tpar.profile_count,
+                                         tpar.profile_length,
+                                         nr_of_maps,
+                                         fmlistlength)
 
-            # Initiating arrays
-            (maps, mapsi,
-             mapsweight) = self._init_arrays(timespace.par.profile_count,
-                                             timespace.par.profile_length,
-                                             nr_of_maps,
-                                             fmlistlength)
+        # Do the first map
+        (maps[film, :, :], mapsi,
+         mapsweight, actmaps) = self._first_map(
+                                        mi.imin[film],
+                                        mi.imax[film],
+                                        mi.jmin[film, :],
+                                        mi.jmax[film, :],
+                                        npt,
+                                        maps[film, :, :],
+                                        mapsi,
+                                        mapsweight)
 
-            # Do the first map
-            (maps[film, :, :], mapsi,
-             mapsweight, actmaps) = self._first_map(
-                                            mapinfo.imin[film],
-                                            mapinfo.imax[film],
-                                            mapinfo.jmin[film, :],
-                                            mapinfo.jmax[film, :],
-                                            npt,
-                                            maps[film, :, :],
-                                            mapsi,
-                                            mapsweight)
+        # Set initial conditions for points to be tracked
+        # xp and yp: time and energy in pixels
+        # size: number of pixels pr profile
 
-            # Set initial conditions for points to be tracked
-            # xp and yp: time and energy in pixels
-            # size: number of pixels pr profile
+        xp = np.zeros(int(np.ceil(nr_of_maps * npt
+                                  / tpar.profile_count)))
+        yp = np.zeros(int(np.ceil(nr_of_maps * npt
+                                  / tpar.profile_count)))
 
-            xp = np.zeros(int(np.ceil(nr_of_maps * npt
-                                      / timespace.par.profile_count)))
-            yp = np.zeros(int(np.ceil(nr_of_maps * npt
-                                      / timespace.par.profile_count)))
+        direction = 1
+        endprofile = tpar.profile_count
+        t0 = tm.time()
+        for twice in range(2):
 
-            direction = 1
-            endprofile = timespace.par.profile_count
-            t0 = tm.time()
-            for twice in range(2):
+            turn_now = film * tpar.dturns
 
-                turn_now = film * timespace.par.dturns
+            (xp, yp,
+             last_pxlidx) = Reconstruct._init_tracked_point(
+                                            tpar.snpt,
+                                            mi.imin[film],
+                                            mi.imax[film],
+                                            mi.jmin[film, :],
+                                            mi.jmax[film, :],
+                                            xp, yp, xpoints, ypoints)
 
-                (xp, yp,
-                 last_pxlidx) = Reconstruct._init_tracked_point(
-                                                timespace.par.snpt,
-                                                mapinfo.imin[film],
-                                                mapinfo.imax[film],
-                                                mapinfo.jmin[film, :],
-                                                mapinfo.jmax[film, :],
-                                                xp, yp, xpoints, ypoints)
+            for profile in range(film + direction, endprofile, direction):
 
-                for profile in range(film + direction, endprofile, direction):
+                if tpar.self_field_flag:
+                    xp, yp, turn_now = self.longtrack_self(
+                                            xp[:last_pxlidx],
+                                            yp[:last_pxlidx],
+                                            tpar.x_origin,
+                                            tpar.h_num,
+                                            tpar.omega_rev0,
+                                            tpar.dtbin,
+                                            tpar.phi0,
+                                            tpar.yat0,
+                                            mi.dEbin,
+                                            turn_now,
+                                            direction,
+                                            tpar.dturns,
+                                            tpar.dphase,
+                                            tpar.phiwrap,
+                                            ts.vself,
+                                            tpar.q,
+                                            tpar.vrf1,
+                                            tpar.vrf1dot,
+                                            tpar.vrf2,
+                                            tpar.vrf2dot,
+                                            tpar.time_at_turn,
+                                            tpar.h_ratio,
+                                            tpar.phi12,
+                                            tpar.deltaE0)
+                else:
+                    xp, yp, turn_now = self.longtrack(
+                                            direction,
+                                            tpar.dturns,
+                                            yp[:last_pxlidx],
+                                            xp[:last_pxlidx],
+                                            mi.dEbin,
+                                            turn_now,
+                                            tpar.x_origin,
+                                            tpar.h_num,
+                                            tpar.omega_rev0,
+                                            tpar.dtbin,
+                                            tpar.phi0,
+                                            tpar.yat0,
+                                            tpar.dphase,
+                                            tpar.deltaE0,
+                                            tpar.vrf1,
+                                            tpar.vrf1dot,
+                                            tpar.vrf2,
+                                            tpar.vrf2dot,
+                                            tpar.time_at_turn,
+                                            tpar.h_ratio,
+                                            tpar.phi12,
+                                            tpar.q)
 
-                    if timespace.par.self_field_flag:
-                        xp, yp, turn_now = self.longtrack_self(
-                                                xp[:last_pxlidx],
-                                                yp[:last_pxlidx],
-                                                timespace.par.x_origin,
-                                                timespace.par.h_num,
-                                                timespace.par.omega_rev0,
-                                                timespace.par.dtbin,
-                                                timespace.par.phi0,
-                                                timespace.par.yat0,
-                                                mapinfo.dEbin,
-                                                turn_now,
-                                                direction,
-                                                timespace.par.dturns,
-                                                timespace.par.dphase,
-                                                timespace.par.phiwrap,
-                                                timespace.vself,
-                                                timespace.par.q,
-                                                timespace.par.vrf1,
-                                                timespace.par.vrf1dot,
-                                                timespace.par.vrf2,
-                                                timespace.par.vrf2dot,
-                                                timespace.par.time_at_turn,
-                                                timespace.par.h_ratio,
-                                                timespace.par.phi12,
-                                                timespace.par.deltaE0)
-                    else:
-                        xp, yp, turn_now = self.longtrack(
-                                                direction,
-                                                timespace.par.dturns,
-                                                yp[:last_pxlidx],
-                                                xp[:last_pxlidx],
-                                                mapinfo.dEbin,
-                                                turn_now,
-                                                timespace.par.x_origin,
-                                                timespace.par.h_num,
-                                                timespace.par.omega_rev0,
-                                                timespace.par.dtbin,
-                                                timespace.par.phi0,
-                                                timespace.par.yat0,
-                                                timespace.par.dphase,
-                                                timespace.par.deltaE0,
-                                                timespace.par.vrf1,
-                                                timespace.par.vrf1dot,
-                                                timespace.par.vrf2,
-                                                timespace.par.vrf2dot,
-                                                timespace.par.time_at_turn,
-                                                timespace.par.h_ratio,
-                                                timespace.par.phi12,
-                                                timespace.par.q)
+                # Calculating weight factors for each map
+                # Extends maps if needed
+                isOut, actmaps = self._calc_weightfactors(
+                                        mi.imin[film],
+                                        mi.imax[film],
+                                        mi.jmin[film, :],
+                                        mi.jmax[film, :],
+                                        maps[profile, :, :],
+                                        mapsi[:, :],
+                                        mapsweight[:, :],
+                                        xp,
+                                        npt,
+                                        tpar.profile_length,
+                                        fmlistlength,
+                                        actmaps)
 
-                    # Calculating weight factors for each map
-                    # Extends maps if needed
-                    isOut, actmaps = self._calc_weightfactors(
-                                            mapinfo.imin[film],
-                                            mapinfo.imax[film],
-                                            mapinfo.jmin[film, :],
-                                            mapinfo.jmax[film, :],
-                                            maps[profile, :, :],
-                                            mapsi[:, :],
-                                            mapsweight[:, :],
-                                            xp,
-                                            npt,
-                                            timespace.par.profile_length,
-                                            fmlistlength,
-                                            actmaps)
+                print(f"Tracking from time slice { str(film) } to "
+                      f"{str(profile)} , {str(100 * isOut / last_pxlidx)}"
+                      f"% went outside the image width. ")
 
-                    print(f"Tracking from time slice { str(film) } to "
-                          f"{str(profile)} , {str(100 * isOut / last_pxlidx)}"
-                          f"% went outside the image width. ")
-
-                direction = -1
-                endprofile = -1
+            direction = -1
+            endprofile = -1
 
             print("Mean iteration time: "
-                  + str((tm.time() - t0) / timespace.par.profile_count))
+                  + str((tm.time() - t0) / tpar.profile_count))
 
             logging.info("Calculating reversed weight")
             t = tm.process_time()
             reversedweights = self._total_weightfactor(
-                                        timespace.par.profile_count,
-                                        timespace.par.profile_length,
+                                        tpar.profile_count,
+                                        tpar.profile_length,
                                         fmlistlength, npt,
-                                        mapinfo.imin[film],
-                                        mapinfo.imax[film],
-                                        mapinfo.jmin[film, :],
-                                        mapinfo.jmax[film, :],
+                                        mi.imin[film],
+                                        mi.imax[film],
+                                        mi.jmin[film, :],
+                                        mi.jmax[film, :],
                                         mapsweight, mapsi, maps)
 
             logging.info(f"reversed weights calculated in {tm.process_time() - t} sek")
