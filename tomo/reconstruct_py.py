@@ -220,6 +220,11 @@ class Reconstruct:
                                         fmlistlength,
                                         actmaps)
 
+                # TEMP
+                self._new_calc_wf(xp)
+                raise SystemExit
+                # END TEMP
+
                 print(f"Tracking from time slice { str(film) } to "
                       f"{str(profile)} , {str(100 * isOut / last_pxlidx)}"
                       f"% went outside the image width. ")
@@ -428,6 +433,43 @@ class Reconstruct:
                       / (h_num * omegarev0[turn_now] * dtbin))
         yp = denergy / debin + yat0
         return xp, yp, turn_now
+
+    def _new_calc_wf(self, inn_xp):
+        particles_pr_pxl = self.timespace.par.snpt**2
+        nr_pixels = np.int(len(inn_xp) / self.timespace.par.snpt**2)
+
+        xp = np.ceil(inn_xp.copy()).astype(int)
+        xp = xp.reshape((np.int(len(xp) / self.timespace.par.snpt**2), self.timespace.par.snpt**2))
+
+        bin = np.zeros(np.max(xp) + 1)
+        for coordinate in xp[0]:
+            bin[coordinate] += 1
+
+        indices = np.zeros(particles_pr_pxl)
+        weights = np.zeros(particles_pr_pxl)
+
+        j = 0
+        for i in range(len(bin)):
+            if bin[i] != 0:
+                indices[j] = i
+                weights[j] = bin[i]
+                j += 1
+        print(indices)
+        print(weights)
+
+
+        indices = np.zeros(1000000, dtype=int)
+        weights = np.zeros(1000000, dtype=int)
+
+        # j = 0
+        # for i in range(n_bins):
+        #     if bins[i] != 0:
+        #         indices[j] = i
+        #         weights[j] = bins[i]
+        #         j += 1
+        # indices = indices[:j]
+        # weights = weights[:j]
+        # pass
 
 
     @staticmethod
