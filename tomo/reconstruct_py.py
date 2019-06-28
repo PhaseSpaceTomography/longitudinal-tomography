@@ -149,8 +149,8 @@ class Reconstruct:
         print(all_xp[89])
         print('Time spent: ' + str(tm.perf_counter() - t))
 
-
-        self._new_calc_wf(all_xp[88])
+        # Calculating weightfactors
+        self._new_calc_wf(all_xp[89])
 
 
     # @profile
@@ -266,7 +266,6 @@ class Reconstruct:
                                             tpar.q)
 
                 # Calculating weight factors for each map
-                # Extends maps if needed
                 isOut, actmaps = self._calc_weightfactors(
                                         mi.imin[film],
                                         mi.imax[film],
@@ -280,6 +279,21 @@ class Reconstruct:
                                         tpar.profile_length,
                                         fmlistlength,
                                         actmaps)
+
+                # TEMP
+                # compare_mi = mapsi[np.int(actmaps / 2): actmaps]
+                # compare_mw = mapsweight[np.int(actmaps / 2): actmaps]
+                # del mapsi
+                # del mapsweight
+                # indicies, weights = self._new_calc_wf(xp)  # New wf func.
+                # diff = indicies - compare_mi
+                # print('mapsi')
+                # print(np.sum(diff))
+                # diff = weights - compare_mw
+                # print('mapsw')
+                # print(np.sum(diff))
+                # raise SystemExit
+                # END TEMP
 
                 print(f"Tracking from time slice { str(film) } to "
                       f"{str(profile)} , {str(100 * isOut / last_pxlidx)}"
@@ -551,14 +565,13 @@ class Reconstruct:
 
         return large_xp
 
-    # def _new_new_calc_wf(self, xp):
-
     def _new_calc_wf(self, inn_xp):
         particles_pr_pxl = self.timespace.par.snpt**2
         nr_pixels = np.int(np.ceil(len(inn_xp) / self.timespace.par.snpt**2))
 
         xp = np.ceil(inn_xp.copy()).astype(int)
         xp = xp.reshape((nr_pixels, particles_pr_pxl))
+        xp = xp - 1  # Fortran compensation
 
         bins = np.zeros((nr_pixels, np.max(xp) + 1))
 
@@ -571,7 +584,15 @@ class Reconstruct:
         indices = -np.ones((nr_pixels, particles_pr_pxl))
         weights = np.zeros((nr_pixels, particles_pr_pxl))
 
-        # for bin in bins
+        i = 0
+        for bin in bins:
+            found_idc = np.nonzero(bin)[0]
+            insert_idc = np.where(found_idc >= 0)[0]
+            indices[i, insert_idc] = found_idc
+            weights[i, insert_idc] = bin[found_idc]
+            i += 1
+
+        return indices, weights
 
         # k = 0
         # for bin in bins:
