@@ -28,7 +28,8 @@ for film in range(rec.timespace.par.filmstart - 1,
                   rec.timespace.par.filmstop,
                   rec.timespace.par.filmstep):
     # Recreating profile
-    rec.run(film)
+    # rec.run(film)
+    rec.new_run(film)
     # Creating picture
     tomo.darray, tomo.picture = tomo.run(film)
 

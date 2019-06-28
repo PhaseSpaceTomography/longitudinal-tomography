@@ -92,6 +92,67 @@ class Reconstruct:
         self.reversedweights = []
         self.fmlistlength = 0
 
+    def new_run(self, film):
+        mi = self.mapinfo
+        ts = self.timespace
+        tpar = self.timespace.par
+
+        (points, nr_of_maps,
+         fmlistlength) = self._init_reconstruction(ts, mi)
+
+        xpoints = points[0]
+        ypoints = points[1]
+
+        print("Image" + str(film) + ": ")
+
+        # Initiating arrays
+        (maps, mapsi,
+         mapsweight) = self._init_arrays(tpar.profile_count,
+                                         tpar.profile_length,
+                                         nr_of_maps,
+                                         fmlistlength)
+
+        # Do the first map
+        (maps[film, :, :], mapsi,
+         mapsweight, actmaps) = self._first_map(
+            mi.imin[film],
+            mi.imax[film],
+            mi.jmin[film, :],
+            mi.jmax[film, :],
+            tpar.snpt**2,
+            maps[film, :, :],
+            mapsi,
+            mapsweight)
+
+        # Set initial conditions for points to be tracked
+        # xp and yp: time and energy in pixels
+        # size: number of pixels pr profile
+
+        xp = np.zeros(int(np.ceil(nr_of_maps * tpar.snpt**2
+                                  / tpar.profile_count)))
+        yp = np.zeros(int(np.ceil(nr_of_maps * tpar.snpt**2
+                                  / tpar.profile_count)))
+
+        # Creating the first profile with equally distributed points
+        (xp, yp,
+         last_pxlidx) = Reconstruct._init_tracked_point(
+                                        tpar.snpt,
+                                        mi.imin[film],
+                                        mi.imax[film],
+                                        mi.jmin[film, :],
+                                        mi.jmax[film, :],
+                                        xp, yp, xpoints, ypoints)
+
+        t = tm.perf_counter()
+        all_xp = self.longtrack_all(xp, yp, film)
+        del xp
+        print(all_xp[89])
+        print('Time spent: ' + str(tm.perf_counter() - t))
+
+
+        self._new_calc_wf(all_xp[88])
+
+
     # @profile
     def run(self, film):
         mi = self.mapinfo
@@ -219,11 +280,6 @@ class Reconstruct:
                                         tpar.profile_length,
                                         fmlistlength,
                                         actmaps)
-
-                # TEMP
-                self._new_calc_wf(xp)
-                raise SystemExit
-                # END TEMP
 
                 print(f"Tracking from time slice { str(film) } to "
                       f"{str(profile)} , {str(100 * isOut / last_pxlidx)}"
@@ -434,42 +490,101 @@ class Reconstruct:
         yp = denergy / debin + yat0
         return xp, yp, turn_now
 
+    def longtrack_all(self, initial_xp, initial_yp, film):
+        tpar = self.timespace.par
+
+        large_xp = np.zeros((tpar.profile_count, len(initial_xp)))
+        large_xp[film] = initial_xp
+
+        direction = 1
+        endprofile = tpar.profile_count
+        turn_now = film * tpar.dturns
+        for twice in range(2):
+            yp = initial_yp
+            for profile in range(film + direction, endprofile, direction):
+                print(f'tracking from {profile} to {profile + 1}')
+
+                denergy = (yp - tpar.yat0) * self.mapinfo.dEbin
+                if direction > 0:
+                    dphi = ((large_xp[profile - 1] + tpar.x_origin) * tpar.h_num
+                            * tpar.omega_rev0[turn_now] * tpar.dtbin
+                            - tpar.phi0[turn_now])
+                    for i in range(tpar.dturns):
+                        dphi -= tpar.dphase[turn_now] * denergy
+                        turn_now += 1
+                        denergy += tpar.q * (vrft(tpar.vrf1, tpar.vrf1dot,
+                                                  tpar.time_at_turn[turn_now])
+                                             * np.sin(dphi + tpar.phi0[turn_now])
+                                             + vrft(tpar.vrf2, tpar.vrf2dot,
+                                                    tpar.time_at_turn[turn_now])
+                                             * np.sin(tpar.h_ratio
+                                             * (dphi + tpar.phi0[turn_now]
+                                                - tpar.phi12))
+                                             ) - tpar.deltaE0[turn_now]
+                else:
+                    dphi = ((large_xp[profile + 1] + tpar.x_origin) * tpar.h_num
+                            * tpar.omega_rev0[turn_now] * tpar.dtbin
+                            - tpar.phi0[turn_now])
+                    for i in range(tpar.dturns):
+                        denergy -= tpar.q * (vrft(tpar.vrf1, tpar.vrf1dot,
+                                                  tpar.time_at_turn[turn_now])
+                                             * np.sin(dphi + tpar.phi0[turn_now])
+                                             + vrft(tpar.vrf2, tpar.vrf2dot,
+                                                    tpar.time_at_turn[turn_now])
+                                             * np.sin(tpar.h_ratio
+                                                      * (dphi
+                                                         + tpar.phi0[turn_now]
+                                                         - tpar.phi12))
+                                             ) - tpar.deltaE0[turn_now]
+                        turn_now -= 1
+                        dphi += tpar.dphase[turn_now] * denergy
+
+                large_xp[profile] = ((dphi + tpar.phi0[turn_now])
+                                     / (float(tpar.h_num)
+                                        * tpar.omega_rev0[turn_now]
+                                        * tpar.dtbin)
+                                     - tpar.x_origin)
+                yp = denergy / float(self.mapinfo.dEbin) + tpar.yat0
+
+            direction = -1
+            endprofile = -1
+
+        return large_xp
+
+    # def _new_new_calc_wf(self, xp):
+
     def _new_calc_wf(self, inn_xp):
         particles_pr_pxl = self.timespace.par.snpt**2
-        nr_pixels = np.int(len(inn_xp) / self.timespace.par.snpt**2)
+        nr_pixels = np.int(np.ceil(len(inn_xp) / self.timespace.par.snpt**2))
 
         xp = np.ceil(inn_xp.copy()).astype(int)
-        xp = xp.reshape((np.int(len(xp) / self.timespace.par.snpt**2), self.timespace.par.snpt**2))
+        xp = xp.reshape((nr_pixels, particles_pr_pxl))
 
-        bin = np.zeros(np.max(xp) + 1)
-        for coordinate in xp[0]:
-            bin[coordinate] += 1
+        bins = np.zeros((nr_pixels, np.max(xp) + 1))
 
-        indices = np.zeros(particles_pr_pxl)
-        weights = np.zeros(particles_pr_pxl)
+        i = 0
+        for pixel in xp:
+            for coordinate in pixel:
+                bins[i, coordinate] += 1
+            i += 1
 
-        j = 0
-        for i in range(len(bin)):
-            if bin[i] != 0:
-                indices[j] = i
-                weights[j] = bin[i]
-                j += 1
-        print(indices)
-        print(weights)
+        indices = -np.ones((nr_pixels, particles_pr_pxl))
+        weights = np.zeros((nr_pixels, particles_pr_pxl))
 
+        # for bin in bins
 
-        indices = np.zeros(1000000, dtype=int)
-        weights = np.zeros(1000000, dtype=int)
-
-        # j = 0
-        # for i in range(n_bins):
-        #     if bins[i] != 0:
-        #         indices[j] = i
-        #         weights[j] = bins[i]
-        #         j += 1
-        # indices = indices[:j]
-        # weights = weights[:j]
-        # pass
+        # k = 0
+        # for bin in bins:
+        #     j = 0
+        #     for i in range(len(bin)):
+        #         if bin[i] != 0:
+        #             indices[k, j] = i - 1  # to compensate for fortran
+        #             weights[k, j] = bin[i]
+        #             j += 1
+        #             if not any(bin[i + 1:]):
+        #                 k += 1
+        #                 break
+        # return indices, weights
 
 
     @staticmethod
