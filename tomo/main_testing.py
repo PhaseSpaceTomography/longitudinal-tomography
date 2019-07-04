@@ -1,4 +1,5 @@
 import logging
+import time as tm
 from time_space import TimeSpace
 from map_info import MapInfo
 from reconstruct_c import ReconstructCpp    # c++ enhanced reconstruction
@@ -27,9 +28,12 @@ tomo = Tomography(rec)
 for film in range(rec.timespace.par.filmstart - 1,
                   rec.timespace.par.filmstop,
                   rec.timespace.par.filmstep):
-    # Recreating profile
-    rec.run(film)
-    # rec.new_run(film)
+
+    t0 = tm.perf_counter()
+    rec.new_run(film)
+    # rec.run(film)
+    print(f'total reconstruction time: {str(tm.perf_counter() - t0)}')
+    raise SystemExit
     # Creating picture
     tomo.darray, tomo.picture = tomo.run(film)
 
