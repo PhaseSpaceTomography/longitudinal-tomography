@@ -92,14 +92,29 @@ class Reconstruct:
         self.mapweights = []
         self.reversedweights = []
         self.fmlistlength = 0
+        self.all_turns = (timespace.par.dturns
+                          * (timespace.par.profile_count - 1))
 
         # TEMP?
         self.film = None
-        self.all_turns = (timespace.par.dturns
-                          * (timespace.par.profile_count - 1))
         # END TEMP
 
     def new_run(self, film):
+
+        # TEMP
+        # npxl = 2500000
+        # npt = 16
+        # weights = np.zeros((npxl, npt))
+        # indices = np.zeros((npxl, npt))
+        # print('running func')
+        # test_array = np.array(np.random.rand(int(npxl * npt))*10, dtype=int).reshape((npxl, npt))
+        # dt = tm.perf_counter()
+        # self.find_weightfactors_njit2(test_array, npxl, npt, weights, indices)
+        # print(tm.perf_counter() - dt)
+        # raise SystemExit
+        # END TEMP
+
+
         self.film = film
         mi = self.mapinfo
         ts = self.timespace
@@ -132,15 +147,6 @@ class Reconstruct:
             mapsi,
             mapsweight)
 
-        # Set initial conditions for points to be tracked
-        # xp and yp: time and energy in pixels
-        # size: number of pixels pr profile
-
-        # xp = np.zeros(int(np.ceil(nr_of_maps * tpar.snpt**2
-        #                           / tpar.profile_count)))
-        # yp = np.zeros(int(np.ceil(nr_of_maps * tpar.snpt**2
-        #                           / tpar.profile_count)))
-
         initial_points = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt**2
                                    / tpar.profile_count))))
 
@@ -164,51 +170,53 @@ class Reconstruct:
         # TEMP
         rec_prof = 0
         # END TEMP
-
         t = tm.perf_counter()
-        # for pp in initial_points:
-        #     _ = self.longtrack_one_particle_mod(pp)
         pool = Pool()
-
         initial_params = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt ** 2
                                   / tpar.profile_count))))
         (initial_params[0],
-         initial_params[1]) = self.calc_dphi_denergy(initial_points[0],
-                                                     initial_points[1],
-                                                     rec_prof)
+        initial_params[1]) = self.calc_dphi_denergy(initial_points[0],
+                                                    initial_points[1],
+                                                    rec_prof)
 
-        (initial_params[0],
-         initial_params[1]) = init_dphi_denergy(initial_points[0],
-                                                tpar.x_origin,
-                                                tpar.h_num,
-                                                tpar.omega_rev0,
-                                                tpar.dtbin,
-                                                tpar.phi0,
-                                                initial_points[1],
-                                                tpar.yat0,
-                                                mi.dEbin,
-                                                film)
+        # (initial_params[0],
+        #  initial_params[1]) = init_dphi_denergy(initial_points[0],
+        #                                         tpar.x_origin,
+        #                                         tpar.h_num,
+        #                                         tpar.omega_rev0,
+        #                                         tpar.dtbin,
+        #                                         tpar.phi0,
+        #                                         initial_points[1],
+        #                                         tpar.yat0,
+        #                                         mi.dEbin,
+        #                                         film)
 
         initial_params = initial_params.T
 
-        pool.map(self.longtrack_one_particle_mod, initial_params)
-
-        # self.longtrack_one_particle_mod(initial_params[0])
-
-        # all_xp = self.longtrack_all(xp, yp, film)
-        # check = all_xp[:, 0]
-        # del all_xp
-        # diff = one_xp - check
-        # print(f'Accumulated difference algorithms: {np.sum(np.abs(diff))}')
+        # The results of the Pool.map function are ordered.
+        all_xp = pool.map(self.longtrack_one_particle_mod, initial_params)
+        pool.close()
+        pool.join()
         print('Longtrack time: ' + str(tm.perf_counter() - t))
-        raise SystemExit
-        del xp
+
         # -----------------------
         # CASTING ALL XP
         # -----------------------
         t = tm.perf_counter()
-        all_xp = np.ceil(all_xp).astype(int)
+
+        # Changing the axis of the matrix to (measurement_turn, x_coordinate)
+        all_xp = np.array(all_xp).T
+        all_xp[0] = np.ceil(initial_points[0])
+
+        # Splitting up to npt sized vectors
+        # TODO: Move into parallelized function?
+        all_xp = all_xp.reshape(int(all_xp.size / self.timespace.par.snpt**2),
+                                self.timespace.par.snpt**2)
+
         print('Casting time: ' + str(tm.perf_counter() - t))
+        print(all_xp.shape)
+        print(all_xp[0, :])
+
         # -----------------------
         # CALC WEIGHT FACTORS
         # -----------------------
@@ -217,22 +225,28 @@ class Reconstruct:
         npt = 16
         all_xp = all_xp.reshape((npxl, npt))
 
+
+        print(f'all_xp shape: {all_xp.shape}')
+
         weights = np.zeros((npxl, npt), dtype=int)
         indices = np.zeros((npxl, npt), dtype=int)
-        print(f'all_xp shape: {all_xp.shape}')
         t = tm.perf_counter()
 
-        self.compress_vector_njit(all_xp, npxl, npt, weights, indices)
+        self.find_weightfactors_njit2(all_xp, npxl, npt, weights, indices)
 
         print('Calc wf: ' + str(tm.perf_counter() - t))
+
+        # 1.2950824350000403
+
+        raise SystemExit
 
         # -----------------------
         # CALC REVERSED WEIGHT FACTORS
         # -----------------------
-        # t = tm.perf_counter()
-        # indices, weights = self.calc_rmw(all_xp)
-        # print('Calc rwf: ' + str(tm.perf_counter() - t))
-        # del all_xp
+        t = tm.perf_counter()
+        indices, weights = self.calc_rmw(all_xp)
+        print('Calc rwf: ' + str(tm.perf_counter() - t))
+        del all_xp
         # -----------------------
 
 
@@ -449,6 +463,7 @@ class Reconstruct:
         mapsweight = np.zeros((nr_of_maps, fmlistlength), int)
         return maps, mapsi, mapsweight
 
+    # Calculating total amount of pixels needed
     def _needed_amount_maps(self, filmstart, filmstop, filmstep,
                             profile_count, mi):
         numaps = np.zeros(filmstop, dtype=int)
@@ -461,6 +476,7 @@ class Reconstruct:
                                                mi.imax[profile] + 1])
         return profile_count * int(np.amax(numaps))
 
+    # Needed if map extensions is to be implemented.
     def _depth_maps(self, snpt, profile_length):
         arg1 = max(4, np.floor(0.1 * profile_length))
         arg2 = min(snpt**2, profile_length)
@@ -468,6 +484,7 @@ class Reconstruct:
 
     @staticmethod
     @njit
+    # Calculating the first map, indices and weight factors
     def _first_map(imin, imax, jmin, jmax, npt,
                    maps, mapsi, mapsweight):
         actmaps = 0
@@ -481,6 +498,7 @@ class Reconstruct:
 
     @staticmethod
     @njit
+    # Creating homogeneously distributed particles
     def _init_tracked_point(snpt, imin, imax,
                             jmin, jmax, xp, yp,
                             xpoints, ypoints):
@@ -496,6 +514,7 @@ class Reconstruct:
 
     @staticmethod
     @njit
+    # Original particle tracking function
     def longtrack(direction, nrep, yp, xp, dEbin, turn_now, x_origin,
                   h_num, omega_rev0, dtbin, phi0, yat0, dphase, deltaE0,
                   vrf1, vrf1dot, vrf2, vrf2dot, time_at_turn,
@@ -534,6 +553,7 @@ class Reconstruct:
 
     @staticmethod
     @njit
+    # Function for tracking particles while including self field voltages
     def longtrack_self(xp, yp, xorigin, h_num,
                        omegarev0, dtbin, phi0, yat0,
                        debin, turn_now, direction, dturns,
@@ -593,7 +613,10 @@ class Reconstruct:
 
     # Longtrack
     # -------------
-    #@njit
+
+    # Tracking all particles at all machine turns.
+    # Returns profile_count * number of particles array with the x coordinates
+    # of each particle at each measurement.
     def longtrack_all(self, initial_xp, initial_yp, film):
         tpar = self.timespace.par
 
@@ -654,6 +677,9 @@ class Reconstruct:
 
         return large_xp
 
+    # NB: Not fully implemented.
+    # Draft of function for tracking the movement of one particle.
+    # Ready to be run in parallel using multiprocessing.Pool().
     def longtrack_one_particle(self, init_points):
 
         # TEMP
@@ -710,6 +736,13 @@ class Reconstruct:
                 xp_idx += 1
         return out_xp
 
+    # NB: Not fully implemented
+    # Draft of function for tracking the movement of one particle.
+    # Ready to be run in parallel using multiprocessing.Pool().
+    # Modified with njit speed-yp, and generally more optimised than
+    # longtrack_one_particle.
+    # The args argument is needed because the mp.Pool.map function
+    # can only send one argument into the function.
     def longtrack_one_particle_mod(self, args):
 
         # TEMP
@@ -730,10 +763,13 @@ class Reconstruct:
                             tpar.phi12, tpar.deltaE0, tpar.dturns,
                             tpar.omega_rev0, tpar.dtbin, tpar.x_origin,
                             self.mapinfo.dEbin, tpar.yat0, tpar.h_num)
-        return out_xp
+        return np.ceil(out_xp).astype(int)
 
     @staticmethod
     @njit(fastmath=True)
+    # Function for tracking ONE particle in the positive direction.
+    # Returns array 'xp_out' via arguments, which includes xp
+    # for all measurement turns for particle.
     def track_positive(rec_prof, out_xp, all_turns, dphase, denergy,
                        dphi, q, vrf1, vrf1dot, vrf2, vrf2dot,
                        time_at_turn, phi0, h_ratio, phi12, deltaE0, dturns,
@@ -781,6 +817,7 @@ class Reconstruct:
                                   turn)
                 xp_idx += 1
 
+    # Function for calculating dphi and denergy based on xp and yp values
     def calc_dphi_denergy(self, xp, yp, turn):
         tpar = self.timespace.par
         dphi = ((xp + tpar.x_origin)
@@ -796,6 +833,10 @@ class Reconstruct:
     # Weight factors
     # -------------
     # Calculating using np.unique
+    # Since one have to split the xp array in to arrays of npt
+    # is it quite slow, but i see potential.
+    # See also find_weightfactors_njit()
+    # TODO: parallel
     def wf_alg1(self, inn_xp):
         particles_pr_pxl = self.timespace.par.snpt**2
         nr_pixels = np.int(inn_xp.size / self.timespace.par.snpt**2)
@@ -809,7 +850,8 @@ class Reconstruct:
 
         i = 0
 
-        # Finn ut om det er mulig aa sette inn en liten array i en stor array!
+        # TODO: is it possible to insert a small array into a
+        #  big array without knowing the size?
 
         for pixel in xp:
             unique, counts = np.unique(pixel, return_counts=True)
@@ -849,7 +891,9 @@ class Reconstruct:
         #                 break
         # return indices, weights
 
-    # New calculate wf algorithm for MULTIPLE vectors
+    # Early sketch for weight factor algorithm as initiated at tomo meeting 26.06
+    # Modified in wf_alg3
+    # Quite slow and inefficient when due to reshaping of input array
     def wf_alg2(self, all_xp):
         particles_pr_pxl = self.timespace.par.snpt ** 2
         nr_pxl = np.int(np.ceil(all_xp.size / self.timespace.par.snpt ** 2))
@@ -881,8 +925,11 @@ class Reconstruct:
             i += 1
 
     @staticmethod
-    # @njit(fastmath=True, parallel=True)
-    # using
+    # Algorithm for finding weight factors.
+    # First uses find_accumulate_pixelvals() for counting,
+    # then puts these values in a number_of_pixels * npt shaped array
+    # Not fully tested since it takes a lot of memory -> crashes my computer.
+    # Not super fast.
     def wf_alg3(xp, particles_pr_pxl):
         nr_pxl = np.int(np.ceil(xp.size / particles_pr_pxl))
         max_coordinate = np.max(xp) + 1
@@ -899,35 +946,17 @@ class Reconstruct:
         indices = -np.ones((pxl_array.size, particles_pr_pxl))
         weights = np.zeros((pxl_array.size, particles_pr_pxl))
 
-        dt1 = 0
-        dt2 = 0
-        dt3 = 0
-        # t0 = tm.perf_counter()
         for pxl_idx in range(nr_pxl):
-            t = tm.perf_counter()
             not_zero = np.where(bins[pxl_idx] != 0)[0]
-            dt1 += (tm.perf_counter() - t)
-
-            t = tm.perf_counter()
             indices[pxl_idx, 0:len(not_zero)] = not_zero
-            dt2 += (tm.perf_counter() - t)
-
-            t = tm.perf_counter()
             weights[pxl_idx, 0:len(not_zero)] = bins[pxl_idx, not_zero]
-            dt3 += (tm.perf_counter() - t)
-        # print('filling arrays: ' + str(tm.perf_counter() - t0))
-
-        print(f'dt1: {str(dt1/pxl_idx)}')
-        print(f'dt2: {str(dt2/pxl_idx)}')
-        print(f'dt3: {str(dt3/pxl_idx)}')
-        print(f'pxls: {str(pxl_idx)}')
-
-        # print(indices[0])
-        # print(weights[0])
 
     @staticmethod
     @njit(fastmath=True, parallel=True)
     # Needed for wf_alg3
+    # Creates array with the size of all possible values the input vector may
+    # contain. Return array with counted array value as indices,
+    # and the count as the value at that index.
     def find_accumulate_pixelvals(pxls, nr_pxl, particles_pr_pxl, bins):
         for pixel in range(nr_pxl):
             one_pxl = pxls[pixel]
@@ -936,7 +965,12 @@ class Reconstruct:
 
     @staticmethod
     @njit(fastmath=True)
-    def compress_vector_njit(pixels, nr_pxl, npt, weights, indices):
+    # Method for counting unique elements of n vectors
+    # Returns unique values in vector (indices), and the count (weights)
+    # My own home made version of wf_alg1 and np.unique.
+    # Quite fast.
+    # TODO: Parallel
+    def find_weightfactors_njit(pixels, nr_pxl, npt, weights, indices):
         for i in range(nr_pxl):
             already_checked = [0]
             counter = 0
@@ -948,8 +982,25 @@ class Reconstruct:
                     counter += 1
         return indices, weights
 
+    @staticmethod
+    @njit(fastmath=True, parallel=True)
+    def find_weightfactors_njit2(pixels, nr_pxl, npt, weights, indices):
+        for i in prange(nr_pxl):
+            already_checked = [0]
+            counter = 0
+            for j in range(npt):
+                if already_checked.count(pixels[i, j]) == 0:
+                    already_checked.append(pixels[i, j])
+                    weights[i, counter] = count(pixels[i], pixels[i, j])
+                    indices[i, counter] = pixels[i, j]
+                    counter += 1
+        return indices, weights
+
+
     # Reversed Weight
     # -------------
+    # wf_alg1 modified for calculating reversed weight factors
+    # Quite fast, but need more testing.
     def calc_rmw(self, all_coords):
         all_coords -= 1
         indices = -np.ones((self.timespace.par.profile_count,
@@ -964,8 +1015,9 @@ class Reconstruct:
             weights[i, :len(uniques)] = counts
             i += 1
 
-        return indices, (weights / self.timespace.par.snpt**2)\
-                         * self.timespace.par.profile_count
+        return (indices,
+                (weights / self.timespace.par.snpt**2)
+                * self.timespace.par.profile_count)
 
     # ============================================================
     # END NEW FUNCTIONS
@@ -973,6 +1025,7 @@ class Reconstruct:
 
     @staticmethod
     @njit
+    # Original function for calculating weight factors
     def _calc_weightfactors(imin, imax, jmin,
                             jmax, maps, mapsi,
                             mapsweight, xp, npt,
@@ -1005,6 +1058,7 @@ class Reconstruct:
 
     @staticmethod
     @njit
+    # Original function for calculating reversed weights
     def _total_weightfactor(profile_count, profile_length, fmlistlength,
                             npt, imin, imax, jmin, jmax,
                             mapsweight, mapsi, maps):
@@ -1021,6 +1075,7 @@ class Reconstruct:
 
 
 @njit
+# Original function for finding weight factors of ONE vector
 def _calc_one_weightfactor(npt, mapsi, mapsweight, profile_length,
                            fmlistlength, xvec, xlog, xnumb):
     isout = 0
@@ -1044,6 +1099,7 @@ def _calc_one_weightfactor(npt, mapsi, mapsweight, profile_length,
     return isout
 
 @njit
+# Original function for finding reversed weights for ONE vector
 def _reversedweights(reversedweights, mapsweightarr,
                      mapsiarr, fmListLenght, npt):
     numpts = np.sum(mapsweightarr[:])
@@ -1059,8 +1115,12 @@ def _reversedweights(reversedweights, mapsweightarr,
         else:
             raise NotImplementedError("Ext. maps not implemented.")
 
-# Needed for 'compress_vector_njit()'
+
 @njit(fastmath=True)
+# Needed for 'find_weightfactors_njit()'
+# My own version of list.count()
+# Can be used on numpy arrays
+# TODO: write in c++?
 def count(vector, nr):
     count = 0
     for i in prange(len(vector)):
@@ -1070,6 +1130,8 @@ def count(vector, nr):
 
 
 @njit(fastmath=True, parallel=True)
+# njit accelerated version of calculating the difference of energy between two
+# machine turns. Used in the new longtrack algorithms
 def calc_denergy(q, vrf1, vrf1dot, vrf2, vrf2dot, time_at_turn,
                  turn_now, dphi, phi0, h_ratio, phi12, deltaE0):
     return q * (vrft(vrf1, vrf1dot, time_at_turn[turn_now])
@@ -1080,6 +1142,7 @@ def calc_denergy(q, vrf1, vrf1dot, vrf2, vrf2dot, time_at_turn,
 
 
 @njit(fastmath=True)
+# njit accelerated version of the calc_dphi_denergy() function
 def init_dphi_denergy(xp, x_origin, h_num, omega_rev0,
                       dtbin, phi0, yp, yat0, dEbin, turn):
     dphi = ((xp + x_origin)

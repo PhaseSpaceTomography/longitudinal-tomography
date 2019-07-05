@@ -21,8 +21,9 @@ mi = MapInfo(ts)
 mi.write_jmax_tofile(ts, mi, WORKING_DIR)
 mi.write_plotinfo_tofile(ts, mi, WORKING_DIR)
 
-# rec = ReconstructCpp(ts, mi)
-rec = Reconstruct(ts, mi)
+rec = ReconstructCpp(ts, mi)
+
+# rec = Reconstruct(ts, mi)
 tomo = Tomography(rec)
 
 for film in range(rec.timespace.par.filmstart - 1,
@@ -30,9 +31,10 @@ for film in range(rec.timespace.par.filmstart - 1,
                   rec.timespace.par.filmstep):
 
     t0 = tm.perf_counter()
-    rec.new_run(film)
-    # rec.run(film)
+    # rec.new_run(film)
+    rec.run(film)
     print(f'total reconstruction time: {str(tm.perf_counter() - t0)}')
+
     raise SystemExit
     # Creating picture
     tomo.darray, tomo.picture = tomo.run(film)
