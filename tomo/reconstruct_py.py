@@ -111,7 +111,7 @@ class Reconstruct:
         xpoints = points[0]
         ypoints = points[1]
 
-        print("Image" + str(film) + ": ")
+        print(f'Reconstructing image: {film}...')
 
         # Initiating arrays
         (maps, mapsi,
@@ -157,7 +157,7 @@ class Reconstruct:
                                         initial_points[1],
                                         xpoints, ypoints)
 
-        initial_points
+        # initial_points
 
         # LONGTRACK
         # -----------------------
@@ -176,6 +176,19 @@ class Reconstruct:
          initial_params[1]) = self.calc_dphi_denergy(initial_points[0],
                                                      initial_points[1],
                                                      rec_prof)
+
+        (initial_params[0],
+         initial_params[1]) = init_dphi_denergy(initial_points[0],
+                                                tpar.x_origin,
+                                                tpar.h_num,
+                                                tpar.omega_rev0,
+                                                tpar.dtbin,
+                                                tpar.phi0,
+                                                initial_points[1],
+                                                tpar.yat0,
+                                                mi.dEbin,
+                                                film)
+
         initial_params = initial_params.T
 
         pool.map(self.longtrack_one_particle_mod, initial_params)
@@ -705,16 +718,6 @@ class Reconstruct:
         tpar = self.timespace.par
 
         out_xp = np.zeros(tpar.profile_count)
-        # out_xp[0] = init_points[0]
-
-        # If things are going to be run in parallel, can i move this out of the function, and
-        # make a (2?)D array (initial?) with dphis for all points?
-        # dphi = ((out_xp[0] + tpar.x_origin)
-        #         * tpar.h_num
-        #         * tpar.omega_rev0[rec_prof]
-        #         * tpar.dtbin
-        #         - tpar.phi0[rec_prof])
-        # denergy = (init_points[1] - tpar.yat0) * self.mapinfo.dEbin
 
         dphi = args[0]
         denergy = args[1]
@@ -760,12 +763,22 @@ class Reconstruct:
                 yp = denergy / float(dEbin) + yat0
 
                 # Calculating start dphi and denergi for this profile
-                dphi = ((out_xp[xp_idx] + x_origin)
-                        * h_num
-                        * omega_rev0[turn]
-                        * dtbin
-                        - phi0[turn])
-                denergy = (yp - yat0) * dEbin
+                # dphi = ((out_xp[xp_idx] + x_origin)
+                #         * h_num
+                #         * omega_rev0[turn]
+                #         * dtbin
+                #         - phi0[turn])
+                # denergy = (yp - yat0) * dEbin
+                init_dphi_denergy(out_xp[xp_idx],
+                                  x_origin,
+                                  h_num,
+                                  omega_rev0,
+                                  dtbin,
+                                  phi0,
+                                  yp,
+                                  yat0,
+                                  dEbin,
+                                  turn)
                 xp_idx += 1
 
     def calc_dphi_denergy(self, xp, yp, turn):
@@ -777,6 +790,7 @@ class Reconstruct:
                 - tpar.phi0[turn])
         denergy = (yp - tpar.yat0) * self.mapinfo.dEbin
         return dphi, denergy
+
     # ----------------- END LONGTRACK ---------------------------------
 
     # Weight factors
@@ -1063,3 +1077,15 @@ def calc_denergy(q, vrf1, vrf1dot, vrf2, vrf2dot, time_at_turn,
                 + vrft(vrf2, vrf2dot, time_at_turn[turn_now])
                 * np.sin(h_ratio * (dphi + phi0[turn_now] - phi12))
                 ) - deltaE0[turn_now]
+
+
+@njit(fastmath=True)
+def init_dphi_denergy(xp, x_origin, h_num, omega_rev0,
+                      dtbin, phi0, yp, yat0, dEbin, turn):
+    dphi = ((xp + x_origin)
+            * h_num
+            * omega_rev0[turn]
+            * dtbin
+            - phi0[turn])
+    denergy = (yp - yat0) * dEbin
+    return dphi, denergy

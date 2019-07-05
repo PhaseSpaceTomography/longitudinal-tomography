@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/main_testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/reconstruct_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_py.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,8 +18,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tomo/reconstruct_py.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="510">
-                  <caret line="76" column="60" lean-forward="true" selection-start-line="76" selection-start-column="60" selection-end-line="76" selection-end-column="60" />
+                <state relative-caret-position="465">
+                  <caret line="307" column="52" selection-start-line="307" selection-start-column="52" selection-end-line="307" selection-end-column="52" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -47,8 +46,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tomo/reconstruct_py.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="181">
-                  <caret line="180" column="8" lean-forward="true" selection-start-line="180" selection-start-column="8" selection-end-line="180" selection-end-column="8" />
+                <state relative-caret-position="271">
+                  <caret line="113" column="43" selection-start-line="113" selection-start-column="43" selection-end-line="113" selection-end-column="43" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#9146#16737#0" />
@@ -61,11 +60,19 @@
                     <element signature="e#20301#21702#0" />
                     <element signature="e#22064#24509#0" />
                     <element signature="e#24780#27639#0" />
-                    <element signature="e#30417#31731#0" />
+                    <element signature="e#27926#30108#0" />
+                    <element signature="e#33313#33601#0" />
                     <element signature="e#29961#31640#0" />
                     <element signature="e#31735#32656#0" />
                     <element signature="e#32777#34221#0" />
                     <element signature="e#34387#34539#0" />
+                    <element signature="e#34661#35081#0" />
+                    <element signature="e#35169#35838#0" />
+                    <element signature="e#36245#37208#0" />
+                    <element signature="e#37430#37982#0" />
+                    <element signature="e#38123#38770#0" />
+                    <element signature="e#38886#39366#0" />
+                    <element signature="e#39454#39565#0" />
                   </folding>
                 </state>
               </provider>
@@ -84,7 +91,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>demax</find>
       <find>e0</find>
       <find>weight</find>
       <find>reverse</find>
@@ -114,6 +120,7 @@
       <find>particle_xps</find>
       <find>framecount</find>
       <find>all_turns</find>
+      <find>init_d</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -139,6 +146,7 @@
       <replace>wf_alg3</replace>
       <replace>not_zero</replace>
       <replace>out_xp</replace>
+      <replace>init_dphi_denergy</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -367,13 +375,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00028" summary="Added c++ version of longtrack.&#10;&#10; - c++ longtrack now only works in forward direction.&#10; - added function for testing c++ and numba longtrack separated.">
-      <created>1559556030427</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1559556030427</updated>
     </task>
     <task id="LOCAL-00029" summary="Very small changes">
       <created>1559567559480</created>
@@ -711,7 +712,14 @@
       <option name="project" value="LOCAL" />
       <updated>1561715541495</updated>
     </task>
-    <option name="localTasksCounter" value="77" />
+    <task id="LOCAL-00077" summary="Added and edited algorithms for calc wf and longtrack.&#10;&#10;the class is now a mess.&#10;&#10;Working algorithms:&#10;- longtrack_all&#10;- longtrack_one_particle&#10;- longtrack_one_particle_mod (spd-up with numba, ready for parallel)&#10;- wf_alg1 smooth, but hard to speed up&#10;- wf_alg2 super slow but intuitive&#10;- wf_alg3 faster version of alg2, may be used for reversed weights&#10;- compress_vector_njit (wf_alg4) currently best in speed (and intuition?)&#10;&#10;some helping functions:&#10; - count - counts number of occurences of numbers in arrays.&#10;     since there is no np.count. needed for speedup with numba&#10; - calc denergy - one of the more computing intensive parts of&#10;   the longtrack funtion, speeded up with numba&#10; - find_accumulated_pixelvals another counting algorithm.&#10;   creates large array">
+      <created>1562249108299</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1562249108299</updated>
+    </task>
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -764,8 +772,8 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49894515" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49050632" weight="0.3089268" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" visible="true" weight="0.3089268" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49050632" visible="true" weight="0.3089268" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
@@ -780,7 +788,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="calc_denergy_at_turn() in longtrack cpp, timing executions of py and ftr" />
     <MESSAGE value="tomo_action __init__ now makes sure cpp lib is compiled" />
     <MESSAGE value="git now ignores .vscode, reconstruct_c imports os" />
     <MESSAGE value="changes to relative paths in reconstruct_cpp test" />
@@ -805,14 +812,15 @@
     <MESSAGE value="new_find_wf now works for one vector" />
     <MESSAGE value="Longtrack all now working" />
     <MESSAGE value="Fast and functional new weight factor algorithm" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fast and functional new weight factor algorithm" />
+    <MESSAGE value="Added and edited algorithms for calc wf and longtrack.&#10;&#10;the class is now a mess.&#10;&#10;Working algorithms:&#10;- longtrack_all&#10;- longtrack_one_particle&#10;- longtrack_one_particle_mod (spd-up with numba, ready for parallel)&#10;- wf_alg1 smooth, but hard to speed up&#10;- wf_alg2 super slow but intuitive&#10;- wf_alg3 faster version of alg2, may be used for reversed weights&#10;- compress_vector_njit (wf_alg4) currently best in speed (and intuition?)&#10;&#10;some helping functions:&#10; - count - counts number of occurences of numbers in arrays.&#10;     since there is no np.count. needed for speedup with numba&#10; - calc denergy - one of the more computing intensive parts of&#10;   the longtrack funtion, speeded up with numba&#10; - find_accumulated_pixelvals another counting algorithm.&#10;   creates large array" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added and edited algorithms for calc wf and longtrack.&#10;&#10;the class is now a mess.&#10;&#10;Working algorithms:&#10;- longtrack_all&#10;- longtrack_one_particle&#10;- longtrack_one_particle_mod (spd-up with numba, ready for parallel)&#10;- wf_alg1 smooth, but hard to speed up&#10;- wf_alg2 super slow but intuitive&#10;- wf_alg3 faster version of alg2, may be used for reversed weights&#10;- compress_vector_njit (wf_alg4) currently best in speed (and intuition?)&#10;&#10;some helping functions:&#10; - count - counts number of occurences of numbers in arrays.&#10;     since there is no np.count. needed for speedup with numba&#10; - calc denergy - one of the more computing intensive parts of&#10;   the longtrack funtion, speeded up with numba&#10; - find_accumulated_pixelvals another counting algorithm.&#10;   creates large array" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/tomo/reconstruct_py.py</url>
-          <line>646</line>
+          <line>659</line>
           <option name="timeStamp" value="30" />
         </line-breakpoint>
       </breakpoints>
@@ -1272,8 +1280,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/reconstruct_py.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="180" column="8" lean-forward="true" selection-start-line="180" selection-start-column="8" selection-end-line="180" selection-end-column="8" />
+        <state relative-caret-position="271">
+          <caret line="113" column="43" selection-start-line="113" selection-start-column="43" selection-end-line="113" selection-end-column="43" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#9146#16737#0" />
@@ -1286,11 +1294,19 @@
             <element signature="e#20301#21702#0" />
             <element signature="e#22064#24509#0" />
             <element signature="e#24780#27639#0" />
-            <element signature="e#30417#31731#0" />
+            <element signature="e#27926#30108#0" />
+            <element signature="e#33313#33601#0" />
             <element signature="e#29961#31640#0" />
             <element signature="e#31735#32656#0" />
             <element signature="e#32777#34221#0" />
             <element signature="e#34387#34539#0" />
+            <element signature="e#34661#35081#0" />
+            <element signature="e#35169#35838#0" />
+            <element signature="e#36245#37208#0" />
+            <element signature="e#37430#37982#0" />
+            <element signature="e#38123#38770#0" />
+            <element signature="e#38886#39366#0" />
+            <element signature="e#39454#39565#0" />
           </folding>
         </state>
       </provider>
