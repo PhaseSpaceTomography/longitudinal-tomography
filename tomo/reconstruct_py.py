@@ -101,19 +101,7 @@ class Reconstruct:
 
     def new_run(self, film):
 
-        # TEMP
-        # npxl = 2500000
-        # npt = 16
-        # weights = np.zeros((npxl, npt))
-        # indices = np.zeros((npxl, npt))
-        # print('running func')
-        # test_array = np.array(np.random.rand(int(npxl * npt))*10, dtype=int).reshape((npxl, npt))
-        # dt = tm.perf_counter()
-        # self.find_weightfactors_njit2(test_array, npxl, npt, weights, indices)
-        # print(tm.perf_counter() - dt)
-        # raise SystemExit
-        # END TEMP
-
+        tt = tm.perf_counter()
 
         self.film = film
         mi = self.mapinfo
@@ -126,7 +114,7 @@ class Reconstruct:
         xpoints = points[0]
         ypoints = points[1]
 
-        print(f'Reconstructing image: {film}...')
+        print(f'Reconstructing image: {film}')
 
         # Initiating arrays
         (maps, mapsi,
@@ -136,16 +124,16 @@ class Reconstruct:
                                          fmlistlength)
 
         # Do the first map
-        (maps[film, :, :], mapsi,
-         mapsweight, actmaps) = self._first_map(
-            mi.imin[film],
-            mi.imax[film],
-            mi.jmin[film, :],
-            mi.jmax[film, :],
-            tpar.snpt**2,
-            maps[film, :, :],
-            mapsi,
-            mapsweight)
+        # (maps[film, :, :], mapsi,
+        #  mapsweight, actmaps) = self._first_map(
+        #     mi.imin[film],
+        #     mi.imax[film],
+        #     mi.jmin[film, :],
+        #     mi.jmax[film, :],
+        #     tpar.snpt**2,
+        #    maps[film, :, :],
+        #     mapsi,
+        #     mapsweight)
 
         initial_points = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt**2
                                    / tpar.profile_count))))
@@ -170,6 +158,8 @@ class Reconstruct:
         # TEMP
         rec_prof = 0
         # END TEMP
+
+        print('Tracking particles...')
         t = tm.perf_counter()
         pool = Pool()
         initial_params = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt ** 2
@@ -179,18 +169,6 @@ class Reconstruct:
                                                     initial_points[1],
                                                     rec_prof)
 
-        # (initial_params[0],
-        #  initial_params[1]) = init_dphi_denergy(initial_points[0],
-        #                                         tpar.x_origin,
-        #                                         tpar.h_num,
-        #                                         tpar.omega_rev0,
-        #                                         tpar.dtbin,
-        #                                         tpar.phi0,
-        #                                         initial_points[1],
-        #                                         tpar.yat0,
-        #                                         mi.dEbin,
-        #                                         film)
-
         initial_params = initial_params.T
 
         # The results of the Pool.map function are ordered.
@@ -199,23 +177,21 @@ class Reconstruct:
         pool.join()
         print('Longtrack time: ' + str(tm.perf_counter() - t))
 
-        # -----------------------
-        # CASTING ALL XP
-        # -----------------------
+        # --------------------------
+        # MATRIX AND NR MANIPULATION
+        # --------------------------
         t = tm.perf_counter()
 
         # Changing the axis of the matrix to (measurement_turn, x_coordinate)
         all_xp = np.array(all_xp).T
         all_xp[0] = np.ceil(initial_points[0])
-
         # Splitting up to npt sized vectors
-        # TODO: Move into parallelized function?
         all_xp = all_xp.reshape(int(all_xp.size / self.timespace.par.snpt**2),
                                 self.timespace.par.snpt**2)
 
-        print('Casting time: ' + str(tm.perf_counter() - t))
-        print(all_xp.shape)
-        print(all_xp[0, :])
+        print('Numeric manipulation: ' + str(tm.perf_counter() - t))
+        # print(all_xp.shape)
+        # print(all_xp[0, :])
 
         # -----------------------
         # CALC WEIGHT FACTORS
@@ -225,30 +201,30 @@ class Reconstruct:
         npt = 16
         all_xp = all_xp.reshape((npxl, npt))
 
-
-        print(f'all_xp shape: {all_xp.shape}')
+        # print(f'all_xp shape: {all_xp.shape}')
 
         weights = np.zeros((npxl, npt), dtype=int)
         indices = np.zeros((npxl, npt), dtype=int)
+
+        print('Calculating weight factors...')
         t = tm.perf_counter()
 
         self.find_weightfactors_njit2(all_xp, npxl, npt, weights, indices)
+        indices -= 1  # Fortran compensation
 
         print('Calc wf: ' + str(tm.perf_counter() - t))
-
-        # 1.2950824350000403
-
-        raise SystemExit
 
         # -----------------------
         # CALC REVERSED WEIGHT FACTORS
         # -----------------------
         t = tm.perf_counter()
-        indices, weights = self.calc_rmw(all_xp)
+        self.calc_rmw2(all_xp)
         print('Calc rwf: ' + str(tm.perf_counter() - t))
         del all_xp
-        # -----------------------
 
+        print(f'Full reconstruction time: {str(tm.perf_counter() - tt)}')
+        raise SystemExit
+        # -----------------------
 
     # @profile
     def run(self, film):
@@ -999,10 +975,10 @@ class Reconstruct:
 
     # Reversed Weight
     # -------------
-    # wf_alg1 modified for calculating reversed weight factors
-    # Quite fast, but need more testing.
-    def calc_rmw(self, all_coords):
+    # Not optimal output, will keep for reference
+    def calc_rmw1(self, all_coords):
         all_coords -= 1
+        # reversed_weights =
         indices = -np.ones((self.timespace.par.profile_count,
                             self.timespace.par.profile_length + 1), dtype=int)
         weights = np.zeros((self.timespace.par.profile_count,
@@ -1010,14 +986,27 @@ class Reconstruct:
 
         i = 0
         for profile_coords in all_coords:
-            uniques, counts = np.unique(profile_coords, return_counts=True)
+            uniques = np.unique(profile_coords)
             indices[i, :len(uniques)] = uniques
-            weights[i, :len(uniques)] = counts
+            # weights[i, :len(uniques)] = counts
             i += 1
 
         return (indices,
                 (weights / self.timespace.par.snpt**2)
                 * self.timespace.par.profile_count)
+
+    def calc_rmw2(self, all_coords):
+        reversed_weights = np.zeros((self.timespace.par.profile_count,
+                                     self.timespace.par.profile_length + 1))
+
+
+        # Hmhmhmh
+        # ----------------------------
+        i = 0
+        for coord in all_coords:
+            reversed_weights[i, coord] += 1
+            i += 1
+        # ----------------------------
 
     # ============================================================
     # END NEW FUNCTIONS
