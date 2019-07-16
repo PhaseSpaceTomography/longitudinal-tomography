@@ -10,10 +10,26 @@ class NewTomography:
     def __init__(self, timespace, tracked_points):
         self.ts = timespace
         self.tracked_points = tracked_points - 1  # Fortran compensation
-        self.weights = np.zeros((self.ts.par.profile_count,
-                                 tracked_points.shape[0]))
-        self.bins = np.zeros((self.ts.par.profile_length,
-                              self.ts.par.profile_count))
+        # self.weights = np.zeros((self.ts.par.profile_count,
+        #                          tracked_points.shape[0]))
+        # self.bins = np.zeros((self.ts.par.profile_length,
+        #                       self.ts.par.profile_count))
+
+    def run3(self):
+        weights = np.zeros(self.tracked_points.shape[0])
+
+        t0 = tm.perf_counter()
+        self.calc_weights(weights, self.ts.profiles, self.tracked_points)
+        print(tm.perf_counter() - t0)
+
+
+
+    @staticmethod
+    @njit
+    def calc_weights(weights, profiles, points):
+        for i in range(len(weights)):
+            for prof, po in enumerate(points[i]):
+                weights[i] += profiles[prof, po]
 
     def run(self):
 
@@ -91,9 +107,8 @@ class NewTomography:
             print(f'discrepancy: {self.discrepancy(diff_prof)}')
 
         # TEMP
-        # self.analyze(profilei=0, diff_prof=diff_prof)
+        self.analyze(profilei=0, diff_prof=diff_prof)
         # END TEMP
-
 
     @staticmethod
     @njit(parallel=True)
