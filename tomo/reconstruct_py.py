@@ -139,9 +139,9 @@ class Reconstruct:
         initial_params = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt ** 2
                                   / tpar.profile_count))))
         (initial_params[0],
-        initial_params[1]) = self.calc_dphi_denergy(initial_points[0],
-                                                    initial_points[1],
-                                                    rec_prof)
+         initial_params[1]) = self.calc_dphi_denergy(initial_points[0],
+                                                     initial_points[1],
+                                                     rec_prof)
 
         initial_params = initial_params.T
 
@@ -761,7 +761,6 @@ class Reconstruct:
                 xp_idx += 1
         return out_xp
 
-    # NB: Not fully implemented
     # Draft of function for tracking the movement of one particle.
     # Ready to be run in parallel using multiprocessing.Pool().
     # Modified with njit speed-yp, and generally more optimised than
@@ -800,10 +799,8 @@ class Reconstruct:
                        time_at_turn, phi0, h_ratio, phi12, deltaE0, dturns,
                        omega_rev0, dtbin, x_origin, dEbin, yat0, h_num):
         xp_idx = 1
-        turn = rec_prof
-        while turn < all_turns:
+        for turn in range(all_turns):
             dphi -= dphase[turn] * denergy
-            turn += 1
             denergy += calc_denergy(q, vrf1,
                                     vrf1dot, vrf2,
                                     vrf2dot,
@@ -824,12 +821,6 @@ class Reconstruct:
                 yp = denergy / float(dEbin) + yat0
 
                 # Calculating start dphi and denergi for this profile
-                # dphi = ((out_xp[xp_idx] + x_origin)
-                #         * h_num
-                #         * omega_rev0[turn]
-                #         * dtbin
-                #         - phi0[turn])
-                # denergy = (yp - yat0) * dEbin
                 init_dphi_denergy(out_xp[xp_idx],
                                   x_origin,
                                   h_num,
