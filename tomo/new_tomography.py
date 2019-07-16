@@ -48,13 +48,52 @@ class NewTomography:
             t0 = tm.perf_counter()
             self.back_project_njit(self.tracked_points,
                                    diff_prof,
-                                   self.weights,
+                                   self.bins,
                                    self.ts.par.profile_count)
             lg.info('back_projection_t: ' + str(tm.perf_counter() - t0))
 
         # TEMP
         # self.analyze(profilei=0, diff_prof=diff_prof)
         # END TEMP
+
+    def run2(self):
+        diff_prof = np.zeros(self.ts.profiles.shape)
+
+        self.back_project_njit2(self.tracked_points,
+                                self.ts.profiles,
+                                self.bins,
+                                self.ts.par.profile_count)
+
+        print('Iterating...')
+
+        for i in range(self.ts.par.num_iter):
+            print(f'iteration: {str(i + 1)} of {self.ts.par.num_iter}')
+
+            t0 = tm.perf_counter()
+            for p in range(self.ts.par.profile_count):
+                diff_prof[p] = ((self.ts.profiles[p]
+                                 / np.sum(self.ts.profiles[p]))
+                                - (self.bins[:, p]
+                                   / np.sum(self.bins[:, p])))
+            print(f'difference time: {tm.perf_counter() - t0}')
+
+            # TEMP
+            # self.analyze(profilei=0, diff_prof=diff_prof)
+            # END TEMP
+
+            t0 = tm.perf_counter()
+            self.back_project_njit2(self.tracked_points,
+                                    diff_prof,
+                                    self.bins,
+                                    self.ts.par.profile_count)
+            print(f'projection time: {tm.perf_counter() - t0}')
+
+            print(f'discrepancy: {self.discrepancy(diff_prof)}')
+
+        # TEMP
+        # self.analyze(profilei=0, diff_prof=diff_prof)
+        # END TEMP
+
 
     @staticmethod
     @njit(parallel=True)
@@ -67,15 +106,25 @@ class NewTomography:
     @staticmethod
     @njit(parallel=True)
     def back_project_njit(tracked_points,
-                           profiles,
-                           weight_factors,
-                           profile_count):
+                          profiles,
+                          weight_factors,
+                          profile_count):
 
-        for p in prange(profile_count):
+        for profile in prange(profile_count):
             counter = 0
-            for point in tracked_points[:, p]:
-                weight_factors[p, counter] += profiles[p, point]
+            for point in tracked_points[:, profile]:
+                weight_factors[profile, counter] += profiles[profile, point]
                 counter += 1
+
+    @staticmethod
+    @njit(parallel=True)
+    def back_project_njit2(tracked_points,
+                           profiles,
+                           bins,
+                           profile_count):
+        for profile in prange(profile_count):
+            for index, point in enumerate(tracked_points[:, profile]):
+                bins[tracked_points[index, profile], profile] += profiles[profile, point]
 
     def discrepancy(self, diff_profiles):
         return np.sqrt(np.sum(diff_profiles**2)/(self.ts.par.profile_length
