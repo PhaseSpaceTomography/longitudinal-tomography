@@ -32,11 +32,11 @@ for film in range(rec.timespace.par.filmstart - 1,
                   rec.timespace.par.filmstop,
                   rec.timespace.par.filmstep):
 
-    # t0 = tm.perf_counter()
+    t0 = tm.perf_counter()
     # rec.new_run(film)
     # rec.run(film)
     all_particles = rec.run_only_particle_track(film)
-    # print(f'total reconstruction time: {str(tm.perf_counter() - t0)}')
+    print(f'total reconstruction time: {str(tm.perf_counter() - t0)}')
 
     # TOMO
     tomo = NewTomography(ts, all_particles)
