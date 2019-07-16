@@ -99,6 +99,62 @@ class Reconstruct:
         self.film = None
         # END TEMP
 
+    def run_only_particle_track(self, film):
+        mi = self.mapinfo
+        ts = self.timespace
+        tpar = self.timespace.par
+
+        (points, nr_of_maps,
+         fmlistlength) = self._init_reconstruction(ts, mi)
+
+        xpoints = points[0]
+        ypoints = points[1]
+
+        print(f'Reconstructing image: {film}')
+
+        initial_points = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt**2
+                                   / tpar.profile_count))))
+
+        # Creating the first profile with equally distributed points
+        (initial_points[0],
+         initial_points[1],
+         last_pxlidx) = Reconstruct._init_tracked_point(
+                                        tpar.snpt,
+                                        mi.imin[film],
+                                        mi.imax[film],
+                                        mi.jmin[film, :],
+                                        mi.jmax[film, :],
+                                        initial_points[0],
+                                        initial_points[1],
+                                        xpoints, ypoints)
+
+        # LONGTRACK
+        # -----------------------
+        # TEMP
+        rec_prof = 0
+        # END TEMP
+
+        print('Tracking particles...')
+        pool = Pool()
+        initial_params = np.zeros((2, int(np.ceil(nr_of_maps * tpar.snpt ** 2
+                                  / tpar.profile_count))))
+        (initial_params[0],
+        initial_params[1]) = self.calc_dphi_denergy(initial_points[0],
+                                                    initial_points[1],
+                                                    rec_prof)
+
+        initial_params = initial_params.T
+
+        # The results of the Pool.map function are ordered.
+        all_xp = pool.map(self.longtrack_one_particle_mod, initial_params)
+        pool.close()
+        pool.join()
+
+        all_xp = np.array(all_xp)
+        all_xp[:, 0] = initial_points[0]
+
+        return all_xp
+
     def new_run(self, film):
 
         tt = tm.perf_counter()
@@ -115,13 +171,6 @@ class Reconstruct:
         ypoints = points[1]
 
         print(f'Reconstructing image: {film}')
-
-        # Initiating arrays
-        (maps, mapsi,
-         mapsweight) = self._init_arrays(tpar.profile_count,
-                                         tpar.profile_length,
-                                         nr_of_maps,
-                                         fmlistlength)
 
         # Do the first map
         # (maps[film, :, :], mapsi,
