@@ -146,14 +146,20 @@ class Reconstruct:
         initial_params = initial_params.T
 
         # The results of the Pool.map function are ordered.
-        all_xp = pool.map(self.longtrack_one_particle_mod, initial_params)
+        all_tracked_points = pool.map(self.longtrack_one_particle_mod, initial_params)
         pool.close()
         pool.join()
 
-        all_xp = np.array(all_xp)
-        all_xp[:, 0] = initial_points[0]
+        xp, yp = np.hsplit(np.array(all_tracked_points), 2)
+        del all_tracked_points
 
-        return all_xp
+        xp = xp.reshape((initial_points.shape[1], tpar.profile_count))
+        yp = yp.reshape((initial_points.shape[1], tpar.profile_count))
+
+        xp[:, 0] = initial_points[0]
+        yp[:, 0] = initial_points[1]
+
+        return xp, yp
 
     def new_run(self, film):
 
@@ -775,30 +781,31 @@ class Reconstruct:
         tpar = self.timespace.par
 
         out_xp = np.zeros(tpar.profile_count)
+        out_yp = np.zeros(tpar.profile_count)
 
         dphi = args[0]
         denergy = args[1]
 
         # This test version will always start from 1
-        self.track_positive(rec_prof, out_xp, self.all_turns, tpar.dphase,
+        self.track_positive(rec_prof, out_xp, out_yp, self.all_turns, tpar.dphase,
                             denergy, dphi, tpar.q, tpar.vrf1,
                             tpar.vrf1dot, tpar.vrf2, tpar.vrf2dot,
                             tpar.time_at_turn, tpar.phi0, tpar.h_ratio,
                             tpar.phi12, tpar.deltaE0, tpar.dturns,
                             tpar.omega_rev0, tpar.dtbin, tpar.x_origin,
                             self.mapinfo.dEbin, tpar.yat0, tpar.h_num)
-        return np.ceil(out_xp).astype(int)
+        return np.ceil(out_xp).astype(int), np.ceil(out_yp).astype(int)
 
     @staticmethod
     @njit(fastmath=True)
     # Function for tracking ONE particle in the positive direction.
     # Returns array 'xp_out' via arguments, which includes xp
     # for all measurement turns for particle.
-    def track_positive(rec_prof, out_xp, all_turns, dphase, denergy,
+    def track_positive(rec_prof, out_xp, out_yp, all_turns, dphase, denergy,
                        dphi, q, vrf1, vrf1dot, vrf2, vrf2dot,
                        time_at_turn, phi0, h_ratio, phi12, deltaE0, dturns,
                        omega_rev0, dtbin, x_origin, dEbin, yat0, h_num):
-        xp_idx = 1
+        idx = 1
         for turn in range(all_turns):
             dphi -= dphase[turn] * denergy
             denergy += calc_denergy(q, vrf1,
@@ -812,26 +819,26 @@ class Reconstruct:
                                     deltaE0)
             if turn % dturns == 0:
                 # Calculating xp at profile_measurement
-                out_xp[xp_idx] = ((dphi + phi0[turn])
+                out_xp[idx] = ((dphi + phi0[turn])
                                   / (float(h_num)
                                      * omega_rev0[turn]
                                      * dtbin)
                                   - x_origin)
                 # Calculating yp
-                yp = denergy / float(dEbin) + yat0
+                out_yp[idx] = denergy / float(dEbin) + yat0
 
                 # Calculating start dphi and denergi for this profile
-                init_dphi_denergy(out_xp[xp_idx],
+                init_dphi_denergy(out_xp[idx],
                                   x_origin,
                                   h_num,
                                   omega_rev0,
                                   dtbin,
                                   phi0,
-                                  yp,
+                                  out_yp[idx],
                                   yat0,
                                   dEbin,
                                   turn)
-                xp_idx += 1
+                idx += 1
 
     # Function for calculating dphi and denergy based on xp and yp values
     def calc_dphi_denergy(self, xp, yp, turn):
