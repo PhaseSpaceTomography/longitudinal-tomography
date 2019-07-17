@@ -33,32 +33,32 @@ class NewTomography:
         for i in range(self.ts.par.num_iter):
             print(f'iteration: {str(i + 1)} of {self.ts.par.num_iter}')
 
-            t0 = tm.perf_counter()
+            # t0 = tm.perf_counter()
             self.recreated = self.project_flattened(self.recreated.flatten(),
                                                     flat_points, weights,
                                                     nparts)
-            print(f'project: {tm.perf_counter() - t0}')
+            # print(f'project: {tm.perf_counter() - t0}')
 
-            t0 = tm.perf_counter()
+            # t0 = tm.perf_counter()
             self.recreated = self.recreated.reshape(self.ts.profiles.shape)
-            print(f'reshaping: {tm.perf_counter() - t0}')
+            # print(f'reshaping: {tm.perf_counter() - t0}')
 
-            t0 = tm.perf_counter()
+            # t0 = tm.perf_counter()
             self.recreated = np.where(self.recreated < 0.0, 0.0, self.recreated)
             self.recreated /= np.sum(self.recreated, axis=1)[:, None]
-            print(f'normalizing and suppressing: {tm.perf_counter() - t0}')
+            # print(f'normalizing and suppressing: {tm.perf_counter() - t0}')
 
-            t0 = tm.perf_counter()
+            # t0 = tm.perf_counter()
             diff_prof = self.ts.profiles - self.recreated
             print(f'discrepancy: {self.discrepancy(diff_prof)}')
-            print(f'calculating discrepancy: {tm.perf_counter() - t0}')
+            # print(f'calculating discrepancy: {tm.perf_counter() - t0}')
 
             # self.analyze(0, diff_prof)
 
-            t0 = tm.perf_counter()
+            # t0 = tm.perf_counter()
             weights = self.calc_weigth_flattened(diff_prof.flatten(),
                                                  flat_points, weights, nparts)
-            print(f'Back projecting: {tm.perf_counter() - t0}')
+            # print(f'Back projecting: {tm.perf_counter() - t0}')
 
         # self.analyze(0, diff_prof)
         # plt.scatter(self.tracked_xp[:, 0], self.tracked_yp[:, 0], c=weights)
