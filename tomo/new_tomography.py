@@ -26,8 +26,8 @@ class NewTomography:
         for i in range(self.ts.par.profile_count):
             flat_points[:, i] += self.ts.par.profile_length * i
 
-        weights = self.calc_weigth_flattened(self.ts.profiles.flatten(),
-                                             flat_points, weights, nparts)
+        weights = self.back_project_flattened(self.ts.profiles.flatten(),
+                                              flat_points, weights, nparts)
 
         # diff_prof = None
         for i in range(self.ts.par.num_iter):
@@ -56,8 +56,8 @@ class NewTomography:
             # self.analyze(0, diff_prof)
 
             # t0 = tm.perf_counter()
-            weights = self.calc_weigth_flattened(diff_prof.flatten(),
-                                                 flat_points, weights, nparts)
+            weights = self.back_project_flattened(diff_prof.flatten(),
+                                                  flat_points, weights, nparts)
             # print(f'Back projecting: {tm.perf_counter() - t0}')
 
         # self.analyze(0, diff_prof)
@@ -66,7 +66,7 @@ class NewTomography:
 
     @staticmethod
     @njit(parallel=True)
-    def calc_weigth_flattened(flat_profiles, flat_points,
+    def back_project_flattened(flat_profiles, flat_points,
                               weights, nparts):
         for i in prange(nparts):
             weights[i] += np.sum(flat_profiles[flat_points[i]])
