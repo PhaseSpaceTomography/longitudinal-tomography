@@ -41,7 +41,7 @@ for film in range(rec.timespace.par.filmstart - 1,
     # TOMO
     tomo = NewTomography(ts, xp, yp)
     tid = tm.perf_counter()
-    tomo.run3()
+    tomo.run4()
 
     print('tomo time: ' + str(tm.perf_counter() - tid))
     # tomo.run()
