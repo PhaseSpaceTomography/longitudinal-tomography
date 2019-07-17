@@ -106,10 +106,29 @@ class NewTomography:
 
     @staticmethod
     @njit(parallel=True)
-    def calc_weights(weights, profiles, points):
+    def _calc_weights(weights, profiles, points):
         for i in prange(len(weights)):
             for prof, po in enumerate(points[i]):
                 weights[i] += profiles[prof, po]
+
+    @staticmethod
+    @njit(parallel=True)
+    def calc_weights(weights, profiles, points):
+        
+        nParts = points.shape[0]
+        nProfs = points.shape[1]
+#        print(points.shape)
+#        sys.exit()
+        for i in prange(nParts):
+            pts = points[i]
+#            print(pts)
+#            for prof, pt in zip(profiles, pts):
+            for j in range(nProfs):
+                prof = profiles[j]
+#                print(pt)
+#                print(prof[pts])
+                weights[i] += np.sum(prof[pts])
+#                sys.exit()
 
     @staticmethod
     @njit(parallel=True)
