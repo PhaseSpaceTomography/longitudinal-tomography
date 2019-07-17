@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="New tomo algorithm running and giving some output. Quite slow.&#10;&#10;reconstruct_py now also returns y coordinates.">
+    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/main_testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/new_tomography.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/new_tomography.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tomo/new_tomography.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="675">
-              <caret line="60" column="63" lean-forward="true" selection-start-line="60" selection-start-column="63" selection-end-line="60" selection-end-column="63" />
+            <state relative-caret-position="510">
+              <caret line="130" column="27" lean-forward="true" selection-start-line="130" selection-start-column="27" selection-end-line="130" selection-end-column="27" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -336,20 +335,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00037" summary="Commented away line profiler">
-      <created>1559740758449</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1559740758449</updated>
-    </task>
-    <task id="LOCAL-00038" summary="Finished longtrack.cpp">
-      <created>1559742766322</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1559742766323</updated>
     </task>
     <task id="LOCAL-00039" summary="Added args">
       <created>1559744321576</created>
@@ -680,7 +665,21 @@
       <option name="project" value="LOCAL" />
       <updated>1563292336227</updated>
     </task>
-    <option name="localTasksCounter" value="86" />
+    <task id="LOCAL-00086" summary="Flattened tomography algorithm running (quite fast)">
+      <created>1563356079212</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1563356079213</updated>
+    </task>
+    <task id="LOCAL-00087" summary="Commented away some timing analysis.">
+      <created>1563356167632</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1563356167632</updated>
+    </task>
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -733,12 +732,12 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49894515" weight="0.32998997" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49419832" visible="true" weight="0.24272819" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49419832" weight="0.24272819" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
-      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.4994726" weight="0.32998997" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" sideWeight="0.4994726" visible="true" weight="0.32998997" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5058017" side_tool="true" weight="0.24272819" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
@@ -769,8 +768,6 @@
     </layout-to-restore>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added description of class" />
-    <MESSAGE value="Disabled assertions for self field parameter input" />
     <MESSAGE value="Re-added tests and assertions for bad input of space charge parameters" />
     <MESSAGE value="Added documentation and assertions for map info module" />
     <MESSAGE value="Moved assertion from reconstruct_c to map_info" />
@@ -794,7 +791,9 @@
     <MESSAGE value="Cleaning" />
     <MESSAGE value="Error in last tomo algorithm, starting new&#10;&#10;Written function for finding weight factors" />
     <MESSAGE value="New tomo algorithm running and giving some output. Quite slow.&#10;&#10;reconstruct_py now also returns y coordinates." />
-    <option name="LAST_COMMIT_MESSAGE" value="New tomo algorithm running and giving some output. Quite slow.&#10;&#10;reconstruct_py now also returns y coordinates." />
+    <MESSAGE value="Flattened tomography algorithm running (quite fast)" />
+    <MESSAGE value="Commented away some timing analysis." />
+    <option name="LAST_COMMIT_MESSAGE" value="Commented away some timing analysis." />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -1306,8 +1305,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/new_tomography.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="675">
-          <caret line="60" column="63" lean-forward="true" selection-start-line="60" selection-start-column="63" selection-end-line="60" selection-end-column="63" />
+        <state relative-caret-position="510">
+          <caret line="130" column="27" lean-forward="true" selection-start-line="130" selection-start-column="27" selection-end-line="130" selection-end-column="27" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
