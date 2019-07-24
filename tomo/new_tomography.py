@@ -61,8 +61,7 @@ class NewTomography:
             # print(f'Back projecting: {tm.perf_counter() - t0}')
 
         # self.analyze(0, diff_prof)
-        # plt.scatter(self.tracked_xp[:, 0], self.tracked_yp[:, 0], c=weights)
-        # plt.show()
+        return weights
 
     @staticmethod
     @njit(parallel=True)
