@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/tomo/tracking.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/drift.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_files/drift.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/kick.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_files/kick.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/main_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/reconstruct_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/tracking.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tracking.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,15 +19,13 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tomo/tracking.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="501">
-                  <caret line="156" lean-forward="true" selection-start-line="156" selection-end-line="156" />
+                <state relative-caret-position="75">
+                  <caret line="17" column="12" selection-start-line="17" selection-start-column="12" selection-end-line="17" selection-end-column="12" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
                     <element signature="e#218#348#0" />
-                    <element signature="e#375#1576#0" />
                     <element signature="e#1491#1715#0" />
                     <element signature="e#1556#2030#0" />
-                    <element signature="e#2481#3596#0" />
                     <element signature="e#2725#3053#0" />
                     <element signature="e#6205#6485#0" />
                     <element signature="e#6540#6860#0" />
@@ -42,11 +37,26 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="45">
-                  <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+                <state relative-caret-position="480">
+                  <caret line="41" column="8" lean-forward="true" selection-start-line="41" selection-start-column="8" selection-end-line="41" selection-end-column="8" />
+                  <folding>
+                    <element signature="e#0#14#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/tomo/new_tomography.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="608">
+                  <caret line="64" column="10" selection-start-line="64" selection-start-column="10" selection-end-line="64" selection-end-column="10" />
+                  <folding>
+                    <element signature="e#0#31#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -121,19 +131,11 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tomo/reconstruct_py.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="410">
-                  <caret line="447" column="58" lean-forward="true" selection-start-line="447" selection-start-column="58" selection-end-line="447" selection-end-column="58" />
+                <state relative-caret-position="260">
+                  <caret line="440" column="58" lean-forward="true" selection-start-line="440" selection-start-column="58" selection-end-line="440" selection-end-column="58" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#7804#11763#0" />
-                    <element signature="e#19553#20183#0" />
-                    <element signature="e#20238#20558#0" />
-                    <element signature="e#20674#20906#0" />
-                    <element signature="e#21077#21607#0" />
-                    <element signature="e#21719#21844#0" />
-                    <element signature="e#22035#22323#0" />
-                    <element signature="e#22553#22898#0" />
-                    <element signature="e#25059#27504#0" />
                   </folding>
                 </state>
               </provider>
@@ -152,7 +154,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>not_zero__idx</find>
       <find>particle_xps</find>
       <find>framecount</find>
       <find>init_d</find>
@@ -182,6 +183,7 @@
       <find>longtrack</find>
       <find>all_xp</find>
       <find>longtrack_a</find>
+      <find>tracked_xp</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -211,6 +213,7 @@
       <replace>find_weightfactors_njit</replace>
       <replace>tracked_xp</replace>
       <replace>back_project_flattened</replace>
+      <replace>xp</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -265,13 +268,13 @@
         <option value="$PROJECT_DIR$/tomo_action/run_fortran.py" />
         <option value="$PROJECT_DIR$/tomo/parameters.py" />
         <option value="$PROJECT_DIR$/tomo/tomography.py" />
-        <option value="$PROJECT_DIR$/tomo/new_tomography.py" />
         <option value="$PROJECT_DIR$/tomo/particle_tracking.py" />
         <option value="$PROJECT_DIR$/tomo/cpp_files/drift.cpp" />
         <option value="$PROJECT_DIR$/tomo/cpp_files/kick.cpp" />
         <option value="$PROJECT_DIR$/tomo/reconstruct_py.py" />
         <option value="$PROJECT_DIR$/tomo/tracking.py" />
         <option value="$PROJECT_DIR$/tomo/main_testing.py" />
+        <option value="$PROJECT_DIR$/tomo/new_tomography.py" />
       </list>
     </option>
   </component>
@@ -440,13 +443,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00042" summary="Fixed inverted axis when showing image">
-      <created>1559747783343</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1559747783343</updated>
     </task>
     <task id="LOCAL-00043" summary="calc_denergy_at_turn() in longtrack cpp, timing executions of py and ftr">
       <created>1559920531401</created>
@@ -784,7 +780,14 @@
       <option name="project" value="LOCAL" />
       <updated>1563867211001</updated>
     </task>
-    <option name="localTasksCounter" value="91" />
+    <task id="LOCAL-00091" summary="Added new tracking algorithm&#10;&#10; - Heavily based on c++&#10; - Uses the drift.cpp and kick.cpp files&#10; - Is found in the tracking.py module">
+      <created>1563973964600</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1563973964601</updated>
+    </task>
+    <option name="localTasksCounter" value="92" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -837,8 +840,8 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49894515" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49419832" weight="0.24272819" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" visible="true" weight="0.3089268" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49419832" visible="true" weight="0.24272819" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" weight="0.3089268" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
@@ -873,7 +876,6 @@
     </layout-to-restore>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Restructured main_testing and reconstruct_c&#10;&#10;reconstruct_c.reconstruct() now takes the index of the&#10;profile to be reconstructed as input. In this way will it work&#10;in the same manner as tomography.run().&#10;&#10;Added documentation to main testing." />
     <MESSAGE value="Added documentation to the tomography class" />
     <MESSAGE value="Small changes" />
     <MESSAGE value="Added documentation" />
@@ -898,25 +900,16 @@
     <MESSAGE value="run3 now uses 'original' calc_weights function" />
     <MESSAGE value="Changed name of functions" />
     <MESSAGE value="Added BLonD particle tracking routine." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added BLonD particle tracking routine." />
+    <MESSAGE value="Added new tracking algorithm&#10;&#10; - Heavily based on c++&#10; - Uses the drift.cpp and kick.cpp files&#10; - Is found in the tracking.py module" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added new tracking algorithm&#10;&#10; - Heavily based on c++&#10; - Uses the drift.cpp and kick.cpp files&#10; - Is found in the tracking.py module" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tomo/new_tomography.py</url>
-          <line>28</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/tomo/reconstruct_py.py</url>
           <line>148</line>
           <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tomo/main_testing.py</url>
-          <line>40</line>
-          <option name="timeStamp" value="32" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1347,16 +1340,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/new_tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="30" selection-start-line="30" selection-end-line="30" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15">
@@ -1420,34 +1403,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/reconstruct_py.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="447" column="58" lean-forward="true" selection-start-line="447" selection-start-column="58" selection-end-line="447" selection-end-column="58" />
+        <state relative-caret-position="260">
+          <caret line="440" column="58" lean-forward="true" selection-start-line="440" selection-start-column="58" selection-end-line="440" selection-end-column="58" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#7804#11763#0" />
-            <element signature="e#19553#20183#0" />
-            <element signature="e#20238#20558#0" />
-            <element signature="e#20674#20906#0" />
-            <element signature="e#21077#21607#0" />
-            <element signature="e#21719#21844#0" />
-            <element signature="e#22035#22323#0" />
-            <element signature="e#22553#22898#0" />
-            <element signature="e#25059#27504#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/tracking.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="501">
-          <caret line="156" lean-forward="true" selection-start-line="156" selection-end-line="156" />
+        <state relative-caret-position="75">
+          <caret line="17" column="12" selection-start-line="17" selection-start-column="12" selection-end-line="17" selection-end-column="12" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
             <element signature="e#218#348#0" />
-            <element signature="e#375#1576#0" />
             <element signature="e#1491#1715#0" />
             <element signature="e#1556#2030#0" />
-            <element signature="e#2481#3596#0" />
             <element signature="e#2725#3053#0" />
             <element signature="e#6205#6485#0" />
             <element signature="e#6540#6860#0" />
@@ -1460,8 +1433,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+        <state relative-caret-position="480">
+          <caret line="41" column="8" lean-forward="true" selection-start-line="41" selection-start-column="8" selection-end-line="41" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tomo/new_tomography.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="608">
+          <caret line="64" column="10" selection-start-line="64" selection-start-column="10" selection-end-line="64" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

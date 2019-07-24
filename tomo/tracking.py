@@ -46,7 +46,8 @@ class Tracking:
 
         xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
                                      rf1v, rf2v, nr_of_turns, nr_of_particles)
-        return xp, yp
+
+        return np.ceil(xp).astype(int), np.ceil(yp).astype(int)
 
     def drift(self, denergy, dphi, dphase, nr_part, turn):
         self.tomolib.new_drift(self._get_pointer(dphi),
