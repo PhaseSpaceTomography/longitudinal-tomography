@@ -1,29 +1,31 @@
 import logging
 import time as tm
 import sys
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 from tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
-from new_tomography import NewTomography
+from new_tomo_cpp import NewTomographyC
 
 logging.basicConfig(level=logging.DEBUG)
 
-try:
-    input_path = sys.argv[1]
-    output_path = sys.argv[2]
-except IndexError:
-    print('Error: You must provide an input file and an output directory')
-    print('Usage: main_testing <input_path> <output_path>')
-    sys.exit('Program exit..')
+live = False
+if live:
+    try:
+        input_path = sys.argv[1]
+        output_path = sys.argv[2]
+    except IndexError:
+        print('Error: You must provide an input file and an output directory')
+        print('Usage: main_testing <input_path> <output_path>')
+        sys.exit('Program exit..')
+else:
+    input_path = '/home/cgrindhe/tomo_v3/tomo_action/input_v2.dat'
+    output_path = '/home/cgrindhe/temp/testing_new_longtrack/output/C500_4pxl'
 
 # Making sure that output path ends on a dash
 if output_path[-1] != '/':
     output_path += '/'
-
-# PARAMETER_FILE = r"../tomo_action/input_v2.dat"
-# WORKING_DIR = r"../tomo_action/tmp/"
 
 # Collecting time space parameters and data
 ts = TimeSpace(input_path)
@@ -50,19 +52,22 @@ yp = yp.T
 
 # Reconstructing phase space
 t0 = tm.perf_counter()
-tomo = NewTomography(ts, xp, yp)
-weight = tomo.run4()
+tomo = NewTomographyC(ts, xp, yp)
+weight = tomo.run_cpp()
 print(f'time - reconstructing phase space: {tm.perf_counter() - t0}s')
 
 # Printing reconstructed phase-space to screen
-# plt.scatter(xp[:, 0], yp[:, 0], c=weight)
-# plt.show()
+show = True
+if show:
+    plt.scatter(xp[:, 0], yp[:, 0], c=weight)
+    plt.show()
 
 # Saving to files
 print(f'Saving output to directory: {output_path}')
 np.save(output_path + 'weight', weight)
 np.save(output_path + 'xp', xp)
 np.save(output_path + 'yp', yp)
+np.save(output_path + 'diff', tomo.diff)
 print('Saving complete!')
 print('Program finished.')
 

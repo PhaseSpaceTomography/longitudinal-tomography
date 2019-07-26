@@ -4,7 +4,6 @@ import sys
 import time as tm
 from numba import njit
 
-
 class Tracking:
 
     def __init__(self, ts, mi):
@@ -12,7 +11,8 @@ class Tracking:
         self.mapinfo = mi
         self.timespace = ts
 
-        tomolib_pth = 'cpp_files/tomolib.so'
+        # tomolib_pth = './tomo/cpp_files/tomolib.so'
+        tomolib_pth = './cpp_files/tomolib.so'
         self.tomolib = ct.CDLL(tomolib_pth)
 
     def track(self):
@@ -46,6 +46,9 @@ class Tracking:
 
         xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
                                      rf1v, rf2v, nr_of_turns, nr_of_particles)
+
+        xp = np.ascontiguousarray(xp)
+        yp = np.ascontiguousarray(yp)
 
         return np.ceil(xp).astype(int), np.ceil(yp).astype(int)
 
@@ -127,18 +130,18 @@ class Tracking:
         # Initializing points for homogeneous distr. particles
         points = self._populate_bins(self.timespace.par.snpt)
 
-        initial_xp = np.zeros(self.find_nr_of_particles())
-        initial_yp = np.copy(initial_xp)
+        xp = np.zeros(self.find_nr_of_particles())
+        yp = np.copy(xp)
 
         # Creating the first profile with equally distributed points
-        (initial_xp,
-         initial_yp) = self._init_tracked_point(
+        (xp,
+         yp) = self._init_tracked_point(
                                 self.timespace.par.snpt, self.mapinfo.imin[0],
                                 self.mapinfo.imax[0], self.mapinfo.jmin[0, :],
-                                self.mapinfo.jmax[0, :], initial_xp,
-                                initial_yp, points[0], points[1])
+                                self.mapinfo.jmax[0, :], xp,
+                                yp, points[0], points[1])
 
-        return initial_xp, initial_yp
+        return xp, yp
 
     @staticmethod
     @njit

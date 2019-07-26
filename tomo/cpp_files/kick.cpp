@@ -20,5 +20,4 @@ extern "C" void new_kick(const double * __restrict__ dphi,
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
         denergy[i] = denergy[i] - acc_kick;
-
 }

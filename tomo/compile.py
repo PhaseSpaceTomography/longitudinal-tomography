@@ -17,7 +17,7 @@ cpp_files = [
     os.path.join(basepath, 'map_weights.cpp'),
     os.path.join(basepath, 'drift.cpp'),
     os.path.join(basepath, 'kick.cpp'),
-]
+    os.path.join(basepath, 'tomo_routines.cpp')]
 
 compiler = 'g++'
 
@@ -50,4 +50,4 @@ if __name__ == '__main__':
         print('\nCompilation succeeded!')
     except Exception as e:
         print('\nCompilation failed.')
-        print(e)
+        # print(f'Error: {e}')
