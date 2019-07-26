@@ -63,42 +63,16 @@ if show:
     plt.show()
 
 # Saving to files
-print(f'Saving output to directory: {output_path}')
+print('Saving output!')
+logging.info(f'Saving output to directory: {output_path}')
+logging.info('Saving weight')
 np.save(output_path + 'weight', weight)
+logging.info('Saving xp')
 np.save(output_path + 'xp', xp)
+logging.info('Saving yp')
 np.save(output_path + 'yp', yp)
+logging.info('Saving diff')
 np.save(output_path + 'diff', tomo.diff)
-print('Saving complete!')
+logging.info('Saving complete!')
 print('Program finished.')
 
-# The remaining code is kept for reference in case comparisons etc. are needed
-# for film in range(ts.par.filmstart - 1,
-#                   ts.par.filmstop,
-#                   ts.par.filmstep):
-#
-#     t0 = tm.perf_counter()
-#     # rec.new_run(film)
-#     # rec.run(film)
-#     xp, yp = rec.run_only_particle_track(film)
-#
-#
-#     print(f'total reconstruction time: {str(tm.perf_counter() - t0)}')
-#
-#     # TOMO
-#     tomo = NewTomography(ts, xp, yp)
-#     tid = tm.perf_counter()
-#     tomo.run4()
-#
-#     print('tomo time: ' + str(tm.perf_counter() - tid))
-#     # tomo.run()
-#
-#     raise SystemExit
-#     # Creating picture
-#     tomo.darray, tomo.picture = tomo.run(film)
-#
-#     # Writing discrepancy history of tomography,
-#     # and finished picture to file.
-#     tomo.out_darray_txtfile(WORKING_DIR, film)
-#     tomo.out_picture(WORKING_DIR, film)
-#
-# del tomo.darray, tomo.picture, tomo.ts, tomo.mi
