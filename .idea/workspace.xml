@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="Added c++ version of tomography routine&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved">
-      <change afterPath="$PROJECT_DIR$/tomo/cpp_files/tomo_routines.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/compile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/compile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/kick.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_files/kick.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/main_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tracking.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tracking.py" afterDir="false" />
+    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -239,13 +233,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00045" summary="git now ignores .vscode, reconstruct_c imports os">
-      <created>1560955885525</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1560955885525</updated>
     </task>
     <task id="LOCAL-00046" summary="changes to relative paths in reconstruct_cpp test">
       <created>1560956368060</created>
@@ -583,7 +570,14 @@
       <option name="project" value="LOCAL" />
       <updated>1563982645534</updated>
     </task>
-    <option name="localTasksCounter" value="94" />
+    <task id="LOCAL-00094" summary="Added c++ version of tomography routine (new_tomo_cpp.py)&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved&#10;- name changes in tracking.py">
+      <created>1564155781077</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1564155781078</updated>
+    </task>
+    <option name="localTasksCounter" value="95" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -641,7 +635,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Small changes" />
     <MESSAGE value="Added documentation" />
     <MESSAGE value="name change function: reconstruct() -&gt; run()" />
     <MESSAGE value="More documentation" />
@@ -666,7 +659,8 @@
     <MESSAGE value="Added new tracking algorithm&#10;&#10; - Heavily based on c++&#10; - Uses the drift.cpp and kick.cpp files&#10; - Is found in the tracking.py module" />
     <MESSAGE value="Added processing the output of the track function, cleaning in main." />
     <MESSAGE value="Cleaning" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cleaning" />
+    <MESSAGE value="Added c++ version of tomography routine (new_tomo_cpp.py)&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved&#10;- name changes in tracking.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added c++ version of tomography routine (new_tomo_cpp.py)&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved&#10;- name changes in tracking.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

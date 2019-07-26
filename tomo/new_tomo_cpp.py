@@ -75,9 +75,6 @@ class NewTomographyC:
         return np.sqrt(np.sum(diff_profiles**2)/(self.ts.par.profile_length
                                                  * self.ts.par.profile_count))
 
-    def back_project_c(self, flat_profiles, plat_points, weights, nparts):
-        pass
-
     @ staticmethod
     def _get_2d_pointer(arr2d):
         return (arr2d.__array_interface__['data'][0]
