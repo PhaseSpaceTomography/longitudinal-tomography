@@ -1,25 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="Cleaning main_testing">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/compile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/compile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/drift.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/drift.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/kick.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/kick.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/longtrack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/map_weights.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/sin.h" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/sin.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/sincos.h" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/sincos.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/tomo_routines.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/tomo_routines.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/cpp_files/vdtcore_common.h" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/vdtcore_common.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/main_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/main_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/numeric.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/numeric.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/reconstruct_c.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/reconstruct_c.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomo/tracking.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tracking.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo_action/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo_action/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_tests/test_reconstruct_c.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_tests/test_reconstruct_c.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -250,13 +234,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00048" summary="New path to .so object">
-      <created>1560957902782</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1560957902782</updated>
     </task>
     <task id="LOCAL-00049" summary="Small cleaning">
       <created>1561024852377</created>
@@ -594,7 +571,14 @@
       <option name="project" value="LOCAL" />
       <updated>1564156159061</updated>
     </task>
-    <option name="localTasksCounter" value="97" />
+    <task id="LOCAL-00097" summary="Changed name of cpp_files to cpp_routines">
+      <created>1564387033452</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1564387033453</updated>
+    </task>
+    <option name="localTasksCounter" value="98" />
     <servers />
   </component>
   <component name="TodoView">
@@ -620,7 +604,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More documentation" />
     <MESSAGE value="Small style change" />
     <MESSAGE value="reconstruct class now works in the same way as reconstruct_c" />
     <MESSAGE value="new_find_wf now works for one vector" />
@@ -645,7 +628,8 @@
     <MESSAGE value="Added c++ version of tomography routine (new_tomo_cpp.py)&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved&#10;- name changes in tracking.py" />
     <MESSAGE value="Deleted unused function" />
     <MESSAGE value="Cleaning main_testing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cleaning main_testing" />
+    <MESSAGE value="Changed name of cpp_files to cpp_routines" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed name of cpp_files to cpp_routines" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

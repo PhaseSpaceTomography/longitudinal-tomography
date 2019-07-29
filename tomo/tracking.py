@@ -1,19 +1,14 @@
 import ctypes as ct
 import numpy as np
-import sys
-import time as tm
 from numba import njit
+from cpp_routines.tomolib_wrappers import kick, drift
+
 
 class Tracking:
 
     def __init__(self, ts, mi):
-
         self.mapinfo = mi
         self.timespace = ts
-
-        # tomolib_pth = './tomo/cpp_routines/tomolib.so'
-        tomolib_pth = './cpp_routines/tomolib.so'
-        self.tomolib = ct.CDLL(tomolib_pth)
 
     def track(self):
         nr_of_particles = self.find_nr_of_particles()
@@ -52,25 +47,6 @@ class Tracking:
 
         return np.ceil(xp).astype(int), np.ceil(yp).astype(int)
 
-    def drift(self, denergy, dphi, dphase, nr_part, turn):
-        self.tomolib.new_drift(self._get_pointer(dphi),
-                               self._get_pointer(denergy),
-                               ct.c_double(dphase[turn]),
-                               ct.c_int(nr_part))
-        return dphi
-
-    def kick(self, denergy, dphi, rfv1, rfv2, nr_part, turn):
-        self.tomolib.new_kick(self._get_pointer(dphi),
-                              self._get_pointer(denergy),
-                              ct.c_double(rfv1[turn]),
-                              ct.c_double(rfv2[turn]),
-                              ct.c_double(self.timespace.par.phi0[turn]),
-                              ct.c_double(self.timespace.par.phi12),
-                              ct.c_double(self.timespace.par.h_ratio),
-                              ct.c_int(nr_part),
-                              ct.c_double(self.timespace.par.deltaE0[turn]))
-        return denergy
-
     def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):
         turn = 0
@@ -78,12 +54,12 @@ class Tracking:
         print(f'tracking to profile {profile + 1}')
         while turn < n_turns:
             # Calculating change in phase for each particle at a turn
-            dphi = self.drift(denergy, dphi, self.timespace.par.dphase,
-                              n_part, turn)
+            dphi = drift(denergy, dphi, self.timespace.par.dphase,
+                         n_part, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = self.kick(denergy, dphi, rf1v, rf2v,
-                                n_part, turn)
+            denergy = kick(self.timespace.par, denergy, dphi, rf1v, rf2v,
+                           n_part, turn)
 
             if turn % self.timespace.par.dturns == 0:
                 profile += 1
