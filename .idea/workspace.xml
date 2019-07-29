@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tracking.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tracking.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/cpp_routines/tomolib_wrappers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/tomolib_wrappers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/new_tomo_cpp.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -121,6 +122,27 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.main_testing">
+    <configuration name="compile" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="tomo_v3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tomo" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tomo/compile.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -184,21 +206,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_time_space.TestTimeSpace" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="tomo_v3" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -217,10 +224,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main_testing" />
+        <item itemvalue="Python.compile" />
         <item itemvalue="Python.tracking_wrappers" />
         <item itemvalue="Python.run_fortran" />
         <item itemvalue="Python tests.Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" />
-        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace" />
       </list>
     </recent_temporary>
   </component>
@@ -234,13 +241,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00049" summary="Small cleaning">
-      <created>1561024852377</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1561024852377</updated>
     </task>
     <task id="LOCAL-00050" summary="Written documentation">
       <created>1561027113616</created>
@@ -578,7 +578,14 @@
       <option name="project" value="LOCAL" />
       <updated>1564387033453</updated>
     </task>
-    <option name="localTasksCounter" value="98" />
+    <task id="LOCAL-00098" summary="Added kick and drift functions for tracking to wrapper file">
+      <created>1564389755354</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1564389755354</updated>
+    </task>
+    <option name="localTasksCounter" value="99" />
     <servers />
   </component>
   <component name="TodoView">
@@ -604,7 +611,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Small style change" />
     <MESSAGE value="reconstruct class now works in the same way as reconstruct_c" />
     <MESSAGE value="new_find_wf now works for one vector" />
     <MESSAGE value="Longtrack all now working" />
@@ -629,7 +635,8 @@
     <MESSAGE value="Deleted unused function" />
     <MESSAGE value="Cleaning main_testing" />
     <MESSAGE value="Changed name of cpp_files to cpp_routines" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed name of cpp_files to cpp_routines" />
+    <MESSAGE value="Added kick and drift functions for tracking to wrapper file" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added kick and drift functions for tracking to wrapper file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
