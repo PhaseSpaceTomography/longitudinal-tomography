@@ -1,3 +1,11 @@
+# ================
+# DLC Exceptions
+# ================
+
+
+class LibraryNotFound(Exception):
+    pass
+
 
 # ================
 # Array Exceptions

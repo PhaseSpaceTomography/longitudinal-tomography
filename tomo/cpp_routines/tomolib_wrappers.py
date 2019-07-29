@@ -1,9 +1,18 @@
 import ctypes as ct
 import numpy as np
 import os
+from utils.exceptions import LibraryNotFound
+import logging as log
+
+log.basicConfig(level=log.DEBUG)
 
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__)) + '/tomolib.so'
-_tomolib = ct.CDLL(_tomolib_pth)
+
+if os.path.exists(_tomolib_pth):
+    log.info(f'Loading C++ library: {_tomolib_pth}')
+    _tomolib = ct.CDLL(_tomolib_pth)
+else:
+    raise LibraryNotFound(f'Could not find library at {_tomolib_pth}')
 
 _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 

@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomo/tracking.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/tracking.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/cpp_routines/tomolib_wrappers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/tomolib_wrappers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/utils/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/utils/exceptions.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -240,13 +241,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00051" summary="Namechanges, documentation and a small bugfix&#10;&#10;- c1 is now dphi&#10;- written documentation for parameters and time space module&#10;- bugfix in calculating machine parameters when m.ref.frame &gt; 1&#10;- .so files are again ignored">
-      <created>1561108581184</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1561108581184</updated>
     </task>
     <task id="LOCAL-00052" summary="Added description of class">
       <created>1561109068386</created>
@@ -584,7 +578,14 @@
       <option name="project" value="LOCAL" />
       <updated>1564394197245</updated>
     </task>
-    <option name="localTasksCounter" value="100" />
+    <task id="LOCAL-00100" summary="Deleted excessive function">
+      <created>1564394295759</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1564394295759</updated>
+    </task>
+    <option name="localTasksCounter" value="101" />
     <servers />
   </component>
   <component name="TodoView">
@@ -610,7 +611,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new_find_wf now works for one vector" />
     <MESSAGE value="Longtrack all now working" />
     <MESSAGE value="Fast and functional new weight factor algorithm" />
     <MESSAGE value="Added and edited algorithms for calc wf and longtrack.&#10;&#10;the class is now a mess.&#10;&#10;Working algorithms:&#10;- longtrack_all&#10;- longtrack_one_particle&#10;- longtrack_one_particle_mod (spd-up with numba, ready for parallel)&#10;- wf_alg1 smooth, but hard to speed up&#10;- wf_alg2 super slow but intuitive&#10;- wf_alg3 faster version of alg2, may be used for reversed weights&#10;- compress_vector_njit (wf_alg4) currently best in speed (and intuition?)&#10;&#10;some helping functions:&#10; - count - counts number of occurences of numbers in arrays.&#10;     since there is no np.count. needed for speedup with numba&#10; - calc denergy - one of the more computing intensive parts of&#10;   the longtrack funtion, speeded up with numba&#10; - find_accumulated_pixelvals another counting algorithm.&#10;   creates large array" />
@@ -635,7 +635,8 @@
     <MESSAGE value="Changed name of cpp_files to cpp_routines" />
     <MESSAGE value="Added kick and drift functions for tracking to wrapper file" />
     <MESSAGE value="Added project and back_project for reconstruction to wrapper file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added project and back_project for reconstruction to wrapper file" />
+    <MESSAGE value="Deleted excessive function" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deleted excessive function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -644,6 +645,11 @@
           <url>file://$PROJECT_DIR$/tomo/reconstruct_py.py</url>
           <line>148</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tomo/main_testing.py</url>
+          <line>10</line>
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
