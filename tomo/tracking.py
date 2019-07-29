@@ -1,4 +1,3 @@
-import ctypes as ct
 import numpy as np
 from numba import njit
 from cpp_routines.tomolib_wrappers import kick, drift
@@ -134,7 +133,3 @@ class Tracking:
                         yp[k] = jLim + ypoints[i, j]
                         k += 1
         return xp, yp
-
-    @staticmethod
-    def _get_pointer(x):
-        return x.ctypes.data_as(ct.c_void_p)
