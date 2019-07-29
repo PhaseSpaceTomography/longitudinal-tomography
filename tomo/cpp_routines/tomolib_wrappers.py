@@ -12,7 +12,9 @@ if os.path.exists(_tomolib_pth):
     log.info(f'Loading C++ library: {_tomolib_pth}')
     _tomolib = ct.CDLL(_tomolib_pth)
 else:
-    raise LibraryNotFound(f'Could not find library at {_tomolib_pth}')
+    error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
+                f'\n- Try to run compile.py in the tomo directory\n'
+    raise LibraryNotFound(error_msg)
 
 _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 
