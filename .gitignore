@@ -1,5 +1,5 @@
 tomo_action/tmp
-tomo/cpp_files/.vscode
+tomo/cpp_routines/.vscode
 # tomo_action/test_resources
 
 *.pyc

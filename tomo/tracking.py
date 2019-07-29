@@ -11,8 +11,8 @@ class Tracking:
         self.mapinfo = mi
         self.timespace = ts
 
-        # tomolib_pth = './tomo/cpp_files/tomolib.so'
-        tomolib_pth = './cpp_files/tomolib.so'
+        # tomolib_pth = './tomo/cpp_routines/tomolib.so'
+        tomolib_pth = './cpp_routines/tomolib.so'
         self.tomolib = ct.CDLL(tomolib_pth)
 
     def track(self):

@@ -14,8 +14,8 @@ class NewTomographyC:
 
         # Setting up C++ functions
         double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
-        # tomolib_path = './tomo/cpp_files/tomolib.so'
-        tomolib_path = './cpp_files/tomolib.so'
+        # tomolib_path = './tomo/cpp_routines/tomolib.so'
+        tomolib_path = './cpp_routines/tomolib.so'
         tomolib = ctypes.CDLL(tomolib_path)
 
         self._back_proj = tomolib.back_project

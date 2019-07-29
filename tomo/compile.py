@@ -4,7 +4,7 @@ import subprocess
 import ctypes
 
 path = os.path.realpath(__file__)
-basepath = os.sep.join(path.split(os.sep)[:-1]) + '/cpp_files/'
+basepath = os.sep.join(path.split(os.sep)[:-1]) + '/cpp_routines/'
 
 # TODO: Add arguments?
 # TODO: Add compilation for windows?

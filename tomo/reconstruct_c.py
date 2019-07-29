@@ -94,7 +94,7 @@ class ReconstructCpp:
 
         # Importing C++ functions
         lib_path = (os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
-                    + '/cpp_files/tomolib.so')
+                    + '/cpp_routines/tomolib.so')
         tomolib = self._import_cfunctions(lib_path)
 
         self.find_mapweight = tomolib.weight_factor_array

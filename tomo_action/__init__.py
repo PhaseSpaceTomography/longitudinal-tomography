@@ -13,7 +13,7 @@ if os.getcwd() != wanted_working_directory:
 
 # Making suure cpp library is compiled.
 base_dir_path = os.path.realpath(__file__)[:-23]
-cpp_lib_path = base_dir_path + 'tomo/cpp_files/tomolib.so'
+cpp_lib_path = base_dir_path + 'tomo/cpp_routines/tomolib.so'
 
 if not os.path.isfile(cpp_lib_path):
     print('compiling...')
