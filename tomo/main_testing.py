@@ -29,11 +29,11 @@ if output_path[-1] != '/':
 
 # Collecting time space parameters and data
 ts = TimeSpace(input_path)
-ts.save_profiles_text(ts.profiles, output_path, "py_profiles.dat")
+ts.save_profiles_text(ts.profiles, output_path, 'py_profiles.dat')
 
 if ts.par.self_field_flag:
     ts.save_profiles_text(ts.vself[:, :ts.par.profile_length],
-                          output_path, "py_vself.dat")
+                          output_path, 'py_vself.dat')
 
 # Creating map outlining for reconstruction
 mi = MapInfo(ts)

@@ -73,12 +73,11 @@ class Tracking:
         return xp, yp
 
     def find_nr_of_particles(self):
-        FILM_NR = 0  # TODO: Remove the multidimensioanlity of i/jmin/max
-        jdiff = (self.mapinfo.jmax[FILM_NR, :]
-                 - self.mapinfo.jmin[FILM_NR, :])
-        pxls = np.sum(jdiff[self.mapinfo.imin[FILM_NR]
-                            :self.mapinfo.imax[FILM_NR] + 1])
-        return pxls * self.timespace.par.snpt**2
+        jdiff = (self.mapinfo.jmax
+                 - self.mapinfo.jmin)
+        pxls = np.sum(jdiff[self.mapinfo.imin
+                            :self.mapinfo.imax + 1])
+        return int(pxls * self.timespace.par.snpt**2)
 
     def calc_dphi_denergy(self, xp, yp, turn=0):
         tpar = self.timespace.par
@@ -111,9 +110,9 @@ class Tracking:
         # Creating the first profile with equally distributed points
         (xp,
          yp) = self._init_tracked_point(
-                                self.timespace.par.snpt, self.mapinfo.imin[0],
-                                self.mapinfo.imax[0], self.mapinfo.jmin[0, :],
-                                self.mapinfo.jmax[0, :], xp,
+                                self.timespace.par.snpt, self.mapinfo.imin,
+                                self.mapinfo.imax, self.mapinfo.jmin,
+                                self.mapinfo.jmax, xp,
                                 yp, points[0], points[1])
 
         return xp, yp

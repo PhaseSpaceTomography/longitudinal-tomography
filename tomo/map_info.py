@@ -95,7 +95,10 @@ class MapInfo:
                                 timespace.par.profile_maxi)
 
         # Ensuring that the array shapes are valid
-        self._assert_correct_arrays(timespace)
+        
+        # TEMP
+        # self._assert_correct_arrays(timespace)
+        # END TEMP
 
     # Main function for the class. finds limits in i and j axis.
     # Local variables:
@@ -257,17 +260,14 @@ class MapInfo:
 
     # Finding limits for tracking all pixels in reconstructed phase space.
     def _limits_track_all_pxl(self, filmstop, profile_length, yat0):
-        allbin_min = np.zeros(filmstop, dtype=np.int32)
-        allbin_max = np.zeros(filmstop, dtype=np.int32)
-
-        jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
+        jmax = np.zeros(profile_length, dtype=np.int32)
         jmin = np.copy(jmax)
 
-        jmax[:, :] = profile_length
-        jmin[:, :] = np.ceil(2.0 * yat0 - jmax[:] + 0.5)
+        jmax[:] = profile_length
+        jmin[:] = np.ceil(2.0 * yat0 - jmax + 0.5)
 
-        allbin_min[0] = np.int32(0)
-        allbin_max[0] = np.int32(profile_length)
+        allbin_min = np.int32(0)
+        allbin_max = np.int32(profile_length)
         return jmin, jmax, allbin_min, allbin_max
 
     # Finding limits for tracking active pixels (stated in parameters)
@@ -276,48 +276,42 @@ class MapInfo:
                                   x_origin, dtbin, omega_rev0, h_num, yat0,
                                   q, dphase, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
                                   h_ratio, phi12, time_at_turn):
-        allbin_min = np.zeros(filmstop)
-        allbin_max = np.zeros(filmstop)
-
-        jmax = np.zeros((filmstop, profile_length), dtype=np.int32)
+        jmax = np.zeros(profile_length, dtype=np.int32)
         jmin = np.copy(jmax)
 
-        for film in range(filmstart - 1, filmstop, filmstep):
-            turn = film * dturns
+        turn = (filmstart - 1) * dturns
 
-            phases = self.calculate_phases_turn(x_origin,
-                                                dtbin,
-                                                h_num,
-                                                omega_rev0[turn],
-                                                profile_length,
-                                                indarr)
+        phases = self.calculate_phases_turn(x_origin,
+                                            dtbin,
+                                            h_num,
+                                            omega_rev0[turn],
+                                            profile_length,
+                                            indarr)
 
-            jmax[film, :] = self._find_jmax(profile_length,
-                                            yat0,
-                                            q,
-                                            dphase,
-                                            phi0,
-                                            vrf1,
-                                            vrf1dot,
-                                            vrf2,
-                                            vrf2dot,
-                                            h_ratio,
-                                            phi12,
-                                            time_at_turn,
-                                            phases,
-                                            turn,
-                                            dEbin)
+        jmax = self._find_jmax(profile_length,
+                                        yat0,
+                                        q,
+                                        dphase,
+                                        phi0,
+                                        vrf1,
+                                        vrf1dot,
+                                        vrf2,
+                                        vrf2dot,
+                                        h_ratio,
+                                        phi12,
+                                        time_at_turn,
+                                        phases,
+                                        turn,
+                                        dEbin)
 
-            jmin[film, :] = self._find_jmin(yat0, jmax[film, :])
+        jmin = self._find_jmin(yat0, jmax)
 
-            allbin_min[film] = self._find_allbin_min(
-                                        jmin[film, :],
-                                        jmax[film, :],
-                                        profile_length)
-            allbin_max[film] = self._find_allbin_max(
-                                        jmin[film, :],
-                                        jmax[film, :],
-                                        profile_length)
+        allbin_min = self._find_allbin_min(
+                                jmin, jmax,
+                                profile_length)
+        allbin_max = self._find_allbin_max(
+                                jmin, jmax,
+                                profile_length)
 
         return jmin, jmax, allbin_min, allbin_max
 
@@ -401,22 +395,23 @@ class MapInfo:
                        full_pp_flag, profile_mini, profile_maxi,
                        yat0, profile_length, jmax, jmin,
                        allbin_min, allbin_max):
-        imin = np.zeros(filmstop, dtype=int)
-        imax = np.zeros(filmstop, dtype=int)
-        for film in range(filmstart - 1, filmstop, filmstep):
-            if profile_mini > allbin_min[film] or full_pp_flag:
-                imin[film] = profile_mini
-                jmax[film, 0:profile_mini] = np.floor(yat0)
-                jmin[film, :] = np.ceil(2.0 * yat0 - jmax[film, :] + 0.5)
-            else:
-                imin[film] = allbin_min[film]
+        # imin = np.zeros(filmstop, dtype=int)
+        # imax = np.zeros(filmstop, dtype=int)
+        # for film in range(filmstart - 1, filmstop, filmstep):
+        film = filmstart - 1
+        if profile_mini > allbin_min or full_pp_flag:
+            imin = profile_mini
+            jmax[:profile_mini] = np.floor(yat0)
+            jmin = np.ceil(2.0 * yat0 - jmax + 0.5)
+        else:
+            imin = allbin_min
 
-            if profile_maxi < allbin_max[film] or full_pp_flag:
-                imax[film] = profile_maxi
-                jmax[film, profile_maxi: profile_length] = np.floor(yat0)
-                jmin[film, :] = np.ceil(2.0 * yat0 - jmax[film, :] + 0.5)
-            else:
-                imax[film] = allbin_max[film]
+        if profile_maxi < allbin_max or full_pp_flag:
+            imax = profile_maxi
+            jmax[profile_maxi:profile_length] = np.floor(yat0)
+            jmin = np.ceil(2.0 * yat0 - jmax + 0.5)
+        else:
+            imax = allbin_max
 
         return jmin, jmax, imin, imax
 
@@ -514,7 +509,7 @@ class MapInfo:
                                  time_space.par.filmstep):
                 for i in range(0, time_space.par.profile_length):
                     outFile.write(str(i) + "\t"
-                                  + str(mapinfo.jmax[profile - 1, i]) + "\n")
+                                  + str(mapinfo.jmax[i]) + "\n")
         logging.info("Written jmax to: " + full_path)
 
     @classmethod
@@ -557,10 +552,6 @@ class MapInfo:
             outFile.write("Horizontal range (in pixels) "
                           + " of the region in phase space of mapinfo elements:"
                           + "\n")
-            for p in range(time_space.par.filmstart - 1,
-                           time_space.par.filmstop, time_space.par.filmstep):
-                outFile.write("imin(" + str(p) + ") = " + str(mapinfo.imin[p])
-                              + ", imax(" + str(p) + ") = " + str(mapinfo.imax[p])
-                              + "\n")
+            outFile.write(f"imin = {mapinfo.imin}, imax = {mapinfo.imax}\n")
 
         logging.info("Written profile info to: " + full_path)
