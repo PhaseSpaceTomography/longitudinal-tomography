@@ -21,7 +21,7 @@ if live:
         sys.exit('Program exit..')
 else:
     input_path = '/home/cgrindhe/tomo_v3/tomo_action/input_v2.dat'
-    output_path = '/home/cgrindhe/temp/testing_new_longtrack/output/'
+    output_path = '/afs/cern.ch/work/c/cgrindhe/tomography/out'
 
 # Making sure that output path ends on a dash
 if output_path[-1] != '/':

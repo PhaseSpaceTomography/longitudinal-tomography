@@ -89,8 +89,6 @@ class MapInfo:
                                 timespace.par.phi12,
                                 timespace.par.time_at_turn,
                                 timespace.par.filmstart,
-                                timespace.par.filmstop,
-                                timespace.par.filmstep,
                                 timespace.par.profile_mini,
                                 timespace.par.profile_maxi)
 
@@ -109,8 +107,7 @@ class MapInfo:
                        full_pp_flag, x_origin, dtbin, h_num, omega_rev0,
                        vrf1, vrf1dot, vrf2, vrf2dot, yat0, dphase, q, e0,
                        phi0, eta0, demax, beta0, h_ratio, phi12,
-                       time_at_turn, filmstart, filmstop, filmstep,
-                       profile_mini, profile_maxi):
+                       time_at_turn, filmstart,profile_mini, profile_maxi):
 
         turn_now = (beam_ref_frame - 1) * dturns
         indarr = np.arange(profile_length + 1)
@@ -150,16 +147,13 @@ class MapInfo:
             (jmin,
              jmax,
              allbin_min,
-             allbin_max) = self._limits_track_all_pxl(filmstop,
-                                                      profile_length,
+             allbin_max) = self._limits_track_all_pxl(profile_length,
                                                       yat0)
         else:
             (jmin,
              jmax,
              allbin_min,
              allbin_max) = self._limits_track_active_pxl(filmstart,
-                                                         filmstop,
-                                                         filmstep,
                                                          dturns,
                                                          profile_length,
                                                          indarr,
@@ -186,8 +180,6 @@ class MapInfo:
          jmax,
          imin,
          imax) = self._adjust_limits(filmstart,
-                                     filmstop,
-                                     filmstep,
                                      full_pp_flag,
                                      profile_mini,
                                      profile_maxi,
@@ -197,6 +189,8 @@ class MapInfo:
                                      jmin,
                                      allbin_min,
                                      allbin_max)
+        jmin = jmin.astype(np.int32)
+        jmax = jmax.astype(np.int32)
 
         return jmin, jmax, imin, imax, dEbin, allbin_min, allbin_max
 
@@ -259,7 +253,7 @@ class MapInfo:
             return float(demax) / (profile_length - yat0)
 
     # Finding limits for tracking all pixels in reconstructed phase space.
-    def _limits_track_all_pxl(self, filmstop, profile_length, yat0):
+    def _limits_track_all_pxl(self, profile_length, yat0):
         jmax = np.zeros(profile_length, dtype=np.int32)
         jmin = np.copy(jmax)
 
@@ -271,11 +265,10 @@ class MapInfo:
         return jmin, jmax, allbin_min, allbin_max
 
     # Finding limits for tracking active pixels (stated in parameters)
-    def _limits_track_active_pxl(self, filmstart, filmstop, filmstep,
-                                  dturns, profile_length, indarr, dEbin,
-                                  x_origin, dtbin, omega_rev0, h_num, yat0,
-                                  q, dphase, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
-                                  h_ratio, phi12, time_at_turn):
+    def _limits_track_active_pxl(self, filmstart, dturns, profile_length,
+                                 indarr, dEbin, x_origin, dtbin, omega_rev0,
+                                 h_num, yat0, q, dphase, phi0, vrf1, vrf1dot,
+                                 vrf2, vrf2dot, h_ratio, phi12, time_at_turn):
         jmax = np.zeros(profile_length, dtype=np.int32)
         jmin = np.copy(jmax)
 
@@ -391,13 +384,10 @@ class MapInfo:
     # 	specified input min/max index and found max/min in profile.
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates limits in i axis.
-    def _adjust_limits(self, filmstart, filmstop, filmstep,
-                       full_pp_flag, profile_mini, profile_maxi,
+    def _adjust_limits(self, filmstart, full_pp_flag,
+                       profile_mini, profile_maxi,
                        yat0, profile_length, jmax, jmin,
                        allbin_min, allbin_max):
-        # imin = np.zeros(filmstop, dtype=int)
-        # imax = np.zeros(filmstop, dtype=int)
-        # for film in range(filmstart - 1, filmstop, filmstep):
         film = filmstart - 1
         if profile_mini > allbin_min or full_pp_flag:
             imin = profile_mini
@@ -500,58 +490,45 @@ class MapInfo:
 
         return complex_height.real
 
-    @classmethod
-    def write_jmax_tofile(cls, time_space, mapinfo, dir):
-        full_path = dir + "py_jmax.dat"
-        with open(full_path, "w") as outFile:
-            for profile in range(time_space.par.filmstart,
-                                 time_space.par.filmstop + 1,
-                                 time_space.par.filmstep):
-                for i in range(0, time_space.par.profile_length):
-                    outFile.write(str(i) + "\t"
-                                  + str(mapinfo.jmax[i]) + "\n")
-        logging.info("Written jmax to: " + full_path)
+    def write_jmax_tofile(self, time_space, mapinfo, outdir):
+        full_path = outdir + 'py_jmax.dat'
+        with open(full_path, 'w') as outFile:
+            for idx, j in enumerate(mapinfo.jmax):
+                outFile.write(f'{idx}\t{j}\n')
+        logging.info(f'jmax written to: {full_path}')
 
-    @classmethod
-    def write_plotinfo_tofile(cls, time_space, mapinfo, dir):
-        # Reconstructing the same output as the FORTRAN code.
-        # Writes data needed for plots on a file.
-        full_path = dir + "py_plotinfo.dat"
-        with open(full_path, "w") as outFile:
-            outFile.write("Number of profiles used in each reconstruction,\n")
-            outFile.write("profile_count = " +
-                          str(time_space.par.profile_count) + "\n")
-            outFile.write("Width (in pixels) of each image "
-                          + " = length (in bins) of each profile,\n")
-            outFile.write("profile_length = "
-                          + str(time_space.par.profile_length) + "\n")
-            outFile.write("Width (in s) of each pixel "
-                          + "= width of each profile bin,\n")
-            outFile.write("dtbin = " + str(time_space.par.dtbin) + "\n")
-            outFile.write("Height (in eV) of each pixel,\n")
-            outFile.write("dEbin = " + str(mapinfo.dEbin) + "\n")
-            outFile.write("Number of elementary charges in each image,\n")
-            outFile.write("Beam reference profile charge = "
-                          + str(time_space.profile_charge) + "\n")
-            outFile.write("Position (in pixels) of the "
-                          + "reference synchronous point:\n")
-            outFile.write("xat0 = " + str(time_space.par.xat0) + "\n")
-            outFile.write("yat0 = " + str(time_space.par.yat0) + "\n")
-            outFile.write("Foot tangent fit results (in bins):" + "\n")
-            outFile.write("tangentfootl = "
-                          + str(time_space.par.tangentfoot_low) + "\n")
-            outFile.write("tangentfootu = "
-                          + str(time_space.par.tangentfoot_up) + "\n")
-            outFile.write("fit xat0 = "+ str(time_space.par.fit_xat0) + "\n")
-            outFile.write("Synchronous phase (in radians):" + "\n")
-            for p in range(time_space.par.filmstart - 1,
-                           time_space.par.filmstop, time_space.par.filmstep):
-                outFile.write("phi0(" + str(p) + ") = "
-                              + str(time_space.par.phi0[(p)* time_space.par.dturns])
-                              + "\n")
-            outFile.write("Horizontal range (in pixels) "
-                          + " of the region in phase space of mapinfo elements:"
-                          + "\n")
-            outFile.write(f"imin = {mapinfo.imin}, imax = {mapinfo.imax}\n")
+    # Creating output corresponding to the FORTRAN code.
+    def write_plotinfo_tofile(self, time_space, mapinfo, outdir):
+        full_path = outdir + 'py_plotinfo.dat'
+        rec_prof = time_space.par.filmstart - 1 # '-1' Fortran compensation
+        rec_turn = rec_prof * time_space.par.dturns
+        
+        out_s = f'Number of profiles used in each reconstruction,\n'\
+                  f'profile_count = {time_space.par.profile_count}\n'\
+                f'Width (in pixels) of each image = '\
+                  f'length (in bins) of each profile,\n'\
+                f'Profile_length = {time_space.par.profile_length}\n'\
+                f'Width (in s) of each pixel = width of each profile bin,\n'\
+                f'dtbin = {time_space.par.dtbin}\n'\
+                f'Height (in eV) of each pixel,\n'\
+                f'dEbin = {mapinfo.dEbin}\n'\
+                f'Number of elementary charges in each image,\n'\
+                  f'beam reference profile charge = '\
+                  f'{time_space.profile_charge}\n'\
+                f'Position (in pixels) of the reference synchronous point:\n'\
+                f'xat0 = {time_space.par.xat0}\n'\
+                f'yat0 = {time_space.par.yat0}\n'\
+                f'Foot tangent fit results (in bins):\n'\
+                f'tangentfootl = {time_space.par.tangentfoot_low}\n'\
+                f'tangentfootu = {time_space.par.tangentfoot_up}\n'\
+                f'fit xat0 = {time_space.par.fit_xat0}'\
+                f'Synchronous phase (in radians):\n'\
+                f'phi0[{rec_prof}] = {time_space.par.phi0[rec_turn]}\n'\
+                f'Horizontal range (in pixels) of the region in phase '\
+                  f'space of mapinfo elements:\n'\
+                f'imin = {mapinfo.imin}, imax = {mapinfo.imax}\n'\
+
+        with open(full_path, 'w') as outFile:
+            outFile.write(out_s)
 
         logging.info("Written profile info to: " + full_path)
