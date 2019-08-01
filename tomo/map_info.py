@@ -95,7 +95,7 @@ class MapInfo:
         # Ensuring that the array shapes are valid
         
         # TEMP
-        # self._assert_correct_arrays(timespace)
+        self._assert_correct_arrays(timespace)
         # END TEMP
 
     # Main function for the class. finds limits in i and j axis.
@@ -427,34 +427,23 @@ class MapInfo:
                           ts.par.filmstep):
 
             # Testing imin and imax
-            ta.assert_inrange(self.imin[film], 'imin', 0, self.imax[film],
+            ta.assert_inrange(self.imin, 'imin', 0, self.imax,
                               PhaseLimitsError,
-                              f'imin and imax out of bounds '
-                              f'at film: {film}')
-            ta.assert_less_or_equal(self.imax[film], 'imax',
-                                    self.jmax[film].size,
+                              f'imin and imax out of bounds')
+            ta.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
                                     PhaseLimitsError,
-                                    f'imin and imax out of bounds '
-                                    f'at film: {film}')
+                                    f'imin and imax out of bounds')
 
             # Testing jmin and jmax
-            ta.assert_array_in_range(self.jmin[film,
-                                               self.imin[film]:
-                                               self.imax[film]], 0,
-                                     self.jmax[film,
-                                               self.imin[film]:
-                                               self.imax[film]],
+            ta.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
+                                     self.jmax[self.imin:self.imax],
                                      EnergyLimitsError,
-                                     msg=f'jmin and jmax out of bounds '
-                                         f'at film: {film}',
-                                     index_offset=self.imin[film])
-            ta.assert_array_less_eq(self.jmax[film,
-                                              self.imin[film]:
-                                              self.imax[film]],
+                                     msg=f'jmin and jmax out of bounds ',
+                                     index_offset=self.imin)
+            ta.assert_array_less_eq(self.jmax[self.imin:self.imax],
                                     ts.par.profile_length,
                                     EnergyLimitsError,
-                                    f'jmin and jmax out of bounds '
-                                    f'at film: {film}')
+                                    f'jmin and jmax out of bounds ')
             ta.assert_equal(self.jmin.shape, 'jmin',
                             self.jmax.shape, ArrayLengthError,
                             'jmin and jmax should have the same shape')
