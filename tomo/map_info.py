@@ -94,9 +94,7 @@ class MapInfo:
 
         # Ensuring that the array shapes are valid
         
-        # TEMP
         self._assert_correct_arrays(timespace)
-        # END TEMP
 
     # Main function for the class. finds limits in i and j axis.
     # Local variables:
@@ -112,34 +110,15 @@ class MapInfo:
         turn_now = (beam_ref_frame - 1) * dturns
         indarr = np.arange(profile_length + 1)
 
-        phases = self.calculate_phases_turn(x_origin,
-                                            dtbin,
-                                            h_num,
-                                            omega_rev0[turn_now],
-                                            profile_length,
-                                            indarr)
+        phases = self.calculate_phases_turn(
+        			x_origin, dtbin, h_num, omega_rev0[turn_now],
+                    profile_length, indarr)
 
-        dEbin = self._energy_binning(vrf1,
-                                     vrf1dot,
-                                     vrf2,
-                                     vrf2dot,
-                                     yat0,
-                                     dphase,
-                                     profile_length,
-                                     q,
-                                     e0,
-                                     phi0,
-                                     h_num,
-                                     eta0,
-                                     dtbin,
-                                     omega_rev0,
-                                     demax,
-                                     beta0,
-                                     h_ratio,
-                                     phi12,
-                                     time_at_turn,
-                                     phases,
-                                     turn_now)
+        dEbin = self._energy_binning(
+        			vrf1, vrf1dot, vrf2, vrf2dot, yat0, dphase,
+                    profile_length, q, e0, phi0, h_num, eta0,
+                    dtbin, omega_rev0, demax, beta0, h_ratio,
+                    phi12, time_at_turn, phases, turn_now)
 
         ta.assert_greater(dEbin, 'dEbin', 0.0, EnergyBinningError)
 
@@ -147,48 +126,29 @@ class MapInfo:
             (jmin,
              jmax,
              allbin_min,
-             allbin_max) = self._limits_track_all_pxl(profile_length,
-                                                      yat0)
+             allbin_max) = self._limits_track_all_pxl(
+             						profile_length, yat0)
         else:
             (jmin,
              jmax,
              allbin_min,
-             allbin_max) = self._limits_track_active_pxl(filmstart,
-                                                         dturns,
-                                                         profile_length,
-                                                         indarr,
-                                                         dEbin,
-                                                         x_origin,
-                                                         dtbin,
-                                                         omega_rev0,
-                                                         h_num,
-                                                         yat0,
-                                                         q,
-                                                         dphase,
-                                                         phi0,
-                                                         vrf1,
-                                                         vrf1dot,
-                                                         vrf2,
-                                                         vrf2dot,
-                                                         h_ratio,
-                                                         phi12,
-                                                         time_at_turn)
+             allbin_max) = self._limits_track_active_pxl(
+             						filmstart, dturns, profile_length,
+                                    indarr, dEbin, x_origin, dtbin,
+                                    omega_rev0, h_num, yat0, q, dphase,
+                                    phi0, vrf1, vrf1dot, vrf2, vrf2dot,
+                                    h_ratio, phi12, time_at_turn)
 
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
         (jmin,
          jmax,
          imin,
-         imax) = self._adjust_limits(filmstart,
-                                     full_pp_flag,
-                                     profile_mini,
-                                     profile_maxi,
-                                     yat0,
-                                     profile_length,
-                                     jmax,
-                                     jmin,
-                                     allbin_min,
-                                     allbin_max)
+         imax) = self._adjust_limits(
+         				filmstart, full_pp_flag, profile_mini,
+         				profile_maxi, yat0, profile_length,
+         				jmax, jmin, allbin_min, allbin_max)
+        
         jmin = jmin.astype(np.int32)
         jmax = jmax.astype(np.int32)
 
@@ -207,35 +167,15 @@ class MapInfo:
                             'reconstructed phase space is invalid.')
         if demax < 0.0:
             if physics.vrft(vrf2, vrf2dot, turn) != 0.0:
-                energies_low = self.trajectoryheight(phases,
-                                                     phases[0],
-                                                     delta_e_known,
-                                                     q,
-                                                     dphase,
-                                                     phi0,
-                                                     vrf1,
-                                                     vrf1dot,
-                                                     vrf2,
-                                                     vrf2dot,
-                                                     h_ratio,
-                                                     phi12,
-                                                     time_at_turn,
-                                                     turn)
+                energies_low = self.trajectoryheight(
+                				phases, phases[0], delta_e_known, q,
+                                dphase, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
+                                h_ratio, phi12, time_at_turn, turn)
 
-                energies_up = self.trajectoryheight(phases,
-                                                    phases[profile_length],
-                                                    delta_e_known,
-                                                    q,
-                                                    dphase,
-                                                    phi0,
-                                                    vrf1,
-                                                    vrf1dot,
-                                                    vrf2,
-                                                    vrf2dot,
-                                                    h_ratio,
-                                                    phi12,
-                                                    time_at_turn,
-                                                    turn)
+                energies_up = self.trajectoryheight(
+                				phases, phases[profile_length], delta_e_known,
+                                q, dphase, phi0, vrf1, vrf1dot, vrf2, vrf2dot,
+                                h_ratio, phi12, time_at_turn, turn)
 
                 return (min(np.amax(energies_low), np.amax(energies_up))
                         / (profile_length - yat0))
@@ -274,28 +214,14 @@ class MapInfo:
 
         turn = (filmstart - 1) * dturns
 
-        phases = self.calculate_phases_turn(x_origin,
-                                            dtbin,
-                                            h_num,
-                                            omega_rev0[turn],
-                                            profile_length,
-                                            indarr)
+        phases = self.calculate_phases_turn(
+        			x_origin, dtbin, h_num, omega_rev0[turn],
+                    profile_length, indarr)
 
-        jmax = self._find_jmax(profile_length,
-                                        yat0,
-                                        q,
-                                        dphase,
-                                        phi0,
-                                        vrf1,
-                                        vrf1dot,
-                                        vrf2,
-                                        vrf2dot,
-                                        h_ratio,
-                                        phi12,
-                                        time_at_turn,
-                                        phases,
-                                        turn,
-                                        dEbin)
+        jmax = self._find_jmax(
+        			profile_length, yat0, q, dphase, phi0, vrf1,
+                    vrf1dot, vrf2, vrf2dot, h_ratio, phi12,
+                    time_at_turn, phases, turn, dEbin)
 
         jmin = self._find_jmin(yat0, jmax)
 
@@ -321,38 +247,22 @@ class MapInfo:
         for i in range(profile_length + 1):
             temp_energy = np.floor(yat0
                                    + self.trajectoryheight(
-                                            phases[i],
-                                            phases[0],
-                                            energy,
-                                            q,
-                                            dphase,
-                                            phi0,
-                                            vrf1,
-                                            vrf1dot,
-                                            vrf2,
-                                            vrf2dot,
-                                            h_ratio,
-                                            phi12,
-                                            time_at_turn,
-                                            turn) / dEbin)
+                                        phases[i], phases[0], energy, q,
+                                        dphase, phi0, vrf1, vrf1dot,
+                                        vrf2, vrf2dot, h_ratio, phi12,
+                                        time_at_turn, turn)
+                                    / dEbin)
+            
             jmax_low[i] = int(temp_energy)
 
             temp_energy = np.floor(yat0
                                    + self.trajectoryheight(
-                                            phases[i],
-                                            phases[profile_length],
-                                            energy,
-                                            q,
-                                            dphase,
-                                            phi0,
-                                            vrf1,
-                                            vrf1dot,
-                                            vrf2,
-                                            vrf2dot,
-                                            h_ratio,
-                                            phi12,
-                                            time_at_turn,
-                                            turn) / dEbin)
+                                        phases[i], phases[profile_length],
+                                        energy, q, dphase, phi0, vrf1,
+                                        vrf1dot, vrf2, vrf2dot, h_ratio,
+                                        phi12, time_at_turn, turn)
+                                   / dEbin)
+
             jmax_up[i] = int(temp_energy)
 
         jmax = np.zeros(profile_length)
