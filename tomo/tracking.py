@@ -44,7 +44,7 @@ class Tracking:
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
 
-        return np.ceil(xp).astype(int), np.ceil(yp).astype(int)
+        return xp, yp
 
     def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):

@@ -8,7 +8,6 @@ from utils.assertions import TomoAssertions as ta
 from utils.assertions import (RawDataImportError,
                               InputError,
                               RebinningError)
-
 # ================
 # About TimeSpace:
 # ================
@@ -49,7 +48,6 @@ from utils.assertions import (RawDataImportError,
 #                       and origin of the reconstructed phase-space coordinate system.
 #
 
-
 class TimeSpace:
 
     def __init__(self, parameter_file_path):
@@ -64,6 +62,7 @@ class TimeSpace:
         self.run(parameter_file_path)
 
     # Main function for the time space class
+    # @profile
     def run(self, parameter_file_path):
         self.par.get_parameters_txt(parameter_file_path)
         self.get_profiles_txt(parameter_file_path)
