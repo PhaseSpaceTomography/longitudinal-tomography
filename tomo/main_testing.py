@@ -22,7 +22,7 @@ def main():
             print('Usage: main_testing <input_path> <output_path>')
             sys.exit('Program exit..')
     else:
-        input_path = '/home/cgrindhe/tomo_v3/tomo_action/input_v2.dat'
+        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/inn/testIO/C500MidPhaseNoise.dat'
         output_path = '/afs/cern.ch/work/c/cgrindhe/tomography/out'
     
     # Making sure that output path ends on a dash
@@ -59,6 +59,7 @@ def main():
     # Transposing needed for tomography routine
     t0 = tm.perf_counter()
     xp = np.ceil(xp).astype(int).T
+    yp = np.ceil(yp).astype(int).T
     time_transp = tm.perf_counter() - t0
     
     # Reconstructing phase space
