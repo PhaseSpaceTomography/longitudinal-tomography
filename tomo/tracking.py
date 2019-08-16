@@ -1,6 +1,7 @@
 import numpy as np
 from numba import njit
 from cpp_routines.tomolib_wrappers import kick, drift
+from physics import vrft
 
 
 class Tracking:
@@ -38,13 +39,52 @@ class Tracking:
         rf1v = np.ascontiguousarray(rf1v)
         rf2v = np.ascontiguousarray(rf2v)
 
-        xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
-                                     rf1v, rf2v, nr_of_turns, nr_of_particles)
-
+        # xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
+        #                              rf1v, rf2v, nr_of_turns, nr_of_particles)
+        # DEVELOPING LONGTRACK SELF
+        # ----------------------------
+        turn_now = 0
+        direction = 1
+        tpar = self.timespace.par
+        xp = xp[0]
+        yp = yp[0]
+        while turn_now < nr_of_turns:
+            print(np.max(xp))
+            profile = int(turn_now / tpar.dturns)
+            xp, yp, turn_now, denergy, dphi = self.longtrack_self(
+                                xp, yp, rf1v, rf2v, nr_of_particles,
+                                dphi, denergy, profile ,turn_now)
+        # END DEV
+        
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
 
         return xp, yp
+
+    # Function for tracking particles while including self field voltages
+    def longtrack_self(self, xp, yp, rf1v, rf2v, n_part,
+                       dphi, denergy, profile, turn_now):
+        tpar = self.timespace.par
+        for i in range(tpar.dturns):
+            dphi = drift(denergy, dphi, tpar.dphase, n_part, turn_now)
+            
+            turn_now += 1
+            
+            xp = (dphi
+                  + tpar.phi0[turn_now]
+                  - tpar.x_origin
+                  * tpar.h_num * tpar.omega_rev0[turn_now] * tpar.dtbin)
+            xp = ((xp - tpar.phiwrap * np.floor(xp / tpar.phiwrap))
+                  / (tpar.h_num * tpar.omega_rev0[turn_now] * tpar.dtbin))
+            
+            selfvolt = self.timespace.vself[profile, np.floor(xp).astype(int)]
+            
+            denergy = kick(self.timespace.par, denergy, dphi,
+                           rf1v, rf2v, n_part, turn_now)
+            denergy += selfvolt * tpar.q
+        
+        yp = denergy / self.mapinfo.dEbin + tpar.yat0
+        return xp, yp, turn_now, denergy, dphi
 
     def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):

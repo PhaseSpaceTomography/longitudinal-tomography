@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 def main():
     
     # Getting paths for in- and output.
-    live = True
+    live = False
     if live:
         try:
             input_path = sys.argv[1]
@@ -22,7 +22,7 @@ def main():
             print('Usage: main_testing <input_path> <output_path>')
             sys.exit('Program exit..')
     else:
-        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/inn/testIO/C500MidPhaseNoise.dat'
+        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/input_v2.dat'
         output_path = '/afs/cern.ch/work/c/cgrindhe/tomography/out'
     
     # Making sure that output path ends on a dash
@@ -47,7 +47,7 @@ def main():
 
     mi.write_jmax_tofile(ts, mi, output_path)
     mi.write_plotinfo_tofile(ts, mi, output_path)
-    
+
     # Particle tracking
     t0 = tm.perf_counter()
     tr = Tracking(ts, mi)
