@@ -1,8 +1,11 @@
 import numpy as np
 from numba import njit
 from cpp_routines.tomolib_wrappers import kick, drift
-from physics import vrft
 
+# TEMP
+import time as tm
+import sys
+# END TEMP
 
 class Tracking:
 
@@ -40,9 +43,9 @@ class Tracking:
         rf2v = np.ascontiguousarray(rf2v)
 
         if self.timespace.par.self_field_flag:
-            xp, yp = self.longtrack_self(xp, yp, denergy, dphi,
-                                         rf1v, rf2v, nr_of_turns,
-                                         nr_of_particles)
+            xp, yp = self.kick_and_drift_self(xp, yp, denergy, dphi,
+                                              rf1v, rf2v, nr_of_turns,
+                                              nr_of_particles)
         else:
             xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
                                          rf1v, rf2v, nr_of_turns,
@@ -53,9 +56,9 @@ class Tracking:
 
         return xp, yp
 
-    # Function for tracking particles while including self field voltages
-    def longtrack_self(self, xp, yp, denergy,
-                       dphi, rf1v, rf2v, n_turns, n_part):
+    # Function for tracking particles, including self field voltages
+    def kick_and_drift_self(self, xp, yp, denergy,
+                            dphi, rf1v, rf2v, n_turns, n_part):
         tpar = self.timespace.par
 
         profile = 0
@@ -66,16 +69,14 @@ class Tracking:
             
             turn += 1
             
-            temp_xp = (dphi
-                  + tpar.phi0[turn]
-                  - tpar.x_origin
-                  * tpar.h_num * tpar.omega_rev0[turn] * tpar.dtbin)
-            temp_xp = ((temp_xp - tpar.phiwrap * np.floor(temp_xp / tpar.phiwrap))
-                  / (tpar.h_num * tpar.omega_rev0[turn] * tpar.dtbin))
-            
+            temp_xp = self.calc_xp_sf(dphi, tpar.phi0[turn],
+                                      tpar.x_origin, tpar.h_num,
+                                      tpar.omega_rev0[turn], tpar.dtbin,
+                                      tpar.phiwrap)
+
             selfvolt = self.timespace.vself[
                         profile,np.floor(temp_xp).astype(int)]
-            
+
             denergy = kick(self.timespace.par, denergy, dphi,
                            rf1v, rf2v, n_part, turn)
             denergy += selfvolt * tpar.q
@@ -87,6 +88,16 @@ class Tracking:
                 print(f'Tracking to profile {profile + 1}')
 
         return xp, yp
+
+    @staticmethod
+    @njit
+    def calc_xp_sf(dphi, phi0, x_origin, h_num, omega_rev0, dtbin, phiwrap):
+        temp_xp = (dphi + phi0 - x_origin * h_num * omega_rev0 * dtbin)
+        temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
+                    / (h_num * omega_rev0 * dtbin))
+        return temp_xp
+
+
 
     def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):
