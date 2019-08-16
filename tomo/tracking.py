@@ -39,52 +39,54 @@ class Tracking:
         rf1v = np.ascontiguousarray(rf1v)
         rf2v = np.ascontiguousarray(rf2v)
 
-        # xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
-        #                              rf1v, rf2v, nr_of_turns, nr_of_particles)
-        # DEVELOPING LONGTRACK SELF
-        # ----------------------------
-        turn_now = 0
-        direction = 1
-        tpar = self.timespace.par
-        xp = xp[0]
-        yp = yp[0]
-        while turn_now < nr_of_turns:
-            print(np.max(xp))
-            profile = int(turn_now / tpar.dturns)
-            xp, yp, turn_now, denergy, dphi = self.longtrack_self(
-                                xp, yp, rf1v, rf2v, nr_of_particles,
-                                dphi, denergy, profile ,turn_now)
-        # END DEV
-        
+        if self.timespace.par.self_field_flag:
+            xp, yp = self.longtrack_self(xp, yp, denergy, dphi,
+                                         rf1v, rf2v, nr_of_turns,
+                                         nr_of_particles)
+        else:
+            xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
+                                         rf1v, rf2v, nr_of_turns,
+                                         nr_of_particles)
+
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
 
         return xp, yp
 
     # Function for tracking particles while including self field voltages
-    def longtrack_self(self, xp, yp, rf1v, rf2v, n_part,
-                       dphi, denergy, profile, turn_now):
+    def longtrack_self(self, xp, yp, denergy,
+                       dphi, rf1v, rf2v, n_turns, n_part):
         tpar = self.timespace.par
-        for i in range(tpar.dturns):
-            dphi = drift(denergy, dphi, tpar.dphase, n_part, turn_now)
+
+        profile = 0
+        turn = 0
+        print(f'Tracking to profile {profile + 1}')
+        while turn < n_turns:
+            dphi = drift(denergy, dphi, tpar.dphase, n_part, turn)
             
-            turn_now += 1
+            turn += 1
             
-            xp = (dphi
-                  + tpar.phi0[turn_now]
+            temp_xp = (dphi
+                  + tpar.phi0[turn]
                   - tpar.x_origin
-                  * tpar.h_num * tpar.omega_rev0[turn_now] * tpar.dtbin)
-            xp = ((xp - tpar.phiwrap * np.floor(xp / tpar.phiwrap))
-                  / (tpar.h_num * tpar.omega_rev0[turn_now] * tpar.dtbin))
+                  * tpar.h_num * tpar.omega_rev0[turn] * tpar.dtbin)
+            temp_xp = ((temp_xp - tpar.phiwrap * np.floor(temp_xp / tpar.phiwrap))
+                  / (tpar.h_num * tpar.omega_rev0[turn] * tpar.dtbin))
             
-            selfvolt = self.timespace.vself[profile, np.floor(xp).astype(int)]
+            selfvolt = self.timespace.vself[
+                        profile,np.floor(temp_xp).astype(int)]
             
             denergy = kick(self.timespace.par, denergy, dphi,
-                           rf1v, rf2v, n_part, turn_now)
+                           rf1v, rf2v, n_part, turn)
             denergy += selfvolt * tpar.q
-        
-        yp = denergy / self.mapinfo.dEbin + tpar.yat0
-        return xp, yp, turn_now, denergy, dphi
+
+            if turn % tpar.dturns == 0:
+                profile += 1
+                xp[profile] = temp_xp
+                yp[profile] = denergy / self.mapinfo.dEbin + tpar.yat0
+                print(f'Tracking to profile {profile + 1}')
+
+        return xp, yp
 
     def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):

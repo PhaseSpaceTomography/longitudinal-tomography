@@ -54,6 +54,10 @@ def main():
     xp, yp = tr.track()
     time_tracking = tm.perf_counter() - t0
 
+    # TEMP
+    sys.exit()
+    # END TEMP
+
     save_coordinates(xp, yp, output_path)
 
     # Transposing needed for tomography routine
