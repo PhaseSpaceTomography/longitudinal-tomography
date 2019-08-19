@@ -5,7 +5,8 @@ import numpy as np
 from tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
-from new_tomo_cpp import NewTomographyC
+# from new_tomo_cpp import NewTomographyC
+from new_tomography import NewTomography
 
 logging.basicConfig(level=logging.INFO)
 
@@ -54,11 +55,7 @@ def main():
     xp, yp = tr.track()
     time_tracking = tm.perf_counter() - t0
 
-    # TEMP
-    sys.exit()
-    # END TEMP
-
-    save_coordinates(xp, yp, output_path)
+    # save_coordinates(xp, yp, output_path)
 
     # Transposing needed for tomography routine
     t0 = tm.perf_counter()
@@ -68,8 +65,8 @@ def main():
     
     # Reconstructing phase space
     t0 = tm.perf_counter()
-    tomo = NewTomographyC(ts, xp, yp)
-    weight = tomo.run_cpp()
+    tomo = NewTomography(ts, xp, yp)
+    weight = tomo.run4()
     time_rec = tm.perf_counter() - t0
 
     print(f'Time - time space: {time_ts}s')

@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time as tm
 import logging as lg
+import sys
 from numba import njit, prange
 
 
@@ -20,60 +21,77 @@ class NewTomography:
 
     # Flat profiles solution
     def run4(self):
+        print('Recreating phase space!')
         nparts = self.tracked_xp.shape[0]
         weights = np.zeros(nparts)
         flat_points = self.tracked_xp.copy()
+
+        # Finding valid points (points should be within the profile length)
+        valid_pts = np.where(
+                    np.logical_and(
+                      self.tracked_xp < self.ts.par.profile_length,
+                      self.tracked_xp >= 0), True, False)
+
+        # TODO: Count number of False in valid_pts
+
         for i in range(self.ts.par.profile_count):
             flat_points[:, i] += self.ts.par.profile_length * i
 
         weights = self.back_project_flattened(self.ts.profiles.flatten(),
-                                              flat_points, weights, nparts)
+                                              flat_points, valid_pts,
+                                              weights, nparts)
 
-        # diff_prof = None
         for i in range(self.ts.par.num_iter):
             print(f'iteration: {str(i + 1)} of {self.ts.par.num_iter}')
-
-            # t0 = tm.perf_counter()
+            print('Projecting')
             self.recreated = self.project_flattened(self.recreated.flatten(),
-                                                    flat_points, weights,
-                                                    nparts)
-            # print(f'project: {tm.perf_counter() - t0}')
+                                                    flat_points, valid_pts,
+                                                    weights, nparts)
 
-            # t0 = tm.perf_counter()
             self.recreated = self.recreated.reshape(self.ts.profiles.shape)
-            # print(f'reshaping: {tm.perf_counter() - t0}')
 
-            # t0 = tm.perf_counter()
             self.recreated = np.where(self.recreated < 0.0, 0.0, self.recreated)
             self.recreated /= np.sum(self.recreated, axis=1)[:, None]
-            # print(f'normalizing and suppressing: {tm.perf_counter() - t0}')
 
-            # t0 = tm.perf_counter()
             diff_prof = self.ts.profiles - self.recreated
             print(f'discrepancy: {self.discrepancy(diff_prof)}')
-            # print(f'calculating discrepancy: {tm.perf_counter() - t0}')
 
             # self.analyze(0, diff_prof)
 
-            # t0 = tm.perf_counter()
+            print('Back projecting')
             weights = self.back_project_flattened(diff_prof.flatten(),
-                                                  flat_points, weights, nparts)
-            # print(f'Back projecting: {tm.perf_counter() - t0}')
+                                                  flat_points, valid_pts,
+                                                  weights, nparts)
 
-        # self.analyze(0, diff_prof)
+        self.analyze(0, diff_prof)
+        return weights
+
+    @staticmethod
+    # njit(parallel=True)
+    def back_project_flattened(flat_profiles, flat_points,
+                               valid_pts, weights, nparts):
+        for i in range(nparts):
+            weights[i] += np.sum(flat_profiles[flat_points[i, valid_pts[i]]])
         return weights
 
     @staticmethod
     @njit(parallel=True)
-    def back_project_flattened(flat_profiles, flat_points,
-                              weights, nparts):
+    def old_back_project_flattened(flat_profiles, flat_points,
+                                   weights, nparts):
         for i in prange(nparts):
             weights[i] += np.sum(flat_profiles[flat_points[i]])
         return weights
 
     @staticmethod
+    # @njit(parallel=True)
+    def project_flattened(flat_rec, flat_points, valid_pts, weights, nparts):
+        for i in range(nparts):
+            flat_rec[flat_points[i, valid_pts[i]]] += weights[i]
+        return flat_rec
+
+    @staticmethod
     @njit(parallel=True)
-    def project_flattened(flat_rec, flat_points, weights, nparts):
+    def old_project_flattened(flat_rec, flat_points, weights, nparts):
         for i in range(nparts):
             flat_rec[flat_points[i]] += weights[i]
         return flat_rec
