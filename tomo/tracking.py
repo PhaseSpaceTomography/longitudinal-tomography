@@ -2,10 +2,6 @@ import numpy as np
 from numba import njit
 from cpp_routines.tomolib_wrappers import kick, drift
 
-# TEMP
-import time as tm
-import sys
-# END TEMP
 
 class Tracking:
 
