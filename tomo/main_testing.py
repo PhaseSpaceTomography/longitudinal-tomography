@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 def main():
     
     # Getting paths for in- and output.
-    live = False
+    live = True
     if live:
         try:
             input_path = sys.argv[1]

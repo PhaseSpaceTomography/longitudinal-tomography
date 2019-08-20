@@ -4,6 +4,8 @@ import os
 from utils.exceptions import LibraryNotFound
 import logging as log
 
+log.basicConfig(level=log.INFO)
+
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__)) + '/tomolib.so'
 
 if os.path.exists(_tomolib_pth):

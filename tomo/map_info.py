@@ -148,7 +148,7 @@ class MapInfo:
          				filmstart, full_pp_flag, profile_mini,
          				profile_maxi, yat0, profile_length,
          				jmax, jmin, allbin_min, allbin_max)
-        
+
         jmin = jmin.astype(np.int32)
         jmax = jmax.astype(np.int32)
 
@@ -307,7 +307,7 @@ class MapInfo:
             imin = allbin_min
 
         if profile_maxi < allbin_max or full_pp_flag:
-            imax = profile_maxi
+            imax = profile_maxi - 1 # -1 in order to count from idx 0
             jmax[profile_maxi:profile_length] = np.floor(yat0)
             jmin = np.ceil(2.0 * yat0 - jmax + 0.5)
         else:

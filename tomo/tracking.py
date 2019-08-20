@@ -154,6 +154,7 @@ class Tracking:
     def find_nr_of_particles(self):
         jdiff = (self.mapinfo.jmax
                  - self.mapinfo.jmin)
+
         pxls = np.sum(jdiff[self.mapinfo.imin
                             :self.mapinfo.imax + 1])
         return int(pxls * self.timespace.par.snpt**2)
@@ -189,10 +190,10 @@ class Tracking:
         # Creating the first profile with equally distributed points
         (xp,
          yp) = self._init_tracked_point(
-                                self.timespace.par.snpt, self.mapinfo.imin,
-                                self.mapinfo.imax, self.mapinfo.jmin,
-                                self.mapinfo.jmax, xp,
-                                yp, points[0], points[1])
+                        self.timespace.par.snpt, self.mapinfo.imin,
+                        self.mapinfo.imax, self.mapinfo.jmin,
+                        self.mapinfo.jmax, xp,
+                        yp, points[0], points[1])
 
         return xp, yp
 
