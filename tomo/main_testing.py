@@ -36,10 +36,11 @@ def main():
     ta.assert_only_valid_particles(xp, ts.par.profile_length)
 
     # Transposing needed for tomography routine
-    # NOTE: This takes a notable amount of time
-    #       (~0.5s for C500MidPhaseNoise)
-    xp = np.ceil(xp).astype(int).T
-    yp = np.ceil(yp).astype(int).T
+    # -1 is Fortran compensation (now counting from 0)
+    # OBS: This takes a notable amount of time
+    #      (~0.5s for C500MidPhaseNoise)
+    xp = np.ceil(xp).astype(int).T - 1
+    yp = np.ceil(yp).astype(int).T - 1
     
     # Reconstructing phase space  
     tomo = NewTomographyC(ts, xp, yp)
@@ -70,11 +71,11 @@ def save_image(xp, yp, weight, n_bins, film, output_path):
     for x, y, w in zip(xp[:, film], yp[:, film], weight):
         phase_space[x, y] += w
     
-    # Normalizing
-    phase_space /= np.sum(phase_space)
-
     # Surpressing negative numbers
     phase_space = phase_space.clip(0.0)
+
+    # Normalizing
+    phase_space /= np.sum(phase_space)
 
     logging.info(f'Saving image{film} to {output_path}')
     np.save(f'{output_path}py_image{film}', phase_space)

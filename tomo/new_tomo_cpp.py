@@ -1,15 +1,14 @@
 import numpy as np
 from numba import njit
 import ctypes
-# from cpp_routines.tomolib_wrappers import back_project, project
 from cpp_routines import tomolib_wrappers as tlw
 
 class NewTomographyC:
 
     def __init__(self, timespace, tracked_xp, tracked_yp):
         self.ts = timespace
-        self.tracked_xp = tracked_xp - 1  # Fortran compensation
-        self.tracked_yp = tracked_yp - 1
+        self.tracked_xp = tracked_xp
+        self.tracked_yp = tracked_yp
         self.recreated = np.zeros((self.ts.par.profile_count,
                                    self.ts.par.profile_length))
         self.diff = np.zeros(self.ts.par.num_iter + 1)
