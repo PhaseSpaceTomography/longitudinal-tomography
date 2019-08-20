@@ -12,23 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     
-    # Getting paths for in- and output.
-    live = True
-    if live:
-        try:
-            input_path = sys.argv[1]
-            output_path = sys.argv[2]
-        except IndexError:
-            print('Error: You must provide an input file and an output directory')
-            print('Usage: main_testing <input_path> <output_path>')
-            sys.exit('Program exit..')
-    else:
-        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/input_v2.dat'
-        output_path = '/afs/cern.ch/work/c/cgrindhe/tomography/out'
-    
-    # Making sure that output path ends on a dash
-    if output_path[-1] != '/':
-        output_path += '/'
+    input_path, output_path = get_paths(live=True)
     
     # Collecting time space parameters and data
     t0 = tm.perf_counter()
@@ -57,8 +41,6 @@ def main():
 
     ta.assert_only_valid_particles(xp, ts.par.profile_length)
 
-    save_coordinates(xp, yp, output_path)
-
     # Transposing needed for tomography routine
     t0 = tm.perf_counter()
     xp = np.ceil(xp).astype(int).T
@@ -78,18 +60,11 @@ def main():
     print(f'Time - Transposing: {time_transp}s')
     print(f'Time - time recreation: {time_rec}s')
 
-    save_last_out(output_path, weight, tomo)
+    for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
+        save_image(xp, yp, weight, ts.par.profile_length, film, output_path)
 
-def save_last_out(output_path, weight, tomo):
-    print('Saving output!')
-    logging.info(f'Saving output to directory: {output_path}')
-    logging.info('Saving weight')
-    np.save(output_path + 'weight', weight)
-    logging.info('Saving diff')
-    np.save(output_path + 'diff', tomo.diff)
-    logging.info('Saving reconstructed profiles')
-    np.save(output_path + 'reconstructed_profiles', tomo.recreated)
-    logging.info('Saving complete!')
+    save_difference(tomo.diff, output_path)
+
     print('Program finished.')
 
 def save_coordinates(xp, yp, output_path):
@@ -99,5 +74,43 @@ def save_coordinates(xp, yp, output_path):
     logging.info('Saving yp')
     np.save(output_path + 'yp', yp)
 
+def save_difference(diff, output_path):
+    logging.info(f'Saving saving differennce to {output_path}')
+    np.savetxt(f'{output_path}diff.dat', diff)
+
+def save_image(xp, yp, weight, n_bins, film, output_path):
+    phase_space = np.zeros((n_bins, n_bins))
+    
+    # Creating n_bins * n_bins phase-space image  
+    for x, y, w in zip(xp[:, film], yp[:, film], weight):
+        phase_space[x, y] += w
+    
+    # Normalizing
+    phase_space /= np.sum(phase_space)
+
+    # Surpressing negative numbers
+    phase_space = phase_space.clip(0.0)
+
+    logging.info(f'Saving image{film} to {output_path}')
+    np.save(f'{output_path}py_image{film}', phase_space)
+
+def get_paths(live):
+    if live:
+        try:
+            input_path = sys.argv[1]
+            output_path = sys.argv[2]
+        except IndexError:
+            print('Error: You must provide an input file and an output directory')
+            print('Usage: main_testing <input_path> <output_path>')
+            sys.exit('Program exit..')
+    else:
+        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/input_v2.dat'
+        output_path = '/afs/cern.ch/work/c/cgrindhe/tomography/out'
+    
+    # Making sure that output path ends on a dash
+    if output_path[-1] != '/':
+        output_path += '/'
+
+    return input_path, output_path
     
 main()
