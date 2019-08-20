@@ -26,14 +26,6 @@ class NewTomography:
         weights = np.zeros(nparts)
         flat_points = self.tracked_xp.copy()
 
-        # Finding valid points (points should be within the profile length)
-        valid_pts = np.where(
-                    np.logical_and(
-                      self.tracked_xp < self.ts.par.profile_length,
-                      self.tracked_xp >= 0), True, False)
-
-        # TODO: Count number of False in valid_pts
-
         for i in range(self.ts.par.profile_count):
             flat_points[:, i] += self.ts.par.profile_length * i
 
@@ -67,31 +59,16 @@ class NewTomography:
         return weights
 
     @staticmethod
-    # njit(parallel=True)
-    def back_project_flattened(flat_profiles, flat_points,
-                               valid_pts, weights, nparts):
-        for i in range(nparts):
-            weights[i] += np.sum(flat_profiles[flat_points[i, valid_pts[i]]])
-        return weights
-
-    @staticmethod
     @njit(parallel=True)
-    def old_back_project_flattened(flat_profiles, flat_points,
+    def back_project_flattened(flat_profiles, flat_points,
                                    weights, nparts):
         for i in prange(nparts):
             weights[i] += np.sum(flat_profiles[flat_points[i]])
         return weights
 
     @staticmethod
-    # @njit(parallel=True)
-    def project_flattened(flat_rec, flat_points, valid_pts, weights, nparts):
-        for i in range(nparts):
-            flat_rec[flat_points[i, valid_pts[i]]] += weights[i]
-        return flat_rec
-
-    @staticmethod
     @njit(parallel=True)
-    def old_project_flattened(flat_rec, flat_points, weights, nparts):
+    def project_flattened(flat_rec, flat_points, weights, nparts):
         for i in range(nparts):
             flat_rec[flat_points[i]] += weights[i]
         return flat_rec

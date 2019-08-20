@@ -160,3 +160,10 @@ class TomoAssertions:
             error_msg = f'\nError found at index: ' \
                 f'{np.argwhere(log_array_ok == False).flatten() + index_offset}\n'
             raise error_class(error_msg + msg)
+
+
+    @staticmethod
+    def assert_only_valid_particles(xp, n_bins, msg=''):
+        if np.any(np.logical_or(xp >= n_bins, xp < 0)):
+            err_msg = f'Invalid (lost) particle(s) was found in xp\n'
+            raise InvalidParticleError(err_msg + msg)

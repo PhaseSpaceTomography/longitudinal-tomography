@@ -51,6 +51,11 @@ class Tracking:
                                          rf1v, rf2v, nr_of_turns,
                                          nr_of_particles)
 
+        xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
+        
+        print(f'Lost {nr_lost_pts} particles - '\
+              f'{(nr_lost_pts / nr_of_particles) * 100}% of all particles')
+
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
 
@@ -124,6 +129,27 @@ class Tracking:
                                + self.timespace.par.yat0)
                 print(f'tracking to profile {profile + 1}')
         return xp, yp
+
+    def filter_lost_paricles(self, xp, yp):
+        tpar = self.timespace.par
+        nr_lost_pts = 0
+
+        # Find all invalid particle values
+        invalid_pts = np.argwhere(np.logical_or(xp >= tpar.profile_length,
+                                                xp < 0))
+
+        if np.size(invalid_pts) > 0:
+            # Find all invalid particles
+            invalid_pts = np.unique(invalid_pts.T[1])
+            nr_lost_pts = len(invalid_pts)
+
+            # Removing invalid particles
+            xp = np.delete(xp, invalid_pts, axis=1)
+            yp = np.delete(yp, invalid_pts, axis=1)
+
+        return xp, yp, nr_lost_pts
+
+
 
     def find_nr_of_particles(self):
         jdiff = (self.mapinfo.jmax

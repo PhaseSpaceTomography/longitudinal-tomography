@@ -92,6 +92,13 @@ class MapCreationError(Exception):
     pass
 
 # ============================
+# PARTICLE TRACKING EXCEPTIONS
+# ============================
+
+class InvalidParticleError(Exception):
+    pass
+
+# ============================
 # TOMOGRAPHY EXCEPTIONS
 # ============================
 
