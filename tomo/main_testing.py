@@ -61,7 +61,7 @@ def save_coordinates(xp, yp, output_path):
     np.save(output_path + 'yp', yp)
 
 def save_difference(diff, output_path):
-    logging.info(f'Saving saving differennce to {output_path}')
+    logging.info(f'Saving saving difference to {output_path}')
     np.savetxt(f'{output_path}diff.dat', diff)
 
 def save_image(xp, yp, weight, n_bins, film, output_path):

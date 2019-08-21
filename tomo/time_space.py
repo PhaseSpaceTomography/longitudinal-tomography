@@ -1,4 +1,5 @@
 import logging
+import sys
 import scipy.signal._savitzky_golay as savgol
 import numpy as np
 from parameters import Parameters
@@ -394,6 +395,7 @@ class TimeSpace:
             drad_bin = h_num * omega_rev0[0] * dtbin
 
         phiwrap = (np.ceil(profile_length * drad_bin / (2*np.pi)) * 2 * np.pi)
+
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 
         logging.debug(f"findwrap_length: phiwrap =  {str(phiwrap)},"
