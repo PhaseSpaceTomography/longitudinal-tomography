@@ -2,9 +2,11 @@ import logging
 import time as tm
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 from tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
+# from new_tomography import NewTomography
 from new_tomo_cpp import NewTomographyC
 from utils.assertions import TomoAssertions as ta
 
@@ -67,7 +69,8 @@ def save_difference(diff, output_path):
 def save_image(xp, yp, weight, n_bins, film, output_path):
     phase_space = np.zeros((n_bins, n_bins))
     
-    # Creating n_bins * n_bins phase-space image  
+    # Creating n_bins * n_bins phase-space image
+    logging.info(f'Saving picture {film}.') 
     for x, y, w in zip(xp[:, film], yp[:, film], weight):
         phase_space[x, y] += w
     
