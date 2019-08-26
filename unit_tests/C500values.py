@@ -32,7 +32,8 @@ class C500:
             "imin": np.load(self.path + "imin.npy"),
             "imax": np.load(self.path + "imax.npy"),
             "jmin": np.load(self.path + "jmin.npy").reshape(205),
-            "jmax": np.load(self.path + "jmax.npy").reshape(205)
+            "jmax": np.load(self.path + "jmax.npy").reshape(205),
+            "vself": np.load(self.path + "vself.npy")
         }
 
         self.values = {
