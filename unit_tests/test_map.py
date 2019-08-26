@@ -249,6 +249,5 @@ class TestMap(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    unittest.test_track_active_pxl()
+    unittest.main()
 
