@@ -22,12 +22,13 @@ def main():
     # Setting path for all output as path read from file
     output_path = adjust_out_path(ts.par.output_dir)
 
-    ts.save_profiles_text(ts.profiles[filmstart-1, :],
-                          output_path, f'profile{filmstart:03d}.data')
+    ts.save_profiles_text(ts.profiles[ts.par.filmstart-1, :],
+                          output_path, f'profile{ts.par.filmstart:03d}.data')
 
     if ts.par.self_field_flag:
-        ts.save_profiles_text(ts.vself[filmstart-1, :ts.par.profile_length],
-                              output_path, f'vself{filmstart:03d}.data')
+        ts.save_profiles_text(ts.vself[ts.par.filmstart-1,
+                                       :ts.par.profile_length],
+                              output_path, f'vself{ts.par.filmstart:03d}.data')
     
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
