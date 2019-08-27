@@ -390,7 +390,7 @@ class MapInfo:
         return complex_height.real
 
     def write_jmax_tofile(self, time_space, mapinfo, outdir):
-        full_path = outdir + 'py_jmax.dat'
+        full_path = outdir + 'jmax.dat'
         with open(full_path, 'w') as outFile:
             for idx, j in enumerate(mapinfo.jmax):
                 outFile.write(f'{idx}\t{j}\n')
@@ -398,7 +398,7 @@ class MapInfo:
 
     # Creating output corresponding to the FORTRAN code.
     def write_plotinfo_tofile(self, time_space, mapinfo, outdir):
-        full_path = outdir + 'py_plotinfo.dat'
+        full_path = outdir + 'plotinfo.data'
         rec_prof = time_space.par.filmstart - 1 # '-1' Fortran compensation
         rec_turn = rec_prof * time_space.par.dturns
         
