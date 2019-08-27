@@ -9,7 +9,7 @@ from map_info import MapInfo
 from new_tomo_cpp import NewTomographyC
 from utils.assertions import TomoAssertions as ta
 
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
 
 def main():
     
@@ -34,7 +34,7 @@ def main():
     mi = MapInfo(ts)
 
     # mi.write_jmax_tofile(ts, mi, output_path) # Don't know if used operationally
-    mi.write_plotinfo_tofile(ts, mi, output_path)
+    mi.write_plotinfo_to_screen(ts, mi)
 
     # Particle tracking
     tr = Tracking(ts, mi)
@@ -84,15 +84,38 @@ def save_image(xp, yp, weight, n_bins, film, output_path):
                phase_space.flatten())
 
 def get_paths(live):
+    input_path = 'dummyPath'
+    
+    run = True
+    inBuffer = []
+    i = 0
+    for line in sys.stdin:
+        inBuffer.append(line)
+    raise RuntimeError(sys.stdin)
+    while run:
+        line = sys.stdin.readline().strip('\n')
+        if line == 'quit':
+            run = False
+        else:
+            inBuffer.append(line)
+        i += 1
+        if i > 10:
+           raise RuntimeError("Buffer too long")
+    raise RuntimeError("Buffer loaded")
+
     if live:
         try:
             input_path = sys.argv[1]
+#            raise RuntimeError(sys.argv)
             # output_path = sys.argv[2]
         except IndexError:
             print('Error: You must provide an input file')
             print('Usage: main_testing <input_path>')
-            sys.exit('Program exit..')
+            RuntimeError('Program exit..')
+        else:
+            raise RuntimeError("Test")
     else:
+        raise RuntimeError("It's dead")
         input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/input_v2.dat'
         # output_path = '/tmp/'
     

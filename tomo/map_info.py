@@ -429,5 +429,38 @@ class MapInfo:
 
         with open(full_path, 'w') as outFile:
             outFile.write(out_s)
-
         logging.info("Written profile info to: " + full_path)
+
+
+
+    def write_plotinfo_to_screen(self, time_space, mapinfo):
+        rec_prof = time_space.par.filmstart - 1 # '-1' Fortran compensation
+        rec_turn = rec_prof * time_space.par.dturns
+
+        out_s = f'Number of profiles used in each reconstruction,\n'\
+                  f'profile_count = {time_space.par.profile_count}\n'\
+                f'Width (in pixels) of each image = '\
+                  f'length (in bins) of each profile,\n'\
+                f'Profile_length = {time_space.par.profile_length}\n'\
+                f'Width (in s) of each pixel = width of each profile bin,\n'\
+                f'dtbin = {time_space.par.dtbin}\n'\
+                f'Height (in eV) of each pixel,\n'\
+                f'dEbin = {mapinfo.dEbin}\n'\
+                f'Number of elementary charges in each image,\n'\
+                  f'beam reference profile charge = '\
+                  f'{time_space.profile_charge}\n'\
+                f'Position (in pixels) of the reference synchronous point:\n'\
+                f'xat0 = {time_space.par.xat0}\n'\
+                f'yat0 = {time_space.par.yat0}\n'\
+                f'Foot tangent fit results (in bins):\n'\
+                f'tangentfootl = {time_space.par.tangentfoot_low}\n'\
+                f'tangentfootu = {time_space.par.tangentfoot_up}\n'\
+                f'fit xat0 = {time_space.par.fit_xat0}\n'\
+                f'Synchronous phase (in radians):\n'\
+                f'phi0[{rec_prof}] = {time_space.par.phi0[rec_turn]}\n'\
+                f'Horizontal range (in pixels) of the region in phase '\
+                  f'space of mapinfo elements:\n'\
+                f'imin = {mapinfo.imin}, imax = {mapinfo.imax}\n'\
+
+
+        print(out_s)
