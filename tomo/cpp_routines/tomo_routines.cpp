@@ -1,6 +1,6 @@
 
 // Back projection using flattened arrays
-extern "C" double * back_project(double *  weights,					// inn/out
+extern "C" void back_project(double *  weights,					// inn/out
 							 	 const int ** __restrict__ flat_points,	// inn
 							 	 const double *  flat_profiles,			// inn
 							 	 const int nparts, const int nprofs){	// inn
@@ -11,7 +11,7 @@ extern "C" double * back_project(double *  weights,					// inn/out
 }	
 
 // Projections using flattened arrays
-extern "C" double * project(double *  flat_rec,					// inn/out
+extern "C" void project(double *  flat_rec,					// inn/out
 							const int ** __restrict__ flat_points,	// inn
 							const double *  __restrict__ weights,	// inn
 							const int nparts, const int nprofs){	// inn
