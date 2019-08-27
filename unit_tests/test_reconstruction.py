@@ -1,7 +1,7 @@
 import unittest
 import numpy.testing as nptest
 import numpy as np
-from tomo.reconstruct import Reconstruct
+from tomo.reconstruct_py import Reconstruct
 from tomo.map_info import MapInfo
 from unit_tests.C500values import C500
 
@@ -162,21 +162,23 @@ class TestRec(unittest.TestCase):
                                 cv["vrf2"], cv["vrf2dot"], ca["time_at_turn"],
                                 cv["hratio"], cv["phi12"], cv["q"])
 
-        nptest.assert_equal(xp, rv["first_rev_xp"],
-                            err_msg="Error after longtrack in xp array")
-        nptest.assert_equal(yp, rv["first_rev_yp"],
-                            err_msg="Error after longtrack in yp array")
+        nptest.assert_almost_equal(xp, rv["first_rev_xp"],
+                                   err_msg="Error after "\
+                                           "longtrack in xp array")
+        nptest.assert_almost_equal(yp, rv["first_rev_yp"],
+                                   err_msg="Error after "\
+                                           "longtrack in yp array")
         self.assertEqual(turn_now, 0,
                          msg="Error in number of turns iterated through")
 
     def test_longtrack_self_forward(self):
 
-        # To be written
+        # To be written if needed
         pass
 
     def test_longtrack_self_backward(self):
 
-        # To be written
+        # To be written if needed
         pass
 
     def test_calc_weightfactors(self):

@@ -23,5 +23,5 @@ def newton(f, df, x0, const_params, rf_turn,
         xn -= float(fxn) / dfxn
     raise OverMaxIterationsError("Could not find root of function, with "
                                  + str(max_iter)
-                                 + "iterations, and an precision of: "
+                                 + " iterations, and an precision of: "
                                  + str(epsilon))

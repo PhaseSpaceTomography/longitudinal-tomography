@@ -2,7 +2,6 @@ import unittest
 import numpy.testing as nptest
 import numpy as np
 import ctypes
-import os
 from numpy.ctypeslib import ndpointer
 from tomo.reconstruct_c import ReconstructCpp
 from tomo.map_info import MapInfo
@@ -22,9 +21,9 @@ class TestRec(unittest.TestCase):
 
         # tomolib = ctypes.CDLL(
         #     os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
-        #     + '/cpp_files/tomolib.so')
+        #     + '/cpp_routines/tomolib.so')
 
-        tomolib = ctypes.CDLL('./../tomo/cpp_files/tomolib.so')
+        tomolib = ctypes.CDLL('./../tomo/cpp_routines/tomolib.so')
 
         tomolib.weight_factor_array.argtypes = [ndpointer(ctypes.c_double),
                                                 ndpointer(ctypes.c_int),

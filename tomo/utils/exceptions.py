@@ -1,3 +1,11 @@
+# ================
+# DLC Exceptions
+# ================
+
+
+class LibraryNotFound(Exception):
+    pass
+
 
 # ================
 # Array Exceptions
@@ -81,6 +89,13 @@ class PhaseLimitsError(Exception):
 
 
 class MapCreationError(Exception):
+    pass
+
+# ============================
+# PARTICLE TRACKING EXCEPTIONS
+# ============================
+
+class InvalidParticleError(Exception):
     pass
 
 # ============================

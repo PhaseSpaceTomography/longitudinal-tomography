@@ -1,4 +1,5 @@
 import logging
+import sys
 import scipy.signal._savitzky_golay as savgol
 import numpy as np
 from parameters import Parameters
@@ -8,7 +9,6 @@ from utils.assertions import TomoAssertions as ta
 from utils.assertions import (RawDataImportError,
                               InputError,
                               RebinningError)
-
 # ================
 # About TimeSpace:
 # ================
@@ -49,7 +49,6 @@ from utils.assertions import (RawDataImportError,
 #                       and origin of the reconstructed phase-space coordinate system.
 #
 
-
 class TimeSpace:
 
     def __init__(self, parameter_file_path):
@@ -64,6 +63,7 @@ class TimeSpace:
         self.run(parameter_file_path)
 
     # Main function for the time space class
+    # @profile
     def run(self, parameter_file_path):
         self.par.get_parameters_txt(parameter_file_path)
         self.get_profiles_txt(parameter_file_path)
@@ -395,6 +395,7 @@ class TimeSpace:
             drad_bin = h_num * omega_rev0[0] * dtbin
 
         phiwrap = (np.ceil(profile_length * drad_bin / (2*np.pi)) * 2 * np.pi)
+
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 
         logging.debug(f"findwrap_length: phiwrap =  {str(phiwrap)},"

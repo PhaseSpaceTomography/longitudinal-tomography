@@ -1,3 +1,7 @@
+# TEMP
+import sys
+import time as tm
+# END TEMP
 import logging
 import physics
 import numpy as np
@@ -31,15 +35,15 @@ from utils.exceptions import (InputError,
 # framelength       Length of each trace in the 'raw' input file - number of bins in each frame
 # dtbin             Pixel width (in seconds)
 # demax             maximum energy of reconstructed phase space
-# dturns			Number of machine turns between each measurement
+# dturns            Number of machine turns between each measurement
 # preskip_length    Subtract this number of bins from the beginning of the 'raw' input traces
 # postskip_length   Subtract this number of bins from the end of the 'raw' input traces
 # imin_skip         Number of frame bins after the lower profile bound to treat as empty during reconstruction
 # imax_skip         Number of frame bins after the upper profile bound to treat as empty during reconstruction
 # framecount        Number of frames in input data
 # frame_skipcount   Ignore this number of frames/traces from the beginning of the 'raw' input file
-# snpt			    Square root of number of test particles tracked from each pixel of reconstructed phase space
-# num_iter  		Number of iterations in the reconstruction process
+# snpt              Square root of number of test particles tracked from each pixel of reconstructed phase space
+# num_iter          Number of iterations in the reconstruction process
 # machine_ref_frame Frame to which machine parameters are referenced (b0,VRF1,VRF2...)
 # beam_ref_frame    Frame to which beam parameters are referenced
 # filmstart         First profile to be reconstructed
@@ -195,152 +199,58 @@ class Parameters:
         self._init_parameters()
         self._assert_parameters()
 
-    # For retrieving parameters from text-file.
+    # Reading parameters from text-file input
     def _read_txt_input(self, file_name):
-        skiplines_start = 12
+        length_par_file = 98
+        # data = [None] * length_par_file
+        data = []
 
-        file = open(file_name, "r")
-        if file.mode == "r":
-            i = 0
-            while i < skiplines_start:
-                file.readline()
-                i += 1
+        with open(file_name, 'r') as f:
+            for i in range(length_par_file):
+                data.append(f.readline().strip('\r\n')) # .strip('\n')
 
-            self.rawdata_file = file.readline()
-            if self.rawdata_file[len(self.rawdata_file) - 1] is "\n":
-                self.rawdata_file = self.rawdata_file[0:-1]
+        self.rawdata_file = data[12]
+        self.output_dir = data[14]
+        self.framecount = int(data[16])
+        self.frame_skipcount = int(data[18])
+        self.framelength = int(data[20])
+        self.dtbin = float(data[22])
+        self.dturns = int(data[24])
+        self.preskip_length = int(data[26])
+        self.postskip_length = int(data[28])
+        self.imin_skip = int(data[31])
+        self.imax_skip = int(data[34])
+        self.rebin = int(data[36])
+        self.xat0 = float(data[39])
+        self.demax = float(data[41])
+        self.filmstart = int(data[43])
+        self.filmstop = int(data[45])
+        self.filmstep = int(data[47])
+        self.num_iter = int(data[49])
+        self.snpt = int(data[51])
+        self.full_pp_flag = bool(int(data[53]))
+        self.beam_ref_frame = int(data[55])
+        self.machine_ref_frame = int(data[57])
+        self.vrf1 = float(data[61])
+        self.vrf1dot = float(data[63])
+        self.vrf2 = float(data[65])
+        self.vrf2dot = float(data[67])
+        self.h_num = float(data[69])
+        self.h_ratio = float(data[71])
+        self.phi12 = float(data[73])
+        self.b0 = float(data[75])
+        self.bdot = float(data[77])
+        self.mean_orbit_rad = float(data[79])
+        self.bending_rad = float(data[81])
+        self.trans_gamma = float(data[83])
+        self.e_rest = float(data[85])
+        self.q = float(data[87])
+        self.self_field_flag = bool(int(data[91]))
+        self.g_coupling = float(data[93])
+        self.zwall_over_n = float(data[95])
+        self.pickup_sensitivity = float(data[97])
+        logging.info("Read successful from file: " + file_name)
 
-            file.readline()
-            self.output_dir = file.readline()
-            if self.output_dir[len(self.output_dir) - 1] is "\n":
-                self.output_dir = self.output_dir[0:-1]
-
-            file.readline()
-            self.framecount = int(file.readline())
-
-            file.readline()
-            self.frame_skipcount = int(file.readline())
-
-            file.readline()
-            self.framelength = int(file.readline())
-
-            file.readline()
-            self.dtbin = float(file.readline())
-
-            file.readline()
-            self.dturns = int(file.readline())
-
-            file.readline()
-            self.preskip_length = int(file.readline())
-
-            file.readline()
-            self.postskip_length = int(file.readline())
-
-            file.readline()
-            file.readline()
-            self.imin_skip = int(file.readline())
-
-            file.readline()
-            file.readline()
-            self.imax_skip = int(file.readline())
-
-            file.readline()
-            self.rebin = int(file.readline())
-
-            file.readline()
-            file.readline()
-            self.xat0 = float(file.readline())
-
-            file.readline()
-            self.demax = float(file.readline())
-
-            file.readline()
-            self.filmstart = int(file.readline())
-
-            file.readline()
-            self.filmstop = int(file.readline())
-
-            file.readline()
-            self.filmstep = int(file.readline())
-
-            file.readline()
-            self.num_iter = int(file.readline())
-
-            file.readline()
-            self.snpt = int(file.readline())
-
-            file.readline()
-            self.full_pp_flag = bool(int(file.readline()))
-
-            file.readline()
-            self.beam_ref_frame = int(file.readline())
-
-            file.readline()
-            self.machine_ref_frame = int(file.readline())
-
-            file.readline()
-            file.readline()
-            file.readline()
-            self.vrf1 = float(file.readline())
-
-            file.readline()
-            self.vrf1dot = float(file.readline())
-
-            file.readline()
-            self.vrf2 = float(file.readline())
-
-            file.readline()
-            self.vrf2dot = float(file.readline())
-
-            file.readline()
-            self.h_num = float(file.readline())
-
-            file.readline()
-            self.h_ratio = float(file.readline())
-
-            file.readline()
-            self.phi12 = float(file.readline())
-
-            file.readline()
-            self.b0 = float(file.readline())
-
-            file.readline()
-            self.bdot = float(file.readline())
-
-            file.readline()
-            self.mean_orbit_rad = float(file.readline())
-
-            file.readline()
-            self.bending_rad = float(file.readline())
-
-            file.readline()
-            self.trans_gamma = float(file.readline())
-
-            file.readline()
-            self.e_rest = float(file.readline())
-
-            file.readline()
-            self.q = float(file.readline())
-
-            file.readline()
-            file.readline()
-            file.readline()
-            self.self_field_flag = bool(int(file.readline()))
-
-            file.readline()
-            self.g_coupling = float(file.readline())
-
-            file.readline()
-            self.zwall_over_n = float(file.readline())
-
-            file.readline()
-            self.pickup_sensitivity = float(file.readline())
-
-            file.close()
-
-            logging.info("Read successful from file: " + file_name)
-        else:
-            raise AssertionError("Could not open file: " + file_name)
 
     # Subroutine for setting up parameters based on given input file.
     # Values are calculated immediately after the 'single' cavity of the ring
@@ -417,8 +327,8 @@ class Parameters:
 
             self.beta0[i] = np.sqrt(1.0 - (self.e_rest/float(self.e0[i]))**2)
             self.deltaE0[i] = self.e0[i] - self.e0[i - 1]
-        for i in range(i0 - 1, 0, -1):
-            self.e0[i] = (self.e0[i + i]
+        for i in range(i0 - 1, -1, -1):
+            self.e0[i] = (self.e0[i + 1]
                           - self.q
                           * physics.short_rf_voltage_formula(
                                 self.phi0[i + 1], self.vrf1, self.vrf1dot,

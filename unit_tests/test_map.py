@@ -95,17 +95,16 @@ class TestMap(unittest.TestCase):
         (jmin, jmax,
          allbin_min,
          allbin_max) = MapInfo._limits_track_all_pxl(
-                            MapInfo, cv["filmstop"],
-                            cv["reb_profile_length"], cv["yat0"])
+                            MapInfo, cv["reb_profile_length"], cv["yat0"])
 
         self.assertEqual(allbin_min, [0], msg="Error in allbin_min "
                                               "(track all pxl)")
         self.assertEqual(allbin_max, [205], msg="Error in allbin_max "
                                                 "(track all pxl)")
-        nptest.assert_equal(jmin, np.full((1, 205), 1, dtype=int),
+        nptest.assert_equal(jmin, np.full(205, 1, dtype=int),
                             err_msg="Error in calculation of jmin "
                                     "(track all pxl)")
-        nptest.assert_equal(jmax, np.full((1, 205), 205, dtype=int),
+        nptest.assert_equal(jmax, np.full(205, 205, dtype=int),
                             err_msg="Error in calculation of jmax "
                                     "(track all pxl)")
 
@@ -118,8 +117,7 @@ class TestMap(unittest.TestCase):
          jmax,
          allbin_min,
          allbin_max) = TestMap.mi._limits_track_active_pxl(
-                                cv["filmstart"], cv["filmstop"],
-                                cv["filmstep"], cv["dturns"],
+                                cv["filmstart"], cv["dturns"],
                                 cv["reb_profile_length"], indarr,
                                 cv["debin"], cv["xorigin"],
                                 cv["dtbin"], ca["omegarev0"], cv["h_num"],
@@ -128,9 +126,9 @@ class TestMap(unittest.TestCase):
                                 cv["vrf2dot"], cv["hratio"], cv["phi12"],
                                 ca["time_at_turn"])
 
-        nptest.assert_equal(jmin.flatten(), ca["jmin"],
+        nptest.assert_equal(jmin, ca["jmin"].flatten(),
                             err_msg="Error in calculation of jmin")
-        nptest.assert_equal(jmax.flatten(), ca["jmax"],
+        nptest.assert_equal(jmax, ca["jmax"].flatten(),
                             err_msg="Error in calculation of jmax")
         self.assertEqual(allbin_min, cv["allbin_min"],
                          msg="Error in calculation of allbin_min")

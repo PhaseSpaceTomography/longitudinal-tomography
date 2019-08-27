@@ -2,81 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46ece062-7370-4885-9f5b-dac3274bf258" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/tomo/time_space.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/time_space.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tomo/cpp_routines/tomolib_wrappers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomo/cpp_routines/tomolib_wrappers.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-960">
-              <caret line="29" column="50" lean-forward="true" selection-start-line="29" selection-start-column="50" selection-end-line="29" selection-end-column="50" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="251">
-              <caret line="63" column="17" selection-start-line="63" selection-start-column="17" selection-end-line="63" selection-end-column="17" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-                <element signature="e#4450#5240#0" />
-                <element signature="e#5363#5769#0" />
-                <element signature="e#5888#6012#0" />
-                <element signature="e#6203#7457#0" />
-                <element signature="e#7557#7833#0" />
-                <element signature="e#7938#8482#0" />
-                <element signature="e#8596#8731#0" />
-                <element signature="e#8896#9368#0" />
-                <element signature="e#9628#10335#0" />
-                <element signature="e#10628#11185#0" />
-                <element signature="e#11403#13141#0" />
-                <element signature="e#13263#13606#0" />
-                <element signature="e#13727#13780#0" />
-                <element signature="e#13918#13990#0" />
-                <element signature="e#14258#14583#0" />
-                <element signature="e#14784#15165#0" />
-                <element signature="e#15418#16651#0" />
-                <element signature="e#16916#17431#0" />
-                <element signature="e#17495#17587#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/unit_tests/C500values.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="21" column="45" lean-forward="true" selection-start-line="21" selection-start-column="45" selection-end-line="21" selection-end-column="45" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="106" lean-forward="true" selection-start-line="106" selection-end-line="106" />
-              <folding>
-                <element signature="e#0#15#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -87,36 +20,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>create_profiles</find>
-      <find>del</find>
-      <find>norm</find>
-      <find>pick</find>
-      <find>find_xat0</find>
-      <find>phased</find>
-      <find>traje</find>
-      <find>dphase</find>
-      <find>unittest</find>
-      <find>dp</find>
-      <find>deltaE0</find>
-      <find>c1</find>
-      <find>bunch_phaselength</find>
-      <find>g_coupling</find>
-      <find>allbin_min</find>
-      <find>demax</find>
-      <find>e0</find>
-      <find>weight</find>
+      <find>framecount</find>
+      <find>init_d</find>
+      <find>compress_vector_njit</find>
       <find>reverse</find>
-      <find>_needed_amount_maps</find>
-      <find>start_submap</find>
-      <find>hom</find>
-      <find>calculate</find>
-      <find>maps</find>
-      <find>imin</find>
-      <find>profiles</find>
-      <find>first_back</find>
-      <find>recons</find>
-      <find>get_profiles</find>
-      <find>run_time_space</find>
+      <find>iter</find>
+      <find>legend</find>
+      <find>back_project_njit3</find>
+      <find>tracked_points</find>
+      <find>calc_weigth_flattened</find>
+      <find>last_pxlidx</find>
+      <find>large_xp</find>
+      <find>yp</find>
+      <find>deltaE0</find>
+      <find>popu</find>
+      <find>all_turns</find>
+      <find>all_turn</find>
+      <find>dphi</find>
+      <find>part</find>
+      <find>i</find>
+      <find>c2</find>
+      <find>time_a</find>
+      <find>kick</find>
+      <find>nr_of_turns</find>
+      <find>turns</find>
+      <find>h_</find>
+      <find>longtrack</find>
+      <find>all_xp</find>
+      <find>longtrack_a</find>
+      <find>tracked_xp</find>
+      <find>OUTPUT_PATH</find>
     </findStrings>
     <replaceStrings>
       <replace>INPUT_DIR</replace>
@@ -134,99 +67,41 @@
       <replace>submap_start</replace>
       <replace>get_profiles_txt</replace>
       <replace>run</replace>
+      <replace>initial_xp</replace>
+      <replace>initial_yp</replace>
+      <replace>longtrack_all</replace>
+      <replace>wf_alg1</replace>
+      <replace>wf_alg2</replace>
+      <replace>wf_alg3</replace>
+      <replace>not_zero</replace>
+      <replace>out_xp</replace>
+      <replace>init_dphi_denergy</replace>
+      <replace>find_weightfactors_njit</replace>
+      <replace>tracked_xp</replace>
+      <replace>back_project_flattened</replace>
+      <replace>xp</replace>
+      <replace>input_path</replace>
+      <replace>output_path</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Removing_main_test" />
+        <entry key="$PROJECT_DIR$" value="293160e0930313ceec714ff286f382e453d4baac" />
       </map>
     </option>
-  </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/unit_tests/foo.txt" />
-        <option value="$PROJECT_DIR$/tomo/Tomography.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_reconstruction.py" />
-        <option value="$PROJECT_DIR$/unit_tests/resources/C500MidPhaseNoise/C500values.py" />
-        <option value="$PROJECT_DIR$/tomo/Parameters.py" />
-        <option value="$PROJECT_DIR$/tomo/Physics.py" />
-        <option value="$PROJECT_DIR$/tomo/Time_space.py" />
-        <option value="$PROJECT_DIR$/tomo/__init__.py" />
-        <option value="$PROJECT_DIR$/unit_tests/__init__.py" />
-        <option value="$PROJECT_DIR$/.gitlab-ci.yaml" />
-        <option value="$PROJECT_DIR$/environment.yaml" />
-        <option value="$PROJECT_DIR$/tomo/Numeric.py" />
-        <option value="$PROJECT_DIR$/tomo/MapInfo.py" />
-        <option value="$PROJECT_DIR$/tomo/Reconstruct.py" />
-        <option value="$PROJECT_DIR$/tomo/Main_testing.py" />
-        <option value="$PROJECT_DIR$/tomo/compile.py" />
-        <option value="$PROJECT_DIR$/tomo_action/__init__.py" />
-        <option value="$PROJECT_DIR$/tomo_action/analyze.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_reconstruct_cpp.py" />
-        <option value="$PROJECT_DIR$/tomo_action/main.py" />
-        <option value="$PROJECT_DIR$/tomo_action/system_handling.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_time_space.py" />
-        <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/unit_tests/test_physics.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_parameters.py" />
-        <option value="$PROJECT_DIR$/tomo/utils/exceptions.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_map.py" />
-        <option value="$PROJECT_DIR$/tomo/map_info.py" />
-        <option value="$PROJECT_DIR$/tomo/reconstruct.py" />
-        <option value="$PROJECT_DIR$/tomo/tomography.py" />
-        <option value="$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp" />
-        <option value="$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp" />
-        <option value="$PROJECT_DIR$/tomo/numeric.py" />
-        <option value="$PROJECT_DIR$/tomo/physics.py" />
-        <option value="$PROJECT_DIR$/unit_tests/test_tomography.py" />
-        <option value="$PROJECT_DIR$/unit_tests/C500values.py" />
-        <option value="$PROJECT_DIR$/tomo/reconstruct_c.py" />
-        <option value="$PROJECT_DIR$/tomo/main_testing.py" />
-        <option value="$PROJECT_DIR$/tomo/parameters.py" />
-        <option value="$PROJECT_DIR$/tomo/time_space.py" />
-      </list>
-    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1680" />
+    <option name="x" value="1993" />
     <option name="y" value="28" />
-    <option name="width" value="960" />
+    <option name="width" value="840" />
     <option name="height" value="1138" />
   </component>
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-              <item name="tomo" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="tomo_v3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="tomo_v3" type="462c0819:PsiDirectoryNode" />
-              <item name="unit_tests" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
-  </component>
+  <component name="ProjectId" id="1OXaxZNBGkbJRKkkSIc2hGWewmB" />
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RecentsManager">
@@ -246,7 +121,28 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests for test_time_space.TestTimeSpace">
+  <component name="RunManager" selected="Python.main_testing">
+    <configuration name="compile" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="tomo_v3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tomo" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tomo/compile.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main_testing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -268,49 +164,46 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_map.TestMap" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="run_fortran" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tomo_action" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_map.TestMap&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tomo_action/run_fortran.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_reconstruct_c.TestRec" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="tracking_wrappers" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="tomo_v3" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tomo/utils" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_reconstruct_c.TestRec&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests for test_time_space.TestTimeSpace" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="tomo_v3" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_time_space.TestTimeSpace&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tomo/utils/tracking_wrappers.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
@@ -330,11 +223,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests for test_time_space.TestTimeSpace" />
         <item itemvalue="Python.main_testing" />
+        <item itemvalue="Python.compile" />
+        <item itemvalue="Python.tracking_wrappers" />
+        <item itemvalue="Python.run_fortran" />
         <item itemvalue="Python tests.Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" />
-        <item itemvalue="Python tests.Nosetests for test_reconstruct_c.TestRec" />
-        <item itemvalue="Python tests.Nosetests for test_map.TestMap" />
       </list>
     </recent_temporary>
   </component>
@@ -348,209 +241,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558339518372</updated>
-    </task>
-    <task id="LOCAL-00023" summary="c_reconstruct now (seemingly) working with c++ mapweights function">
-      <created>1559145607715</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1559145607715</updated>
-    </task>
-    <task id="LOCAL-00024" summary="c_reconstruct tested and working, for many cases&#10;&#10;  problem with cases where profile to be reconstructed is not 0">
-      <created>1559288272763</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1559288272767</updated>
-    </task>
-    <task id="LOCAL-00025" summary="reconstruct_c module now working equivalent to earlier python version.">
-      <created>1559290383764</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1559290383764</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Removed input_v2.dat, hopefully git ignore will now work">
-      <created>1559290613682</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1559290613682</updated>
-    </task>
-    <task id="LOCAL-00027" summary="Merged flags: &quot;analyze&quot; and &quot;show_picture&quot; to &quot;analyze&quot;">
-      <created>1559291018350</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1559291018350</updated>
-    </task>
-    <task id="LOCAL-00028" summary="Added c++ version of longtrack.&#10;&#10; - c++ longtrack now only works in forward direction.&#10; - added function for testing c++ and numba longtrack separated.">
-      <created>1559556030427</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1559556030427</updated>
-    </task>
-    <task id="LOCAL-00029" summary="Very small changes">
-      <created>1559567559480</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1559567559480</updated>
-    </task>
-    <task id="LOCAL-00030" summary="A tiny bit of optimization">
-      <created>1559652805566</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1559652805566</updated>
-    </task>
-    <task id="LOCAL-00031" summary="Optimizing">
-      <created>1559718614640</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1559718614640</updated>
-    </task>
-    <task id="LOCAL-00032" summary="Optimizing">
-      <created>1559721946726</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1559721946726</updated>
-    </task>
-    <task id="LOCAL-00033" summary="Now ignoring c++ compiled shared objects">
-      <created>1559722018940</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1559722018940</updated>
-    </task>
-    <task id="LOCAL-00034" summary="Added compilation script">
-      <created>1559739445314</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1559739445314</updated>
-    </task>
-    <task id="LOCAL-00035" summary="Added operating system test.">
-      <created>1559740416095</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1559740416095</updated>
-    </task>
-    <task id="LOCAL-00036" summary="Small change in print functions">
-      <created>1559740691422</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1559740691422</updated>
-    </task>
-    <task id="LOCAL-00037" summary="Commented away line profiler">
-      <created>1559740758449</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1559740758449</updated>
-    </task>
-    <task id="LOCAL-00038" summary="Finished longtrack.cpp">
-      <created>1559742766322</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1559742766323</updated>
-    </task>
-    <task id="LOCAL-00039" summary="Added args">
-      <created>1559744321576</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1559744321576</updated>
-    </task>
-    <task id="LOCAL-00040" summary="Added argument checks">
-      <created>1559746163907</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1559746163907</updated>
-    </task>
-    <task id="LOCAL-00041" summary="Args more user friendly">
-      <created>1559747411554</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1559747411555</updated>
-    </task>
-    <task id="LOCAL-00042" summary="Fixed inverted axis when showing image">
-      <created>1559747783343</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1559747783343</updated>
-    </task>
-    <task id="LOCAL-00043" summary="calc_denergy_at_turn() in longtrack cpp, timing executions of py and ftr">
-      <created>1559920531401</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1559920531401</updated>
-    </task>
-    <task id="LOCAL-00044" summary="tomo_action __init__ now makes sure cpp lib is compiled">
-      <created>1560354024205</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1560354024205</updated>
-    </task>
-    <task id="LOCAL-00045" summary="git now ignores .vscode, reconstruct_c imports os">
-      <created>1560955885525</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1560955885525</updated>
-    </task>
-    <task id="LOCAL-00046" summary="changes to relative paths in reconstruct_cpp test">
-      <created>1560956368060</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1560956368060</updated>
-    </task>
-    <task id="LOCAL-00047" summary=".so files not anymore ignored">
-      <created>1560956589466</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1560956589466</updated>
-    </task>
-    <task id="LOCAL-00048" summary="New path to .so object">
-      <created>1560957902782</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1560957902782</updated>
-    </task>
-    <task id="LOCAL-00049" summary="Small cleaning">
-      <created>1561024852377</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1561024852377</updated>
-    </task>
-    <task id="LOCAL-00050" summary="Written documentation">
-      <created>1561027113616</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1561027113616</updated>
-    </task>
-    <task id="LOCAL-00051" summary="Namechanges, documentation and a small bugfix&#10;&#10;- c1 is now dphi&#10;- written documentation for parameters and time space module&#10;- bugfix in calculating machine parameters when m.ref.frame &gt; 1&#10;- .so files are again ignored">
-      <created>1561108581184</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1561108581184</updated>
     </task>
     <task id="LOCAL-00052" summary="Added description of class">
       <created>1561109068386</created>
@@ -692,40 +382,211 @@
       <option name="project" value="LOCAL" />
       <updated>1561554883744</updated>
     </task>
-    <option name="localTasksCounter" value="72" />
+    <task id="LOCAL-00072" summary="Small style change">
+      <created>1561618781531</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1561618781532</updated>
+    </task>
+    <task id="LOCAL-00073" summary="reconstruct class now works in the same way as reconstruct_c">
+      <created>1561626634638</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1561626634638</updated>
+    </task>
+    <task id="LOCAL-00074" summary="new_find_wf now works for one vector">
+      <created>1561640980740</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1561640980740</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Longtrack all now working">
+      <created>1561711353342</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1561711353342</updated>
+    </task>
+    <task id="LOCAL-00076" summary="Fast and functional new weight factor algorithm">
+      <created>1561715541495</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1561715541495</updated>
+    </task>
+    <task id="LOCAL-00077" summary="Added and edited algorithms for calc wf and longtrack.&#10;&#10;the class is now a mess.&#10;&#10;Working algorithms:&#10;- longtrack_all&#10;- longtrack_one_particle&#10;- longtrack_one_particle_mod (spd-up with numba, ready for parallel)&#10;- wf_alg1 smooth, but hard to speed up&#10;- wf_alg2 super slow but intuitive&#10;- wf_alg3 faster version of alg2, may be used for reversed weights&#10;- compress_vector_njit (wf_alg4) currently best in speed (and intuition?)&#10;&#10;some helping functions:&#10; - count - counts number of occurences of numbers in arrays.&#10;     since there is no np.count. needed for speedup with numba&#10; - calc denergy - one of the more computing intensive parts of&#10;   the longtrack funtion, speeded up with numba&#10; - find_accumulated_pixelvals another counting algorithm.&#10;   creates large array">
+      <created>1562249108299</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1562249108299</updated>
+    </task>
+    <task id="LOCAL-00078" summary="Particle tracking for each particle now running in parallel.&#10;&#10;- Need testing.&#10;- Class need organising&#10;- New algorithms need testing&#10;- New tracking algorithm for one particle only runs in one direction">
+      <created>1562310441208</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1562310441209</updated>
+    </task>
+    <task id="LOCAL-00079" summary="Added more timing, working on new method for calculating reversed weight">
+      <created>1562585719191</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1562585719192</updated>
+    </task>
+    <task id="LOCAL-00080" summary="Working on 'new tomography algorithm'&#10;&#10;- Running new tomography from main_testing&#10;- written function in reconstruction class for only tracking particles&#10;    not also finding WF and such&#10;- Created new tomography class, currently running reconstructions of&#10;  one test profile">
+      <created>1563261744486</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1563261744487</updated>
+    </task>
+    <task id="LOCAL-00081" summary="New tomography class now running for all profiles. (~1s pr iteration)">
+      <created>1563269439430</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1563269439432</updated>
+    </task>
+    <task id="LOCAL-00082" summary="New speed up tomography algorithm running. (run2, back_projection2)">
+      <created>1563278568198</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1563278568199</updated>
+    </task>
+    <task id="LOCAL-00083" summary="Cleaning">
+      <created>1563279454671</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1563279454672</updated>
+    </task>
+    <task id="LOCAL-00084" summary="Error in last tomo algorithm, starting new&#10;&#10;Written function for finding weight factors">
+      <created>1563284562980</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1563284562980</updated>
+    </task>
+    <task id="LOCAL-00085" summary="New tomo algorithm running and giving some output. Quite slow.&#10;&#10;reconstruct_py now also returns y coordinates.">
+      <created>1563292336224</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1563292336227</updated>
+    </task>
+    <task id="LOCAL-00086" summary="Flattened tomography algorithm running (quite fast)">
+      <created>1563356079212</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1563356079213</updated>
+    </task>
+    <task id="LOCAL-00087" summary="Commented away some timing analysis.">
+      <created>1563356167632</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1563356167632</updated>
+    </task>
+    <task id="LOCAL-00088" summary="run3 now uses 'original' calc_weights function">
+      <created>1563356388324</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1563356388324</updated>
+    </task>
+    <task id="LOCAL-00089" summary="Changed name of functions">
+      <created>1563356793989</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1563356793989</updated>
+    </task>
+    <task id="LOCAL-00090" summary="Added BLonD particle tracking routine.">
+      <created>1563867211001</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1563867211001</updated>
+    </task>
+    <task id="LOCAL-00091" summary="Added new tracking algorithm&#10;&#10; - Heavily based on c++&#10; - Uses the drift.cpp and kick.cpp files&#10; - Is found in the tracking.py module">
+      <created>1563973964600</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1563973964601</updated>
+    </task>
+    <task id="LOCAL-00092" summary="Added processing the output of the track function, cleaning in main.">
+      <created>1563977985384</created>
+      <option name="number" value="00092" />
+      <option name="presentableId" value="LOCAL-00092" />
+      <option name="project" value="LOCAL" />
+      <updated>1563977985385</updated>
+    </task>
+    <task id="LOCAL-00093" summary="Cleaning">
+      <created>1563982645534</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1563982645534</updated>
+    </task>
+    <task id="LOCAL-00094" summary="Added c++ version of tomography routine (new_tomo_cpp.py)&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved&#10;- name changes in tracking.py">
+      <created>1564155781077</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1564155781078</updated>
+    </task>
+    <task id="LOCAL-00095" summary="Deleted unused function">
+      <created>1564155894242</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1564155894242</updated>
+    </task>
+    <task id="LOCAL-00096" summary="Cleaning main_testing">
+      <created>1564156159061</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1564156159061</updated>
+    </task>
+    <task id="LOCAL-00097" summary="Changed name of cpp_files to cpp_routines">
+      <created>1564387033452</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1564387033453</updated>
+    </task>
+    <task id="LOCAL-00098" summary="Added kick and drift functions for tracking to wrapper file">
+      <created>1564389755354</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1564389755354</updated>
+    </task>
+    <task id="LOCAL-00099" summary="Added project and back_project for reconstruction to wrapper file">
+      <created>1564394197245</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1564394197245</updated>
+    </task>
+    <task id="LOCAL-00100" summary="Deleted excessive function">
+      <created>1564394295759</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1564394295759</updated>
+    </task>
+    <option name="localTasksCounter" value="101" />
     <servers />
-  </component>
-  <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 14h 46m 17s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 14h 47m 35s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 14h 48m 05s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 14h 49m 09s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 14h 49m 52s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 14h 51m 24s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography - 2019.06.26 at 14h 54m 33s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_map_TestMap - 2019.06.26 at 15h 04m 40s.xml">
-      <configuration name="Nosetests for test_map.TestMap" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_reconstruct_c_TestRec - 2019.06.26 at 15h 04m 53s.xml">
-      <configuration name="Nosetests for test_reconstruct_c.TestRec" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_tomography_TestTomography_test_bad_reconstruction_input - 2019.06.26 at 15h 05m 02s.xml">
-      <configuration name="Nosetests for test_tomography.TestTomography.test_bad_reconstruction_input" configurationId="tests" />
-    </history-entry>
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -736,65 +597,59 @@
       <is-autoscroll-to-source value="true" />
     </todo-panel>
   </component>
-  <component name="ToolWindowManager">
-    <frame x="1680" y="28" width="1920" height="1138" extended-state="6" />
-    <editor active="true" />
-    <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1714135" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49894515" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49050632" weight="0.36008024" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49208862" visible="true" weight="0.3089268" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32998997" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998997" />
-      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4994726" weight="0.32998997" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50949365" side_tool="true" visible="true" weight="0.36008024" />
-      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32998997" />
-      <window_info anchor="bottom" id="Messages" order="11" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Finished longtrack.cpp" />
-    <MESSAGE value="Added args" />
-    <MESSAGE value="Added argument checks" />
-    <MESSAGE value="Args more user friendly" />
-    <MESSAGE value="Fixed inverted axis when showing image" />
-    <MESSAGE value="calc_denergy_at_turn() in longtrack cpp, timing executions of py and ftr" />
-    <MESSAGE value="tomo_action __init__ now makes sure cpp lib is compiled" />
-    <MESSAGE value="git now ignores .vscode, reconstruct_c imports os" />
-    <MESSAGE value="changes to relative paths in reconstruct_cpp test" />
-    <MESSAGE value=".so files not anymore ignored" />
-    <MESSAGE value="New path to .so object" />
-    <MESSAGE value="Small cleaning" />
-    <MESSAGE value="Written documentation" />
-    <MESSAGE value="Namechanges, documentation and a small bugfix&#10;&#10;- c1 is now dphi&#10;- written documentation for parameters and time space module&#10;- bugfix in calculating machine parameters when m.ref.frame &gt; 1&#10;- .so files are again ignored" />
-    <MESSAGE value="Added description of class" />
-    <MESSAGE value="Disabled assertions for self field parameter input" />
-    <MESSAGE value="Re-added tests and assertions for bad input of space charge parameters" />
-    <MESSAGE value="Added documentation and assertions for map info module" />
-    <MESSAGE value="Moved assertion from reconstruct_c to map_info" />
-    <MESSAGE value="Restructured main_testing and reconstruct_c&#10;&#10;reconstruct_c.reconstruct() now takes the index of the&#10;profile to be reconstructed as input. In this way will it work&#10;in the same manner as tomography.run().&#10;&#10;Added documentation to main testing." />
-    <MESSAGE value="Added documentation to the tomography class" />
-    <MESSAGE value="Small changes" />
-    <MESSAGE value="Added documentation" />
-    <MESSAGE value="name change function: reconstruct() -&gt; run()" />
-    <MESSAGE value="More documentation" />
-    <option name="LAST_COMMIT_MESSAGE" value="More documentation" />
+    <MESSAGE value="Longtrack all now working" />
+    <MESSAGE value="Fast and functional new weight factor algorithm" />
+    <MESSAGE value="Added and edited algorithms for calc wf and longtrack.&#10;&#10;the class is now a mess.&#10;&#10;Working algorithms:&#10;- longtrack_all&#10;- longtrack_one_particle&#10;- longtrack_one_particle_mod (spd-up with numba, ready for parallel)&#10;- wf_alg1 smooth, but hard to speed up&#10;- wf_alg2 super slow but intuitive&#10;- wf_alg3 faster version of alg2, may be used for reversed weights&#10;- compress_vector_njit (wf_alg4) currently best in speed (and intuition?)&#10;&#10;some helping functions:&#10; - count - counts number of occurences of numbers in arrays.&#10;     since there is no np.count. needed for speedup with numba&#10; - calc denergy - one of the more computing intensive parts of&#10;   the longtrack funtion, speeded up with numba&#10; - find_accumulated_pixelvals another counting algorithm.&#10;   creates large array" />
+    <MESSAGE value="Particle tracking for each particle now running in parallel.&#10;&#10;- Need testing.&#10;- Class need organising&#10;- New algorithms need testing&#10;- New tracking algorithm for one particle only runs in one direction" />
+    <MESSAGE value="Added more timing, working on new method for calculating reversed weight" />
+    <MESSAGE value="Working on 'new tomography algorithm'&#10;&#10;- Running new tomography from main_testing&#10;- written function in reconstruction class for only tracking particles&#10;    not also finding WF and such&#10;- Created new tomography class, currently running reconstructions of&#10;  one test profile" />
+    <MESSAGE value="New tomography class now running for all profiles. (~1s pr iteration)" />
+    <MESSAGE value="New speed up tomography algorithm running. (run2, back_projection2)" />
+    <MESSAGE value="Error in last tomo algorithm, starting new&#10;&#10;Written function for finding weight factors" />
+    <MESSAGE value="New tomo algorithm running and giving some output. Quite slow.&#10;&#10;reconstruct_py now also returns y coordinates." />
+    <MESSAGE value="Flattened tomography algorithm running (quite fast)" />
+    <MESSAGE value="Commented away some timing analysis." />
+    <MESSAGE value="run3 now uses 'original' calc_weights function" />
+    <MESSAGE value="Changed name of functions" />
+    <MESSAGE value="Added BLonD particle tracking routine." />
+    <MESSAGE value="Added new tracking algorithm&#10;&#10; - Heavily based on c++&#10; - Uses the drift.cpp and kick.cpp files&#10; - Is found in the tracking.py module" />
+    <MESSAGE value="Added processing the output of the track function, cleaning in main." />
+    <MESSAGE value="Cleaning" />
+    <MESSAGE value="Added c++ version of tomography routine (new_tomo_cpp.py)&#10;&#10;- Cleaning in main_testing&#10;- Compiling tomography routines in compile.py&#10;- differences from original profile now being saved&#10;- name changes in tracking.py" />
+    <MESSAGE value="Deleted unused function" />
+    <MESSAGE value="Cleaning main_testing" />
+    <MESSAGE value="Changed name of cpp_files to cpp_routines" />
+    <MESSAGE value="Added kick and drift functions for tracking to wrapper file" />
+    <MESSAGE value="Added project and back_project for reconstruction to wrapper file" />
+    <MESSAGE value="Deleted excessive function" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deleted excessive function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tomo/tomography.py</url>
-          <line>205</line>
-          <option name="timeStamp" value="8" />
+          <url>file://$PROJECT_DIR$/tomo/reconstruct_py.py</url>
+          <line>148</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tomo/main_testing.py</url>
+          <line>10</line>
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -804,446 +659,58 @@
       </configuration>
     </watches-manager>
   </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/tomo/Numeric.py" />
-    <entry file="file://$PROJECT_DIR$/unit_tests/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="10" selection-start-column="10" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="320" selection-start-line="320" selection-end-line="320" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/ctypes/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="368" selection-start-line="368" selection-end-line="368" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="1757" selection-start-line="1757" selection-end-line="1757" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/MapInfo.py" />
-    <entry file="file://$PROJECT_DIR$/tomo/Tomography.py" />
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/site-packages/numba/targets/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="635">
-          <caret line="262" selection-start-line="262" selection-end-line="262" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/Physics.py" />
-    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/reversed_weights.cpp" />
-    <entry file="file://$PROJECT_DIR$/tomo/Main_testing.py" />
-    <entry file="file://$PROJECT_DIR$/tomo/Reconstruct.py" />
-    <entry file="file://$PROJECT_DIR$/tomo_action/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="21" selection-start-line="21" selection-end-line="21" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo_action/.idea/test" />
-    <entry file="file://$PROJECT_DIR$/.gitlab-ci.yml">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo_action/system_handling.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="870">
-          <caret line="58" column="15" selection-start-line="58" selection-start-column="15" selection-end-line="58" selection-end-column="15" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/compile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="6" column="53" selection-start-line="6" selection-start-column="52" selection-end-line="6" selection-end-column="53" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/site-packages/scipy/signal/_savitzky_golay.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1362">
-          <caret line="222" column="4" selection-start-line="222" selection-start-column="4" selection-end-line="222" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/utils/assertions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/utils/exceptions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="81" selection-start-line="81" selection-end-line="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/map_info.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2232">
-          <caret line="498" column="29" lean-forward="true" selection-start-line="498" selection-start-column="29" selection-end-line="498" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/about_map_ext.txt" />
-    <entry file="file://$PROJECT_DIR$/tomo_action/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="63" column="28" selection-start-line="63" selection-start-column="28" selection-end-line="63" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo_action/analyze.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="59" column="40" selection-start-line="59" selection-start-column="40" selection-end-line="59" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#235#791#0" />
-            <element signature="e#871#922#0" />
-            <element signature="e#1142#1708#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/map_weights.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2130">
-          <caret line="142" column="27" lean-forward="true" selection-start-line="142" selection-start-column="27" selection-end-line="142" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/cpp_files/longtrack.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="675">
-          <caret line="64" column="46" selection-start-line="64" selection-start-column="46" selection-end-line="64" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#4734#0" />
-            <element signature="e#0#4734#0" />
-            <element signature="e#0#4734#0" />
-            <element signature="e#0#4734#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/numeric.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" lean-forward="true" selection-start-line="27" selection-end-line="27" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/physics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="492">
-          <caret line="179" lean-forward="true" selection-start-line="179" selection-end-line="179" />
-          <folding>
-            <element signature="e#49#67#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_numeric.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="180" column="79" lean-forward="true" selection-start-line="180" selection-start-column="79" selection-end-line="180" selection-end-column="79" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-            <element signature="e#238#255#0" />
-            <element signature="e#310#322#0" />
-            <element signature="e#353#454#0" />
-            <element signature="e#499#5514#0" />
-            <element signature="e#5578#6606#0" />
-            <element signature="e#6668#8335#0" />
-            <element signature="e#8395#9394#0" />
-            <element signature="e#9463#9671#0" />
-            <element signature="e#9721#9969#0" />
-            <element signature="e#10016#10120#0" />
-            <element signature="e#10169#10416#0" />
-            <element signature="e#10466#10715#0" />
-            <element signature="e#10755#10853#0" />
-            <element signature="e#10894#10993#0" />
-            <element signature="e#11037#11274#0" />
-            <element signature="e#11318#11555#0" />
-            <element signature="e#11595#11693#0" />
-            <element signature="e#11737#11839#0" />
-            <element signature="e#11882#11983#0" />
-            <element signature="e#12026#12268#0" />
-            <element signature="e#12311#12412#0" />
-            <element signature="e#12451#12548#0" />
-            <element signature="e#12600#12710#0" />
-            <element signature="e#12759#12866#0" />
-            <element signature="e#12906#13004#0" />
-            <element signature="e#13046#13146#0" />
-            <element signature="e#13183#13280#0" />
-            <element signature="e#13329#13438#0" />
-            <element signature="e#13484#13590#0" />
-            <element signature="e#13631#13732#0" />
-            <element signature="e#13786#13900#0" />
-            <element signature="e#13945#14052#0" />
-            <element signature="e#14101#14214#0" />
-            <element signature="e#14262#16072#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_physics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="46" selection-start-line="27" selection-start-column="46" selection-end-line="27" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruction.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="39" column="28" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/site-packages/nose/case.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="44" selection-start-line="44" selection-end-line="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/site-packages/nose/suite.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="176" selection-start-line="176" selection-end-line="176" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/unittest/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="100" selection-start-line="100" selection-end-line="100" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/site-packages/nose/core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="120" selection-start-line="120" selection-end-line="120" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pycharm/_jb_nosetest_runner.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="16" selection-start-line="16" selection-end-line="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="213" selection-start-line="213" selection-end-line="213" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../Anaconda3/envs/Long/lib/python3.7/unittest/case.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="623" column="31" lean-forward="true" selection-start-line="623" selection-start-column="31" selection-end-line="623" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_map.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="35" lean-forward="true" selection-start-line="35" selection-end-line="35" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_tomography.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="519">
-          <caret line="124" lean-forward="true" selection-start-line="124" selection-end-line="124" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_reconstruct_c.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-            <element signature="e#367#3590#0" />
-            <element signature="e#3645#3828#0" />
-            <element signature="e#3873#4578#0" />
-            <element signature="e#4622#4860#0" />
-            <element signature="e#4902#5717#0" />
-            <element signature="e#5766#6873#0" />
-            <element signature="e#6921#8247#0" />
-            <element signature="e#8296#9523#0" />
-            <element signature="e#9572#10320#0" />
-            <element signature="e#10369#12148#0" />
-            <element signature="e#12193#13841#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/reconstruct_c.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1800">
-          <caret line="120" column="55" selection-start-line="120" selection-start-column="55" selection-end-line="120" selection-end-column="55" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/reconstruct.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1230">
-          <caret line="82" column="99" selection-start-line="82" selection-start-column="99" selection-end-line="82" selection-end-column="99" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/C500values.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="21" column="45" lean-forward="true" selection-start-line="21" selection-start-column="45" selection-end-line="21" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unit_tests/test_time_space.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="106" lean-forward="true" selection-start-line="106" selection-end-line="106" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/main_testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret lean-forward="true" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-960">
-          <caret line="29" column="50" lean-forward="true" selection-start-line="29" selection-start-column="50" selection-end-line="29" selection-end-column="50" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tomo/time_space.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="63" column="17" selection-start-line="63" selection-start-column="17" selection-end-line="63" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <element signature="e#4450#5240#0" />
-            <element signature="e#5363#5769#0" />
-            <element signature="e#5888#6012#0" />
-            <element signature="e#6203#7457#0" />
-            <element signature="e#7557#7833#0" />
-            <element signature="e#7938#8482#0" />
-            <element signature="e#8596#8731#0" />
-            <element signature="e#8896#9368#0" />
-            <element signature="e#9628#10335#0" />
-            <element signature="e#10628#11185#0" />
-            <element signature="e#11403#13141#0" />
-            <element signature="e#13263#13606#0" />
-            <element signature="e#13727#13780#0" />
-            <element signature="e#13918#13990#0" />
-            <element signature="e#14258#14583#0" />
-            <element signature="e#14784#15165#0" />
-            <element signature="e#15418#16651#0" />
-            <element signature="e#16916#17431#0" />
-            <element signature="e#17495#17587#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+  <component name="debuggerHistoryManager">
+    <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>point == 5</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>point == 2</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>i == 2</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>point == 7</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>point == 6</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>number &gt; 0.0</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>point &gt; 2</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>point &gt; 1</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>i &gt;= 13</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>i &gt;= 15</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
   </component>
 </project>

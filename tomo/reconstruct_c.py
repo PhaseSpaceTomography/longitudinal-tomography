@@ -2,6 +2,7 @@ import numpy as np
 import time as tm
 import ctypes
 import os
+import logging
 # from utils.assertions import TomoAssertions as ta
 # from utils.exceptions import *
 # import line_profiler
@@ -56,7 +57,7 @@ from numpy.ctypeslib import ndpointer
 #  equal to the number of particles tracked in each cell (snpt^2).
 #  The drawback of this method is the fact that the arrays bay be unnecessarily big and mostly
 #  filled with default values. To read more about the old method, see the pure python implementation
-#  of the reconstruction class: 'reconstruct.py'.
+#  of the reconstruction class: 'reconstruct_py.py'.
 #
 # =================
 # GLOBAL VARIABLES:
@@ -82,6 +83,7 @@ from numpy.ctypeslib import ndpointer
 class ReconstructCpp:
 
     def __init__(self, timespace, mapinfo):
+        logging.info("Running reconstruct_c++")
         self.timespace = timespace
         self.mapinfo = mapinfo
         self.maps = []
@@ -92,7 +94,7 @@ class ReconstructCpp:
 
         # Importing C++ functions
         lib_path = (os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1])
-                    + '/cpp_files/tomolib.so')
+                    + '/cpp_routines/tomolib.so')
         tomolib = self._import_cfunctions(lib_path)
 
         self.find_mapweight = tomolib.weight_factor_array
