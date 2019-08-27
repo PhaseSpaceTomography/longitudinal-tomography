@@ -18,7 +18,7 @@ class NewTomographyC:
 
         weight = np.zeros(nparts)
 
-        pt_wgts = self.parts_pr_bin(nparts)
+        reciprocal_pts = self.reciprocal_particles(nparts)
 
         flat_points = self._create_flat_points()
 
@@ -37,7 +37,7 @@ class NewTomographyC:
             self.diff[i] = self.discrepancy(diff_prof)
 
             # Weighting difference profiles relative to number of particles
-            diff_prof *= pt_wgts.T
+            diff_prof *= reciprocal_pts.T
          
             weight = tlw.back_project(weight, flat_points, diff_prof, nparts,
                                       self.ts.par.profile_count)
@@ -64,27 +64,32 @@ class NewTomographyC:
         return np.sqrt(np.sum(diff_profiles**2)/(self.ts.par.profile_length
                                                  * self.ts.par.profile_count))
 
+    # To be clear: The array is of the xp's are not flat, but
+    # the xp values of the 'flat xp' points at the correct bin
+    # in the actual flattened one dimensional profile array 
     def _create_flat_points(self):
         flat_points = self.xp.copy()
         for i in range(self.ts.par.profile_count):
             flat_points[:, i] += self.ts.par.profile_length * i
         return np.ascontiguousarray(flat_points).astype(ctypes.c_int)
 
-    # Counting number of particles per bin.
-    def parts_pr_bin(self, nparts):
+    # Finding the reciprocal of the number of particles in
+    # a bin, to counterbalance the different amount of
+    # particles in the different bins
+    def reciprocal_particles(self, nparts):
         ppb = np.zeros((self.ts.par.profile_length,
                         self.ts.par.profile_count))
-        ppb = self.count_bins(
+        ppb = self.count_particles_in_bins(
                   ppb, self.ts.par.profile_count,
                   self.xp, nparts)
         
+        # Setting zeros to one to avoid division by zero
         ppb[ppb==0] = 1
-
         return np.max(ppb) / ppb
 
     @staticmethod
     @njit
-    def count_bins(ppb, profile_count, xp, nparts):
+    def count_particles_in_bins(ppb, profile_count, xp, nparts):
         for i in range(profile_count):
             for j in range(nparts):
                 ppb[xp[j, i], i] += 1
