@@ -192,65 +192,56 @@ class Parameters:
         self.fit_xat0 = 0.0
         self.x_origin = 0.0
 
-    # Calculates parameters based on text file as input
-    def get_parameters_txt(self, file_name):
-        self._read_txt_input(file_name)
+    # Fills up create parameter object based on input array
+    def get_parameters_from_array(self, raw_parameters):
+        self._parse_raw_input(raw_parameters)
         self._assert_input()
         self._init_parameters()
         self._assert_parameters()
 
-    # Reading parameters from text-file input
-    def _read_txt_input(self, file_name):
-        length_par_file = 98
-        # data = [None] * length_par_file
-        data = []
-
-        with open(file_name, 'r') as f:
-            for i in range(length_par_file):
-                data.append(f.readline().strip('\r\n')) # .strip('\n')
-
-        self.rawdata_file = data[12]
-        self.output_dir = data[14]
-        self.framecount = int(data[16])
-        self.frame_skipcount = int(data[18])
-        self.framelength = int(data[20])
-        self.dtbin = float(data[22])
-        self.dturns = int(data[24])
-        self.preskip_length = int(data[26])
-        self.postskip_length = int(data[28])
-        self.imin_skip = int(data[31])
-        self.imax_skip = int(data[34])
-        self.rebin = int(data[36])
-        self.xat0 = float(data[39])
-        self.demax = float(data[41])
-        self.filmstart = int(data[43])
-        self.filmstop = int(data[45])
-        self.filmstep = int(data[47])
-        self.num_iter = int(data[49])
-        self.snpt = int(data[51])
-        self.full_pp_flag = bool(int(data[53]))
-        self.beam_ref_frame = int(data[55])
-        self.machine_ref_frame = int(data[57])
-        self.vrf1 = float(data[61])
-        self.vrf1dot = float(data[63])
-        self.vrf2 = float(data[65])
-        self.vrf2dot = float(data[67])
-        self.h_num = float(data[69])
-        self.h_ratio = float(data[71])
-        self.phi12 = float(data[73])
-        self.b0 = float(data[75])
-        self.bdot = float(data[77])
-        self.mean_orbit_rad = float(data[79])
-        self.bending_rad = float(data[81])
-        self.trans_gamma = float(data[83])
-        self.e_rest = float(data[85])
-        self.q = float(data[87])
-        self.self_field_flag = bool(int(data[91]))
-        self.g_coupling = float(data[93])
-        self.zwall_over_n = float(data[95])
-        self.pickup_sensitivity = float(data[97])
-        logging.info("Read successful from file: " + file_name)
-
+    # Takes input from the corect index of input array
+    #  and saves it in object. 
+    def _parse_raw_input(self, input_array):
+        self.rawdata_file = input_array[12]
+        self.output_dir = input_array[14]
+        self.framecount = int(input_array[16])
+        self.frame_skipcount = int(input_array[18])
+        self.framelength = int(input_array[20])
+        self.dtbin = float(input_array[22])
+        self.dturns = int(input_array[24])
+        self.preskip_length = int(input_array[26])
+        self.postskip_length = int(input_array[28])
+        self.imin_skip = int(input_array[31])
+        self.imax_skip = int(input_array[34])
+        self.rebin = int(input_array[36])
+        self.xat0 = float(input_array[39])
+        self.demax = float(input_array[41])
+        self.filmstart = int(input_array[43])
+        self.filmstop = int(input_array[45])
+        self.filmstep = int(input_array[47])
+        self.num_iter = int(input_array[49])
+        self.snpt = int(input_array[51])
+        self.full_pp_flag = bool(int(input_array[53]))
+        self.beam_ref_frame = int(input_array[55])
+        self.machine_ref_frame = int(input_array[57])
+        self.vrf1 = float(input_array[61])
+        self.vrf1dot = float(input_array[63])
+        self.vrf2 = float(input_array[65])
+        self.vrf2dot = float(input_array[67])
+        self.h_num = float(input_array[69])
+        self.h_ratio = float(input_array[71])
+        self.phi12 = float(input_array[73])
+        self.b0 = float(input_array[75])
+        self.bdot = float(input_array[77])
+        self.mean_orbit_rad = float(input_array[79])
+        self.bending_rad = float(input_array[81])
+        self.trans_gamma = float(input_array[83])
+        self.e_rest = float(input_array[85])
+        self.q = float(input_array[87])
+        self.self_field_flag = bool(int(input_array[91]))
+        self.g_coupling = float(input_array[93])
+        self.zwall_over_n = float(input_array[95])
+        self.pickup_sensitivity = float(input_array[97])
 
     # Subroutine for setting up parameters based on given input file.
     # Values are calculated immediately after the 'single' cavity of the ring

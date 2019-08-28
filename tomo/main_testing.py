@@ -18,7 +18,14 @@ def main():
     raw_param, raw_data = get_input_file()
 
     # Collecting time space parameters and data
-    ts = TimeSpace(input_path)
+    ts = TimeSpace()
+    ts.create(raw_param, raw_data)
+
+    # Deleting input data
+    del(raw_param)
+    del(raw_data)
+    
+    output_path = adjust_outpath(ts.par.output_dir)
 
     ts.save_profiles_text(ts.profiles, output_path, 'py_profiles.dat')
 
@@ -80,28 +87,10 @@ def save_image(xp, yp, weight, n_bins, film, output_path):
 
     # Normalizing
     phase_space /= np.sum(phase_space)
-
+    
     logging.info(f'Saving image{film} to {output_path}')
     np.save(f'{output_path}py_image{film}', phase_space)
 
-def get_paths(live):
-    if live:
-        try:
-            input_path = sys.argv[1]
-            output_path = sys.argv[2]
-        except IndexError:
-            print('Error: You must provide an input file and an output directory')
-            print('Usage: main_testing <input_path> <output_path>')
-            sys.exit('Program exit..')
-    else:
-        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/input_v2.dat'
-        output_path = '/afs/cern.ch/work/c/cgrindhe/tomography/out'
-    
-    # Making sure that output path ends on a dash
-    if output_path[-1] != '/':
-        output_path += '/'
-
-    return input_path, output_path
 
 def get_input_file(header_size=98, raw_data_file_idx=12):
     read = list(sys.stdin)
@@ -110,13 +99,18 @@ def get_input_file(header_size=98, raw_data_file_idx=12):
         for i in range(header_size):
             read_parameters[i] = read_parameters[i].strip('\r\n')
         if read_parameters[raw_data_file_idx] == 'pipe':
-            read_data = np.array(read[header_size:])
+            read_data = np.array(read[header_size:], dtype=float)
         else:
-            read_data = np.genfromtxt(read_parameters[raw_data_file_idx])
+            read_data = np.genfromtxt(read_parameters[raw_data_file_idx], dtype=float)
     except:
         raise InputError('The input file is not valid!')
 
     return read_parameters, read_data
+
+def adjust_outpath(output_path):
+    if output_path[-1] != '/':
+        output_path += '/'
+    return output_path
 
     
 main()
