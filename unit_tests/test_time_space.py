@@ -22,8 +22,7 @@ class TestTimeSpace(unittest.TestCase):
         ca = TestTimeSpace.c500.arrays
         cv = TestTimeSpace.c500.values
         comparison_data = ca["data_baseline_subtr"]
-        data = TimeSpace.get_indata_txt("pipe",
-                                        path + "C500MidPhaseNoise.dat")
+        data = np.genfromtxt(path + "C500MidPhaseNoise.dat", skip_header=98)
         data = TimeSpace.subtract_baseline(data,
                                            cv["frame_skipcount"],
                                            cv["beam_ref_frame"],
@@ -115,11 +114,23 @@ class TestTimeSpace(unittest.TestCase):
                                expected,
                                msg="Error in calculation of profile charge")
 
+    def _set_up_time_space(self, input_path, header_size=98):
+        parameter_array = []
+        with open(input_path) as f:
+            for i in range(header_size):
+                parameter_array.append(f.readline().strip('\r\n'))
+
+        raw_data = np.genfromtxt(input_path, skip_header=header_size)
+        ts = TimeSpace()
+        ts.create(parameter_array, raw_data)
+        return ts
+
     def test_fit_xat0_C500(self):
         path = TestTimeSpace.c500.path
         cv = TestTimeSpace.c500.values
 
-        ts = TimeSpace(path + "C500MidPhaseNoise.dat")
+        ts = self._set_up_time_space(self.c500.path + "C500MidPhaseNoise.dat")
+        
         self.assertAlmostEqual(ts.par.x_origin, cv["xorigin"],
                                msg="Error in calculation of x_origin")
         self.assertEqual(ts.par.tangentfoot_up, cv["tanfoot_up"],
@@ -145,7 +156,8 @@ class TestTimeSpace(unittest.TestCase):
                                msg="Error in calculation of xorigin")
 
     def test_fit_xat0_noiseStructure2(self):
-        ts = TimeSpace(noiseStruct_path + "noiseStructure2.dat")
+        ts = self._set_up_time_space(noiseStruct_path + "noiseStructure2.dat")
+
         self.assertAlmostEqual(ts.par.x_origin, -40.80842253769685,
                                msg="Error in calculation of x_origin")
         self.assertAlmostEqual(ts.par.tangentfoot_up, 69.1855852950661,
@@ -216,14 +228,6 @@ class TestTimeSpace(unittest.TestCase):
         self.assertEqual(TimeSpace._find_yat0(205), 102.5,
                          msg="Error in calculation of yat0")
 
-    # def test_filter(self):
-    #     # To be written
-    #     pass
-
-    # def test_calc_self_field(self):
-    #     # To be written
-    #     pass
-
     # Negative tests
     def test_subtract_baseline_bad_data(self):
         with self.assertRaises(Exception):
@@ -243,8 +247,7 @@ class TestTimeSpace(unittest.TestCase):
     def test_bad_percentage_input_subtr_baseline(self):
         path = TestTimeSpace.c500.path
         cv = TestTimeSpace.c500.values
-        data = TimeSpace.get_indata_txt("pipe",
-                                        path + "C500MidPhaseNoise.dat")
+        data = np.genfromtxt(path + "C500MidPhaseNoise.dat", skip_header=98)
         with self.assertRaises(Exception):
             _ = TimeSpace.subtract_baseline(data,
                                             cv["frame_skipcount"],

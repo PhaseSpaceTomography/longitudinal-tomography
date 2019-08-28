@@ -8,16 +8,23 @@ from time_space import TimeSpace
 from map_info import MapInfo
 from new_tomo_cpp import NewTomographyC
 from utils.assertions import TomoAssertions as ta
+from utils.exceptions import InputError
 
 logging.basicConfig(level=logging.INFO)
 
 def main():
     
-    # Get input (and output if uncomment) path
-    input_path = get_paths(live=True)
-    
+    raw_param, raw_data = get_input_file()
+
     # Collecting time space parameters and data
-    ts = TimeSpace(input_path)
+    ts = TimeSpace()
+    ts.create(raw_param, raw_data)
+
+    # Deleting input data
+    del(raw_param)
+    del(raw_data)
+    
+    output_path = adjust_outpath(ts.par.output_dir)
 
     # Setting path for all output as path read from file
     output_path = adjust_out_path(ts.par.output_dir)
@@ -33,8 +40,8 @@ def main():
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
 
-    # mi.write_jmax_tofile(ts, mi, output_path) # Don't know if used operationally
-    mi.write_plotinfo_tofile(ts, mi, output_path)
+    mi.write_jmax_tofile(ts, mi, output_path)
+    mi.print_plotinfo()
 
     # Particle tracking
     tr = Tracking(ts, mi)
@@ -76,35 +83,32 @@ def save_image(xp, yp, weight, n_bins, film, output_path):
 
     # Normalizing
     phase_space /= np.sum(phase_space)
-
-    # Saving to file with numbers counting from one
+    
     logging.info(f'Saving image{film} to {output_path}')
     # np.save(f'{output_path}py_image{film + 1:03d}', phase_space)
     np.savetxt(f'{output_path}image{film + 1:03d}.data',
                phase_space.flatten())
 
-def get_paths(live):
-    if live:
-        try:
-            input_path = sys.argv[1]
-            # output_path = sys.argv[2]
-        except IndexError:
-            print('Error: You must provide an input file')
-            print('Usage: main_testing <input_path>')
-            sys.exit('Program exit..')
-    else:
-        input_path = '/afs/cern.ch/work/c/cgrindhe/tomography/input_v2.dat'
-        # output_path = '/tmp/'
-    
-    # adjust_out_path(output_dir)
 
-    return input_path # , output_path
+def get_input_file(header_size=98, raw_data_file_idx=12):
+    read = list(sys.stdin)
+    try:
+        read_parameters = read[:header_size]
+        for i in range(header_size):
+            read_parameters[i] = read_parameters[i].strip('\r\n')
+        if read_parameters[raw_data_file_idx] == 'pipe':
+            read_data = np.array(read[header_size:], dtype=float)
+        else:
+            read_data = np.genfromtxt(read_parameters[raw_data_file_idx], dtype=float)
+    except:
+        raise InputError('The input file is not valid!')
 
-# Making sure that output path ends on a dash
-def adjust_out_path(output_dir):
-    if output_dir[-1] != '/':
-         output_dir += '/'
-    return output_dir
+    return read_parameters, read_data
+
+def adjust_outpath(output_path):
+    if output_path[-1] != '/':
+        output_path += '/'
+    return output_path
 
     
 main()

@@ -6,7 +6,7 @@ from parameters import Parameters
 import physics
 from numeric import newton
 from utils.assertions import TomoAssertions as ta
-from utils.assertions import (RawDataImportError,
+from utils.exceptions import (RawDataImportError,
                               InputError,
                               RebinningError)
 # ================
@@ -51,7 +51,7 @@ from utils.assertions import (RawDataImportError,
 
 class TimeSpace:
 
-    def __init__(self, parameter_file_path):
+    def __init__(self):
         self.par = Parameters()
         self.profiles = np.array([])
         self.profile_charge = None	 # Total charge in profile
@@ -60,13 +60,11 @@ class TimeSpace:
         self.vself = None            # Self-field voltage
         self.dsprofiles = None       # Smoothed derivative of profiles
 
-        self.run(parameter_file_path)
-
     # Main function for the time space class
     # @profile
-    def run(self, parameter_file_path):
-        self.par.get_parameters_txt(parameter_file_path)
-        self.get_profiles_txt(parameter_file_path)
+    def create(self, input_parameters, raw_data):
+        self.par.get_parameters_from_array(input_parameters)
+        self.get_profiles(raw_data)
         self.adjust_profiles()
 
         self.profile_charge = self.total_profilecharge(
@@ -103,17 +101,14 @@ class TimeSpace:
         if self.par.self_field_flag:
             self._calc_using_self_field()
 
-    # Subroutine for reading raw data from text file, subtracting baseline
+    # Subroutine for reading raw data from numpy array,
+    # subtracting baseline
     # and splitting the raw data to profiles.
-    def get_profiles_txt(self, parameter_file_path):
-
-        # collecting profile raw data
-        data = self.get_indata_txt(self.par.rawdata_file,
-                                   parameter_file_path)
+    def get_profiles(self, raw_data):
 
         # Subtracting baseline from raw data
         data = self.subtract_baseline(
-                        data, self.par.frame_skipcount,
+                        raw_data, self.par.frame_skipcount,
                         self.par.beam_ref_frame, self.par.framelength,
                         self.par.preskip_length, self.par.profile_length)
 
@@ -124,7 +119,8 @@ class TimeSpace:
                             self.par.framelength, self.par.preskip_length,
                             self.par.postskip_length)
 
-    # Subroutine for re-binning profiles and converting negative values to zeros.
+    # Subroutine for re-binning profiles
+    #  and converting negative values to zeros.
     def adjust_profiles(self):
         if self.par.rebin > 1:
             (self.profiles,
@@ -160,7 +156,8 @@ class TimeSpace:
                                       * self.par.omega_rev0[thisturn])
 
         # Find roots of phaselow function
-        xstart_newt = self.par.phi0[thisturn] - self.par.bunch_phaselength / 2.0
+        xstart_newt = (self.par.phi0[thisturn]
+                       - self.par.bunch_phaselength / 2.0)
 
         # phaselow and dPhaseLow are functions from Physics module
         phil = newton(physics.phase_low, physics.dphase_low, xstart_newt,
@@ -171,7 +168,8 @@ class TimeSpace:
                        * self.par.omega_rev0[thisturn]
                        * self.par.dtbin))
 
-        return fit_xat0, tangentfoot_low, tangentfoot_up, self.par.bunch_phaselength
+        return (fit_xat0, tangentfoot_low,
+                tangentfoot_up, self.par.bunch_phaselength)
 
     # Savitzky-Golay smoothing filter (if self_field_flag is True)
     def _filter(self):
@@ -201,19 +199,6 @@ class TimeSpace:
         np.savetxt(output_directory + filename, profiles.flatten().T)
         logging.info("Saved profiles to: " + output_directory + filename)
 
-    # Read data from separate text file or as extension of parameter file
-    @staticmethod
-    def get_indata_txt(filename, par_file_path, skiplines=98):
-        if filename != "pipe":
-            inn_data = np.genfromtxt(filename, dtype=float)
-        else:
-            inn_data = np.genfromtxt(par_file_path,
-                                     skip_header=skiplines, dtype=float)
-        ta.assert_greater(len(inn_data),
-                          'number of importedraw data elements',
-                          0, RawDataImportError,
-                          f'No raw data was found in file: {filename}')
-        return inn_data
 
     # Original function for subtracting baseline of raw data input profiles.
     @staticmethod
@@ -282,7 +267,8 @@ class TimeSpace:
         # Re-binning last profile bins
         for p in range(profile_count):
             binvalue = 0.0
-            for i in range((new_profile_length - 1) * rebin_factor, profile_length):
+            for i in range((new_profile_length - 1) * rebin_factor,
+                            profile_length):
                 binvalue += profiles[p, i]
             binvalue *= (float(rebin_factor)
                          / float(profile_length
@@ -313,7 +299,8 @@ class TimeSpace:
     # Calculate the total charge of profile
     @staticmethod
     def total_profilecharge(ref_prof, dtbin, rebin, pickup_sens):
-        return np.sum(ref_prof) * dtbin / (rebin * physics.e_UNIT * pickup_sens)
+        return (np.sum(ref_prof) * dtbin
+                / (rebin * physics.e_UNIT * pickup_sens))
 
     # Calculate the absolute difference (in bins) between phase=0 and
     # origin of the reconstructed phase space coordinate system.
