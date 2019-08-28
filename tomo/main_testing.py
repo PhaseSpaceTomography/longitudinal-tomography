@@ -10,8 +10,6 @@ from new_tomo_cpp import NewTomographyC
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import InputError
 
-logging.basicConfig(level=logging.INFO)
-
 def main():
     
     raw_param, raw_data = get_input_file()
@@ -38,7 +36,7 @@ def main():
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
 
-    mi.write_jmax_tofile(ts, mi, output_path)
+    # mi.write_jmax_tofile(ts, mi, output_path) # Needed operationally?
     mi.print_plotinfo()
 
     # Particle tracking
