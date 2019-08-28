@@ -24,8 +24,6 @@ def main():
     del(raw_param)
     del(raw_data)
     
-    output_path = adjust_outpath(ts.par.output_dir)
-
     # Setting path for all output as path read from file
     output_path = adjust_out_path(ts.par.output_dir)
 
@@ -105,7 +103,7 @@ def get_input_file(header_size=98, raw_data_file_idx=12):
 
     return read_parameters, read_data
 
-def adjust_outpath(output_path):
+def adjust_out_path(output_path):
     if output_path[-1] != '/':
         output_path += '/'
     return output_path
