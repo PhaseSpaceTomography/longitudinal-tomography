@@ -9,13 +9,14 @@ from map_info import MapInfo
 # from new_tomography import NewTomography
 from new_tomo_cpp import NewTomographyC
 from utils.assertions import TomoAssertions as ta
+from utils.exceptions import InputError
 
 logging.basicConfig(level=logging.INFO)
 
 def main():
     
-    input_path, output_path = get_paths(live=True)
-    
+    raw_param, raw_data = get_input_file()
+
     # Collecting time space parameters and data
     ts = TimeSpace(input_path)
 
@@ -101,5 +102,21 @@ def get_paths(live):
         output_path += '/'
 
     return input_path, output_path
+
+def get_input_file(header_size=98, raw_data_file_idx=12):
+    read = list(sys.stdin)
+    try:
+        read_parameters = read[:header_size]
+        for i in range(header_size):
+            read_parameters[i] = read_parameters[i].strip('\r\n')
+        if read_parameters[raw_data_file_idx] == 'pipe':
+            read_data = np.array(read[header_size:])
+        else:
+            read_data = np.genfromtxt(read_parameters[raw_data_file_idx])
+    except:
+        raise InputError('The input file is not valid!')
+
+    return read_parameters, read_data
+
     
 main()
