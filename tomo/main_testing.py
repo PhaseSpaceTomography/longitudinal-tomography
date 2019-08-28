@@ -37,7 +37,7 @@ def main():
     mi = MapInfo(ts)
 
     mi.write_jmax_tofile(ts, mi, output_path)
-    mi.write_plotinfo_tofile(ts, mi, output_path)
+    mi.print_plotinfo()
 
     # Particle tracking
     tr = Tracking(ts, mi)

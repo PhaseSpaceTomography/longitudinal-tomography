@@ -11,9 +11,11 @@ from utils.exceptions import (EnergyBinningError,
 # About the class
 # ===============
 # There are two reference systems in the tomography routine:
-#    i) The reconstructed phase space coordinate system which has its origin at some minimum phase,
+#    i) The reconstructed phase space coordinate system which has its
+#        origin at some minimum phase,
 #        where the x-bins are dtbin wide and the y-bins are dEbin wide.
-#    ii) The physical coordinates expressed in energy energy and phase wrt. the sync. particle
+#    ii) The physical coordinates expressed in energy energy
+#        and phase wrt. the sync. particle
 #
 #
 # This class produces and sets the limits in i (phase) and j (energy).
@@ -50,13 +52,16 @@ from utils.exceptions import (EnergyBinningError,
 # jmin, jmax        Lower and upper limit in 'j' (energy) of the i-j coordinate system.
 # dEbin             Phase space pixel height (in j direction) [MeV]
 # allbin_min/max    imin and imax as calculated from jmax and jmin.
-#                     Used unless they fall outside the borders of profile_mini or -_maxi stated in parameters,
+#                     Used unless they fall outside the borders of
+#                     profile_mini or -_maxi stated in parameters,
 #                     or if full_pp_flag (track all pixels) is true.
 
 
 class MapInfo:
 
     def __init__(self, timespace):
+
+        self.time_space = timespace
 
         (self.jmin,
          self.jmax,
@@ -273,7 +278,8 @@ class MapInfo:
         return jmax
 
     # Function for finding minimum energy (j min) for each bin in profile
-    # Checking each element if less than threshold, in such cases will threshold be used.
+    # Checking each element if less than threshold,
+    # in such cases will threshold be used.
     def _find_jmin(self, yat0, jmax_array, threshold=1):
         jmin_array = np.ceil(2.0 * yat0 - jmax_array[:] - 0.5)
         return np.where(jmin_array[:] >= threshold, jmin_array[:], threshold)
@@ -396,38 +402,36 @@ class MapInfo:
                 outFile.write(f'{idx}\t{j}\n')
         logging.info(f'jmax written to: {full_path}')
 
-    # Creating output corresponding to the FORTRAN code.
-    def write_plotinfo_tofile(self, time_space, mapinfo, outdir):
-        full_path = outdir + 'py_plotinfo.dat'
-        rec_prof = time_space.par.filmstart - 1 # '-1' Fortran compensation
-        rec_turn = rec_prof * time_space.par.dturns
+    def print_plotinfo(self):
+        tpar = self.time_space.par
+        rec_prof = tpar.filmstart - 1 # '-1' Fortran compensation
+        rec_turn = rec_prof * tpar.dturns
         
         out_s = f'Number of profiles used in each reconstruction,\n'\
-                  f'profile_count = {time_space.par.profile_count}\n'\
+                  f'profile_count = {tpar.profile_count}\n'\
                 f'Width (in pixels) of each image = '\
                   f'length (in bins) of each profile,\n'\
-                f'Profile_length = {time_space.par.profile_length}\n'\
+                f'Profile_length = {tpar.profile_length}\n'\
                 f'Width (in s) of each pixel = width of each profile bin,\n'\
-                f'dtbin = {time_space.par.dtbin}\n'\
+                f'dtbin = {tpar.dtbin}\n'\
                 f'Height (in eV) of each pixel,\n'\
-                f'dEbin = {mapinfo.dEbin}\n'\
+                f'dEbin = {self.dEbin}\n'\
                 f'Number of elementary charges in each image,\n'\
                   f'beam reference profile charge = '\
-                  f'{time_space.profile_charge}\n'\
+                  f'{self.time_space.profile_charge}\n'\
                 f'Position (in pixels) of the reference synchronous point:\n'\
-                f'xat0 = {time_space.par.xat0}\n'\
-                f'yat0 = {time_space.par.yat0}\n'\
+                f'xat0 = {tpar.xat0}\n'\
+                f'yat0 = {tpar.yat0}\n'\
                 f'Foot tangent fit results (in bins):\n'\
-                f'tangentfootl = {time_space.par.tangentfoot_low}\n'\
-                f'tangentfootu = {time_space.par.tangentfoot_up}\n'\
-                f'fit xat0 = {time_space.par.fit_xat0}'\
+                f'tangentfootl = {tpar.tangentfoot_low}\n'\
+                f'tangentfootu = {tpar.tangentfoot_up}\n'\
+                f'fit xat0 = {tpar.fit_xat0}\n'\
                 f'Synchronous phase (in radians):\n'\
-                f'phi0[{rec_prof}] = {time_space.par.phi0[rec_turn]}\n'\
+                f'phi0[{rec_prof}] = {tpar.phi0[rec_turn]}\n'\
                 f'Horizontal range (in pixels) of the region in phase '\
                   f'space of mapinfo elements:\n'\
-                f'imin = {mapinfo.imin}, imax = {mapinfo.imax}\n'\
+                f'imin = {self.imin}, imax = {self.imax}\n'\
 
-        with open(full_path, 'w') as outFile:
-            outFile.write(out_s)
+        print(out_s)
 
-        logging.info("Written profile info to: " + full_path)
+
