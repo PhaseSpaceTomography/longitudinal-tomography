@@ -182,7 +182,7 @@ class TimeSpace:
     # Calculate self-field voltage (if self_field_flag is True)
     def _calculate_self(self):
         vself = np.zeros((self.par.profile_count - 1,
-                          self.par.wrap_length),
+                          self.par.wrap_length + 1),
                          dtype=float)
         for i in range(self.par.profile_count - 1):
             vself[i, 0:self.par.profile_length]\
