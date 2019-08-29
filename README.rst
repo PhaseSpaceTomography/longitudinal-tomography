@@ -20,6 +20,3 @@ Requirements
 2. An Anaconda distribution (Python 3 recommended).
 
 3. That's all!
-
-
-Install Steps
