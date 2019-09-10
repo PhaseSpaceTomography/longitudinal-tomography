@@ -13,8 +13,6 @@ c_flags = ['-std=c++11', '-fopenmp', '-shared',
            '-O3', '-march=native', '-ffast-math']
 
 cpp_files = [
-    os.path.join(basepath, 'longtrack.cpp'),
-    os.path.join(basepath, 'map_weights.cpp'),
     os.path.join(basepath, 'drift.cpp'),
     os.path.join(basepath, 'kick.cpp'),
     os.path.join(basepath, 'tomo_routines.cpp')]
