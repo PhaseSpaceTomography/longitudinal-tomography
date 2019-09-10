@@ -2,12 +2,12 @@ import unittest
 import numpy as np
 import numpy.testing as nptest
 from tomo.cpp_routines.tomolib_wrappers import back_project
-from tomo.tomography.new_tomo_cpp import NewTomographyC
+from tomo.tomography.new_tomo_cpp import TomographyCpp
 from tomo.parameters import Parameters
 from tomo.time_space import TimeSpace
 import ctypes
 
-class TestNewTomoC(unittest.TestCase):
+class TestTomographyCpp(unittest.TestCase):
 
     def test_count_particles_in_bins(self):
         nparts = 10
@@ -26,7 +26,7 @@ class TestNewTomoC(unittest.TestCase):
         ts.par.profile_length = 10
         ts.par.profile_count = nprofs
 
-        tomo = NewTomographyC(ts, xp.astype(int), yp.astype(int))
+        tomo = TomographyCpp(ts, xp.astype(int), yp.astype(int))
         ans = tomo.reciprocal_particles(nparts)
 
         right_ans = np.ones((ts.par.profile_length, nprofs)) * 10
@@ -53,7 +53,7 @@ class TestNewTomoC(unittest.TestCase):
         ts.par.profile_count = nprofs
         ts.par.profile_length = nbins
 
-        tomo = NewTomographyC(ts, xp, yp)
+        tomo = TomographyCpp(ts, xp, yp)
         flat_xp = tomo._create_flat_points()
 
         correct_ans = np.zeros(xp.shape, dtype=int)
@@ -77,7 +77,7 @@ class TestNewTomoC(unittest.TestCase):
                              2.511942, 4.880746])
         diff = profile1 - profile2
 
-        tomo = NewTomographyC(ts, None, None)
+        tomo = TomographyCpp(ts, None, None)
         ans = tomo.discrepancy(diff)
         correct_ans = 0.522050142482858
 
@@ -106,7 +106,7 @@ class TestNewTomoC(unittest.TestCase):
         ts.par.profile_count = nprofs
         ts.par.profile_length = nbins
 
-        tomo = NewTomographyC(ts, None, None)
+        tomo = TomographyCpp(ts, None, None)
         recreated = tomo.project(flat_pts, weight, nparts)
         correct_ans = np.array([
             [0.06666667, 0.13333333, 0.46666667, 0.33333333, 0.        ],

@@ -7,7 +7,7 @@ from tracking.tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
 # from tomography.new_tomography import NewTomography
-from tomography.new_tomo_cpp import NewTomographyC
+from tomography.new_tomo_cpp import TomographyCpp
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import InputError
 
