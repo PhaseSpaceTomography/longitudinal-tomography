@@ -53,7 +53,7 @@ def main():
     yp = np.ceil(yp).astype(int).T - 1
     
     # Reconstructing phase space  
-    tomo = NewTomographyC(ts, xp, yp)
+    tomo = TomographyCpp(ts, xp, yp)
     weight = tomo.run()
 
     for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
