@@ -54,7 +54,7 @@ def main():
     
     # Reconstructing phase space  
     tomo = NewTomographyC(ts, xp, yp)
-    weight = tomo.run_cpp()
+    weight = tomo.run()
 
     for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
         save_image(xp, yp, weight, ts.par.profile_length, film, output_path)

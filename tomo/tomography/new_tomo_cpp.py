@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit
 import ctypes
 from cpp_routines import tomolib_wrappers as tlw
 from tomography.__tomography import Tomography
@@ -9,7 +8,7 @@ class TomographyCpp(Tomography):
     def __init__(self, timespace, tracked_xp, tracked_yp):
         super().__init__(timespace, tracked_xp, tracked_yp)
 
-    def run_cpp(self):
+    def run(self):
         nparts = self.xp.shape[0]
 
         weight = np.zeros(nparts)
@@ -43,9 +42,9 @@ class TomographyCpp(Tomography):
         # Calculating final discrepancy
         diff_prof = self.ts.profiles - self.recreated
         self.diff[-1] = self.discrepancy(diff_prof)
-
         return weight
 
+    # Wrapper for projecting using cpp (calling fraom tomolib_wrappers module)
     def project(self, flat_points, weight, nparts):
         rec = tlw.project(np.zeros(self.recreated.shape), flat_points, weight,
                           nparts, self.ts.par.profile_count,
