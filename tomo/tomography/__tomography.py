@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+from utils.exceptions import PhaseSpaceReducedToZeroes
 
 class Tomography:
 
@@ -18,6 +19,9 @@ class Tomography:
 
     def _suppress_zeros_normalize(self, recreated):
         recreated = recreated.clip(0.0)
+        if not recreated.any():
+            raise PhaseSpaceReducedToZeroes(
+                    'All of phase space got reduced to zeroes')
         recreated /= np.sum(recreated, axis=1)[:, None]
         return recreated
 
