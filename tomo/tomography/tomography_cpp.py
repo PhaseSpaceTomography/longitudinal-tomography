@@ -50,9 +50,7 @@ class TomographyCpp(Tomography):
                           nparts, self.ts.par.profile_count,
                           self.ts.par.profile_length)
         
-        # Normalizing and removing zeros
-        rec = rec.clip(0.0)
-        rec /= np.sum(rec, axis=1)[:, None]
+        rec = self._suppress_zeros_normalize(rec)
         return rec
 
     def _create_flat_points(self):

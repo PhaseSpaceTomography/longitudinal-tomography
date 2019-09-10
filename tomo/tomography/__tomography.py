@@ -15,6 +15,12 @@ class Tomography:
         return np.sqrt(np.sum(diff_profiles**2)/(self.ts.par.profile_length
                                                  * self.ts.par.profile_count))
 
+
+    def _suppress_zeros_normalize(self, recreated):
+        recreated = recreated.clip(0.0)
+        recreated /= np.sum(recreated, axis=1)[:, None]
+        return recreated
+
     # To be clear: The array is of the xp's are not flat, but
     # the xp values of the 'flat xp' points at the correct bin
     # in the actual flattened one dimensional profile array 

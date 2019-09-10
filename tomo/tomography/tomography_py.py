@@ -47,8 +47,7 @@ class TomographyPy(Tomography):
         rec = self._project_flattened(self.recreated.flatten(),
                                       flat_points, weights, nparts)
         rec = rec.reshape(self.ts.profiles.shape)
-        rec = rec.clip(0.0)
-        rec /= np.sum(rec, axis=1)[:, None]
+        rec = self._suppress_zeros_normalize(rec)
         return rec
 
     @staticmethod
