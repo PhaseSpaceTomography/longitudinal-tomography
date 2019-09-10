@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import numpy.testing as nptest
 from tomo.cpp_routines.tomolib_wrappers import back_project
-from tomo.tomography.new_tomo_cpp import TomographyCpp
+from tomo.tomography.tomography_cpp import TomographyCpp
 from tomo.parameters import Parameters
 from tomo.time_space import TimeSpace
 import ctypes

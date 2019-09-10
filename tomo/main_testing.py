@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from tracking.tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
-# from tomography.new_tomography import TomographyPy
-from tomography.new_tomo_cpp import TomographyCpp
+# from tomography.tomography_py import TomographyPy
+from tomography.tomography_cpp import TomographyCpp
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import InputError
 
@@ -63,6 +63,7 @@ def main():
 
     print('Program finished.')
 
+
 def save_coordinates(xp, yp, output_path):
     logging.info(f'Saving saving coordinates to {output_path}')
     logging.info('Saving xp')
@@ -70,9 +71,11 @@ def save_coordinates(xp, yp, output_path):
     logging.info('Saving yp')
     np.save(output_path + 'yp', yp)
 
+
 def save_difference(diff, output_path):
     logging.info(f'Saving saving difference to {output_path}')
     np.savetxt(f'{output_path}diff.dat', diff)
+
 
 def save_image(xp, yp, weight, n_bins, film, output_path):
     phase_space = np.zeros((n_bins, n_bins))
@@ -106,6 +109,7 @@ def get_input_file(header_size=98, raw_data_file_idx=12):
         raise InputError('The input file is not valid!')
 
     return read_parameters, read_data
+
 
 def adjust_outpath(output_path):
     if output_path[-1] != '/':
