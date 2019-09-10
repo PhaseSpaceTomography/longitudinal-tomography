@@ -1,6 +1,7 @@
 tomo_action/tmp
 tomo/cpp_routines/.vscode
-# tomo_action/test_resources
+tomo_action/test_resources
+tomo/.idea
 
 *.pyc
 *.dat
