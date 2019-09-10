@@ -4,7 +4,7 @@ import numpy.testing as nptest
 from tomo.time_space import TimeSpace
 from tomo.map_info import MapInfo
 from tomo.parameters import Parameters
-from tomo.tracking import Tracking
+from tomo.tracking.tracking import Tracking
 from tomo.cpp_routines.tomolib_wrappers import kick, drift
 from unit_tests.C500values import C500
 

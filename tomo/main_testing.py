@@ -3,7 +3,7 @@ import time as tm
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from tracking import Tracking
+from tracking.tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
 # from new_tomography import NewTomography
