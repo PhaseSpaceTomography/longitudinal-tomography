@@ -1,8 +1,10 @@
-tomo_action/tmp
+# Directories
 tomo/cpp_routines/.vscode
-tomo_action/test_resources
+example_input
 tomo/.idea
+.pytest_cache
 
+# Filetypes
 *.pyc
 *.dat
 *.data
