@@ -3,10 +3,10 @@ import time as tm
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from tracking import Tracking
+from particle_tracking.tracking_cpp import TrackCpp
+from particle_tracking.tracking_gpu import TrackPyCuda 
 from time_space import TimeSpace
 from map_info import MapInfo
-# from new_tomography import NewTomography
 from new_tomo_cpp import NewTomographyC
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import InputError
@@ -40,7 +40,8 @@ def main():
     mi.print_plotinfo()
 
     # Particle tracking
-    tr = Tracking(ts, mi)
+    tr = TrackCpp(ts, mi)
+    # tr = TrackPyCuda(ts, mi)
     xp, yp = tr.track()
 
     ta.assert_only_valid_particles(xp, ts.par.profile_length)
@@ -111,6 +112,8 @@ def adjust_outpath(output_path):
     if output_path[-1] != '/':
         output_path += '/'
     return output_path
+
+
 
     
 main()
