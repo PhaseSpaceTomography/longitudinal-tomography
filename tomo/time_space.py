@@ -52,7 +52,7 @@ from utils.exceptions import (RawDataImportError,
 class TimeSpace:
 
     def __init__(self):
-        self.par = Parameters()
+        self.par = None
         self.profiles = np.array([])
         self.profile_charge = None	 # Total charge in profile
 
@@ -62,8 +62,8 @@ class TimeSpace:
 
     # Main function for the time space class
     # @profile
-    def create(self, input_parameters, raw_data):
-        self.par.get_parameters_from_array(input_parameters)
+    def create(self, parameter, raw_data):
+        self.par = parameter
         self.get_profiles(raw_data)
         self.adjust_profiles()
 

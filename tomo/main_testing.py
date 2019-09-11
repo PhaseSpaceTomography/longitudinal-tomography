@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from tracking.tracking import Tracking
 from time_space import TimeSpace
 from map_info import MapInfo
+from parameters import Parameters
 # from tomography.tomography_py import TomographyPy
 from tomography.tomography_cpp import TomographyCpp
 from utils.assertions import TomoAssertions as ta
@@ -18,9 +19,11 @@ def main():
     
     raw_param, raw_data = get_input_from_file()
 
-    # Collecting time space parameters and data
+    parameter = Parameters()
     ts = TimeSpace()
-    ts.create(raw_param, raw_data)
+    
+    parameter.fill_from_array(raw_param)
+    ts.create(parameter, raw_data)
 
     # Deleting input data
     del(raw_param)
@@ -109,7 +112,7 @@ def _get_input_args(output_dir_idx):
     if len(sys.argv) > 2:
         output_dir = sys.argv[2]
         if os.path.isdir(output_dir):
-            read[output_dir_idx] = adjust_outpath(output_dir)
+            read[output_dir_idx] = output_dir
         else:
             raise InputError(f'The chosen output directory: "{output_dir}" '
                              f'does not exist!')

@@ -193,7 +193,7 @@ class Parameters:
         self.x_origin = 0.0
 
     # Fills up create parameter object based on input array
-    def get_parameters_from_array(self, raw_parameters):
+    def fill_from_array(self, raw_parameters):
         self._parse_raw_input(raw_parameters)
         self._assert_input()
         self._init_parameters()
