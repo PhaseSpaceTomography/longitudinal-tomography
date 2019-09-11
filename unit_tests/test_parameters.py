@@ -22,7 +22,7 @@ class TestParameters(unittest.TestCase):
             for i in range(header_size):
                 self.c500_parameter_array.append(f.readline().strip('\r\n'))
         self.par = Parameters()
-        self.par.get_parameters_from_array(self.c500_parameter_array)
+        self.par.fill_from_array(self.c500_parameter_array)
 
     def test_variable_types(self):
         self.assertIsInstance(self.par.xat0, float,
@@ -114,7 +114,7 @@ class TestParameters(unittest.TestCase):
 
     def test_initialization_of_arrays_C500_inn(self):
         param = Parameters()
-        param.get_parameters_from_array(self.c500_parameter_array)
+        param.fill_from_array(self.c500_parameter_array)
 
         allturns = ((param.framecount - param.frame_skipcount - 1)
                     * param.dturns)
@@ -137,7 +137,7 @@ class TestParameters(unittest.TestCase):
 
     def test_remaining_array_values_C500_inn(self):
         param = Parameters()
-        param.get_parameters_from_array(self.c500_parameter_array)
+        param.fill_from_array(self.c500_parameter_array)
         ca = self.c500.arrays
 
         nptest.assert_almost_equal(param.beta0, ca["beta0"],
@@ -167,7 +167,7 @@ class TestParameters(unittest.TestCase):
 
     def test_remaining_parameters_C500_inn(self):
         param = Parameters()
-        param.get_parameters_from_array(self.c500_parameter_array)
+        param.fill_from_array(self.c500_parameter_array)
         ca = self.c500.arrays
 
         self.assertAlmostEqual(param.dtbin, 1.9999999999999997e-09,

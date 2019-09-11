@@ -2,6 +2,7 @@ import unittest
 import warnings
 import numpy as np
 import numpy.testing as nptest
+from tomo.parameters import Parameters
 from tomo.time_space import TimeSpace
 from unit_tests.C500values import C500
 
@@ -122,7 +123,9 @@ class TestTimeSpace(unittest.TestCase):
 
         raw_data = np.genfromtxt(input_path, skip_header=header_size)
         ts = TimeSpace()
-        ts.create(parameter_array, raw_data)
+        param = Parameters()
+        param.fill_from_array(parameter_array)
+        ts.create(param, raw_data)
         return ts
 
     def test_fit_xat0_C500(self):
