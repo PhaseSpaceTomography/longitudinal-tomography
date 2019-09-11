@@ -1,6 +1,7 @@
 import logging
 import time as tm
 import sys
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from tracking.tracking import Tracking
@@ -15,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     
-    raw_param, raw_data = get_input_file()
+    raw_param, raw_data = get_input_from_file()
 
     # Collecting time space parameters and data
     ts = TimeSpace()
@@ -95,20 +96,56 @@ def save_image(xp, yp, weight, n_bins, film, output_path):
     np.save(f'{output_path}py_image{film}', phase_space)
 
 
-def get_input_file(header_size=98, raw_data_file_idx=12):
-    read = list(sys.stdin)
+def _get_input_args(output_dir_idx):
+    input_file_pth = sys.argv[1]
+
+    if not os.path.isfile(input_file_pth):
+        raise InputError(f'The input file: "{input_file_pth}" '
+                         f'does not exist!')
+
+    with open(input_file_pth, 'r') as f:
+        read = f.readlines()
+
+    if len(sys.argv) > 2:
+        output_dir = sys.argv[2]
+        if os.path.isdir(output_dir):
+            read[output_dir_idx] = adjust_outpath(output_dir)
+        else:
+            raise InputError(f'The chosen output directory: "{output_dir}" '
+                             f'does not exist!')
+    return read
+
+
+def _get_input_stdin():
+    return list(sys.stdin)
+
+# Mabye change to calculate how many data points there should be from parameters,
+#   and then check if the file has the right size
+def _split_input(read_input, header_size, raw_data_file_idx):
     try:
-        read_parameters = read[:header_size]
+        read_parameters = read_input[:header_size]
         for i in range(header_size):
             read_parameters[i] = read_parameters[i].strip('\r\n')
-        if read_parameters[raw_data_file_idx] == 'pipe':
-            read_data = np.array(read[header_size:], dtype=float)
-        else:
-            read_data = np.genfromtxt(read_parameters[raw_data_file_idx], dtype=float)
-    except:
-        raise InputError('The input file is not valid!')
 
+        if read_parameters[raw_data_file_idx] == 'pipe':
+            read_data = np.array(read_input[header_size:], dtype=float)
+        else:
+            read_data = np.genfromtxt(read_parameters[raw_data_file_idx],
+                                      dtype=float)
+    except:
+        raise InputError('Something went wrong when reading the input.')
+    
     return read_parameters, read_data
+
+
+def get_input_from_file(header_size=98,
+                        raw_data_file_idx=12, output_dir_idx=14):
+    if len(sys.argv) > 1:
+        read = _get_input_args(output_dir_idx)
+    else:
+        read = _get_input_stdin()
+
+    return _split_input(read, header_size, raw_data_file_idx)
 
 
 def adjust_outpath(output_path):
