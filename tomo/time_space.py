@@ -106,6 +106,10 @@ class TimeSpace:
     # and splitting the raw data to profiles.
     def get_profiles(self, raw_data):
 
+        # Asserting that the correct amount of measurement-data is provided.
+        ta.assert_equal(len(raw_data), 'length of raw_data',
+                        self.par.all_data, RawDataImportError)
+
         # Subtracting baseline from raw data
         data = self.subtract_baseline(
                         raw_data, self.par.frame_skipcount,
