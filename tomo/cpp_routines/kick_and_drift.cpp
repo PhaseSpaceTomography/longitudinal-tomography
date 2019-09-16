@@ -44,7 +44,7 @@ extern "C" void kick_and_drift(
                          const double * __restrict__ phi0,      // inn
                          const double * __restrict__ deltaE0,   // inn
                          const double * __restrict__ omega_rev0,// inn
-                         const double * __restrict__ dphase,// inn
+                         const double * __restrict__ dphase,    // inn
                          const double phi12,
                          const double hratio,
                          const double hnum,
@@ -76,13 +76,13 @@ extern "C" void kick_and_drift(
 
         if (turn % dturns == 0){
             profile++;
-            
+#pragma omp parallel for
             for(int i=0; i < nparts; i++){
                 xp[profile][i] = (dphi[i] + phi0[turn])
                                   / (hnum * omega_rev0[turn] * dtbin)
                                   - xorigin;
             } //for xp
-
+#pragma omp parallel for
             for(int i=0; i < nparts; i++){
                 yp[profile][i] = denergy[i] / dEbin + yat0;
             } //for yp
