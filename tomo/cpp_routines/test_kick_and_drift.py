@@ -20,15 +20,15 @@ def main():
     # Control panel
     # -----------------
     do_compile = True
-    gpu = False
-    niter = 1
+    gpu = True
+    niter = 10
     run_tests = True
     show_all_times = True
     #------------------
     
     cpu_com = 'g++ -fopenmp -march=native -ffast-math'
     gpu_com = 'pgc++ -acc -Minfo=accel -ta=nvidia'
-    common_com = '-std=c++11 -shared -O3 -fPIC -o test.so kick_and_drift.cpp'
+    common_com = '-std=c++11 -shared -O3 -fPIC -o test_kad.so kick_and_drift.cpp'
 
     # minfo can be accell and all
     
@@ -44,7 +44,7 @@ def main():
     else:
         print('Using last compilation...')
     
-    _tomolib_pth = os.path.dirname(os.path.realpath(__file__)) + '/test.so'
+    _tomolib_pth = os.path.dirname(os.path.realpath(__file__)) + '/test_kad.so'
     
     if os.path.exists(_tomolib_pth):
         log.info(f'Loading test library: {_tomolib_pth}')
