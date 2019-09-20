@@ -13,6 +13,8 @@ from utils.exceptions import InputError
 def main():
     
     raw_param, raw_data = get_input_file()
+    
+    print(' Start')   
 
     # Collecting time space parameters and data
     ts = TimeSpace()
@@ -51,7 +53,7 @@ def main():
     #      (~0.5s for C500MidPhaseNoise)
     xp = np.ceil(xp).astype(int).T - 1
     yp = np.ceil(yp).astype(int).T - 1
-    
+   
     # Reconstructing phase space  
     tomo = NewTomographyC(ts, xp, yp)
     weight = tomo.run_cpp()
@@ -61,10 +63,20 @@ def main():
     
     save_difference(tomo.diff, output_path, ts.par.filmstart - 1)
 
+
+
 def save_difference(diff, output_path, film):
     # Saving to file with numbers counting from one
     logging.info(f'Saving saving difference to {output_path}')
-    np.savetxt(f'{output_path}d{film + 1:03d}.data', diff)
+    # np.savetxt(f'{output_path}d{film + 1:03d}.data', diff) as f:
+        
+    with open(f'{output_path}d{film + 1:03d}.data', 'w') as f:
+        for i, d in enumerate(diff):
+            if i < 10:
+                f.write(f'           {i}  {d:0.7E}\n')
+            else:
+                f.write(f'          {i}  {d:0.7E}\n')
+                
 
 def save_image(xp, yp, weight, n_bins, film, output_path):
     phase_space = np.zeros((n_bins, n_bins))
@@ -82,12 +94,33 @@ def save_image(xp, yp, weight, n_bins, film, output_path):
     
     logging.info(f'Saving image{film} to {output_path}')
     # np.save(f'{output_path}py_image{film + 1:03d}', phase_space)
-    np.savetxt(f'{output_path}image{film + 1:03d}.data',
-               phase_space.flatten())
+    # np.savetxt(f'{output_path}image{film + 1:03d}.data',
+    #            phase_space.flatten())
+    out_ps = phase_space.flatten()
+    with open(f'{output_path}image{film + 1:03d}.data', 'w') as f:
+        for element in out_ps:
+            f.write(f'  {element:0.7E}\n')
 
 
 def get_input_file(header_size=98, raw_data_file_idx=12):
-    read = list(sys.stdin)
+
+#    read = list(sys.stdin)
+
+    read = []
+    finished = False
+    lineNum = 0
+    nDatPoints = 97
+    while finished is False:
+        read.append(sys.stdin.readline())
+        if lineNum == 16:
+            nFrames = int(read[-1])
+        if lineNum == 20:
+            nBins = int(read[-1])
+            nDatPoints += nFrames*nBins
+        if lineNum == nDatPoints:
+            break
+        lineNum += 1
+
     try:
         read_parameters = read[:header_size]
         for i in range(header_size):

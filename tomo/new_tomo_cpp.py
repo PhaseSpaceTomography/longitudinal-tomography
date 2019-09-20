@@ -14,6 +14,7 @@ class NewTomographyC:
         self.diff = np.zeros(self.ts.par.num_iter + 1)
 
     def run_cpp(self):
+        print(' Iterating...')
         nparts = self.xp.shape[0]
 
         weight = np.zeros(nparts)
@@ -29,7 +30,12 @@ class NewTomographyC:
                                  self.ts.par.profile_count)
 
         for i in range(self.ts.par.num_iter):
-            print(f'iteration: {str(i + 1)} of {self.ts.par.num_iter}')
+            if i < 9:
+                print(f'  {i + 1}')
+            elif i < 100:
+                print(f' {i + 1}')
+            else:
+                print(f'{i + 1}')
 
             self.recreated = self.project(flat_points, weight, nparts)
 
@@ -47,6 +53,8 @@ class NewTomographyC:
         # Calculating final discrepancy
         diff_prof = self.ts.profiles - self.recreated
         self.diff[-1] = self.discrepancy(diff_prof)
+
+        print(' Done!')
 
         return weight
 

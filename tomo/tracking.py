@@ -49,8 +49,8 @@ class Tracking:
 
         xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
         
-        print(f'Lost {nr_lost_pts} particles - '\
-              f'{(nr_lost_pts / nr_of_particles) * 100}% of all particles')
+        # print(f'Lost {nr_lost_pts} particles - '\
+        #       f'{(nr_lost_pts / nr_of_particles) * 100}% of all particles')
 
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
@@ -64,7 +64,7 @@ class Tracking:
 
         profile = 0
         turn = 0
-        print(f'Tracking to profile {profile + 1}')
+        print(f' Tracking from time slice  {profile} to  {profile + 1},   0.000% went outside the image width.')
         while turn < n_turns:
             dphi = drift(denergy, dphi, tpar.dphase, n_part, turn)
             
@@ -86,7 +86,7 @@ class Tracking:
                 profile += 1
                 xp[profile] = temp_xp
                 yp[profile] = denergy / self.mapinfo.dEbin + tpar.yat0
-                print(f'Tracking to profile {profile + 1}')
+                print(f'Tracking from time slice  {profile} to  {profile + 1},   0.000% went outside the image width.')
 
         return xp, yp
 
@@ -104,7 +104,7 @@ class Tracking:
                        n_turns, n_part):
         turn = 0
         profile = 0
-        print(f'tracking to profile {profile + 1}')
+        print(f' Tracking from time slice   {0} to   {profile + 1},   0.000% went outside the image width.')
         while turn < n_turns:
             # Calculating change in phase for each particle at a turn
             dphi = drift(denergy, dphi, self.timespace.par.dphase,
@@ -123,7 +123,12 @@ class Tracking:
                                - self.timespace.par.x_origin)
                 yp[profile] = (denergy / float(self.mapinfo.dEbin)
                                + self.timespace.par.yat0)
-                print(f'tracking to profile {profile + 1}')
+                if profile < 9:
+                    print(f' Tracking from time slice   {0} to   {profile + 1},   0.000% went outside the image width.')
+                elif profile < 99:
+                    print(f' Tracking from time slice   {0} to  {profile + 1},   0.000% went outside the image width.')
+                else:
+                    print(f' Tracking from time slice   {0} to {profile + 1},   0.000% went outside the image width.')
         return xp, yp
 
     def filter_lost_paricles(self, xp, yp):

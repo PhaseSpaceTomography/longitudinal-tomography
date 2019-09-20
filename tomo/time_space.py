@@ -196,7 +196,11 @@ class TimeSpace:
 
     # Write files to text file.
     def save_profiles_text(self, profiles, output_directory, filename):
-        np.savetxt(output_directory + filename, profiles.flatten().T)
+        # np.savetxt(output_directory + filename, profiles.flatten().T)
+        out_prof = profiles.flatten()
+        with open(output_directory + filename, 'w') as f:
+            for element in out_prof:    
+                f.write(f' {element:0.7E}\n')
         logging.info("Saved profiles to: " + output_directory + filename)
 
 
