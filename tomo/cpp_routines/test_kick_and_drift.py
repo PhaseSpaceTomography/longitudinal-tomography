@@ -34,7 +34,7 @@ def main():
     
     if do_compile:
         print('Compiling!')
-        os.system('rm test.so')
+        os.system('rm test_kad.so')
         if gpu:
             print('Compiling openACC')
             os.system(gpu_com + ' ' + common_com)
