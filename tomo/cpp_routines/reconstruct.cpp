@@ -70,6 +70,18 @@ double discrepancy(const double * __restrict__ diff_prof,   // inn
     return std::sqrt(squared_sum / (nprof * nbins));
 }
 
+void compensate_particle_amount(double * __restrict__ diff_prof,        // inn/out
+                                double ** __restrict__ rparts,    // inn
+                                const int nprof,
+                                const int nbins){
+    int flat_index = 0, i, j;
+    for(i=0; i < nprof; i++)
+        for(j=0; j < nbins; j++){
+            flat_index = i * nbins + j;
+            diff_prof[flat_index] *= rparts[i][j];  
+        }
+}
+
 double max_2d(double **  __restrict__ arr,  // inn
               const int x_axis,
               const int y_axis){
@@ -188,12 +200,7 @@ extern "C" void reconstruct(double * __restrict__ weights,
 
         discr[iteration] = discrepancy(diff_prof, nprof, nbins);
 
-        int flat_index = 0;
-        for(i=0; i < nprof; i++)
-            for(j=0; j < nbins; j++){
-                flat_index = i * nbins + j;
-                diff_prof[flat_index] *= rparts[i][j];  
-            }
+        compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
         back_project(weights, flat_points, diff_prof, npart, nprof);
     }
@@ -212,5 +219,5 @@ extern "C" void reconstruct(double * __restrict__ weights,
     for(i = 0; i < npart; i++) {
         delete[] flat_points[i];
     }
-    delete[] rparts, flat_points, flat_rec, discr;
+    delete[] rparts, flat_points, flat_rec, discr, diff_prof;
 }
