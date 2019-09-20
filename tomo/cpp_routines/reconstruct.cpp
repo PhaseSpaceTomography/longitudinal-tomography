@@ -86,15 +86,11 @@ void count_particles_in_bin(double ** __restrict__ rparts,      // out
                             const int ** __restrict__ xp,       // inn
                             const int nprof,
                             const int npart){
-    //kernels
-    //loop collapse
-    int index;
-    for(int i=0; i < npart; i++)
-        for(int j=0; j < nprof; j++){
+    int index, i, j;
+    for(i=0; i < npart; i++)
+        for(j=0; j < nprof; j++){
             index = xp[i][j];
-/*            std::cout << "Index:\t" << index << std::endl;
-            std::cout << "i:\t" << i << std::endl;*/
-            rparts[index][i] += 1;
+            rparts[index][j] += 1;
         }
 }
 
@@ -106,8 +102,8 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
     int i, j;
 
     // initiating rparts to 0
-    for(i = 0; i < nbins; i++)
-        for(j = 0; j < nprof; j++)
+    for(i=0; i < nbins; i++)
+        for(j=0; j < nprof; j++)
             rparts[i][j] = 0.0;
 
     count_particles_in_bin(rparts, xp, nprof, npart);
@@ -119,6 +115,18 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
         for(j = 0; j < nprof; j++)
             if(rparts[i][j] == 0.0)
                 rparts[i][j] = 1.0;
+
+    // Creating reciprocal
+    for(i = 0; i < nbins; i++)
+        for(j = 0; j < nprof; j++)
+                rparts[i][j] = (double) max_bin_val / rparts[i][j];
+
+    for(i = 0; i < nprof; i++)
+        std::cout << rparts[1][i] << " ";
+    std::cout << std::endl;
+
+    // std::cout << std::endl << "It all went better than expected" << std::endl << std::endl;
+    abort();
 
 }
 
@@ -219,7 +227,7 @@ extern "C" void reconstruct(double * __restrict__ weights,
 /*    std::cout << "xp: " << std::endl;
     show_2d(xp, nprof, npart);*/
 
-    // reciprocal_particles(rparts, xp, nbins, nprof, npart);  // HUGE MEMORY BUG!
+    reciprocal_particles(rparts, xp, nbins, nprof, npart);  // HUGE MEMORY BUG!
 
 /*    std::cout << std::endl << "rprof: " << std::endl;
     show_2d(rparts, 10, 10);*/
