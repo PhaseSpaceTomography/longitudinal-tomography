@@ -90,7 +90,7 @@ void count_particles_in_bin(double ** __restrict__ rparts,      // out
     for(i=0; i < npart; i++)
         for(j=0; j < nprof; j++){
             index = xp[i][j];
-            rparts[index][j] += 1;
+            rparts[j][index] += 1;
         }
 }
 
@@ -102,32 +102,24 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
     int i, j;
 
     // initiating rparts to 0
-    for(i=0; i < nbins; i++)
-        for(j=0; j < nprof; j++)
+    for(i=0; i < nprof; i++)
+        for(j=0; j < nbins; j++)
             rparts[i][j] = 0.0;
 
     count_particles_in_bin(rparts, xp, nprof, npart);
 
-    int max_bin_val = max_2d(rparts, nprof, nbins);
+    int max_bin_val = max_2d(rparts, nbins, nprof);
 
     // Setting 0's to 1's to avoid zero division
-    for(i = 0; i < nbins; i++)
-        for(j = 0; j < nprof; j++)
+    for(i = 0; i < nprof; i++)
+        for(j = 0; j < nbins; j++)
             if(rparts[i][j] == 0.0)
                 rparts[i][j] = 1.0;
 
     // Creating reciprocal
-    for(i = 0; i < nbins; i++)
-        for(j = 0; j < nprof; j++)
-                rparts[i][j] = (double) max_bin_val / rparts[i][j];
-
     for(i = 0; i < nprof; i++)
-        std::cout << rparts[1][i] << " ";
-    std::cout << std::endl;
-
-    // std::cout << std::endl << "It all went better than expected" << std::endl << std::endl;
-    abort();
-
+        for(j = 0; j < nbins; j++)
+                rparts[i][j] = (double) max_bin_val / rparts[i][j];
 }
 
 void create_flat_points(const int ** __restrict__ xp,       //inn
@@ -146,50 +138,6 @@ void create_flat_points(const int ** __restrict__ xp,       //inn
             flat_points[i][j] += nbins * j;
 }
 
-void show_2d(int **  __restrict__ arr,
-             const int x_axis,
-             const int y_axis){
-    for(int i = 0; i < y_axis; i++){
-        for(int j = 0; j < x_axis; j++){
-            std::cout << arr[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-void show_2d(const int **  __restrict__ arr,
-             const int x_axis,
-             const int y_axis){
-    for(int i = 0; i < y_axis; i++){
-        for(int j = 0; j < x_axis; j++){
-            std::cout << arr[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-void show_2d(double ** __restrict__ arr,
-             const int x_axis,
-             const int y_axis){
-    for(int i = 0; i < y_axis; i++){
-        for(int j = 0; j < x_axis; j++){
-            std::cout << std::setprecision(5) << arr[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-void show_2d(const double ** __restrict__ arr,
-             const int x_axis,
-             const int y_axis){
-    for(int i = 0; i < y_axis; i++){
-        for(int j = 0; j < x_axis; j++){
-            std::cout << std::setprecision(5) << arr[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
 
 // Projections using flattened arrays
 extern "C" void reconstruct(double * __restrict__ weights,
@@ -199,7 +147,7 @@ extern "C" void reconstruct(double * __restrict__ weights,
                             const int nbins,
                             const int npart,
                             const int nprof){
-    int i;
+    int i, j;
 
     // Creating arrays...
     int all_bins = nprof * nbins;
@@ -213,9 +161,9 @@ extern "C" void reconstruct(double * __restrict__ weights,
     for(i=0; i < niter + 1; i++)
         discr[i] = 0;
     
-    double** rparts = new double*[nbins];
-    for(i = 0; i < nbins; i++)
-        rparts[i] = new double[nprof];
+    double** rparts = new double*[nprof];
+    for(i = 0; i < nprof; i++)
+        rparts[i] = new double[nbins];
 
     int** flat_points = new int*[npart];
     for(i = 0; i < npart; i++)
@@ -224,30 +172,11 @@ extern "C" void reconstruct(double * __restrict__ weights,
 
     // Actual functionality
 
-/*    std::cout << "xp: " << std::endl;
-    show_2d(xp, nprof, npart);*/
-
-    reciprocal_particles(rparts, xp, nbins, nprof, npart);  // HUGE MEMORY BUG!
-
-/*    std::cout << std::endl << "rprof: " << std::endl;
-    show_2d(rparts, 10, 10);*/
+    reciprocal_particles(rparts, xp, nbins, nprof, npart);
 
     create_flat_points(xp, flat_points, npart, nprof, nbins);
 
-/*    std::cout << std::endl << "flat points: " << std::endl;
-    show_2d(flat_points, 10, 10);*/
-
-/*    std::cout << std::endl << "flat profiles: " << std::endl;
-    for(i = 0; i < 10; i++)
-        std::cout << flat_profiles[i] << " ";
-    std::cout << std::endl;*/
-
     back_project(weights, flat_points, flat_profiles, npart, nprof);
-
-/*    std::cout << std::endl << "weights[:50]: " << std::endl;
-    for(i = 0; i < 50; i++)
-        std::cout << weights[i] << " ";
-    std::cout << std::endl;*/
 
     for(int iteration = 0; iteration < niter; iteration++){
         std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
@@ -259,7 +188,12 @@ extern "C" void reconstruct(double * __restrict__ weights,
 
         discr[iteration] = discrepancy(diff_prof, nprof, nbins);
 
-        // USE THE RECIPROCAL
+        int flat_index = 0;
+        for(i=0; i < nprof; i++)
+            for(j=0; j < nbins; j++){
+                flat_index = i * nbins + j;
+                diff_prof[flat_index] *= rparts[i][j];  
+            }
 
         back_project(weights, flat_points, diff_prof, npart, nprof);
     }
@@ -272,21 +206,11 @@ extern "C" void reconstruct(double * __restrict__ weights,
     discr[niter] = discrepancy(diff_prof, nprof, nbins);
 
     // Cleaning
-    for(i = 0; i < nbins; i++) {
+    for(i = 0; i < nprof; i++) {
         delete[] rparts[i];
     }
     for(i = 0; i < npart; i++) {
         delete[] flat_points[i];
     }
     delete[] rparts, flat_points, flat_rec, discr;
-}
-
-extern "C" double * test_func(double * __restrict__ array, 
-                          const int axis1,
-                          const int axis2){
-    const int LENGTH = 100;
-    double * out =  new double[LENGTH];
-    for(int i = 0; i < LENGTH; i++)
-        out[i] = i;
-    return out;
 }

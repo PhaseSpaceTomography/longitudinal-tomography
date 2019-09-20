@@ -57,7 +57,7 @@ def set_up_function(lib):
                             ct.c_int]
     return reconstruct
 
-def check_output(weights, xp, yp, profiles, nbins, film=0):
+def show_output(weights, xp, yp, profiles, py_im, nbins, film=0):
     phase_space = np.zeros((nbins, nbins))
 
     for x, y, w in zip(xp[:, film], yp[:, film], weights):
@@ -69,12 +69,36 @@ def check_output(weights, xp, yp, profiles, nbins, film=0):
     # Normalizing
     phase_space /= np.sum(phase_space)
     
-    plt.subplot(211)
+    plt.subplot(221)
     plt.imshow(phase_space.T, cmap='hot', interpolation='nearest', origin='lower')
-    plt.subplot(212)
+    plt.subplot(222)
+    plt.imshow(py_im.T, cmap='hot', interpolation='nearest', origin='lower')
+    plt.subplot(223)
     plt.plot(profiles[film])
     plt.plot(np.sum(phase_space.T, axis=0))
+    plt.plot(np.sum(py_im.T, axis=0))
+    plt.subplot(224)
+    plt.imshow(np.abs(py_im.T - phase_space.T), cmap='hot',
+               interpolation='nearest', origin='lower')
     plt.show()
+
+def test_output(weights, py_im, xp, yp, nbins, film=0):
+    phase_space = np.zeros((nbins, nbins))
+
+    for x, y, w in zip(xp[:, film], yp[:, film], weights):
+        phase_space[x, y] += w
+
+    # Surpressing negative numbers
+    phase_space = phase_space.clip(0.0)
+
+    # Normalizing
+    phase_space /= np.sum(phase_space)
+
+    # Testing
+    print("Testing output...")
+    nptest.assert_almost_equal(phase_space, py_im)
+    print("OK!")
+
 
 def main():
     os.system('clear')
@@ -84,7 +108,8 @@ def main():
     niter = 20
     do_compile = True
     use_gpu_flg = False
-    show_image = True
+    show_image = False
+    test = True
 
     if do_compile:
         print('Compiling!')
@@ -92,22 +117,6 @@ def main():
 
     lib = get_lib()
     reconstruct = set_up_function(lib)
-
-    # test_func = lib.test_func
-    # test_func.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-    #                       ct.c_int,
-    #                       ct.c_int]
-    # lib.test_func.restype = np.ctypeslib.ndpointer(dtype=ct.c_double, shape=(100,))
-
-    # profiles = ca['profiles']
-    # profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
-
-    # print(profiles[:10])
-
-    # test = test_func(profiles, 0, 0)
-
-    # sys.exit('\nEND TEST')
-
 
     from tomo_v3.unit_tests.C500values import C500
     c500 = C500()
@@ -138,16 +147,15 @@ def main():
     print('\n===============\nFinito finale!\n===============')
 
     print('\n-------------------\nTime spent\n-------------------\n')
-    print(f'Time spent: {t1 - t0} s')
+    print(f'Time spent: {t1 - t0}s')
 
-    # print('loading original values...')
-    # original_w = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/weight0.npy')
-    # original_rec = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/rec0.npy')
+    py_im = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/py_image0.npy')
 
-    # diff = ca['profiles'] - original_rec
+    if test:
+        test_output(weights, py_im, xp, yp, nbins)
 
     if show_image:
-        check_output(weights, xp, yp, ca['profiles'], nbins)
+        show_output(weights, xp, yp, ca['profiles'], py_im, nbins)
 
 main()
 print()
