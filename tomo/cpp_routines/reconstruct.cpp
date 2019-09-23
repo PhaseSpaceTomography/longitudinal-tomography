@@ -152,9 +152,9 @@ void create_flat_points(const int ** __restrict__ xp,       //inn
 
 
 // Projections using flattened arrays
-extern "C" void reconstruct(double * __restrict__ weights,
-                            const int ** __restrict__ xp,    // inn
-                            const double * __restrict__ flat_profiles, //inn
+extern "C" void reconstruct(double * __restrict__ weights,              // out
+                            const int ** __restrict__ xp,               // inn
+                            const double * __restrict__ flat_profiles,  // inn
                             const int niter,
                             const int nbins,
                             const int npart,
