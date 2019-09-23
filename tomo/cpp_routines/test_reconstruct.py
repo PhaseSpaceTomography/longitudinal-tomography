@@ -7,6 +7,78 @@ import logging as log
 import numpy.testing as nptest
 import matplotlib.pyplot as plt
 
+def main():
+    os.system('clear')
+
+    # Flags and constrols
+    # ------------------
+    nruns = 10
+    do_compile = True
+    use_gpu = True
+    show_all_times = True
+    show_image = False
+    test = True
+
+    if do_compile:
+        print('Compiling!')
+        compile(gpu=use_gpu)
+
+    lib = get_lib()
+    # reconstruct = set_up_function(lib)
+    reconstruct = set_up_function_no_flat(lib)
+
+    from tomo_v3.unit_tests.C500values import C500
+    c500 = C500()
+    cv = c500.values
+    ca = c500.arrays
+
+    niter = 20
+
+    profiles = ca['profiles']
+    # profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
+    profiles = np.ascontiguousarray(profiles.astype(ct.c_double))
+
+    xp = np.load('/afs/cern.ch/work/c/cgrindhe/'\
+                 'tomography/out/py_xp.npy')
+    xp = np.ascontiguousarray(xp.T.astype(ct.c_int))
+
+    yp = np.load('/afs/cern.ch/work/c/cgrindhe/'\
+                 'tomography/out/py_yp.npy')
+    yp = np.ascontiguousarray(yp.T.astype(ct.c_int))
+
+    nbins = cv['reb_profile_length']
+    nparts = xp.shape[0]
+    nprofs = cv['profile_count']
+
+    weights = np.ascontiguousarray(np.zeros(nparts, dtype=ct.c_double))
+
+    print('\n===============\nRunning C++!\n===============\n')
+    dt = np.zeros(nruns)
+    for i in range(nruns):
+        print(f'Run: {i}')
+        weights[:] = 0
+        t0 = tm.perf_counter()
+        reconstruct(weights, _get_2d_pointer(xp), _get_2d_pointer(profiles), niter, nbins, nparts, nprofs)
+        dt[i] = tm.perf_counter() - t0
+    print('\n===============\nFinito finale!\n===============')
+
+    print('\n-------------------\nTime spent\n-------------------\n')
+    print(f'Time spent: {np.sum(dt)}s')
+    print(f'Average time: {np.sum(dt) / nruns}s')
+    print('Iteration times:')
+    if show_all_times:
+        for i, time in enumerate(dt):
+            print(f'\t{i}: {time}')
+
+    py_im = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/py_image0.npy')
+
+    if test:
+        test_first_weight(weights)
+        # test_output(weights, py_im, xp, yp, nbins)
+
+    if show_image:
+        show_output(weights, xp, yp, ca['profiles'], py_im, nbins)
+
 def _get_pointer(x):
     return x.ctypes.data_as(ct.c_void_p)
 
@@ -51,10 +123,18 @@ def set_up_function(lib):
     reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                             double_ptr,
                             np.ctypeslib.ndpointer(ct.c_double),
-                            ct.c_int,
-                            ct.c_int,
-                            ct.c_int,
-                            ct.c_int]
+                            ct.c_int, ct.c_int,
+                            ct.c_int, ct.c_int]
+    return reconstruct
+
+def set_up_function_no_flat(lib):
+    double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
+    reconstruct = lib.reconstruct
+    reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+                            double_ptr,
+                            double_ptr,
+                            ct.c_int, ct.c_int,
+                            ct.c_int, ct.c_int]
     return reconstruct
 
 def show_output(weights, xp, yp, profiles, py_im, nbins, film=0):
@@ -99,74 +179,11 @@ def test_output(weights, py_im, xp, yp, nbins, film=0):
     nptest.assert_almost_equal(phase_space, py_im)
     print("OK!")
 
-
-def main():
-    os.system('clear')
-
-    # Flags and constrols
-    # ------------------
-    nruns = 10
-    do_compile = True
-    use_gpu_flg = False
-    show_all_times = True
-    show_image = False
-    test = True
-
-    if do_compile:
-        print('Compiling!')
-        compile(gpu=use_gpu_flg)
-
-    lib = get_lib()
-    reconstruct = set_up_function(lib)
-
-    from tomo_v3.unit_tests.C500values import C500
-    c500 = C500()
-    cv = c500.values
-    ca = c500.arrays
-
-    niter = 20
-
-    profiles = ca['profiles']
-    profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
-
-    xp = np.load('/afs/cern.ch/work/c/cgrindhe/'\
-                 'tomography/out/py_xp.npy')
-    xp = np.ascontiguousarray(xp.T.astype(ct.c_int))
-
-    yp = np.load('/afs/cern.ch/work/c/cgrindhe/'\
-                 'tomography/out/py_yp.npy')
-    yp = np.ascontiguousarray(yp.T.astype(ct.c_int))
-
-    nbins = cv['reb_profile_length']
-    nparts = xp.shape[0]
-    nprofs = cv['profile_count']
-
-    weights = np.ascontiguousarray(np.zeros(nparts, dtype=ct.c_double))
-
-    print('\n===============\nRunning C++!\n===============\n')
-    dt = np.zeros(nruns)
-    for i in range(nruns):
-        print(f'Run: {i}')
-        weights[:] = 0
-        t0 = tm.perf_counter()
-        reconstruct(weights, _get_2d_pointer(xp), profiles, niter, nbins, nparts, nprofs)
-        dt[i] = tm.perf_counter() - t0
-    print('\n===============\nFinito finale!\n===============')
-
-    print('\n-------------------\nTime spent\n-------------------\n')
-    print(f'Time spent: {np.sum(dt)}s')
-    print(f'Average time: {np.sum(dt) / nruns}s')
-    if show_all_times:
-        for i, time in enumerate(dt):
-            print(f'{i}: {time}')
-
-    py_im = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/py_image0.npy')
-
-    if test:
-        test_output(weights, py_im, xp, yp, nbins)
-
-    if show_image:
-        show_output(weights, xp, yp, ca['profiles'], py_im, nbins)
+def test_first_weight(weight):
+    fw = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/weight0.npy')
+    print("\nTesting first weight...")
+    nptest.assert_almost_equal(weight, fw)
+    print("OK!\n")    
 
 main()
 print()
