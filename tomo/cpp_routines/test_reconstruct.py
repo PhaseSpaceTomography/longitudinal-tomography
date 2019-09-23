@@ -105,9 +105,10 @@ def main():
 
     # Flags and constrols
     # ------------------
-    niter = 20
+    nruns = 10
     do_compile = True
     use_gpu_flg = False
+    show_all_times = True
     show_image = False
     test = True
 
@@ -122,6 +123,8 @@ def main():
     c500 = C500()
     cv = c500.values
     ca = c500.arrays
+
+    niter = 20
 
     profiles = ca['profiles']
     profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
@@ -141,13 +144,21 @@ def main():
     weights = np.ascontiguousarray(np.zeros(nparts, dtype=ct.c_double))
 
     print('\n===============\nRunning C++!\n===============\n')
-    t0 = tm.perf_counter()
-    reconstruct(weights, _get_2d_pointer(xp), profiles, niter, nbins, nparts, nprofs)
-    t1 = tm.perf_counter()
+    dt = np.zeros(nruns)
+    for i in range(nruns):
+        print(f'Run: {i}')
+        weights[:] = 0
+        t0 = tm.perf_counter()
+        reconstruct(weights, _get_2d_pointer(xp), profiles, niter, nbins, nparts, nprofs)
+        dt[i] = tm.perf_counter() - t0
     print('\n===============\nFinito finale!\n===============')
 
     print('\n-------------------\nTime spent\n-------------------\n')
-    print(f'Time spent: {t1 - t0}s')
+    print(f'Time spent: {np.sum(dt)}s')
+    print(f'Average time: {np.sum(dt) / nruns}s')
+    if show_all_times:
+        for i, time in enumerate(dt):
+            print(f'{i}: {time}')
 
     py_im = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/py_image0.npy')
 
