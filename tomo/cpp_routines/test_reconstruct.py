@@ -12,9 +12,9 @@ def main():
 
     # Flags and constrols
     # ------------------
-    nruns = 10
+    nruns = 1
     do_compile = True
-    use_gpu = True
+    use_gpu = False
     show_all_times = True
     show_image = False
     test = True
@@ -32,7 +32,7 @@ def main():
     cv = c500.values
     ca = c500.arrays
 
-    niter = 20
+    niter = 1# 20
 
     profiles = ca['profiles']
     # profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))

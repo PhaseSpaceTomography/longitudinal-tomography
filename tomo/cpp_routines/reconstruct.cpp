@@ -25,8 +25,18 @@ extern "C" void project(double *  flat_rec,                     // inn/out
             flat_rec[flat_points[i][j]] += weights[i];
 }
 
+
+void project_not_flat(double **  rec,                           // inn/out
+                      const int ** __restrict__ xp,             // inn
+                      const double *  __restrict__ weights,     // inn
+                      const int npart, const int nprof){        // inn
+    for (int i = 0; i < npart; i++)
+        for (int j = 0; j < nprof; j++)
+            rec[j][xp[i][j]] += weights[i];
+}
+
 void back_project_not_flat(double *  weights,                     // inn/out
-                           const int ** __restrict__ xp,                // inn
+                           const int ** __restrict__ xp,          // inn
                            const double **  profiles,             // inn
                            const int nbins,
                            const int npart,
@@ -69,6 +79,31 @@ void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
             sum_profile += flat_rec[i * nbins + j];
         for(j=0; j < nbins; j++)
             flat_rec[i * nbins + j] /= sum_profile;
+    }
+}
+
+void suppress_zeros_norm(double ** __restrict__ rec, // inn/out
+                         const int nprof,
+                         const int nbins){
+    bool positive_flag = false;
+    for(int i=0; i < nprof; i++){
+        for(int j=0; j < nbins; j++){
+            if(rec[i][j] < 0.0)
+                rec[i][j] = 0.0; 
+            else if (!positive_flag)
+                positive_flag = true;
+        }
+    }
+
+    if(!positive_flag)
+        throw std::runtime_error("All of phase space got reduced to zeroes");
+
+    for(int i=0; i < nprof; i++){
+        double sum_profile = 0;
+        for(int j=0; j < nbins; j++)
+            sum_profile += rec[i][j];
+        for(int j=0; j < nbins; j++)
+            rec[i][j] /= sum_profile;
     }
 }
 
@@ -185,9 +220,9 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
 
     // Creating arrays...
     int all_bins = nprof * nbins;
-    double * flat_rec =  new double[all_bins];
-    for(i = 0; i < all_bins; i++)
-        flat_rec[i] = 0;
+    // double * flat_rec =  new double[all_bins];
+    // for(i = 0; i < all_bins; i++)
+    //     flat_rec[i] = 0;
 
     double * diff_prof =  new double[all_bins];
 
@@ -195,9 +230,16 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     for(i=0; i < niter + 1; i++)
         discr[i] = 0;
     
+    double** rec = new double*[nprof];
     double** rparts = new double*[nprof];
-    for(i = 0; i < nprof; i++)
+    for(i = 0; i < nprof; i++){
         rparts[i] = new double[nbins];
+        rec[i] = new double[nbins];
+    }
+
+    for (int i = 0; i < nprof; i++)
+        for (int j = 0; j < nbins; j++)
+            rec[i][j] = 0;
 
     // Actual functionality
 
@@ -206,32 +248,34 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     back_project_not_flat(weights, xp, profiles, nbins, npart, nprof);
 
     for(int iteration = 0; iteration < niter; iteration++){
-        // std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
+        std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
 
-        project(flat_rec, flat_points, weights, npart, nprof);
-        suppress_zeros_norm(flat_rec, nprof, nbins);
+        project_not_flat(rec, xp, weights, npart, nprof);
+        
+        suppress_zeros_norm(rec, nprof, nbins);
 
-        find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
+        // find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
 
-        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+/*        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
 
         compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
-        back_project(weights, flat_points, diff_prof, npart, nprof);
+        back_project(weights, flat_points, diff_prof, npart, nprof);*/
     }
 
     // Calculating final discrepancy
-    project(flat_rec, flat_points, weights, npart, nprof);
+/*    project(flat_rec, flat_points, weights, npart, nprof);
     suppress_zeros_norm(flat_rec, nprof, nbins);
     
     find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
-    discr[niter] = discrepancy(diff_prof, nprof, nbins);
+    discr[niter] = discrepancy(diff_prof, nprof, nbins);*/
 
     // Cleaning
     for(i = 0; i < nprof; i++) {
         delete[] rparts[i];
+        delete[] rec[i];
     }
-    delete[] rparts, flat_rec, discr, diff_prof;
+    delete[] rparts, rec, discr, diff_prof;
 }
 
 
