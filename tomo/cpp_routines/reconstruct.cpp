@@ -13,7 +13,7 @@ extern "C" void back_project(double *  weights,                     // inn/out
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
             weights[i] += flat_profiles[flat_points[i][j]];
-}   
+}
 
 // Projections using flattened arrays
 extern "C" void project(double *  flat_rec,                     // inn/out
@@ -23,6 +23,28 @@ extern "C" void project(double *  flat_rec,                     // inn/out
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
             flat_rec[flat_points[i][j]] += weights[i];
+}
+
+void back_project_not_flat(double *  weights,                     // inn/out
+                           const int ** __restrict__ xp,                // inn
+                           const double **  profiles,             // inn
+                           const int nbins,
+                           const int npart,
+                           const int nprof){
+    double sum_particle;
+
+#pragma acc kernels loop copyin(profiles[:nprof][:nbins])\
+                         copyout(weights[:npart])\
+                         private(sum_particle)\
+                         device_type(nvidia) vector_length(32)
+#pragma omp parallel for
+    for (int i = 0; i < npart; i++){
+        sum_particle = 0;
+        for (int j = 0; j < nprof; j++)
+            sum_particle += profiles[j][xp[i][j]];
+        weights[i] = sum_particle;
+    }
+
 }
 
 void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
@@ -150,16 +172,80 @@ void create_flat_points(const int ** __restrict__ xp,       //inn
             flat_points[i][j] += nbins * j;
 }
 
-
-// Projections using flattened arrays
+// VERSION 1
+// Here i will try with non-flat arrays
 extern "C" void reconstruct(double * __restrict__ weights,              // out
+                            const int ** __restrict__ xp,               // inn
+                            const double ** __restrict__ profiles,      // inn
+                            const int niter,
+                            const int nbins,
+                            const int npart,
+                            const int nprof){
+    int i;
+
+    // Creating arrays...
+    int all_bins = nprof * nbins;
+    double * flat_rec =  new double[all_bins];
+    for(i = 0; i < all_bins; i++)
+        flat_rec[i] = 0;
+
+    double * diff_prof =  new double[all_bins];
+
+    double * discr = new double[niter + 1];
+    for(i=0; i < niter + 1; i++)
+        discr[i] = 0;
+    
+    double** rparts = new double*[nprof];
+    for(i = 0; i < nprof; i++)
+        rparts[i] = new double[nbins];
+
+    // Actual functionality
+
+    reciprocal_particles(rparts, xp, nbins, nprof, npart);
+
+    back_project_not_flat(weights, xp, profiles, nbins, npart, nprof);
+
+    for(int iteration = 0; iteration < niter; iteration++){
+        // std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
+
+        project(flat_rec, flat_points, weights, npart, nprof);
+        suppress_zeros_norm(flat_rec, nprof, nbins);
+
+        find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
+
+        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+
+        compensate_particle_amount(diff_prof, rparts, nprof, nbins);
+
+        back_project(weights, flat_points, diff_prof, npart, nprof);
+    }
+
+    // Calculating final discrepancy
+    project(flat_rec, flat_points, weights, npart, nprof);
+    suppress_zeros_norm(flat_rec, nprof, nbins);
+    
+    find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
+    discr[niter] = discrepancy(diff_prof, nprof, nbins);
+
+    // Cleaning
+    for(i = 0; i < nprof; i++) {
+        delete[] rparts[i];
+    }
+    delete[] rparts, flat_rec, discr, diff_prof;
+}
+
+
+// VERSION 0
+// Projections using flattened arrays
+// Working original version
+extern "C" void reconstruct_v0(double * __restrict__ weights,              // out
                             const int ** __restrict__ xp,               // inn
                             const double * __restrict__ flat_profiles,  // inn
                             const int niter,
                             const int nbins,
                             const int npart,
                             const int nprof){
-    int i, j;
+    int i;
 
     // Creating arrays...
     int all_bins = nprof * nbins;
