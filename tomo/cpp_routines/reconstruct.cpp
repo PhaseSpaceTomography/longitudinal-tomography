@@ -43,18 +43,34 @@ void back_project_not_flat(double *  weights,                     // inn/out
                            const int nprof){
     double sum_particle;
 
-#pragma acc kernels loop copyin(profiles[:nprof][:nbins])\
+/*#pragma acc kernels loop copyin(profiles[:nprof][:nbins])\
                          copyout(weights[:npart])\
                          private(sum_particle)\
-                         device_type(nvidia) vector_length(32)
+                         device_type(nvidia) vector_length(32)*/
 #pragma omp parallel for
     for (int i = 0; i < npart; i++){
         sum_particle = 0;
         for (int j = 0; j < nprof; j++)
             sum_particle += profiles[j][xp[i][j]];
-        weights[i] = sum_particle;
+        weights[i] += sum_particle;
     }
+}
 
+void back_project_not_flat(double *  weights,               // inn/out
+                           const int ** __restrict__ xp,    // inn
+                           double **  profiles,             // inn
+                           const int nbins,
+                           const int npart,
+                           const int nprof){
+    double sum_particle;
+
+#pragma omp parallel for
+    for (int i = 0; i < npart; i++){
+        sum_particle = 0;
+        for (int j = 0; j < nprof; j++)
+            sum_particle += profiles[j][xp[i][j]];
+        weights[i] += sum_particle;
+    }
 }
 
 void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
@@ -115,6 +131,16 @@ void find_difference_profile(double * __restrict__ diff_prof,           // out
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
 }
 
+void find_difference_profile(double ** __restrict__ diff_prof,           // out
+                             double ** __restrict__ rec,      // inn
+                             const double ** __restrict__ profiles, // inn
+                             const int nprof,
+                             const int nbins){
+    for(int i = 0; i < nprof; i++)
+        for(int j = 0; j < nbins; j++)
+            diff_prof[i][j] = profiles[i][j] - rec[i][j];
+}
+
 double discrepancy(const double * __restrict__ diff_prof,   // inn
                    const int nprof,
                    const int nbins){
@@ -127,8 +153,19 @@ double discrepancy(const double * __restrict__ diff_prof,   // inn
     return std::sqrt(squared_sum / (nprof * nbins));
 }
 
+double discrepancy(double ** __restrict__ diff_prof,  // inn
+                   const int nprof,
+                   const int nbins){
+    double squared_sum = 0;
+    for(int i=0; i < nprof; i++)
+        for(int j = 0; j < nbins; j++)
+            squared_sum += std::pow(diff_prof[i][j], 2.0);
+
+    return std::sqrt(squared_sum / (nprof * nbins));
+}
+
 void compensate_particle_amount(double * __restrict__ diff_prof,        // inn/out
-                                double ** __restrict__ rparts,    // inn
+                                double ** __restrict__ rparts,          // inn
                                 const int nprof,
                                 const int nbins){
     int flat_index = 0, i, j;
@@ -136,6 +173,17 @@ void compensate_particle_amount(double * __restrict__ diff_prof,        // inn/o
         for(j=0; j < nbins; j++){
             flat_index = i * nbins + j;
             diff_prof[flat_index] *= rparts[i][j];  
+        }
+}
+
+void compensate_particle_amount(double ** __restrict__ diff_prof,       // inn/out
+                                double ** __restrict__ rparts,          // inn
+                                const int nprof,
+                                const int nbins){
+    int flat_index = 0, i, j;
+    for(i=0; i < nprof; i++)
+        for(j=0; j < nbins; j++){
+            diff_prof[i][j] *= rparts[i][j];  
         }
 }
 
@@ -220,19 +268,16 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
 
     // Creating arrays...
     int all_bins = nprof * nbins;
-    // double * flat_rec =  new double[all_bins];
-    // for(i = 0; i < all_bins; i++)
-    //     flat_rec[i] = 0;
-
-    double * diff_prof =  new double[all_bins];
 
     double * discr = new double[niter + 1];
     for(i=0; i < niter + 1; i++)
         discr[i] = 0;
-    
+
+    double** diff_prof = new double*[nprof];    
     double** rec = new double*[nprof];
     double** rparts = new double*[nprof];
     for(i = 0; i < nprof; i++){
+        diff_prof[i] = new double[nbins];
         rparts[i] = new double[nbins];
         rec[i] = new double[nbins];
     }
@@ -254,26 +299,30 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
         
         suppress_zeros_norm(rec, nprof, nbins);
 
-        // find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
+        find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
 
-/*        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
 
         compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
-        back_project(weights, flat_points, diff_prof, npart, nprof);*/
+
+        back_project_not_flat(weights, xp, diff_prof, nbins, npart, nprof);
     }
 
     // Calculating final discrepancy
-/*    project(flat_rec, flat_points, weights, npart, nprof);
-    suppress_zeros_norm(flat_rec, nprof, nbins);
+    project_not_flat(rec, xp, weights, npart, nprof);
+    suppress_zeros_norm(rec, nprof, nbins);
     
-    find_difference_profile(diff_prof, flat_rec, profiles, all_bins);
-    discr[niter] = discrepancy(diff_prof, nprof, nbins);*/
+    find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
+    discr[niter] = discrepancy(diff_prof, nprof, nbins);
+
+    // std::cout << "Final difference: " << discr[niter] << std::endl;
 
     // Cleaning
     for(i = 0; i < nprof; i++) {
         delete[] rparts[i];
         delete[] rec[i];
+        delete[] diff_prof[i];
     }
     delete[] rparts, rec, discr, diff_prof;
 }

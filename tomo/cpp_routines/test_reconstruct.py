@@ -12,12 +12,12 @@ def main():
 
     # Flags and constrols
     # ------------------
-    nruns = 1
+    nruns = 10
     do_compile = True
     use_gpu = False
     show_all_times = True
     show_image = False
-    test = True
+    test = False
 
     if do_compile:
         print('Compiling!')
@@ -32,7 +32,7 @@ def main():
     cv = c500.values
     ca = c500.arrays
 
-    niter = 1# 20
+    niter = 20
 
     profiles = ca['profiles']
     # profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
@@ -154,9 +154,10 @@ def show_output(weights, xp, yp, profiles, py_im, nbins, film=0):
     plt.subplot(222)
     plt.imshow(py_im.T, cmap='hot', interpolation='nearest', origin='lower')
     plt.subplot(223)
-    plt.plot(profiles[film])
-    plt.plot(np.sum(phase_space.T, axis=0))
-    plt.plot(np.sum(py_im.T, axis=0))
+    plt.plot(profiles[film], label='measured')
+    plt.plot(np.sum(phase_space.T, axis=0), label='c++')
+    plt.plot(np.sum(py_im.T, axis=0), label='py')
+    plt.gca().legend()
     plt.subplot(224)
     plt.imshow(np.abs(py_im.T - phase_space.T), cmap='hot',
                interpolation='nearest', origin='lower')
