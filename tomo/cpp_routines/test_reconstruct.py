@@ -12,19 +12,20 @@ def main():
 
     # Flags and constrols
     # ------------------
-    nruns = 10
+    nruns = 1
     do_compile = True
-    use_gpu = False
+    use_gpu = True
     show_all_times = True
     show_image = False
-    test = False
+    test = True
 
     if do_compile:
         print('Compiling!')
         compile(gpu=use_gpu)
+    else:
+        print('Running on last compilation')
 
     lib = get_lib()
-    # reconstruct = set_up_function(lib)
     reconstruct = set_up_function_no_flat(lib)
 
     from tomo_v3.unit_tests.C500values import C500
@@ -35,7 +36,6 @@ def main():
     niter = 20
 
     profiles = ca['profiles']
-    # profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
     profiles = np.ascontiguousarray(profiles.astype(ct.c_double))
 
     xp = np.load('/afs/cern.ch/work/c/cgrindhe/'\
@@ -73,8 +73,8 @@ def main():
     py_im = np.load('/afs/cern.ch/work/c/cgrindhe/tomography/out/py_image0.npy')
 
     if test:
-        test_first_weight(weights)
-        # test_output(weights, py_im, xp, yp, nbins)
+        # test_first_weight(weights)
+        test_output(weights, py_im, xp, yp, nbins)
 
     if show_image:
         show_output(weights, xp, yp, ca['profiles'], py_im, nbins)
