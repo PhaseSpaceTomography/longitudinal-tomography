@@ -26,7 +26,9 @@ def main():
         print('Running on last compilation')
 
     lib = get_lib()
-    reconstruct = set_up_function_no_flat(lib)
+    
+    reconstruct = set_up_function(lib)
+    # reconstruct = set_up_function_no_flat(lib)
 
     from tomo_v3.unit_tests.C500values import C500
     c500 = C500()
@@ -36,7 +38,8 @@ def main():
     niter = 20
 
     profiles = ca['profiles']
-    profiles = np.ascontiguousarray(profiles.astype(ct.c_double))
+    # profiles = np.ascontiguousarray(profiles.astype(ct.c_double))
+    profiles = np.ascontiguousarray(profiles.flatten().astype(ct.c_double))
 
     xp = np.load('/afs/cern.ch/work/c/cgrindhe/'\
                  'tomography/out/py_xp.npy')
@@ -58,7 +61,7 @@ def main():
         print(f'Run: {i}')
         weights[:] = 0
         t0 = tm.perf_counter()
-        reconstruct(weights, _get_2d_pointer(xp), _get_2d_pointer(profiles), niter, nbins, nparts, nprofs)
+        reconstruct(weights, _get_2d_pointer(xp), profiles, niter, nbins, nparts, nprofs)
         dt[i] = tm.perf_counter() - t0
     print('\n===============\nFinito finale!\n===============')
 
@@ -90,7 +93,7 @@ def _get_2d_pointer(arr2d):
 
 def compile(gpu):
     name_so = 'test_rec.so'
-    compile_file = 'reconstruct.cpp'
+    compile_file = 'reconstruct_old_alg.cpp'
 
     cpu_com = 'g++ -fopenmp -march=native -ffast-math'
     gpu_com = 'pgc++ -acc -Minfo=accel -ta=nvidia'
