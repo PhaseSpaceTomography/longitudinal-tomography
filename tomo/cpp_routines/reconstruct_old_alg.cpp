@@ -9,7 +9,7 @@ extern "C" void back_project(double *  weights,                     // inn/out
                              int ** __restrict__ flat_points,       // inn
                              const double *  flat_profiles,         // inn
                              const int npart, const int nprof){     // inn
-#pragma omp parallel for  
+#pragma omp parallel for
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
             weights[i] += flat_profiles[flat_points[i][j]];
@@ -32,6 +32,7 @@ void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
     bool positive_flag = false;
     
     // surpressing zeros
+#pragma omp parallel for
     for(i=0; i < nprof * nbins; i++)
         if(flat_rec[i] < 0.0)
             flat_rec[i] = 0.0;
@@ -40,7 +41,8 @@ void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
 
     if(!positive_flag)
         throw std::runtime_error("All of phase space got reduced to zeroes");
-      
+
+#pragma omp parallel for
     for(i=0; i < nprof; i++){
         double sum_profile = 0;
         for(j=0; j < nbins; j++)
@@ -54,6 +56,7 @@ void find_difference_profile(double * __restrict__ diff_prof,           // out
                              const double * __restrict__ flat_rec,      // inn
                              const double * __restrict__ flat_profiles, // inn
                              const int all_bins){
+#pragma omp parallel for
     for(int i = 0; i < all_bins; i++)
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
 }
@@ -63,6 +66,7 @@ double discrepancy(const double * __restrict__ diff_prof,   // inn
                    const int nbins){
     int all_bins = nprof * nbins;
     double squared_sum = 0;
+
     for(int i=0; i < all_bins; i++){
         squared_sum += std::pow(diff_prof[i], 2.0);
     }
@@ -114,6 +118,7 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
     int i, j;
 
     // initiating rparts to 0
+#pragma omp parallel for
     for(i=0; i < nprof; i++)
         for(j=0; j < nbins; j++)
             rparts[i][j] = 0.0;
@@ -123,12 +128,14 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
     int max_bin_val = max_2d(rparts, nbins, nprof);
 
     // Setting 0's to 1's to avoid zero division
+#pragma omp parallel for
     for(i = 0; i < nprof; i++)
         for(j = 0; j < nbins; j++)
             if(rparts[i][j] == 0.0)
                 rparts[i][j] = 1.0;
 
     // Creating reciprocal
+#pragma omp parallel for
     for(i = 0; i < nprof; i++)
         for(j = 0; j < nbins; j++)
                 rparts[i][j] = (double) max_bin_val / rparts[i][j];
@@ -144,7 +151,7 @@ void create_flat_points(const int ** __restrict__ xp,       //inn
     for(i = 0; i < npart; i++)
         for(j = 0; j < nprof; j++)
             flat_points[i][j] = xp[i][j];
-    
+
     for(i = 0; i < npart; i++)
         for(j = 0; j < nprof; j++)
             flat_points[i][j] += nbins * j;
