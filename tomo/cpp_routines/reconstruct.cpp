@@ -206,41 +206,18 @@ void print_discr(const double * __restrict__ discr, // inn
     }
 }
 
-// VERSION 1
-// Here i will try with non-flat arrays
-extern "C" void reconstruct(double * __restrict__ weights,              // out
-                            const int ** __restrict__ xp,               // inn
-                            const double ** __restrict__ profiles,      // inn
-                            const int niter,
-                            const int nbins,
-                            const int npart,
-                            const int nprof){
-    int i;
-
-    // Creating arrays...
-
-    double * discr = new double[niter + 1];
-    for(i=0; i < niter + 1; i++)
-        discr[i] = 0;
-
-    double** diff_prof = new double*[nprof];    
-    double** rec = new double*[nprof];
-    double** rparts = new double*[nprof];
-    for(i = 0; i < nprof; i++){
-        diff_prof[i] = new double[nbins];
-        rparts[i] = new double[nbins];
-        rec[i] = new double[nbins];
-    }
-
-    for (int i = 0; i < nprof; i++)
-        for (int j = 0; j < nbins; j++)
-            rec[i][j] = 0;
-
-    // Finding the reciprocal of the number of particles in a bin in a given profile.
-    // Needed for adjustment of difference-profiles, and correct weighting of particles.
-    reciprocal_particles(rparts, xp, nbins, nprof, npart);
-
-
+void _reconstructCpuGpu(double * __restrict__ weights,          // out
+                        const int ** __restrict__ xp,
+                        const double ** __restrict__ profiles,
+                        double ** __restrict__ diff_prof,
+                        double ** __restrict__ rec, 
+                        double ** __restrict__ rparts,
+                        double * __restrict__ discr,
+                        const int niter,
+                        const int nbins,
+                        const int npart,
+                        const int nprof){
+    
 #pragma acc data pcopyin(xp[:npart][:nprof],\
                          profiles[:nprof][:nbins],\
                          rparts[:nprof][:nbins])\
@@ -283,6 +260,45 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     
     } //end acc data
     } // end acc data
+}
+
+// VERSION 1
+// Here i will try with non-flat arrays
+extern "C" void reconstruct(double * __restrict__ weights,              // out
+                            const int ** __restrict__ xp,               // inn
+                            const double ** __restrict__ profiles,      // inn
+                            const int niter,
+                            const int nbins,
+                            const int npart,
+                            const int nprof){
+    int i;
+
+    // Creating arrays...
+
+    double * discr = new double[niter + 1];
+    for(i=0; i < niter + 1; i++)
+        discr[i] = 0;
+
+    double** diff_prof = new double*[nprof];    
+    double** rec = new double*[nprof];
+    double** rparts = new double*[nprof];
+    for(i = 0; i < nprof; i++){
+        diff_prof[i] = new double[nbins];
+        rparts[i] = new double[nbins];
+        rec[i] = new double[nbins];
+    }
+
+    for (int i = 0; i < nprof; i++)
+        for (int j = 0; j < nbins; j++)
+            rec[i][j] = 0;
+
+    // Finding the reciprocal of the number of particles in a bin in a given profile.
+    // Needed for adjustment of difference-profiles, and correct weighting of particles.
+    reciprocal_particles(rparts, xp, nbins, nprof, npart);
+
+    _reconstructCpuGpu(weights, xp, profiles, diff_prof, rec,
+                       rparts, discr, niter, nbins, npart, nprof);
+
 
     // print_discr(discr, niter + 1);
 
