@@ -196,8 +196,10 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
 
     create_flat_points(xp, flat_points, npart, nprof, nbins);
 
+#pragma acc data create(weights[:npart])
+    {
     back_project(weights, flat_points, flat_profiles, npart, nprof);
-
+    
     for(int iteration = 0; iteration < niter; iteration++){
         std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
 
@@ -211,7 +213,7 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
         compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
         back_project(weights, flat_points, diff_prof, npart, nprof);
-    }
+    } //end for
 
     // Calculating final discrepancy
     project(flat_rec, flat_points, weights, npart, nprof);
@@ -219,6 +221,7 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     
     find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
     discr[niter] = discrepancy(diff_prof, nprof, nbins);
+    }// end acc copyin
 
     // Cleaning
     for(i = 0; i < nprof; i++) {
