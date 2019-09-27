@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <stdexcept>
+#include <chrono>
 #include <cmath>
 
 void project(double **  rec,                           // inn/out
@@ -11,13 +12,13 @@ void project(double **  rec,                           // inn/out
              const int nprof,
              const int nbins){
 
-    #pragma acc kernels loop present(xp[:npart][:nprof],\
+/*    #pragma acc kernels loop present(xp[:npart][:nprof],\
                                      weights[:npart],\
                                      rec[:nprof][:nbins])\
-                             device_type(nvidia) vector_length(32)
-    for (int i = 0; i < nprof; i++){
-        for (int j = 0; j < npart; j++){
-            rec[i][xp[j][i]] += weights[j];
+                             device_type(nvidia) vector_length(32)*/
+    for (int i = 0; i < npart; i++){
+        for (int j = 0; j < nprof; j++){
+            rec[j][xp[i][j]] += weights[i];
         }
     }
 }
@@ -170,6 +171,7 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
     int i, j;
 
     // initiating rparts to 0
+    #pragma omp parallel for
     for(i=0; i < nprof; i++)
         for(j=0; j < nbins; j++)
             rparts[i][j] = 0.0;
@@ -179,12 +181,14 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
     int max_bin_val = max_2d(rparts, nbins, nprof);
 
     // Setting 0's to 1's to avoid zero division
+    #pragma omp parallel for
     for(i = 0; i < nprof; i++)
         for(j = 0; j < nbins; j++)
             if(rparts[i][j] == 0.0)
                 rparts[i][j] = 1.0;
 
     // Creating reciprocal
+    #pragma omp parallel for
     for(i = 0; i < nprof; i++)
         for(j = 0; j < nbins; j++)
                 rparts[i][j] = (double) max_bin_val / rparts[i][j];
@@ -193,6 +197,7 @@ void reciprocal_particles(double **  __restrict__ rparts,   // out
 void print_discr(const double * __restrict__ discr, // inn
                  const int len){
     std::cout << "Discrepancies: " << std::endl;
+    #pragma omp parallel for
     for(int i=0; i < len; i++){
         std::cout << i << ": " << discr[i] << " ";
         if ((i + 1) % 4 == 0){
@@ -235,21 +240,26 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     // Needed for adjustment of difference-profiles, and correct weighting of particles.
     reciprocal_particles(rparts, xp, nbins, nprof, npart);
 
-#pragma acc data copy(weights[:npart])\
-                 pcopyin(xp[:npart][:nprof],\
+
+#pragma acc data pcopyin(xp[:npart][:nprof],\
                          profiles[:nprof][:nbins],\
-                         rec[:nprof][:nbins],\
                          rparts[:nprof][:nbins])\
                  pcreate(diff_prof[:nprof][:nbins])
     {
 
+    #pragma acc data pcopy(weights[:npart])
+    {
     back_project(weights, xp, profiles, nbins, npart, nprof);
+    }// end acc data
 
     for(int iteration = 0; iteration < niter; iteration++){
-         std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
-
-        project(rec, xp, weights, npart, nprof, nbins);
+        std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;      
         
+        project(rec, xp, weights, npart, nprof, nbins);
+
+        #pragma acc data pcopy(rec[:nprof][:nbins])\
+                         pcopyout(weights[:npart])
+        {
         suppress_zeros_norm(rec, nprof, nbins);
 
         find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
@@ -259,14 +269,19 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
         compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
         back_project(weights, xp, diff_prof, nbins, npart, nprof);
+        } //end acc data
     } // end for      
 
     // Calculating final discrepancy
+    #pragma acc data pcopy(weights[:npart], rec[:nprof][:nbins])
+    {
+    
     project(rec, xp, weights, npart, nprof, nbins);
     suppress_zeros_norm(rec, nprof, nbins);
-    
     find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
     discr[niter] = discrepancy(diff_prof, nprof, nbins);
+    
+    } //end acc data
     } // end acc data
 
     // print_discr(discr, niter + 1);
