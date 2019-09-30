@@ -36,50 +36,47 @@ void projectGpu(double **  rec,                           // inn/out
     for(int i = 0; i < NCPU; i++)
         temb_bins[i] = new double[nbins];
 
-    double * one_temp_profile = new double[nbins];
 
+#pragma acc declare present(xp[:npart][:nprof], rec[:nprof][:nprof])
 
-#pragma acc declare present(xp[:npart][:nprof])
-
-#pragma acc data create(temb_bins[:NCPU][:nbins]) copyout(one_temp_profile[:nbins])
+#pragma acc data create(temb_bins[:NCPU][:nbins])
     {
-        int start_part = 0;
-        int end_part = NCPU; // Should i check already here that npart > NCPU?
-        int profile = 0;
+        for (int profile = 0; profile < nprof; profile++){
+        
+            int start_part = 0;
+            int end_part = NCPU; // Should i check already here that npart > NCPU?
+        
+            while(start_part < npart){
 
-        while(start_part < npart){
+                #pragma acc parallel loop collapse(2) 
+                for (int i = 0; i < NCPU; i++)
+                    for (int j = 0; j < nbins; j++)
+                        temb_bins[i][j] = 0.0;
 
-            #pragma acc parallel loop collapse(2) 
-            for (int i = 0; i < NCPU; i++)
-                for (int j = 0; j < nbins; j++)
-                    temb_bins[i][j] = 0.0;
+                #pragma acc parallel loop device_type(nvidia)
+                for (int i = 0; i < end_part; i++){  
+                    temb_bins[i][xp[start_part + i][profile]] = weights[start_part + i];
+                }
 
-            #pragma acc parallel loop
-            for (int i = 0; i < end_part; i++){  
-                temb_bins[i][xp[start_part + i][profile]] = weights[start_part + i];
-            }
-
-            start_part += NCPU;
-            if ((npart - start_part) < NCPU)
-                end_part = npart - start_part;
+                start_part += NCPU;
+                if ((npart - start_part) < NCPU)
+                    end_part = npart - start_part;
             
-            #pragma acc parallel loop device_type(nvidia) vector_length(32)
-            for (int i = 0; i < nbins; i++){
-                double bin_sum = 0.0;
-                for (int j = 0; j < NCPU; j++)
-                    bin_sum += temb_bins[j][i];
-                one_temp_profile[i] += bin_sum;
-            }
-
-        }//end while
-    } // end acc data
-
-    for(int i = 0; i < 205; i++)
-        std::cout << one_temp_profile[i] << " ";
+                #pragma acc parallel loop
+                for (int i = 0; i < nbins; i++){
+                    double bin_sum = 0.0;
+                    #pragma loop
+                    for (int j = 0; j < NCPU; j++)
+                        bin_sum += temb_bins[j][i];
+                    rec[profile][i] += bin_sum;
+                }
+            }//end while
+        } // end acc data
+    } //for profile
 
     for(int i = 0; i < NCPU; i++)
         delete[] temb_bins[i];
-    delete[] temb_bins, one_temp_profile;
+    delete[] temb_bins;
     
 }
 
@@ -349,7 +346,7 @@ void _reconstructGpu(double * __restrict__ weights,          // out
         
         projectGpu(rec, xp, weights, npart, nprof, nbins);
 
-/*        suppress_zeros_norm(rec, nprof, nbins);
+        suppress_zeros_norm(rec, nprof, nbins);
 
         find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
 
@@ -357,14 +354,14 @@ void _reconstructGpu(double * __restrict__ weights,          // out
 
         compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
-        back_project(weights, xp, diff_prof, nbins, npart, nprof);*/
+        back_project(weights, xp, diff_prof, nbins, npart, nprof);
     } // end for      
 
     // Calculating final discrepancy
-/*    project(rec, xp, weights, npart, nprof, nbins);
+    projectGpu(rec, xp, weights, npart, nprof, nbins);
     suppress_zeros_norm(rec, nprof, nbins);
     find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
-    discr[niter] = discrepancy(diff_prof, nprof, nbins);*/
+    discr[niter] = discrepancy(diff_prof, nprof, nbins);
     } // end acc data
 }
 
