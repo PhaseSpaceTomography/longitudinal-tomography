@@ -23,6 +23,66 @@ void project(double **  rec,                           // inn/out
     }
 }
 
+void projectGpu(double **  rec,                           // inn/out
+                const int ** __restrict__ xp,             // inn
+                const double *  __restrict__ weights,     // inn
+                const int npart,
+                const int nprof,
+                const int nbins){
+
+    const int NCPU = 2500;
+
+    double** temb_bins = new double*[NCPU];
+    for(int i = 0; i < NCPU; i++)
+        temb_bins[i] = new double[nbins];
+
+    double * one_temp_profile = new double[nbins];
+
+
+#pragma acc declare present(xp[:npart][:nprof])
+
+#pragma acc data create(temb_bins[:NCPU][:nbins]) copyout(one_temp_profile[:nbins])
+    {
+        int start_part = 0;
+        int end_part = NCPU; // Should i check already here that npart > NCPU?
+        int profile = 0;
+
+        while(start_part < npart){
+
+            #pragma acc parallel loop collapse(2) 
+            for (int i = 0; i < NCPU; i++)
+                for (int j = 0; j < nbins; j++)
+                    temb_bins[i][j] = 0.0;
+
+            #pragma acc parallel loop
+            for (int i = 0; i < end_part; i++){  
+                temb_bins[i][xp[start_part + i][profile]] = weights[start_part + i];
+            }
+
+            start_part += NCPU;
+            if ((npart - start_part) < NCPU)
+                end_part = npart - start_part;
+            
+            #pragma acc parallel loop device_type(nvidia) vector_length(32)
+            for (int i = 0; i < nbins; i++){
+                double bin_sum = 0.0;
+                for (int j = 0; j < NCPU; j++)
+                    bin_sum += temb_bins[j][i];
+                one_temp_profile[i] += bin_sum;
+            }
+
+        }//end while
+    } // end acc data
+
+    for(int i = 0; i < 205; i++)
+        std::cout << one_temp_profile[i] << " ";
+
+    for(int i = 0; i < NCPU; i++)
+        delete[] temb_bins[i];
+    delete[] temb_bins, one_temp_profile;
+    
+}
+
 void back_project(double *  weights,                     // inn/out
                   const int ** __restrict__ xp,          // inn
                   const double **  profiles,             // inn
@@ -217,7 +277,7 @@ void _reconstructCpuGpu(double * __restrict__ weights,          // out
                         const int nbins,
                         const int npart,
                         const int nprof){
-    
+
 #pragma acc data pcopyin(xp[:npart][:nprof],\
                          profiles[:nprof][:nbins],\
                          rparts[:nprof][:nbins])\
@@ -262,6 +322,52 @@ void _reconstructCpuGpu(double * __restrict__ weights,          // out
     } // end acc data
 }
 
+void _reconstructGpu(double * __restrict__ weights,          // out
+                        const int ** __restrict__ xp,
+                        const double ** __restrict__ profiles,
+                        double ** __restrict__ diff_prof,
+                        double ** __restrict__ rec, 
+                        double ** __restrict__ rparts,
+                        double * __restrict__ discr,
+                        const int niter,
+                        const int nbins,
+                        const int npart,
+                        const int nprof){
+
+#pragma acc data copyin(xp[:npart][:nprof],\
+                         profiles[:nprof][:nbins],\
+                         rparts[:nprof][:nbins],\
+                         rec[:nprof][:nbins])\
+                 create(diff_prof[:nprof][:nbins])\
+                 copy(weights[:npart])
+    {
+
+    back_project(weights, xp, profiles, nbins, npart, nprof);
+
+    for(int iteration = 0; iteration < niter; iteration++){
+        std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;      
+        
+        projectGpu(rec, xp, weights, npart, nprof, nbins);
+
+/*        suppress_zeros_norm(rec, nprof, nbins);
+
+        find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
+
+        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+
+        compensate_particle_amount(diff_prof, rparts, nprof, nbins);
+
+        back_project(weights, xp, diff_prof, nbins, npart, nprof);*/
+    } // end for      
+
+    // Calculating final discrepancy
+/*    project(rec, xp, weights, npart, nprof, nbins);
+    suppress_zeros_norm(rec, nprof, nbins);
+    find_difference_profile(diff_prof, rec, profiles, nprof, nbins);
+    discr[niter] = discrepancy(diff_prof, nprof, nbins);*/
+    } // end acc data
+}
+
 // VERSION 1
 // Here i will try with non-flat arrays
 extern "C" void reconstruct(double * __restrict__ weights,              // out
@@ -296,9 +402,11 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     // Needed for adjustment of difference-profiles, and correct weighting of particles.
     reciprocal_particles(rparts, xp, nbins, nprof, npart);
 
-    _reconstructCpuGpu(weights, xp, profiles, diff_prof, rec,
-                       rparts, discr, niter, nbins, npart, nprof);
+    // _reconstructCpuGpu(weights, xp, profiles, diff_prof, rec,
+    //                    rparts, discr, niter, nbins, npart, nprof);
 
+    _reconstructGpu(weights, xp, profiles, diff_prof, rec,
+                    rparts, discr, niter, nbins, npart, nprof);    
 
     // print_discr(discr, niter + 1);
 
