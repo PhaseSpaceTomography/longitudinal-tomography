@@ -17,14 +17,17 @@ def main():
 
     os.system('clear')
     
+    # -----------------
     # Control panel
     # -----------------
     do_compile = True
-    gpu = True
-    niter = 10
+    gpu = False
+    niter = 1
     run_tests = True
     show_all_times = True
-    #------------------
+    #------------------------------------------------------------------------------
+    # NB: CPU version will give wrong results when run multiple times consequtively
+    # -----------------------------------------------------------------------------
     
     cpu_com = 'g++ -fopenmp -march=native -ffast-math'
     gpu_com = 'pgc++ -acc -Minfo=accel -ta=nvidia'
@@ -165,11 +168,13 @@ def main():
     print('\nTiming:\n---------------------')
     print(f'time spent: {total_time}')
     print(f'average time: {total_time / niter}')
+    print('- - - - - - - - - - -')
 
     if show_all_times:
         for i, t in enumerate(run_times):
             print(f'run #{i+1}: {t}')
 
+    print('---------------------')
     # =======================================================================
 
 main()
