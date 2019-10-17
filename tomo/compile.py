@@ -13,7 +13,7 @@ def main(gpu_flag):
     path = os.path.realpath(__file__)
     basepath = os.sep.join(path.split(os.sep)[:-1]) + '/cpp_routines/'
 
-    cpp_files = [os.path.join(basepath, 'tomo_routines.cpp'),
+    cpp_files = [os.path.join(basepath, 'reconstruct.cpp'),
                  os.path.join(basepath, 'kick_and_drift.cpp')]
 
     # Sets flags
