@@ -1,24 +1,22 @@
 #include <iostream>
-
-#include <fstream>
-#include "timing.h"
-#include "fileIO.h"
-
 #include <string>
 #include "sin.h"
 #include <cmath>
 
 using namespace std;
 
-extern "C" void gpu_kick(const double * __restrict__ dphi,
-                         double * __restrict__ denergy,
-                         const double rfv1,
-                         const double rfv2,
-                         const double phi0,
-                         const double phi12,
-                         const double hratio,
-                         const int nr_particles,
-                         const double acc_kick){
+// "Kick" function for GPU accelerated version.
+// Calculates the difference in energy between two machine turns.
+// Uses native C++ sinus function.
+void kick_gpu(const double * __restrict__ dphi,
+              double * __restrict__ denergy,
+              const double rfv1,
+              const double rfv2,
+              const double phi0,
+              const double phi12,
+              const double hratio,
+              const int nr_particles,
+              const double acc_kick){
 
     #pragma acc parallel loop device_type(nvidia) vector_length(32)
     for (int i=0; i < nr_particles; i++)    
@@ -26,15 +24,20 @@ extern "C" void gpu_kick(const double * __restrict__ dphi,
                      + rfv2 * sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
 }
 
-extern "C" void cpu_kick(const double * __restrict__ dphi,
-                         double * __restrict__ denergy,
-                         const double rfv1,
-                         const double rfv2,
-                         const double phi0,
-                         const double phi12,
-                         const double hratio,
-                         const int nr_particles,
-                         const double acc_kick){
+// "Kick" function for CPU accelerated version.
+// Calculates the difference in energy between two machine turns.
+// Uses BLonD fast_sin function.
+// Can be called directly from python.
+//  Used in hybrid python/C++ class.
+extern "C" void kick(const double * __restrict__ dphi,
+                     double * __restrict__ denergy,
+                     const double rfv1,
+                     const double rfv2,
+                     const double phi0,
+                     const double phi12,
+                     const double hratio,
+                     const int nr_particles,
+                     const double acc_kick){
 
     #pragma omp parallel for
     for (int i=0; i < nr_particles; i++)    
@@ -42,16 +45,27 @@ extern "C" void cpu_kick(const double * __restrict__ dphi,
                      + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
 }
 
+// "Drift" function.
+// Calculates the difference in phase between two macine turns.
+// Used for both GPU and CPU version.
+// Can be called directly from python.
+//  Used in hybrid python/C++ class.
 extern "C" void drift(double * __restrict__ dphi,
                       const double * __restrict__ denergy,
                       const double dphase,
                       const int nr_particles){
+
     #pragma acc parallel loop device_type(nvidia) vector_length(32)
     #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
         dphi[i] -= dphase * denergy[i];
 }
 
+
+// Calculates X and Y coordinates for particles based on a given
+//  phase and energy.
+// Used for both GPU and CPU version.
+// Can be called directly from python.
 extern "C" void calc_xp_and_yp(double ** __restrict__ xp,           // inn/out
                                double ** __restrict__ yp,           // inn/out
                                const double * __restrict__ denergy, // inn
@@ -65,6 +79,7 @@ extern "C" void calc_xp_and_yp(double ** __restrict__ xp,           // inn/out
                                const double yat0,
                                const int profile,
                                const int nparts){
+
     #pragma acc parallel loop device_type(nvidia) vector_length(32)
     #pragma acc declare present(dphi[:nparts], denergy[:nparts])
     #pragma omp parallel for
@@ -74,8 +89,13 @@ extern "C" void calc_xp_and_yp(double ** __restrict__ xp,           // inn/out
     }//for
 }
 
-// GPU VERSION
-extern "C" void kick_and_drift(
+// GPU version of Kick and drift function.
+// Accelerated with OpenACC.
+// The homogeneous particle distribution should be
+//  calculated before this function.
+// Takes arrays of denergy and dphi with initial values,
+//  calculated at forehand.  
+extern "C" void kick_and_drift_gpu(
                          double ** __restrict__ xp,             // inn/out
                          double ** __restrict__ yp,             // inn/out
                          double * __restrict__ denergy,         // inn
@@ -119,7 +139,7 @@ extern "C" void kick_and_drift(
         
         turn++;
         
-        gpu_kick(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
+        kick_gpu(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
                  hratio, nparts, deltaE0[turn]);
 
         if(turn % dturns == 0){
@@ -130,12 +150,17 @@ extern "C" void kick_and_drift(
                            omega_rev0[turn], dtbin, xorigin, dEbin,
                            yat0, profile, nparts);
         }// if
-    } //while
+    } // while
     } // data
-} //func
+} // func
 
-// CPU VERSION
-extern "C" void kick_and_drift_cpu(
+// CPU version of Kick and drift function.
+// Accelerated with OpenMP
+// The homogeneous particle distribution should be
+//  calculated before this function.
+// Takes arrays of denergy and dphi with initial values,
+//  calculated at forehand.  
+extern "C" void kick_and_drift(
                          double ** __restrict__ xp,             // inn/out
                          double ** __restrict__ yp,             // inn/out
                          double * __restrict__ denergy,         // inn
@@ -171,8 +196,8 @@ extern "C" void kick_and_drift_cpu(
         
         turn++;
         
-        cpu_kick(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
-                 hratio, nparts, deltaE0[turn]);   
+        kick(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
+             hratio, nparts, deltaE0[turn]);   
         
         if (turn % dturns == 0){
             
@@ -187,89 +212,3 @@ extern "C" void kick_and_drift_cpu(
         } //if
     } //while
 }//func
-
-
-int main(int argc, char const *argv[]){
-    const string rdir = "/afs/cern.ch/work/c/cgrindhe/tomography/tomo_v3/unit_tests/resources/C500MidPhaseNoise";
-    const string rdir2 = "/afs/cern.ch/work/c/cgrindhe/tomography/lab/cpp_out";
-    
-    const int NPART = 406272;
-    const int NTURNS = 1188;
-    const int DTURNS = 12;
-    const int NPROFS = 100;
-
-    double** xp = new double*[NPROFS];
-    double** yp = new double*[NPROFS];
-    for(int i = 0; i < NPROFS; i++){
-        xp[i] = new double[NPART];
-        yp[i] = new double[NPART];
-    }
-
-    for (int i = 0; i < NPROFS; i++){
-        for (int j = 0; j < NPART; j++){
-            xp[i][j] = 0.0;
-            yp[i][j] = 0.0;
-        }
-    }
-
-    double denergy [NPART];
-    double dphi [NPART];
-    readDoubleArrayTxt(denergy, NPART, rdir2 + "/denergy.dat");    
-    readDoubleArrayTxt(dphi, NPART, rdir2 + "/dphi.dat");
-
-    double rf2v [NTURNS+1];
-    double rf1v [NTURNS+1];
-    double phi0 [NTURNS+1];
-    double deltaE0 [NTURNS+1];
-    double omega_rev0 [NTURNS+1];
-    double dphase [NTURNS+1];
-
-    for(int i = 0; i < NTURNS+1; i++){
-        rf2v[i] = 0.0; 
-    }
-
-    readDoubleArrayTxt(rf1v, NTURNS+1, rdir2 + "/rfv1.dat");
-    readDoubleArrayTxt(phi0, NTURNS+1, rdir + "/phi0.dat");  
-    readDoubleArrayTxt(omega_rev0, NTURNS+1, rdir + "/omegarev0.dat");
-    readDoubleArrayTxt(deltaE0, NTURNS+1, rdir + "/deltaE0.dat");
-    readDoubleArrayTxt(dphase, NTURNS+1, rdir + "/dphase.dat");
-
-    const double phi12 = 0.3116495273194016;
-    const double hratio = 2.0;
-    const double hnum = 1.0;
-    const double dtbin = 1.9999999999999997e-09;
-    const double xorigin = -69.73326295579088;
-    const double dEbin = 23340.63328895732;
-    const double yat0 = 102.5;
-
-    Timer tm = Timer();
-
-    cout << "All data loaded!" << endl;
-    cout << "Crossing fingers...." << endl << endl;
-
-    tm.startClock();
-    
-    kick_and_drift(xp, yp, denergy, dphi, rf1v, rf2v, phi0,
-                   deltaE0, omega_rev0, dphase, phi12, hratio,
-                   hnum, dtbin, xorigin, dEbin, yat0, DTURNS,
-                   NTURNS, NPART);
-    
-    auto tdiff = tm.getTime();
-
-    cout << "Success!" << endl;
-    cout << "Time spent: " << tdiff  << "ms" << endl;
-
-    cout << endl << endl << "Saving xp..." << endl;
-    string out_dir = "/afs/cern.ch/work/c/cgrindhe/tomography/lab/cpp_out";
-    save2dArrayTxt(xp, NPART, NPROFS, out_dir + "/xp_cpp.dat");
-    cout << "XP saved, saving yp..." << endl;
-    save2dArrayTxt(yp, NPART, NPROFS, out_dir + "/yp_cpp.dat");
-    cout << "Saving complete!" << endl;
-
-    for(int i = 0; i < NPROFS; i++){
-        delete[] xp[i], yp[i];
-    }
-    delete[] xp, yp;
-
-    return 0;
-}
