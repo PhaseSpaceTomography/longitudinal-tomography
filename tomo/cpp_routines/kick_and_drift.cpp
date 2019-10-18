@@ -187,7 +187,6 @@ extern "C" void kick_and_drift(
 
     int profile = 0;
     int turn = 0;
-    int profile_count = nturns / dturns;
 
     cout << "Tracking to profile " << profile + 1 << endl;
 
