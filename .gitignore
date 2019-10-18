@@ -10,4 +10,4 @@ tomo/.idea
 *.data
 *.npy
 *.so
-
+*.o
