@@ -165,6 +165,19 @@ class OutputHandler:
                     f.write(f'          {i}  {d:0.7E}\n')
 
     # --------------------------------------------------------------- #
+    #                          TRACKING                               #
+    # --------------------------------------------------------------- #
+
+    # Write output for particle tracking in Fortran style.
+    # The Fortran algorithm is a little different, so
+    #  the last part is not valid. Meanwhile, it is needed
+    #  for the tomoscope. To be changed in future. 
+    @classmethod
+    def print_tracking_status_ccc(cls, profile):
+        print(f' Tracking from time slice  {profile} to  {profile + 1},'\
+              f'   0.000% went outside the image width.')
+
+    # --------------------------------------------------------------- #
     #                         COORDINATES                             #
     # --------------------------------------------------------------- #
 

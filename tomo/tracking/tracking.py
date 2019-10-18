@@ -1,5 +1,7 @@
 import numpy as np
 from numba import njit
+import logging as log
+from utils.tomo_io import OutputHandler as oh
 from tracking.particle_tracker import ParticleTracker
 from cpp_routines.tomolib_wrappers import kick, drift
 
@@ -49,8 +51,9 @@ class Tracking(ParticleTracker):
 
         xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
         
-        print(f'Lost {nr_lost_pts} particles - '\
-              f'{(nr_lost_pts / nr_of_particles) * 100}% of all particles')
+        log.info(f'Lost {nr_lost_pts} particles - '\
+                 f'{(nr_lost_pts / nr_of_particles) * 100}%'\
+                 f' of all particles')
 
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
@@ -64,7 +67,7 @@ class Tracking(ParticleTracker):
 
         profile = 0
         turn = 0
-        print(f'Tracking to profile {profile + 1}')
+        oh.print_tracking_status_ccc(profile)
         while turn < n_turns:
             dphi = drift(denergy, dphi, tpar.dphase, n_part, turn)
             
@@ -86,7 +89,7 @@ class Tracking(ParticleTracker):
                 profile += 1
                 xp[profile] = temp_xp
                 yp[profile] = denergy / self.mapinfo.dEbin + tpar.yat0
-                print(f'Tracking to profile {profile + 1}')
+                oh.print_tracking_status_ccc(profile)
 
         return xp, yp
 
@@ -104,7 +107,7 @@ class Tracking(ParticleTracker):
                        n_turns, n_part):
         turn = 0
         profile = 0
-        print(f'tracking to profile {profile + 1}')
+        oh.print_tracking_status_ccc(profile)
         while turn < n_turns:
             # Calculating change in phase for each particle at a turn
             dphi = drift(denergy, dphi, self.timespace.par.dphase,
@@ -123,7 +126,7 @@ class Tracking(ParticleTracker):
                                - self.timespace.par.x_origin)
                 yp[profile] = (denergy / float(self.mapinfo.dEbin)
                                + self.timespace.par.yat0)
-                print(f'tracking to profile {profile + 1}')
+                oh.print_tracking_status_ccc(profile)
         return xp, yp
 
     def calc_dphi_denergy(self, xp, yp, turn=0):

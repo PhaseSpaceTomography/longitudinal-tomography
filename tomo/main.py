@@ -70,7 +70,5 @@ def main():
                                            film, output_path)
 
     OutputHandler.save_difference_ccc(tomo.diff, output_path, film)
-
-    print('Program finished.')
     
 main()
