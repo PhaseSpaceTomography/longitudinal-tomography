@@ -12,6 +12,11 @@ class TrackingCpp(ParticleTracker):
         super().__init__(ts, mi)
 
     def track(self):
+        # Experimental flag for calling GPU version of tracking routine.
+        # Must find better way of deciding
+        #   whether gpu routine(s) should be used or not.
+        GPU = True
+        
         tpar = self.timespace.par
         nr_of_particles = self.find_nr_of_particles()
 
@@ -21,6 +26,11 @@ class TrackingCpp(ParticleTracker):
         # Creating a homogeneous distribution of particles
         xp[0], yp[0] = self._initiate_points()
 
+        # Needed because of overwriting by GPU.
+        if GPU:
+            xp_0 = xp[0].copy()
+            yp_0 = yp[0].copy()
+
         # Calculating radio frequency voltages for each turn
         rf1v = (tpar.vrf1
                 + tpar.vrf1dot
@@ -28,8 +38,6 @@ class TrackingCpp(ParticleTracker):
         rf2v = (tpar.vrf2
                 + tpar.vrf2dot
                 * tpar.time_at_turn) * tpar.q
-
-        # Retrieving some numbers for array creation
 
         nr_of_turns = (tpar.dturns
                        * (tpar.profile_count - 1))
@@ -54,7 +62,13 @@ class TrackingCpp(ParticleTracker):
                                     tpar.dphase, tpar.phi12, tpar.h_ratio,
                                     tpar.h_num, tpar.dtbin, tpar.x_origin,
                                     self.mapinfo.dEbin, tpar.yat0,
-                                    tpar.dturns, nr_of_turns, nr_of_particles)
+                                    tpar.dturns, nr_of_turns, nr_of_particles,
+                                    gpu_flag=GPU)
+        
+        # Needed because of overwriting by GPU.
+        if GPU:
+            xp[0] = xp_0
+            yp[0] = yp_0
 
         xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
         
