@@ -402,35 +402,39 @@ class MapInfo:
                 outFile.write(f'{idx}\t{j}\n')
         logging.info(f'jmax written to: {full_path}')
 
-    def print_plotinfo(self):
+    # Needed for tomoscope in the CCC.
+    # Written in the same format as the original fortran version.
+    def print_plotinfo_ccc(self):
         tpar = self.time_space.par
         rec_prof = tpar.filmstart - 1 # '-1' Fortran compensation
         rec_turn = rec_prof * tpar.dturns
         
-        out_s = f'Number of profiles used in each reconstruction,\n'\
-                  f'profile_count = {tpar.profile_count}\n'\
+        out_s = f' plotinfo.data\n'\
+                f'Number of profiles used in each reconstruction,\n'\
+                  f' profilecount = {tpar.profile_count}\n'\
                 f'Width (in pixels) of each image = '\
                   f'length (in bins) of each profile,\n'\
-                f'Profile_length = {tpar.profile_length}\n'\
+                f' profilelength = {tpar.profile_length}\n'\
                 f'Width (in s) of each pixel = width of each profile bin,\n'\
-                f'dtbin = {tpar.dtbin}\n'\
+                f' dtbin = {tpar.dtbin:0.4E}\n'\
                 f'Height (in eV) of each pixel,\n'\
-                f'dEbin = {self.dEbin}\n'\
+                f' dEbin = {self.dEbin:0.4E}\n'\
                 f'Number of elementary charges in each image,\n'\
-                  f'beam reference profile charge = '\
-                  f'{self.time_space.profile_charge}\n'\
+                  f' eperimage = '\
+                  f'{self.time_space.profile_charge:0.3E}\n'\
                 f'Position (in pixels) of the reference synchronous point:\n'\
-                f'xat0 = {tpar.xat0}\n'\
-                f'yat0 = {tpar.yat0}\n'\
+                f' xat0 =  {tpar.xat0:.3f}\n'\
+                f' yat0 =  {tpar.yat0:.3f}\n'\
                 f'Foot tangent fit results (in bins):\n'\
-                f'tangentfootl = {tpar.tangentfoot_low}\n'\
-                f'tangentfootu = {tpar.tangentfoot_up}\n'\
-                f'fit xat0 = {tpar.fit_xat0}\n'\
+                f' tangentfootl =    {tpar.tangentfoot_low:.3f}\n'\
+                f' tangentfootu =    {tpar.tangentfoot_up:.3f}\n'\
+                f' fit xat0 =   {tpar.fit_xat0:.3f}\n'\
                 f'Synchronous phase (in radians):\n'\
-                f'phi0[{rec_prof}] = {tpar.phi0[rec_turn]}\n'\
-                f'Horizontal range (in pixels) of the region in phase '\
-                  f'space of mapinfo elements:\n'\
-                f'imin = {self.imin}, imax = {self.imax}\n'\
+                f' phi0( {rec_prof}) = {tpar.phi0[rec_turn]:.4f}\n'\
+                f'Horizontal range (in pixels) of the region in '\
+                  f'phase space of map elements:\n'\
+                f' imin( {rec_prof}) =   {self.imin} and '\
+                  f'imax( {rec_prof}) =  {self.imax}'
 
         print(out_s)
 

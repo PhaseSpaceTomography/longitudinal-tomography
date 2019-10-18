@@ -44,7 +44,7 @@ def main():
     mi = MapInfo(ts)
 
     mi.write_jmax_tofile(ts, mi, output_path)
-    mi.print_plotinfo()
+    mi.print_plotinfo_ccc()
 
     # Particle tracking
     tr = Tracking(ts, mi)
