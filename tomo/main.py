@@ -34,7 +34,8 @@ def main():
     
     output_path = OutputHandler.adjust_outpath(ts.par.output_dir)
 
-    ts.save_profiles_text(ts.profiles, output_path, 'py_profiles.dat')
+    OutputHandler.save_profile_ccc(ts.profiles, ts.par.filmstart-1,
+                                   output_path)
 
     if ts.par.self_field_flag:
         ts.save_profiles_text(ts.vself[:, :ts.par.profile_length],

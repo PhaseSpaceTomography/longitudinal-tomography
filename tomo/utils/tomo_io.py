@@ -95,6 +95,19 @@ class OutputHandler:
         return output_path
 
     # --------------------------------------------------------------- #
+    #                           PROFILES                              #
+    # --------------------------------------------------------------- #
+
+    @classmethod
+    # Write phase space image to text-file in tomoscope format.
+    def save_profile_ccc(cls, profiles, prof_idx, output_dir):
+        out_profile = profiles[prof_idx].flatten()
+        file_path = f'{output_dir}/profile{prof_idx + 1:03d}.data'
+        with open(file_path, 'w') as f:
+            for element in out_profile:    
+                f.write(f' {element:0.7E}\n')
+
+    # --------------------------------------------------------------- #
     #                         PHASE-SPACE                             #
     # --------------------------------------------------------------- #
 
