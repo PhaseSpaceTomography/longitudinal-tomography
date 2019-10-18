@@ -18,6 +18,8 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     
+    print('Start')
+
     raw_param, raw_data = InputHandler.get_input_from_file()
 
     parameter = Parameters()
@@ -62,11 +64,11 @@ def main():
     weight = tomo.run()
 
     for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
-        OutputHandler.save_phase_space_npy(xp, yp, weight,
+        OutputHandler.save_phase_space_ccc(xp, yp, weight,
                                            ts.par.profile_length,
                                            film, output_path)
 
-    OutputHandler.save_difference_txt(tomo.diff, output_path)
+    OutputHandler.save_difference_ccc(tomo.diff, output_path, film)
 
     print('Program finished.')
     

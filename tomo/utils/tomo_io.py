@@ -1,13 +1,12 @@
 import os
 import sys
 import numpy as np
-import logging
+import logging as log
 from utils.exceptions import InputError
 
 class InputHandler:
 
     # TO BE ADDED:
-    # - Safe reading from stdin with counting of data elements
     # - assertions that the file is correct etc... 
 
     @classmethod
@@ -84,18 +83,47 @@ class OutputHandler:
     # TO BE ADDED:
     # - saving all outut in the same way as fortran
 
+    # --------------------------------------------------------------- #
+    #                         UTILITIES                               #
+    # --------------------------------------------------------------- #
+
     @classmethod
+    # Assert that output path ends on a '/'
     def adjust_outpath(cls, output_path):
         if output_path[-1] != '/':
             output_path += '/'
         return output_path
 
+    # --------------------------------------------------------------- #
+    #                         PHASE-SPACE                             #
+    # --------------------------------------------------------------- #
+
     @classmethod
+    # Write phase space image to .npy file.
     def save_phase_space_npy(cls, xp, yp, weight, n_bins, film, output_path):
+        log.info(f'Saving image{film} to {output_path}')
+        phase_space = cls.create_phase_space_image(xp, yp, weight,
+                                                   n_bins, film)
+        np.save(f'{output_path}image{film + 1:03d}', phase_space)
+
+    @classmethod
+    # Write phase space image to text-file in tomoscope format.
+    def save_phase_space_ccc(cls, xp, yp, weight, n_bins, film, output_path):
+        log.info(f'Saving image{film} to {output_path}')
+        phase_space = cls.create_phase_space_image(xp, yp, weight,
+                                                   n_bins, film)
+        phase_space = phase_space.flatten()
+        with open(f'{output_path}image{film + 1:03d}.data', 'w') as f:
+            for element in phase_space:
+                f.write(f'  {element:0.7E}\n')
+
+    @classmethod
+    # To be moved to tomography class?
+    def create_phase_space_image(cls, xp, yp, weight, n_bins, film):
         phase_space = np.zeros((n_bins, n_bins))
     
         # Creating n_bins * n_bins phase-space image
-        logging.info(f'Saving picture {film}.') 
+        log.info(f'Saving picture {film}.')
         for x, y, w in zip(xp[:, film], yp[:, film], weight):
             phase_space[x, y] += w
     
@@ -104,19 +132,33 @@ class OutputHandler:
 
         # Normalizing
         phase_space /= np.sum(phase_space)
-    
-        logging.info(f'Saving image{film} to {output_path}')
-        np.save(f'{output_path}py_image{film}', phase_space)
 
+        return phase_space
+
+    # --------------------------------------------------------------- #
+    #                         DISCREPANCY                             #
+    # --------------------------------------------------------------- #
+    
     @classmethod
-    def save_difference_txt(cls, diff, output_path):
-        logging.info(f'Saving saving difference to {output_path}')
-        np.savetxt(f'{output_path}diff.dat', diff)    
+    # Write difference to text file in tomoscope format
+    def save_difference_ccc(cls, diff, output_path, film):
+        # Saving to file with numbers counting from one
+        log.info(f'Saving saving difference to {output_path}')
+        with open(f'{output_path}d{film + 1:03d}.data', 'w') as f:
+            for i, d in enumerate(diff):
+                if i < 10:
+                    f.write(f'           {i}  {d:0.7E}\n')
+                else:
+                    f.write(f'          {i}  {d:0.7E}\n')
+
+    # --------------------------------------------------------------- #
+    #                         COORDINATES                             #
+    # --------------------------------------------------------------- #
 
     @classmethod
     def save_coordinates_npy(cls, xp, yp, output_path):
-        logging.info(f'Saving saving coordinates to {output_path}')
-        logging.info('Saving xp')
+        log.info(f'Saving saving coordinates to {output_path}')
+        log.info('Saving xp')
         np.save(output_path + 'xp', xp)
-        logging.info('Saving yp')
+        log.info('Saving yp')
         np.save(output_path + 'yp', yp)
