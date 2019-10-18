@@ -8,6 +8,9 @@ class TomographyCpp(Tomography):
     def __init__(self, timespace, tracked_xp, tracked_yp):
         super().__init__(timespace, tracked_xp, tracked_yp)
 
+    # Hybrid Python/C++ coutine.
+    # Back project and project routines are written in C++
+    #  and are reached via the tomolib_wrappers module.
     def run(self):
         nparts = self.xp.shape[0]
 
@@ -58,16 +61,23 @@ class TomographyCpp(Tomography):
         return np.ascontiguousarray(
                 super()._create_flat_points()).astype(ctypes.c_int)
 
+
+    # Running the full tomography routine in c++.
+    # Must be tested with more inputs.
     def run_cpp(self):
         nparts = self.xp.shape[0]
         weight = np.ascontiguousarray(np.zeros(nparts, dtype=ctypes.c_double))
+        discr = np.zeros(self.ts.par.num_iter + 1, dtype=ctypes.c_double)
         self.xp = np.ascontiguousarray(self.xp).astype(ctypes.c_int)
 
         flat_profs = np.ascontiguousarray(
                         self.ts.profiles.flatten().astype(ctypes.c_double))
 
         weight = tlw.reconstruct(
-                    weight, self.xp, flat_profs, self.ts.par.num_iter,
-                    self.ts.par.profile_length, nparts,
-                    self.ts.par.profile_count)
+                    weight, self.xp, flat_profs, discr, 
+                    self.ts.par.num_iter, self.ts.par.profile_length,
+                    nparts, self.ts.par.profile_count)
+
+        self.diff = discr
+
         return weight

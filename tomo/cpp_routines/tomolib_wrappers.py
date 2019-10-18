@@ -54,6 +54,7 @@ _reconstruct = _tomolib.reconstruct
 _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                          _double_ptr,
                          np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
                          ct.c_int, ct.c_int,
                          ct.c_int, ct.c_int]
 _proj.restypes = None
@@ -112,9 +113,10 @@ def project(rec_ps, flat_points, weights, nparts, nprofs, nbins):
     return rec_ps
 
 
-def reconstruct(weights, xp, flat_profiles, niter, nbins, npart, nprof):
+def reconstruct(weights, xp, flat_profiles, discr,
+                niter, nbins, npart, nprof):
     _reconstruct(weights, _get_2d_pointer(xp), flat_profiles,
-                 niter, nbins, npart, nprof)
+                 discr, niter, nbins, npart, nprof)
     return weights
 
 

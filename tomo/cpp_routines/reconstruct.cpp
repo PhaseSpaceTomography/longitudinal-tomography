@@ -163,6 +163,7 @@ void create_flat_points(const int ** __restrict__ xp,       //inn
 extern "C" void reconstruct(double * __restrict__ weights,              // out
                             const int ** __restrict__ xp,               // inn
                             const double * __restrict__ flat_profiles,  // inn
+                            double * __restrict__ discr,          // out
                             const int niter,
                             const int nbins,
                             const int npart,
@@ -176,10 +177,6 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
         flat_rec[i] = 0;
 
     double * diff_prof =  new double[all_bins];
-
-    double * discr = new double[niter + 1];
-    for(i=0; i < niter + 1; i++)
-        discr[i] = 0;
     
     double** rparts = new double*[nprof];
     for(i = 0; i < nprof; i++)
@@ -227,5 +224,5 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     for(i = 0; i < npart; i++) {
         delete[] flat_points[i];
     }
-    delete[] rparts, flat_points, flat_rec, discr, diff_prof;
+    delete[] rparts, flat_points, flat_rec, diff_prof;
 }
