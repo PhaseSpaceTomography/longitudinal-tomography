@@ -18,16 +18,7 @@ else:
 
 _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 
-_back_project = _tomolib.back_project
-_back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-                          _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
-_back_project.restypes = None
-
-_proj = _tomolib.project
-_proj.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-                  _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
-_proj.restypes = None
-
+# Kick and drift (cpu version)
 _k_and_d = _tomolib.kick_and_drift
 _k_and_d.argtypes = [_double_ptr,
                      _double_ptr,
@@ -50,6 +41,11 @@ _k_and_d.argtypes = [_double_ptr,
                      ct.c_int,
                      ct.c_int]
 
+# Kick and drift (gpu version)
+_k_and_d_gpu = _tomolib.kick_and_drift_gpu
+_k_and_d_gpu.argtypes = _k_and_d.argtypes
+
+# Reconstruction routine (flat version)
 _reconstruct = _tomolib.reconstruct
 _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                          _double_ptr,
@@ -57,6 +53,17 @@ _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                          np.ctypeslib.ndpointer(ct.c_double),
                          ct.c_int, ct.c_int,
                          ct.c_int, ct.c_int]
+
+# Back_project (flat version)
+_back_project = _tomolib.back_project
+_back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+                          _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
+_back_project.restypes = None
+
+# Project (flat version)
+_proj = _tomolib.project
+_proj.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+                  _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
 _proj.restypes = None
 
 # =============================================================
@@ -87,11 +94,21 @@ def drift(denergy, dphi, dphase, nr_part, turn):
 def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                    deltaE0, omega_rev0, dphase, phi12, hratio,
                    hnum, dtbin, x_origin, dEbin, yat0, dturns,
-                   nturns, npts):
-
-    _k_and_d(_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
+                   nturns, npts, gpu_flag=False):
+    args = (_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
              rfv1, rfv2, phi0, deltaE0, omega_rev0, dphase, phi12, hratio,
              hnum, dtbin, x_origin, dEbin, yat0, dturns, nturns, npts)
+    
+    if gpu_flag:
+        # Info here might not be true.
+        # Find a way to choose from either CPU or GPU version.
+        #  - Makefile?
+        log.info('Tracking particles using GPU.')
+        _k_and_d_gpu(*args)
+    else:
+        log.info('Tracking particles using CPU.')
+        _k_and_d(*args)
+
     return xp, yp
 
 
