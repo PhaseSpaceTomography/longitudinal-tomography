@@ -15,7 +15,7 @@ class TrackingCpp(ParticleTracker):
         # Experimental flag for calling GPU version of tracking routine.
         # Must find better way of deciding
         #   whether gpu routine(s) should be used or not.
-        GPU = True
+        GPU = False
         
         tpar = self.timespace.par
         nr_of_particles = self.find_nr_of_particles()

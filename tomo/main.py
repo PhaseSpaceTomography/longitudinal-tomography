@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 import logging
 import numpy as np
-from tracking.tracking import Tracking
+# from tracking.tracking import Tracking
+from tracking.tracking_cpp import TrackingCpp
 from time_space import TimeSpace
 from map_info import MapInfo
 from parameters import Parameters
@@ -45,7 +46,8 @@ def main():
     mi.print_plotinfo()
 
     # Particle tracking
-    tr = Tracking(ts, mi)
+    # tr = Tracking(ts, mi)
+    tr = TrackingCpp(ts, mi)
     xp, yp = tr.track()
 
     ta.assert_only_valid_particles(xp, ts.par.profile_length)
@@ -59,7 +61,8 @@ def main():
     
     # Reconstructing phase space  
     tomo = TomographyCpp(ts, xp, yp)
-    weight = tomo.run()
+    # weight = tomo.run()
+    weight = tomo.run_cpp()
 
     for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
         OutputHandler.save_phase_space_npy(xp, yp, weight,
