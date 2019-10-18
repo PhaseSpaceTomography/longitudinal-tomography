@@ -22,7 +22,23 @@ class InputHandler:
 
     @classmethod
     def _get_input_stdin(cls):
-        return list(sys.stdin)
+        read = []
+        finished = False
+        line_num = 0
+        ndata_points = 97
+        while not finished:
+            print(line_num)
+            read.append(sys.stdin.readline())
+            if line_num == 16:
+                nframes = int(read[-1])
+            if line_num == 20:
+                nbins = int(read[-1])
+                ndata_points += nframes*nbins
+            if line_num == ndata_points:
+                finished = True
+            line_num += 1
+        return read
+
 
     @classmethod
     def _get_input_args(cls, output_dir_idx):
