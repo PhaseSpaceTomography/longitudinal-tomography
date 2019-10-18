@@ -44,7 +44,8 @@ class TomographyCpp(Tomography):
         self.diff[-1] = self.discrepancy(diff_prof)
         return weight
 
-    # Wrapper for projecting using cpp (calling fraom tomolib_wrappers module)
+    # Project using c++ routine from tomolib_wrappers.
+    # Normalizes and supresses zeroes.
     def project(self, flat_points, weight, nparts):
         rec = tlw.project(np.zeros(self.recreated.shape), flat_points, weight,
                           nparts, self.ts.par.profile_count,
@@ -57,3 +58,16 @@ class TomographyCpp(Tomography):
         return np.ascontiguousarray(
                 super()._create_flat_points()).astype(ctypes.c_int)
 
+    def run_cpp(self):
+        nparts = self.xp.shape[0]
+        weight = np.ascontiguousarray(np.zeros(nparts, dtype=ctypes.c_double))
+        self.xp = np.ascontiguousarray(self.xp).astype(ctypes.c_int)
+
+        flat_profs = np.ascontiguousarray(
+                        self.ts.profiles.flatten().astype(ctypes.c_double))
+
+        weight = tlw.reconstruct(
+                    weight, self.xp, flat_profs, self.ts.par.num_iter,
+                    self.ts.par.profile_length, nparts,
+                    self.ts.par.profile_count)
+        return weight

@@ -28,30 +28,71 @@ _proj.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                   _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
 _proj.restypes = None
 
+_k_and_d = _tomolib.kick_and_drift
+_k_and_d.argtypes = [_double_ptr,
+                     _double_ptr,
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     np.ctypeslib.ndpointer(ct.c_double),
+                     ct.c_double,
+                     ct.c_double,
+                     ct.c_double,
+                     ct.c_double,
+                     ct.c_double,
+                     ct.c_double,
+                     ct.c_double,
+                     ct.c_int,
+                     ct.c_int,
+                     ct.c_int]
+
+_reconstruct = _tomolib.reconstruct
+_reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+                         _double_ptr,
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         ct.c_int, ct.c_int,
+                         ct.c_int, ct.c_int]
+_proj.restypes = None
+
 # =============================================================
 # Functions for paricle tracking
 # =============================================================
 
 
 def kick(parameters, denergy, dphi, rfv1, rfv2, nr_part, turn):
-    _tomolib.new_kick(_get_pointer(dphi),
-                      _get_pointer(denergy),
-                      ct.c_double(rfv1[turn]),
-                      ct.c_double(rfv2[turn]),
-                      ct.c_double(parameters.phi0[turn]),
-                      ct.c_double(parameters.phi12),
-                      ct.c_double(parameters.h_ratio),
-                      ct.c_int(nr_part),
-                      ct.c_double(parameters.deltaE0[turn]))
+    _tomolib.kick(_get_pointer(dphi),
+                  _get_pointer(denergy),
+                  ct.c_double(rfv1[turn]),
+                  ct.c_double(rfv2[turn]),
+                  ct.c_double(parameters.phi0[turn]),
+                  ct.c_double(parameters.phi12),
+                  ct.c_double(parameters.h_ratio),
+                  ct.c_int(nr_part),
+                  ct.c_double(parameters.deltaE0[turn]))
     return denergy
 
 
 def drift(denergy, dphi, dphase, nr_part, turn):
-    _tomolib.new_drift(_get_pointer(dphi),
-                       _get_pointer(denergy),
-                       ct.c_double(dphase[turn]),
-                       ct.c_int(nr_part))
+    _tomolib.drift(_get_pointer(dphi),
+                   _get_pointer(denergy),
+                   ct.c_double(dphase[turn]),
+                   ct.c_int(nr_part))
     return dphi
+
+def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
+                   deltaE0, omega_rev0, dphase, phi12, hratio,
+                   hnum, dtbin, x_origin, dEbin, yat0, dturns,
+                   nturns, npts):
+
+    _k_and_d(_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
+             rfv1, rfv2, phi0, deltaE0, omega_rev0, dphase, phi12, hratio,
+             hnum, dtbin, x_origin, dEbin, yat0, dturns, nturns, npts)
+    return xp, yp
+
 
 # =============================================================
 # Functions for phase space reconstruction
@@ -70,10 +111,16 @@ def project(rec_ps, flat_points, weights, nparts, nprofs, nbins):
     rec_ps = rec_ps.reshape((nprofs, nbins))
     return rec_ps
 
+
+def reconstruct(weights, xp, flat_profiles, niter, nbins, npart, nprof):
+    _reconstruct(weights, _get_2d_pointer(xp), flat_profiles,
+                 niter, nbins, npart, nprof)
+    return weights
+
+
 # =============================================================
 # Utilities
 # =============================================================
-
 
 def _get_pointer(x):
     return x.ctypes.data_as(ct.c_void_p)
