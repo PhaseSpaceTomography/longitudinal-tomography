@@ -159,10 +159,7 @@ class OutputHandler:
         log.info(f'Saving saving difference to {output_path}')
         with open(f'{output_path}d{film + 1:03d}.data', 'w') as f:
             for i, d in enumerate(diff):
-                if i < 10:
-                    f.write(f'           {i}  {d:0.7E}\n')
-                else:
-                    f.write(f'          {i}  {d:0.7E}\n')
+                f.write(f'         {i:3d}  {d:0.7E}\n')
 
     # --------------------------------------------------------------- #
     #                          TRACKING                               #
