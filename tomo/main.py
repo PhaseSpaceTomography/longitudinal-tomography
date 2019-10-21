@@ -38,13 +38,13 @@ def main():
                                    output_path)
 
     if ts.par.self_field_flag:
-        ts.save_profiles_text(ts.vself[:, :ts.par.profile_length],
-                              output_path, 'py_vself.dat')
-    
+        OutputHandler.save_self_volt_profile_ccc(
+                        ts.vself[:, :ts.par.profile_length], output_path)
+
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
 
-    mi.write_jmax_tofile(ts, mi, output_path)
+    # mi.write_jmax_tofile(ts, mi, output_path)
     mi.print_plotinfo_ccc()
 
     # Particle tracking
