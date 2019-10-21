@@ -199,6 +199,14 @@ class Parameters:
         self._init_parameters()
         self._assert_parameters()
 
+    # To be used if the values are set directly in program.
+    # This function will fill up the rest of the object,
+    # based on the given values.
+    def fill_from_manual(self):
+        self._assert_input()
+        self._init_parameters()
+        self._assert_parameters()
+
     # Takes input from the corect index of input array
     #  and saves it in object. 
     def _parse_raw_input(self, input_array):
