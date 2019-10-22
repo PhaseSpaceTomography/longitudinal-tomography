@@ -32,7 +32,7 @@ def main():
 
     # Setting output directory
     output_dir_idx = 14
-    raw_parameters[output_dir_idx] = f'{output_dir}\r\n'
+    raw_parameters[output_dir_idx] = f'{output_dir}'
 
     nsteps = 20
     rfv_raw_data_idx = 61
@@ -42,7 +42,7 @@ def main():
     last_differences = []
     input_volts = []
     for voltage in np.linspace(start_voltage, stop_voltage, nsteps):
-        raw_parameters[rfv_raw_data_idx] = f'{voltage}\r\n'
+        raw_parameters[rfv_raw_data_idx] = f'{voltage}'
         param = Parameters()
         param.parse_from_txt(raw_parameters)
         _, diff, _ = tomo_main(param, raw_data)
