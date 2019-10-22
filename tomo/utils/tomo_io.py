@@ -119,49 +119,27 @@ class OutputHandler:
     #                         PHASE-SPACE                             #
     # --------------------------------------------------------------- #
 
-    @classmethod
     # Write phase space image to .npy file.
-    def save_phase_space_npy(cls, xp, yp, weight, n_bins, film, output_path):
+    @classmethod
+    def save_phase_space_npy(cls, phase_space, film, output_path):
         log.info(f'Saving image{film} to {output_path}')
-        phase_space = cls.create_phase_space_image(xp, yp, weight,
-                                                   n_bins, film)
         np.save(f'{output_path}image{film + 1:03d}', phase_space)
 
-    @classmethod
     # Write phase space image to text-file in tomoscope format.
-    def save_phase_space_ccc(cls, xp, yp, weight, n_bins, film, output_path):
+    @classmethod
+    def save_phase_space_ccc(cls, phase_space, film, output_path):
         log.info(f'Saving image{film} to {output_path}')
-        phase_space = cls.create_phase_space_image(xp, yp, weight,
-                                                   n_bins, film)
         phase_space = phase_space.flatten()
         with open(f'{output_path}image{film + 1:03d}.data', 'w') as f:
             for element in phase_space:
                 f.write(f'  {element:0.7E}\n')
 
-    @classmethod
-    # To be moved to tomography class?
-    def create_phase_space_image(cls, xp, yp, weight, n_bins, film):
-        phase_space = np.zeros((n_bins, n_bins))
-    
-        # Creating n_bins * n_bins phase-space image
-        log.info(f'Saving picture {film}.')
-        for x, y, w in zip(xp[:, film], yp[:, film], weight):
-            phase_space[x, y] += w
-    
-        # Surpressing negative numbers
-        phase_space = phase_space.clip(0.0)
-
-        # Normalizing
-        phase_space /= np.sum(phase_space)
-
-        return phase_space
-
     # --------------------------------------------------------------- #
     #                         DISCREPANCY                             #
     # --------------------------------------------------------------- #
     
-    @classmethod
     # Write difference to text file in tomoscope format
+    @classmethod
     def save_difference_ccc(cls, diff, output_path, film):
         # Saving to file with numbers counting from one
         log.info(f'Saving saving difference to {output_path}')
