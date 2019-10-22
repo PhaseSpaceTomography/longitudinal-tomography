@@ -1,10 +1,10 @@
-import pickle as pkl
 import numpy as np
 import sys
 import os
-sys.path.append('../../tomo/')
-from parameters import Parameters
-
+from utils.exs_tools import show, make_or_clear_dir
+sys.path.append('../../tomo')      # Hack
+from main import main as tomo_main # Hack
+from parameters import Parameters  # Hack
 
 BASE_PATH = os.path.dirname(
                 os.path.realpath(__file__)).split('/')[:-1]
@@ -21,14 +21,16 @@ def main():
     data_path = f'{INPUT_FILE_DIR}/C500MidPhaseNoise_data.dat'
     output_dir = f'{BASE_PATH}/tmp/' 
 
+    make_or_clear_dir(output_dir)
+
     # Manually giving value to each field in object
     param = fill_up_parameter(data_path, output_dir)
-    
-    # Calculate values for the rest of the object based
-    #  on these values.
-    param.fill_from_manual()
 
-    
+    # tomo main takes a partially filled parameter.
+    image, diff, profile = tomo_main(param)
+
+    show(image, diff, profile)
+
 
 # Filling parameter manually
 # Example retrieved from .../input_files/C500MidPhaseNoise.dat
@@ -74,18 +76,8 @@ def fill_up_parameter(data_path, output_dir):
     p.g_coupling            = 0.0
     p.zwall_over_n          = 0.0
     p.pickup_sensitivity    = 0.36
-    return p 
-
-
-def make_or_clear_dir(dir_name):
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
-    else:
-        files = os.listdir(dir_name)
-        for file in files:
-            if os.path.isfile(f'{dir_name}/{file}'):
-                os.remove(f'{dir_name}/{file}')
+    return p
 
 
 if __name__ == '__main__':
-     main() 
+    main()
