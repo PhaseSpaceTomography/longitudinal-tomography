@@ -27,9 +27,9 @@ TOMO_PATH = '/'.join(TOMO_PATH + ['tomo'])
 
 
 def main(input_name_idx=7):
-    make_or_clear_dir(f'{BASE_PATH}/tmp')
     file_path = f'{INPUT_FILE_DIR}/{INPUT_NAMES[input_name_idx]}.dat'
     output_dir = f'{BASE_PATH}/tmp'
+    make_or_clear_dir(output_dir)
 
     # Before the program can be run, the necessary C++ library must be compiled.
     cpp_library = f'{TOMO_PATH}/cpp_routines/tomolib.so' 
