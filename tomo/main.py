@@ -105,5 +105,5 @@ def main(*args):
 if __name__ == "__main__": 
     raw_param, raw_data = InputHandler.get_input_from_file()
     parameter = Parameters()
-    parameter.parse_from_txt_array(raw_param)
+    parameter.parse_from_txt(raw_param)
     main(parameter, raw_data)
