@@ -124,7 +124,8 @@ class TestTimeSpace(unittest.TestCase):
         raw_data = np.genfromtxt(input_path, skip_header=header_size)
         ts = TimeSpace()
         param = Parameters()
-        param.fill_from_array(parameter_array)
+        param.parse_from_txt(parameter_array)
+        param.fill()
         ts.create(param, raw_data)
         return ts
 
