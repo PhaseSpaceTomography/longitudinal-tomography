@@ -18,36 +18,38 @@ def make_or_clear_dir(dir_name):
 
 # Show phase-space, recreated profile and disrepancies for each iteration.
 def show(image, diff, profile):
-    rec_prof = np.sum(image, axis=1)
+    gs = gridspec.GridSpec(4, 4)
 
-    gs = gridspec.GridSpec(2, 2)
+    fig = plt.figure()
     
-    fig = plt.figure(figsize=(15, 6))
-    
-    img = fig.add_subplot(gs[:, 1])
-    profs = fig.add_subplot(gs[0, 0])
-    convg = fig.add_subplot(gs[1, 0])
+    img = fig.add_subplot(gs[1:, :3])
+    profs1 = fig.add_subplot(gs[0, :3])
+    profs2 = fig.add_subplot(gs[1:4, 3])
+    convg = fig.add_subplot(gs[0, 3])
 
-    # Showing phase-space
-    img.set_title('Reconstructed phase-space')
-    hot_im = img.imshow(image.T, origin='lower',
-                        interpolation='nearest', cmap='hot')
-    divider = make_axes_locatable(img)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-    fig.colorbar(hot_im, cax=cax, format='%.0e')
-    
+    cimg = img.imshow(image.T, origin='lower',
+                      interpolation='nearest', cmap='hot')
+    # divider = make_axes_locatable(img)
+    # cax = divider.append_axes("right", size="5%", pad=0.05)
+    # fig.colorbar(cimg, cax=cax, format='%.0e')
 
-    # plotting measured and recreated profile
-    profs.set_title('Reconstructed vs measured profile')
-    profs.plot(profile, label='measured')
-    profs.plot(rec_prof, label='reconstructed')
-    profs.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    profs.legend()
-    
-    # plotting convergence
-    convg.set_title('Distrepancy for each iteration of reconstruction')
-    convg.plot(diff)
+    profs1.plot(np.sum(image, axis=1), label='reconstructed')
+    profs1.plot(profile, label='measured')
+    profs1.legend()
+
+    profs2.plot(np.sum(image, axis=0), np.arange(image.shape[0]))
+
+    convg.plot(diff, label='discrepancy')
     convg.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    convg.legend()
 
+    for ax in (profs1, profs2, convg):
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    convg.set_xticks(np.arange(len(diff)))
+    convg.set_xticklabels([])
+
+    plt.gcf().set_size_inches(8, 8)
     plt.tight_layout()
     plt.show()
