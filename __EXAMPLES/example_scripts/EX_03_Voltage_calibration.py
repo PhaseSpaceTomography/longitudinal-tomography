@@ -14,7 +14,7 @@ BASE_PATH = '/'.join(BASE_PATH)
 INPUT_FILE_DIR = '/'.join([BASE_PATH] + ['input_files'])
 
 def main():
-    input_file = f'{INPUT_FILE_DIR}/flatTopINDIVRotate3.dat'
+    input_file = f'{INPUT_FILE_DIR}/flatTopINDIVRotate2.dat'
     output_dir = f'{BASE_PATH}/tmp'
 
     make_or_clear_dir(output_dir)
