@@ -82,11 +82,7 @@ class MapInfo:
     #   - phases: phase at the edge of each bin along the i-axis
     def find_ijlimits(self):
 
-        # Calculating turn and phases at the beam reference point
-        turn = (self.par.beam_ref_frame - 1) * self.par.dturns    
-        phases = self.calculate_phases(turn)
-
-        self.dEbin = self.find_dEbin(phases, turn)
+        self.dEbin = self.find_dEbin()
 
         # If dEbin is less than 0, an error is raised.  
         ta.assert_greater(self.dEbin, 'dEbin', 0.0, EnergyBinningError)
@@ -118,9 +114,15 @@ class MapInfo:
         # Ensuring that the output is valid
         self._assert_correct_arrays()
 
+    def find_dEbin(self):
+        # Calculating turn and phases at the beam reference point
+        turn = (self.par.beam_ref_frame - 1) * self.par.dturns    
+        phases = self.calculate_phases(turn)
+        return self._calc_energy_pxl(phases, turn)
+
     # Calculating the difference of energy of one pixel.
     # This will be the height of each pixel in the physical coordinate system
-    def find_dEbin(self, phases, turn):
+    def _calc_energy_pxl(self, phases, turn):
         delta_e_known = 0.0
         ta.assert_not_equal(self.par.demax, 'dEmax',
                             0.0, EnergyBinningError,
