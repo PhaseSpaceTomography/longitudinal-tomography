@@ -71,8 +71,7 @@ def main(*args):
 
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
-
-    # mi.write_jmax_tofile(ts, mi, output_path)
+    mi.find_ijlimits()
     mi.print_plotinfo_ccc()
 
     # Particle tracking
