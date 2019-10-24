@@ -33,7 +33,7 @@ class Tracking(ParticleTracker):
         nr_of_turns = (self.timespace.par.dturns
                        * (self.timespace.par.profile_count - 1))
 
-        dphi, denergy = self.calc_dphi_denergy(xp[0], yp[0])
+        dphi, denergy = self.coords_to_phase_and_energy(xp[0], yp[0])
 
         dphi = np.ascontiguousarray(dphi)
         denergy = np.ascontiguousarray(denergy)
@@ -129,12 +129,6 @@ class Tracking(ParticleTracker):
                 oh.print_tracking_status_ccc(profile)
         return xp, yp
 
-    def calc_dphi_denergy(self, xp, yp, turn=0):
-        tpar = self.timespace.par
-        dphi = ((xp + tpar.x_origin)
-                * tpar.h_num
-                * tpar.omega_rev0[turn]
-                * tpar.dtbin
-                - tpar.phi0[turn])
-        denergy = (yp - tpar.yat0) * self.mapinfo.dEbin
-        return dphi, denergy
+    def coords_to_phase_and_energy(self, xp, yp, turn=0):
+        return super().coords_to_phase_energy(
+                self.timespace.par, xp, yp, self.mapinfo.dEbin)
