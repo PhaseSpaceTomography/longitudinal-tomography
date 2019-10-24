@@ -60,20 +60,20 @@ from utils.exceptions import (EnergyBinningError,
 
 class MapInfo:
 
-    def __init__(self, parameters):
+    def __init__(self, time_space):
 
-        self.par = parameters
+        self.par = time_space.par
 
-        (self.jmin,
-         self.jmax,
-         self.imin,
-         self.imax,
-         self.dEbin,
-         self.allbin_min,
-         self.allbin_max) = self.find_ijlimits()
+        self.profile_charge = time_space.profile_charge
 
-        # Ensuring that the array shapes are valid
-        self._assert_correct_arrays()
+        self.jmin = []
+        self.jmax = []
+        self.imin = -1
+        self.imax = -1
+        self.dEbin = -1.0
+        self.allbin_min = -1 
+        self.allbin_max = -1
+
 
     # Main function for the class. finds limits in i and j axis.
     # Local variables:
@@ -86,9 +86,10 @@ class MapInfo:
         turn = (self.par.beam_ref_frame - 1) * self.par.dturns    
         phases = self.calculate_phases(turn)
 
-        dEbin = self.find_dEbin(phases, turn)
+        self.dEbin = self.find_dEbin(phases, turn)
 
-        ta.assert_greater(dEbin, 'dEbin', 0.0, EnergyBinningError)
+        # If dEbin is less than 0, an error is raised.  
+        ta.assert_greater(self.dEbin, 'dEbin', 0.0, EnergyBinningError)
 
         # Is this still a valid choise with the new method?
         if self.par.full_pp_flag == 1:
@@ -99,20 +100,23 @@ class MapInfo:
         else:
             (jmin,
              jmax,
-             allbin_min,        # Remember that phases are already calculated!
-             allbin_max) = self._limits_track_active_pxl(dEbin)
+             allbin_min,
+             allbin_max) = self._limits_track_active_pxl(self.dEbin)
+        
+        self.allbin_min = allbin_min
+        self.allbin_max = allbin_max
 
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
-        (jmin,
-         jmax,
-         imin,
-         imax) = self._adjust_limits(jmax, jmin, allbin_min, allbin_max)
+        (jmin, jmax,
+         self.imin,
+         self.imax) = self._adjust_limits(jmax, jmin, allbin_min, allbin_max)
 
-        jmin = jmin.astype(np.int32)
-        jmax = jmax.astype(np.int32)
-
-        return jmin, jmax, imin, imax, dEbin, allbin_min, allbin_max
+        self.jmin = jmin.astype(np.int32)
+        self.jmax = jmax.astype(np.int32)
+        
+        # Ensuring that the output is valid
+        self._assert_correct_arrays()
 
     # Calculating the difference of energy of one pixel.
     # This will be the height of each pixel in the physical coordinate system
@@ -329,7 +333,7 @@ class MapInfo:
 
     # Needed for tomoscope in the CCC.
     # Written in the same format as the original fortran version.
-    def print_plotinfo_ccc(self, profile_charge):
+    def print_plotinfo_ccc(self):
         rec_prof = self.par.filmstart - 1 # '-1' Fortran compensation
         rec_turn = rec_prof * self.par.dturns
         
@@ -345,7 +349,7 @@ class MapInfo:
                 f' dEbin = {self.dEbin:0.4E}\n'\
                 f'Number of elementary charges in each image,\n'\
                   f' eperimage = '\
-                  f'{profile_charge:0.3E}\n'\
+                  f'{self.profile_charge:0.3E}\n'\
                 f'Position (in pixels) of the reference synchronous point:\n'\
                 f' xat0 =  {self.par.xat0:.3f}\n'\
                 f' yat0 =  {self.par.yat0:.3f}\n'\
