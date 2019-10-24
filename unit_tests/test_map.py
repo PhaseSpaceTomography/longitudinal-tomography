@@ -28,8 +28,7 @@ class TestMap(unittest.TestCase):
         ts.create(par, raw_data)
 
         # Creating map info object (uninitialized)
-        cls.mi = MapInfo.__new__(MapInfo)
-        cls.mi.par = ts.par
+        cls.mi = MapInfo(ts)
 
     def test_energy_binning_C500(self):
         cv = TestMap.c500.values
@@ -152,6 +151,35 @@ class TestMap(unittest.TestCase):
 
         nptest.assert_equal(allbin_max, cv['allbin_max'],
                             err_msg='Find allbin_max function failed')
+
+    def test_find_ijlimits_active_pxl(self):
+        cv = TestMap.c500.values
+        ca = TestMap.c500.arrays
+
+        self.mi.find_ijlimits()
+
+
+        nptest.assert_equal(
+                self.mi.imin, ca['imin'],
+                err_msg='imin calculated incorrectly in find_ijlimits')
+        nptest.assert_equal(
+                self.mi.imax, ca['imax'],
+                err_msg='imax calculated incorrectly in find_ijlimits')
+        nptest.assert_equal(
+                self.mi.jmin, np.array(ca['jmin']),
+                err_msg='jmin calculated incorrectly in find_ijlimits')
+        nptest.assert_equal(
+                self.mi.jmax, np.array(ca['jmax']),
+                err_msg='jmax calculated incorrectly in find_ijlimits')
+        
+        nptest.assert_equal(
+                self.mi.allbin_min, cv['allbin_min'],
+                err_msg='albin_min calculated incorrectly in find_ijlimits')        
+        nptest.assert_equal(
+                self.mi.allbin_max, cv['allbin_max'],
+                err_msg='albin_max calculated incorrectly in find_ijlimits')
+
+
 
     def test_bad_ilimits(self):
         self.mi.jmin = np.array([self.c500.arrays['jmin']])
