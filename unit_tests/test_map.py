@@ -35,7 +35,7 @@ class TestMap(unittest.TestCase):
         ca = TestMap.c500.arrays
         turn = (cv['beam_ref_frame'] - 1) * cv['dturns']
 
-        dEbin = self.mi.find_dEbin(ca['phases'], turn)
+        dEbin = self.mi.find_dEbin()
 
         self.assertAlmostEqual(dEbin, cv['debin'],
                                msg='dEbin was not correctly calculated')

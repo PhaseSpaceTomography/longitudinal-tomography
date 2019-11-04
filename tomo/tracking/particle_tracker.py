@@ -79,7 +79,7 @@ class ParticleTracker:
         return xp, yp
 
     @staticmethod
-    def coords_to_phase_and_energy(par, xp, yp, dEbin, turn=0):
+    def coords_to_physical(par, xp, yp, dEbin, turn=0):
         dphi = ((xp + par.x_origin)
                 * par.h_num
                 * par.omega_rev0[turn]

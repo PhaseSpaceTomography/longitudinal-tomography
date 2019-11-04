@@ -77,7 +77,7 @@ def track_few_parts(par, dEbin):
     yp[0] = yp_start
 
     # Go from coordinate system to physical values.
-    dphi, denergy = ParticleTracker.coords_to_phase_and_energy(
+    dphi, denergy = ParticleTracker.coords_to_physical(
                                             par, xp[0], yp[0], dEbin)
 
     # Track particles
