@@ -2,14 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
-from utils.exs_tools import show, make_or_clear_dir
+from utils.exs_tools import make_or_clear_dir
 sys.path.append('../../tomo')      # Hack
-from main import main as tomo_main # Hack
-from parameters import Parameters  # Hack
+from main import main as tomo_main
+from parameters import Parameters
 from time_space import TimeSpace
 from map_info import MapInfo
-from tracking.particle_tracker import ParticleTracker
-from cpp_routines.tomolib_wrappers import kick, drift
+from tracking.tracking import Tracking
 
 
 BASE_PATH = os.path.dirname(
@@ -17,6 +16,7 @@ BASE_PATH = os.path.dirname(
 BASE_PATH = '/'.join(BASE_PATH)
 
 INPUT_FILE_DIR = '/'.join([BASE_PATH] + ['input_files'])
+
 
 def main():
     len_input_param = 98
@@ -51,87 +51,70 @@ def main():
     mi.find_ijlimits()
 
     # Particle tracking
-    xp, yp = track_few_parts(ts.par, dEbin)
-    show_few_parts(ts.par, xp, yp, (mi.jmin, mi.jmax))  
+    tracker = Tracking(ts, mi)
+
+    example_track_particles(tracker)
+    example_particles_outside_bucket(tracker)
 
 
-def track_few_parts(par, dEbin):
+def example_track_particles(tracker):
+    
+    # Giving start coordinates for five particles
+    my_xp = np.array([5, 25, 50, 75, 100])
+    my_yp = np.array([100, 100, 100, 100, 100])
 
-    # Calculating voltage
-    rf1v = (par.vrf1 + par.vrf1dot * par.time_at_turn) * par.q
-    rf2v = (par.vrf2 + par.vrf2dot * par.time_at_turn) * par.q
-
-    # Setting initial coordinates for three particles to be tracked
-    xp_start = np.array([3.2, 25.0, 100.6, 225.0])
-    yp_start = np.array([22.6, 90.8, 66.7, 100.0])
-
-    n_part = len(xp_start)
-    n_turns = par.dturns * (par.profile_count - 1)
-
-    # Creating arrays to be filled by tracking routine
-    xp = np.zeros((par.profile_count, n_part))
-    yp = np.zeros((par.profile_count, n_part))
-
-    # Inserting start values to main array 
-    xp[0] = xp_start
-    yp[0] = yp_start
-
-    # Go from coordinate system to physical values.
-    dphi, denergy = ParticleTracker.coords_to_physical(
-                                            par, xp[0], yp[0], dEbin)
-
-    # Track particles
-    xp, yp = kick_and_drift(par, xp, yp, denergy, dphi,
-                            rf1v, rf2v, dEbin, n_turns, n_part)
-
-    return xp, yp
-
-
-# plots the bucket area, start point and trajectories of particles.
-def show_few_parts(par, xp, yp, bucket_area=None):
-
+    # Tracking the particles through the number of turns
+    #  spescified in the C500MidPhaseNoise input.
+    # If filter_lost flag is True, particles outside of the bucket is removed.
+    xp, yp = tracker.track(initial_coordinates=(my_xp, my_yp),
+                           filter_lost=False)
+    
     fig, ax = plt.subplots()
     
-    if bucket_area is not None:
-        ax.plot(bucket_area[0], color='black', label='Bucket area')
-        ax.plot(bucket_area[1], color='black')
-
-    ax.plot(xp, yp)
-    ax.scatter(xp[0,:], yp[0,:], marker='.', color='red')
-
-    rang = (-50, par.profile_length + 50)
-    ax.set_xlim(rang)
-    ax.set_ylim(rang)
+    # Plot hamiltonians and start coordinates for particles.
+    ax.plot(xp, yp, zorder=5)
+    ax.scatter(my_xp, my_yp, color='black', marker='.', zorder=10,
+               label='Particle\nstart position')
+    
+    # Showing separatrix
+    ax.plot(tracker.mapinfo.jmin, color='black', label='Separatrix', zorder=0)
+    ax.plot(tracker.mapinfo.jmax, color='black', zorder=0)
     ax.legend()
-
     plt.show()
 
 
-def kick_and_drift(par, xp, yp, denergy, dphi,
-                   rf1v, rf2v, dEbin, n_turns, n_part):
-    turn = 0
-    profile = 0
-    print('tracking...')
-    while turn < n_turns:
-        # Calculating change in phase for each particle at a turn
-        dphi = drift(denergy, dphi, par.dphase,
-                     n_part, turn)
-        turn += 1
-        # Calculating change in energy for each particle at a turn
-        denergy = kick(par, denergy, dphi, rf1v, rf2v,
-                       n_part, turn)
-        if turn % par.dturns == 0:
-            profile += 1
-            xp[profile] = ((dphi + par.phi0[turn])
-                           / (float(par.h_num)
-                           * par.omega_rev0[turn]
-                           * par.dtbin)
-                           - par.x_origin)
-            yp[profile] = (denergy / float(dEbin)
-                           + par.yat0)
-            print(f'{profile}')
-    return xp, yp
+def example_particles_outside_bucket(tracker):
+    # Giving start coordinates for five particles
+    my_xp = np.array([100, 150, 200, 250, 300])
+    my_yp = np.array([100, 100, 100, 100, 100])
 
+    # Tracking particles outside the bucket area without filtering
+    xp_uf, yp_uf = tracker.track(initial_coordinates=(my_xp, my_yp),
+                                 filter_lost=False)
+
+    xp_f, yp_f = tracker.track(initial_coordinates=(my_xp, my_yp),
+                               filter_lost=True) 
+    
+    fig, (ax1, ax2) = plt.subplots(2,1)
+
+    ax1.set_title('Unfiltered')
+    ax1.plot(xp_uf, yp_uf, zorder=5)
+    ax1.scatter(xp_uf[:, 0], yp_uf[:, 0], color='black',
+                marker='.', zorder=10, label='Particle\nstart position')
+
+    ax2.set_title('Filtered')
+    ax2.plot(xp_f, yp_f, zorder=5)
+    ax2.scatter(xp_f[:, 0], yp_f[:, 0], color='black',
+                marker='.', zorder=10, label='Particle\nstart position')
+
+    # Showing separatrix
+    for ax in (ax1, ax2):
+        ax.plot(tracker.mapinfo.jmin, color='black', label='Separatrix', zorder=0)
+        ax.plot(tracker.mapinfo.jmax, color='black', zorder=0)
+        ax.legend()
+        ax.set_xlim(-10, tracker.timespace.par.profile_length + 200)
+        ax.set_ylim(-200, tracker.timespace.par.profile_length + 10)
+    plt.show()
     
 if __name__ == '__main__':
     main()
