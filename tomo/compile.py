@@ -1,4 +1,3 @@
-from termcolor import colored
 import os
 import sys
 import subprocess
@@ -63,11 +62,10 @@ def main(gpu_flag):
 
     try:
         lib = ctypes.CDLL(libname)
-        print(colored('\nCompilation succeeded!', 'green'))
+        print('\nCompilation succeeded!')
     except Exception as e:
-        print(colored('\nCompilation failed.', 'red'))
+        print('\nCompilation failed.')
         # print(f'Error: {e}')
-
 
 
 def _get_parser():
