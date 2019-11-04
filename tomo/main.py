@@ -2,6 +2,7 @@
 import time as tm
 import sys
 import matplotlib.pyplot as plt
+import os
 # --/ end \--
 
 import logging
@@ -12,38 +13,67 @@ from time_space import TimeSpace
 from map_info import MapInfo
 from parameters import Parameters
 from tomography.tomography_cpp import TomographyCpp
+from utils.exceptions import InputError
 from utils.assertions import TomoAssertions as ta
 from utils.tomo_io import InputHandler, OutputHandler
 
 logging.basicConfig(level=logging.INFO)
 
-def main():
+def main(*args):
     
-    raw_param, raw_data = InputHandler.get_input_from_file()
+    print('Start')
 
-    parameter = Parameters()
+    # Case: only parameter is given
+    #  The file containing the measured datamust in this case be
+    #  separate from the parameters file, and contain measurement data ONLY.
+    if len(args) == 1:
+        if type(args[0]) is Parameters:
+            parameter = args[0]
+            parameter.fill()
+            if os.path.isfile(parameter.rawdata_file):
+                raw_data = np.genfromtxt(parameter.rawdata_file)
+            else:
+                err_msg = f'The given data file: "{parameter.rawdata_file}" '\
+                          f'does not exist.'
+                raise SystemError(err_msg)
+        else:
+            raise InputError('Given argument should be of type "Parameters".')
+    # In this case the raw data is given as input argument.
+    # The raw data wil not be re-loaded.
+    elif len(args) == 2:
+        if type(args[0]) is Parameters and type(args[1]) is np.ndarray:
+            parameter = args[0]
+            parameter.fill()
+            raw_data = args[1]
+        elif type(args[1]) is Parameters and type(args[0]) is np.ndarray:
+            parameter = args[1]
+            parameter.fill()
+            raw_data = args[0]
+        else:
+            raise InputError('Arguments should be of type '\
+                             '"Parameters" and "ndarray"')
+    else:
+        err_msg = f'The wrong nr of arguments were given.\n'\
+                  f'Aguments recieved: {len(args)}, valid number of '\
+                  f'arguments is one or two.'
+        raise InputError(err_msg)
+
     ts = TimeSpace()
-    
-    parameter.fill_from_array(raw_param)
     ts.create(parameter, raw_data)
-
-    # Deleting input data
-    del(raw_param)
-    del(raw_data)
     
     output_path = OutputHandler.adjust_outpath(ts.par.output_dir)
 
-    ts.save_profiles_text(ts.profiles, output_path, 'py_profiles.dat')
+    OutputHandler.save_profile_ccc(ts.profiles, ts.par.filmstart-1,
+                                   output_path)
 
     if ts.par.self_field_flag:
-        ts.save_profiles_text(ts.vself[:, :ts.par.profile_length],
-                              output_path, 'py_vself.dat')
-    
+        OutputHandler.save_self_volt_profile_ccc(
+                        ts.vself[:, :ts.par.profile_length], output_path)
+
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
-
-    mi.write_jmax_tofile(ts, mi, output_path)
-    mi.print_plotinfo()
+    mi.find_ijlimits()
+    mi.print_plotinfo_ccc()
 
     # Particle tracking
     # tr = Tracking(ts, mi)
@@ -65,12 +95,17 @@ def main():
     weight = tomo.run_cpp()
 
     for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
-        OutputHandler.save_phase_space_npy(xp, yp, weight,
-                                           ts.par.profile_length,
-                                           film, output_path)
+        image = TomographyCpp.create_phase_space_image(
+                        xp, yp, weight, ts.par.profile_length, film)
+        OutputHandler.save_phase_space_ccc(image, film, output_path)
 
-    OutputHandler.save_difference_txt(tomo.diff, output_path)
+    OutputHandler.save_difference_ccc(tomo.diff, output_path, film)
 
-    print('Program finished.')
-    
-main()
+    return image, tomo.diff, ts.profiles[film] 
+
+
+if __name__ == "__main__": 
+    raw_param, raw_data = InputHandler.get_input_from_file()
+    parameter = Parameters()
+    parameter.parse_from_txt(raw_param)
+    main(parameter, raw_data)

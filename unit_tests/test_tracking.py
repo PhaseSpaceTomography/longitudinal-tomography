@@ -78,8 +78,8 @@ class TestTrack(unittest.TestCase):
         # Creating mapinfo object with needed values        
         track = Tracking(ts, self.mi)
 
-        dphi, denergy = track.calc_dphi_denergy(np.array([100.125, 101.250]),
-                                                np.array([19.125, 19.125]))
+        dphi, denergy = track.coords_to_physical(np.array([100.125, 101.250]),
+                                                 np.array([19.125, 19.125]))
         correct_dphi = [0.20686511, 0.22605878]
         correct_denergy = [-1946025.30046682, -1946025.30046682]
 

@@ -77,3 +77,13 @@ class ParticleTracker:
                         yp[k] = jLim + ypoints[i, j]
                         k += 1
         return xp, yp
+
+    @staticmethod
+    def coords_to_physical(par, xp, yp, dEbin, turn=0):
+        dphi = ((xp + par.x_origin)
+                * par.h_num
+                * par.omega_rev0[turn]
+                * par.dtbin
+                - par.phi0[turn])
+        denergy = (yp - par.yat0) * dEbin
+        return dphi, denergy

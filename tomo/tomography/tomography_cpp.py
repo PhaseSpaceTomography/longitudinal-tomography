@@ -26,8 +26,9 @@ class TomographyCpp(Tomography):
         weight = tlw.back_project(weight, flat_points, flat_profs, nparts,
                                  self.ts.par.profile_count)
 
+        print(' Iterating...')
         for i in range(self.ts.par.num_iter):
-            print(f'iteration: {str(i + 1)} of {self.ts.par.num_iter}')
+            print(f'{i + 1:3d}')
 
             self.recreated = self.project(flat_points, weight, nparts)
 
@@ -45,6 +46,9 @@ class TomographyCpp(Tomography):
         # Calculating final discrepancy
         diff_prof = self.ts.profiles - self.recreated
         self.diff[-1] = self.discrepancy(diff_prof)
+
+        print(' Done!')
+
         return weight
 
     # Project using c++ routine from tomolib_wrappers.

@@ -192,16 +192,21 @@ class Parameters:
         self.fit_xat0 = 0.0
         self.x_origin = 0.0
 
-    # Fills up create parameter object based on input array
-    def fill_from_array(self, raw_parameters):
-        self._parse_raw_input(raw_parameters)
+    # Fills up parameters object complete based
+    #  on partly filled object.
+    #  partly filled based on input from 
+    #  e.g. input file. 
+    def fill(self):
         self._assert_input()
         self._init_parameters()
         self._assert_parameters()
 
-    # Takes input from the corect index of input array
-    #  and saves it in object. 
-    def _parse_raw_input(self, input_array):
+    # Converts array of raw-input to parameter values.
+    # Array must be a direct read from input file.
+    def parse_from_txt(self, input_array):
+        for i in range(len(input_array)):
+            input_array[i] = input_array[i].strip('\r\n')
+
         self.rawdata_file = input_array[12]
         self.output_dir = input_array[14]
         self.framecount = int(input_array[16])

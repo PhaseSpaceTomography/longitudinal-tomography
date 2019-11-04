@@ -54,7 +54,7 @@ class TimeSpace:
     def __init__(self):
         self.par = None
         self.profiles = np.array([])
-        self.profile_charge = None	 # Total charge in profile
+        self.profile_charge = None   # Total charge in profile
 
         # Self field variables:
         self.vself = None            # Self-field voltage
@@ -197,12 +197,6 @@ class TimeSpace:
                       + self.par.sfc[i + 1]
                       * self.dsprofiles[i + 1, :self.par.profile_length]))
         return vself
-
-    # Write files to text file.
-    def save_profiles_text(self, profiles, output_directory, filename):
-        np.savetxt(output_directory + filename, profiles.flatten().T)
-        logging.info("Saved profiles to: " + output_directory + filename)
-
 
     # Original function for subtracting baseline of raw data input profiles.
     @staticmethod
