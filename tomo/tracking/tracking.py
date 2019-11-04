@@ -11,49 +11,62 @@ class Tracking(ParticleTracker):
     def __init__(self, ts, mi):
         super().__init__(ts, mi)
 
-    def track(self):
-        nr_of_particles = self.find_nr_of_particles()
+    # Optional tuple should contain the initial values
+    #  of the particles coordinates
+    #  which should be the start of the tracking
+    #  (xp, yp)
+    # If optional tuple is not provided, the particles
+    #  will be tracked based on a homogeneous distribution of particles
+    #  within the i and jlimits
+    def track(self, initial_coordinates=(), rec_prof=0, filter_lost=True):
+        if len(initial_coordinates) > 0:
+            # In this case, only the particles spescified by the user is tracked.
+            # User input is checked for correctness before returning the values.
+            ixp, iyp, nparts = self._manual_distribution(initial_coordinates)
+        else:
+            # In this case, a homogeneous distribution of particles is created
+            #  within the i-jlimits.
+            ixp, iyp, nparts = self._homogeneous_distribution()
 
-        xp = np.zeros((self.timespace.par.profile_count, nr_of_particles))
+        xp = np.zeros((self.timespace.par.profile_count, nparts))
         yp = np.copy(xp)
 
-        # Creating a homogeneous distribution of particles
-        xp[0], yp[0] = self._initiate_points()
+        # Calculating radio frequency voltage multiplied by the
+        #  particle charge at each turn.
+        rf1v, rf2v = self.rfv_at_turns()
 
-        # Calculating radio frequency voltages for each turn
-        rf1v = (self.timespace.par.vrf1
-                + self.timespace.par.vrf1dot
-                * self.timespace.par.time_at_turn) * self.timespace.par.q
-        rf2v = (self.timespace.par.vrf2
-                + self.timespace.par.vrf2dot
-                * self.timespace.par.time_at_turn) * self.timespace.par.q
+        # Calculating the number of turns of which
+        #  the particles should be tracked through. 
+        nturns = (self.timespace.par.dturns
+                  * (self.timespace.par.profile_count - 1))
 
-        # Retrieving some numbers for array creation
+        # Converting from coordinates to physical units
+        dphi, denergy = self.coords_to_physical(ixp, iyp)
 
-        nr_of_turns = (self.timespace.par.dturns
-                       * (self.timespace.par.profile_count - 1))
-
-        dphi, denergy = self.coords_to_physical(xp[0], yp[0])
-
+        # Ensuring that the memory is contigious for the C++ routines
         dphi = np.ascontiguousarray(dphi)
         denergy = np.ascontiguousarray(denergy)
         rf1v = np.ascontiguousarray(rf1v)
         rf2v = np.ascontiguousarray(rf2v)
 
+        # Tracking particles
         if self.timespace.par.self_field_flag:
-            xp, yp = self.kick_and_drift_self(xp, yp, denergy, dphi,
-                                              rf1v, rf2v, nr_of_turns,
-                                              nr_of_particles)
+            xp, yp = self.kick_and_drift_self(
+                    xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
-            xp, yp = self.kick_and_drift(xp, yp, denergy, dphi,
-                                         rf1v, rf2v, nr_of_turns,
-                                         nr_of_particles)
+            xp, yp = self.kick_and_drift(
+                    xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
 
-        xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
+        # Setting initial values at the recreated profile.
+        xp[rec_prof] = ixp
+        yp[rec_prof] = iyp
+
+        if filter_lost:
+            xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
         
-        log.info(f'Lost {nr_lost_pts} particles - '\
-                 f'{(nr_lost_pts / nr_of_particles) * 100}%'\
-                 f' of all particles')
+            log.info(f'Lost {nr_lost_pts} particles - '\
+                     f'{(nr_lost_pts / nparts) * 100}%'\
+                     f' of all particles')
 
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
@@ -93,16 +106,6 @@ class Tracking(ParticleTracker):
 
         return xp, yp
 
-    @staticmethod
-    @njit
-    def calc_xp_sf(dphi, phi0, x_origin, h_num, omega_rev0, dtbin, phiwrap):
-        temp_xp = (dphi + phi0 - x_origin * h_num * omega_rev0 * dtbin)
-        temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
-                    / (h_num * omega_rev0 * dtbin))
-        return temp_xp
-
-
-
     def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):
         turn = 0
@@ -128,6 +131,14 @@ class Tracking(ParticleTracker):
                                + self.timespace.par.yat0)
                 oh.print_tracking_status_ccc(profile)
         return xp, yp
+
+    @staticmethod
+    @njit
+    def calc_xp_sf(dphi, phi0, x_origin, h_num, omega_rev0, dtbin, phiwrap):
+        temp_xp = (dphi + phi0 - x_origin * h_num * omega_rev0 * dtbin)
+        temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
+                    / (h_num * omega_rev0 * dtbin))
+        return temp_xp
 
     def coords_to_physical(self, xp, yp, turn=0):
         return super().coords_to_physical(

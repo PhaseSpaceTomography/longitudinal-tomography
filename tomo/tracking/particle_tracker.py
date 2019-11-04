@@ -45,11 +45,11 @@ class ParticleTracker:
         return [xCoords, yCoords]
 
     # Wrapper function for creating of homogeneously distributed particles
-    def _initiate_points(self):
+    def _homogeneous_distribution(self):
         # Initializing points for homogeneous distr. particles
         points = self._populate_bins(self.timespace.par.snpt)
-
-        xp = np.zeros(self.find_nr_of_particles())
+        nparts = self.find_nr_of_particles()
+        xp = np.zeros(nparts)
         yp = np.copy(xp)
 
         # Creating the first profile with equally distributed points
@@ -60,7 +60,38 @@ class ParticleTracker:
                         self.mapinfo.jmax, xp,
                         yp, points[0], points[1])
 
-        return xp, yp
+        return xp, yp, nparts
+
+    # Checks that the input arguments are correct, and spilts
+    #  up to initial x and y coordnates. Also reads the start profile.
+    @staticmethod
+    def _manual_distribution(init_coords):
+        correct = False
+        if len(init_coords) == 2:
+            in_xp = init_coords[0]
+            in_yp = init_coords[1]
+            if type(in_xp) is np.ndarray and type(in_yp) is np.ndarray: 
+                if len(in_xp) == len(in_yp):
+                    correct = True
+        
+        if not correct:
+            err_msg = 'Unexpected amount of arguments.\n'\
+                      'init_coords = (x, y, profile)\n'\
+                      'x and y should be ndarrays of the same length, '\
+                      'containing the inital values '\
+                      'of the particles to be tracked.'
+            raise AssertionError(err_msg)
+
+        return in_xp, in_yp, len(in_xp)
+
+    def rfv_at_turns(self):
+        rf1v = (self.timespace.par.vrf1
+                + self.timespace.par.vrf1dot
+                * self.timespace.par.time_at_turn) * self.timespace.par.q
+        rf2v = (self.timespace.par.vrf2
+                + self.timespace.par.vrf2dot
+                * self.timespace.par.time_at_turn) * self.timespace.par.q
+        return rf1v, rf2v
 
     @staticmethod
     @njit

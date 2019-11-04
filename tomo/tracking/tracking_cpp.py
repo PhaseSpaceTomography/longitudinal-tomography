@@ -1,4 +1,5 @@
 import numpy as np
+import logging as log
 from numba import njit
 from tracking.particle_tracker import ParticleTracker
 from cpp_routines.tomolib_wrappers import kick, drift, kick_and_drift
@@ -11,38 +12,34 @@ class TrackingCpp(ParticleTracker):
     def __init__(self, ts, mi):
         super().__init__(ts, mi)
 
-    def track(self):
-        # Experimental flag for calling GPU version of tracking routine.
-        # Must find better way of deciding
-        #   whether gpu routine(s) should be used or not.
-        GPU = False
-        
-        tpar = self.timespace.par
-        nr_of_particles = self.find_nr_of_particles()
+    # The gpu argument is an xxperimental flag
+    # for calling the GPU version of tracking routine.
+    # A better way of deciding whether gpu routine(s)
+    # should be used or not.
+    def track(self, initial_coordinates=(), rec_prof=0,
+              filter_lost=True, gpu=False):
+        if len(initial_coordinates) > 0:
+            # In this case, only the particles spescified by the user is tracked.
+            # User input is checked for correctness before returning the values.
+            ixp, iyp, nparts = self._manual_distribution(initial_coordinates)
+        else:
+            # In this case, a homogeneous distribution of particles is created
+            #  within the i-jlimits.
+            ixp, iyp, nparts = self._homogeneous_distribution()
 
-        xp = np.zeros((tpar.profile_count, nr_of_particles))
+        xp = np.zeros((self.timespace.par.profile_count, nparts))
         yp = np.copy(xp)
 
-        # Creating a homogeneous distribution of particles
-        xp[0], yp[0] = self._initiate_points()
+        # Calculating radio frequency voltage multiplied by the
+        #  particle charge at each turn.
+        rf1v, rf2v = self.rfv_at_turns()
 
-        # Needed because of overwriting by GPU.
-        if GPU:
-            xp_0 = xp[0].copy()
-            yp_0 = yp[0].copy()
+        # Calculating the number of turns of which
+        #  the particles should be tracked through. 
+        nturns = (self.timespace.par.dturns
+                  * (self.timespace.par.profile_count - 1))
 
-        # Calculating radio frequency voltages for each turn
-        rf1v = (tpar.vrf1
-                + tpar.vrf1dot
-                * tpar.time_at_turn) * tpar.q
-        rf2v = (tpar.vrf2
-                + tpar.vrf2dot
-                * tpar.time_at_turn) * tpar.q
-
-        nr_of_turns = (tpar.dturns
-                       * (tpar.profile_count - 1))
-
-        dphi, denergy = self.coords_to_physical(xp[0], yp[0])
+        dphi, denergy = self.coords_to_physical(ixp, iyp)
 
         dphi = np.ascontiguousarray(dphi)
         denergy = np.ascontiguousarray(denergy)
@@ -51,29 +48,30 @@ class TrackingCpp(ParticleTracker):
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
 
-        if tpar.self_field_flag:
-            xp, yp = self.kick_and_drift_self(xp, yp, denergy, dphi,
-                                              rf1v, rf2v, nr_of_turns,
-                                              nr_of_particles)
+        if self.timespace.par.self_field_flag:
+            xp, yp = self.kick_and_drift_self(
+                    xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
-            xp, yp = kick_and_drift(xp, yp, denergy, dphi,
-                                    rf1v, rf2v, tpar.phi0,
-                                    tpar.deltaE0, tpar.omega_rev0,
-                                    tpar.dphase, tpar.phi12, tpar.h_ratio,
-                                    tpar.h_num, tpar.dtbin, tpar.x_origin,
-                                    self.mapinfo.dEbin, tpar.yat0,
-                                    tpar.dturns, nr_of_turns, nr_of_particles,
-                                    gpu_flag=GPU)
-        
-        # Needed because of overwriting by GPU.
-        if GPU:
-            xp[0] = xp_0
-            yp[0] = yp_0
+            xp, yp = kick_and_drift(
+                    xp, yp, denergy, dphi, rf1v, rf2v, self.timespace.par.phi0,
+                    self.timespace.par.deltaE0, self.timespace.par.omega_rev0,
+                    self.timespace.par.dphase, self.timespace.par.phi12,
+                    self.timespace.par.h_ratio, self.timespace.par.h_num,
+                    self.timespace.par.dtbin, self.timespace.par.x_origin,
+                    self.mapinfo.dEbin, self.timespace.par.yat0,
+                    self.timespace.par.dturns, nturns, nparts,
+                    gpu_flag=gpu)
 
-        xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
+        # Setting initial values at the recreated profile.
+        xp[rec_prof] = ixp
+        yp[rec_prof] = iyp
+
+        if filter_lost:
+            xp, yp, nr_lost_pts = self.filter_lost_paricles(xp, yp)
         
-        print(f'Lost {nr_lost_pts} particles - '\
-              f'{(nr_lost_pts / nr_of_particles) * 100}% of all particles')
+            log.info(f'Lost {nr_lost_pts} particles - '\
+                     f'{(nr_lost_pts / nparts) * 100}%'\
+                     f' of all particles')
 
         xp = np.ascontiguousarray(xp)
         yp = np.ascontiguousarray(yp)
@@ -81,6 +79,7 @@ class TrackingCpp(ParticleTracker):
         return xp, yp
 
     # Function for tracking particles, including self field voltages
+    # Still written in python/C++. Will be exchanged with full C++ eventually.
     def kick_and_drift_self(self, xp, yp, denergy,
                             dphi, rf1v, rf2v, n_turns, n_part):
         tpar = self.timespace.par
