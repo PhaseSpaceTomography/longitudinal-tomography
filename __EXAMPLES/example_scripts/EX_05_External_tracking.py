@@ -80,13 +80,15 @@ def example_track_particles(tracker):
     ax.plot(tracker.mapinfo.jmin, color='black', label='Separatrix', zorder=0)
     ax.plot(tracker.mapinfo.jmax, color='black', zorder=0)
     ax.legend()
+
+    plt.tight_layout()
     plt.show()
 
 
 def example_particles_outside_bucket(tracker):
-    # Giving start coordinates for five particles
-    my_xp = np.array([100, 150, 200, 250, 300])
-    my_yp = np.array([100, 100, 100, 100, 100])
+    
+    my_xp = np.arange(0, 300, 10)
+    my_yp = np.zeros(len(my_xp)) + 100
 
     # Tracking particles outside the bucket area without filtering
     xp_uf, yp_uf = tracker.track(initial_coordinates=(my_xp, my_yp),
@@ -95,7 +97,8 @@ def example_particles_outside_bucket(tracker):
     xp_f, yp_f = tracker.track(initial_coordinates=(my_xp, my_yp),
                                filter_lost=True) 
     
-    fig, (ax1, ax2) = plt.subplots(2,1)
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 6),
+                                   sharex=True, sharey=True)
 
     ax1.set_title('Unfiltered')
     ax1.plot(xp_uf, yp_uf, zorder=5)
@@ -112,8 +115,8 @@ def example_particles_outside_bucket(tracker):
         ax.plot(tracker.mapinfo.jmin, color='black', label='Separatrix', zorder=0)
         ax.plot(tracker.mapinfo.jmax, color='black', zorder=0)
         ax.legend()
-        ax.set_xlim(-10, tracker.timespace.par.profile_length + 200)
-        ax.set_ylim(-200, tracker.timespace.par.profile_length + 10)
+
+    plt.tight_layout()
     plt.show()
     
 if __name__ == '__main__':
