@@ -24,8 +24,8 @@ class TestMap(unittest.TestCase):
         par.parse_from_txt(read[:98])
         par.fill()
 
-        ts = TimeSpace()
-        ts.create(par, raw_data)
+        ts = TimeSpace(par)
+        ts.create(raw_data)
 
         # Creating map info object (uninitialized)
         cls.mi = MapInfo(ts)

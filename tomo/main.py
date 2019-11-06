@@ -58,8 +58,8 @@ def main(*args):
                   f'arguments is one or two.'
         raise InputError(err_msg)
 
-    ts = TimeSpace()
-    ts.create(parameter, raw_data)
+    ts = TimeSpace(parameter)
+    ts.create(raw_data)
     
     output_path = OutputHandler.adjust_outpath(ts.par.output_dir)
 
