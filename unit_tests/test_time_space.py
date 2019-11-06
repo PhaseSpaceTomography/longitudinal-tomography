@@ -1,5 +1,4 @@
 import unittest
-import warnings
 import numpy as np
 import numpy.testing as nptest
 from tomo.parameters import Parameters
@@ -264,6 +263,8 @@ class TestTimeSpace(unittest.TestCase):
     #         warnings.filterwarnings("ignore")
     #         TimeSpace.get_indata_txt('resources/empty.dat', '')
     # -------------------------------------------------------------------
+
+    # Write test for calculate vself
 
 if __name__ == '__main__':
     unittest.main()
