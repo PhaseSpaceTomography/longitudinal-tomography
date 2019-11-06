@@ -87,7 +87,7 @@ class Tracking(ParticleTracker):
             turn += 1
             
             temp_xp = self.calc_xp_sf(dphi, tpar.phi0[turn],
-                                      tpar.x_origin, tpar.h_num,
+                                      self.timespace.x_origin, tpar.h_num,
                                       tpar.omega_rev0[turn], tpar.dtbin,
                                       tpar.phiwrap)
 
@@ -126,7 +126,7 @@ class Tracking(ParticleTracker):
                                / (float(self.timespace.par.h_num)
                                * self.timespace.par.omega_rev0[turn]
                                * self.timespace.par.dtbin)
-                               - self.timespace.par.x_origin)
+                               - self.timespace.x_origin)
                 yp[profile] = (denergy / float(self.mapinfo.dEbin)
                                + self.timespace.par.yat0)
                 oh.print_tracking_status_ccc(profile)
@@ -142,4 +142,6 @@ class Tracking(ParticleTracker):
 
     def coords_to_physical(self, xp, yp, turn=0):
         return super().coords_to_physical(
-                self.timespace.par, xp, yp, self.mapinfo.dEbin)
+                self.timespace.par, xp, yp,
+                self.mapinfo.dEbin,
+                self.timespace.x_origin)

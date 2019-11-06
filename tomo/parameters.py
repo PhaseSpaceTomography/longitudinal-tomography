@@ -96,18 +96,6 @@ from utils.exceptions import (InputError,
 # profile_mini      Index of first and last "active" index in profile
 # profile_maxi
 # all_data          Total number of data points in the 'raw' input file
-#
-# Beam reference profile parameters (calculated in TimeSpace):
-# -------------------------------------------------------------
-# bunch_phaselength     Bunch phase length in beam reference profile
-# tangentfoot_low       Used for estimation of bunch duration
-# tangentfoot_up
-# phiwrap
-# wrap_length
-# fit_xat0              Value of (if) fitted xat0
-# x_origin = 0.0        absolute difference in bins between phase=0
-#                           and origin of the reconstructed phase-space coordinate system.
-
 
 class Parameters:
 
@@ -119,8 +107,8 @@ class Parameters:
         self.yat0 = 0.0
 
         self.rebin = 0
-        self.rawdata_file = ""
-        self.output_dir = ""
+        self.rawdata_file = ''
+        self.output_dir = ''
         self.framecount = 0
         self.framelength = 0
         self.dtbin = 0.0
@@ -182,15 +170,6 @@ class Parameters:
         self.profile_maxi = 0
 
         self.all_data = 0
-
-        # Beam reference profile parameters (timeSpaceOutput):
-        self.bunch_phaselength = 0.0
-        self.tangentfoot_low = 0.0
-        self.tangentfoot_up = 0.0
-        self.phiwrap = 0.0
-        self.wrap_length = 0
-        self.fit_xat0 = 0.0
-        self.x_origin = 0.0
 
     # Fills up parameters object complete based
     #  on partly filled object.

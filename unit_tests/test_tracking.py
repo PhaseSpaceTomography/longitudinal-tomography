@@ -68,7 +68,7 @@ class TestTrack(unittest.TestCase):
         # Creating timespace object with needed values
         ts = TimeSpace.__new__(TimeSpace)
         ts.par = Parameters()
-        ts.par.x_origin = cv['xorigin']
+        ts.x_origin = cv['xorigin']
         ts.par.h_num = cv['h_num']
         ts.par.omega_rev0 = ca['omegarev0']
         ts.par.dtbin = cv['dtbin']
@@ -212,7 +212,7 @@ class TestTrack(unittest.TestCase):
         ca = TestTrack.c500.arrays
         ts = TimeSpace.__new__(TimeSpace)
         ts.par = Parameters()
-        ts.par.x_origin = cv['xorigin']
+        ts.x_origin = cv['xorigin']
         ts.par.h_num = cv['h_num']
         ts.par.omega_rev0 = ca['omegarev0']
         ts.par.dtbin = cv['dtbin']
@@ -257,7 +257,7 @@ class TestTrack(unittest.TestCase):
         ca = TestTrack.c500.arrays
         ts = TimeSpace.__new__(TimeSpace)
         ts.par = Parameters()
-        ts.par.x_origin = cv['xorigin']
+        ts.x_origin = cv['xorigin']
         ts.par.h_num = cv['h_num']
         ts.par.omega_rev0 = ca['omegarev0']
         ts.par.dtbin = cv['dtbin']

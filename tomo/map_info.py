@@ -64,7 +64,7 @@ class MapInfo:
 
         self.par = time_space.par
 
-        self.profile_charge = time_space.profile_charge
+        self.x_origin = time_space.x_origin
 
         self.jmin = []
         self.jmax = []
@@ -270,7 +270,7 @@ class MapInfo:
                         MapCreationError,
                         'The index array should have length '
                         'profile_length + 1')
-        phases = ((self.par.x_origin + indarr)
+        phases = ((self.x_origin + indarr)
                   * self.par.dtbin
                   * self.par.h_num
                   * self.par.omega_rev0[turn])
@@ -335,32 +335,32 @@ class MapInfo:
 
     # Needed for tomoscope in the CCC.
     # Written in the same format as the original fortran version.
-    def print_plotinfo_ccc(self):
+    def print_plotinfo_ccc(self, ts):
         rec_prof = self.par.filmstart - 1 # '-1' Fortran compensation
         rec_turn = rec_prof * self.par.dturns
         
         out_s = f' plotinfo.data\n'\
                 f'Number of profiles used in each reconstruction,\n'\
-                  f' profilecount = {self.par.profile_count}\n'\
+                  f' profilecount = {ts.par.profile_count}\n'\
                 f'Width (in pixels) of each image = '\
                   f'length (in bins) of each profile,\n'\
-                f' profilelength = {self.par.profile_length}\n'\
+                f' profilelength = {ts.par.profile_length}\n'\
                 f'Width (in s) of each pixel = width of each profile bin,\n'\
-                f' dtbin = {self.par.dtbin:0.4E}\n'\
+                f' dtbin = {ts.par.dtbin:0.4E}\n'\
                 f'Height (in eV) of each pixel,\n'\
                 f' dEbin = {self.dEbin:0.4E}\n'\
                 f'Number of elementary charges in each image,\n'\
                   f' eperimage = '\
-                  f'{self.profile_charge:0.3E}\n'\
+                  f'{ts.profile_charge:0.3E}\n'\
                 f'Position (in pixels) of the reference synchronous point:\n'\
-                f' xat0 =  {self.par.xat0:.3f}\n'\
-                f' yat0 =  {self.par.yat0:.3f}\n'\
+                f' xat0 =  {ts.par.xat0:.3f}\n'\
+                f' yat0 =  {ts.par.yat0:.3f}\n'\
                 f'Foot tangent fit results (in bins):\n'\
-                f' tangentfootl =    {self.par.tangentfoot_low:.3f}\n'\
-                f' tangentfootu =    {self.par.tangentfoot_up:.3f}\n'\
-                f' fit xat0 =   {self.par.fit_xat0:.3f}\n'\
+                f' tangentfootl =    {ts.tangentfoot_low:.3f}\n'\
+                f' tangentfootu =    {ts.tangentfoot_up:.3f}\n'\
+                f' fit xat0 =   {ts.fitted_xat0:.3f}\n'\
                 f'Synchronous phase (in radians):\n'\
-                f' phi0( {rec_prof}) = {self.par.phi0[rec_turn]:.4f}\n'\
+                f' phi0( {rec_prof}) = {ts.par.phi0[rec_turn]:.4f}\n'\
                 f'Horizontal range (in pixels) of the region in '\
                   f'phase space of map elements:\n'\
                 f' imin( {rec_prof}) =   {self.imin} and '\

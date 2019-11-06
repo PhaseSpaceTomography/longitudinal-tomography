@@ -73,7 +73,7 @@ def main(*args):
     # Creating map outlining for reconstruction
     mi = MapInfo(ts)
     mi.find_ijlimits()
-    mi.print_plotinfo_ccc()
+    mi.print_plotinfo_ccc(ts)
 
     # Particle tracking
     # tr = Tracking(ts, mi)

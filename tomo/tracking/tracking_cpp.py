@@ -57,7 +57,7 @@ class TrackingCpp(ParticleTracker):
                     self.timespace.par.deltaE0, self.timespace.par.omega_rev0,
                     self.timespace.par.dphase, self.timespace.par.phi12,
                     self.timespace.par.h_ratio, self.timespace.par.h_num,
-                    self.timespace.par.dtbin, self.timespace.par.x_origin,
+                    self.timespace.par.dtbin, self.timespace.x_origin,
                     self.mapinfo.dEbin, self.timespace.par.yat0,
                     self.timespace.par.dturns, nturns, nparts,
                     gpu_flag=gpu)
@@ -93,7 +93,7 @@ class TrackingCpp(ParticleTracker):
             turn += 1
             
             temp_xp = self.calc_xp_sf(dphi, tpar.phi0[turn],
-                                      tpar.x_origin, tpar.h_num,
+                                      self.timespace.x_origin, tpar.h_num,
                                       tpar.omega_rev0[turn], tpar.dtbin,
                                       tpar.phiwrap)
 
@@ -122,4 +122,6 @@ class TrackingCpp(ParticleTracker):
 
     def coords_to_physical(self, xp, yp, turn=0):
         return super().coords_to_physical(
-                self.timespace.par, xp, yp, self.mapinfo.dEbin)
+                self.timespace.par, xp, yp,
+                self.mapinfo.dEbin,
+                self.timespace.x_origin)

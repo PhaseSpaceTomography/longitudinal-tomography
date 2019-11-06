@@ -37,17 +37,14 @@ from utils.exceptions import (RawDataImportError,
 # vself             Self-field voltage
 # dsprofiles        Smoothed derivative of profiles
 #
-# saved in parameters:
-# - - - - - - - - - - -
-# bunch_phaselength Bunch phase length in beam reference profile (NOT ANY MORE)
+# bunch_phaselength Bunch phase length in beam reference profile
 # tangentfoot_low   Used for estimation of bunch duration
 # tangentfoot_up
 # phiwrap           Phase covering the an integer of rf periods
 # wrap_length       Maximum number of bins to cover an integer number of rf periods
-# fit_xat0          Value of (if) fitted xat0
-# x_origin = 0.0    absolute difference in bins between phase=0
+# fitted_xat0          Value of (if) fitted xat0
+# x_origin          absolute difference in bins between phase=0
 #                       and origin of the reconstructed phase-space coordinate system.
-#
 
 class TimeSpace:
 
@@ -60,6 +57,13 @@ class TimeSpace:
         self.vself = None            # Self-field voltage
         self.dsprofiles = None       # Smoothed derivative of profiles
 
+        self.tangentfoot_low = 0.0
+        self.tangentfoot_up = 0.0
+        self.phiwrap = 0.0
+        self.wrap_length = 0
+        self.fitted_xat0 = 0.0
+        self.x_origin = 0.0
+
     # Main function for the time space class
     # @profile
     def create(self, raw_data):
@@ -70,15 +74,15 @@ class TimeSpace:
          self.profile_charge) = self.create_profiles(raw_data)
 
         if self.par.xat0 < 0:
-            (self.par.fit_xat0,
-             self.par.tangentfoot_low,
-             self.par.tangentfoot_up) = self.fit_xat0()
-            self.par.xat0 = self.par.fit_xat0
+            (self.fitted_xat0,
+             self.tangentfoot_low,
+             self.tangentfoot_up) = self.fit_xat0()
+            self.par.xat0 = self.fitted_xat0
 
-        self.par.x_origin = self.calc_xorigin()
+        self.x_origin = self.calc_xorigin()
 
-        (self.par.phiwrap,
-         self.par.wrap_length) = self.find_wrap_length()
+        (self.phiwrap,
+         self.wrap_length) = self.find_wrap_length()
 
         self.par.yat0 = self.find_yat0()
 
@@ -159,19 +163,19 @@ class TimeSpace:
                      maxiter=100,
                      args=(self.par, bunch_phaselength, ref_turn))
 
-        fit_xat0 = (tfoot_low + (self.par.phi0[ref_turn] - phil)
+        fitted_xat0 = (tfoot_low + (self.par.phi0[ref_turn] - phil)
                     / (self.par.h_num
                        * self.par.omega_rev0[ref_turn]
                        * self.par.dtbin))
 
-        logging.info(f'Fitted x at zero: {fit_xat0}')
+        logging.info(f'Fitted x at zero: {fitted_xat0}')
 
-        return fit_xat0, tfoot_low, tfoot_up
+        return fitted_xat0, tfoot_low, tfoot_up
 
     # Calculate self-field voltage (if self_field_flag is True)
     def _calculate_self(self):
         vself = np.zeros((self.par.profile_count - 1,
-                          self.par.wrap_length + 1),
+                          self.wrap_length + 1),
                          dtype=float)
         for i in range(self.par.profile_count - 1):
             vself[i, 0:self.par.profile_length]\
