@@ -203,7 +203,7 @@ class TimeSpace:
 
         baseline = (np.sum(raw_data[istart:iend])
                     / np.real(np.floor(percentage
-                              * self.par.profile_length + 1))) # Should this '+1' be here?
+                                       * self.par.profile_length + 1)))
         
         logging.info(f'A baseline was found with the value: {str(baseline)}')
         
