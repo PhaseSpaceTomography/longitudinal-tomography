@@ -143,19 +143,19 @@ def calc_self_field_coeffs(parameters):
 
 
 # Calculates potential energy in phase
-def phase_low(phase, parameters, rf_turn):
+def phase_low(phase, parameters, bunch_phaselength, rf_turn):
     term1 = (parameters.vrf2
              * (np.cos(parameters.h_ratio
                        * (phase
-                          + parameters.bunch_phaselength
+                          + bunch_phaselength
                           - parameters.phi12))
                 - np.cos(parameters.h_ratio
                          * (phase - parameters.phi12)))
              / parameters.h_ratio)
     term2 = (parameters.vrf1
-             * (np.cos(phase + parameters.bunch_phaselength)
+             * (np.cos(phase + bunch_phaselength)
                 - np.cos(phase)))
-    term3 = (parameters.bunch_phaselength
+    term3 = (bunch_phaselength
              * short_rf_voltage_formula(parameters.phi0[rf_turn],
                                         parameters.vrf1,
                                         parameters.vrf1dot,
@@ -169,11 +169,11 @@ def phase_low(phase, parameters, rf_turn):
 
 
 # Calculates derivative of the phase_low function.
-# Third argument is needed for newton func.
-def dphase_low(phase, parameters, rf_turn):
+# *args is needed for Newton-Raphson root finder.
+def dphase_low(phase, parameters, bunch_phaselength, *args):
     return (-1.0 * parameters.vrf2
             * (np.sin(parameters.h_ratio
-                      * (phase + parameters.bunch_phaselength - parameters.phi12))
+                      * (phase + bunch_phaselength - parameters.phi12))
                 - np.sin(parameters.h_ratio * (phase - parameters.phi12)))
             - parameters.vrf1
-            * (np.sin(phase + parameters.bunch_phaselength) - np.sin(phase)))
+            * (np.sin(phase + bunch_phaselength) - np.sin(phase)))

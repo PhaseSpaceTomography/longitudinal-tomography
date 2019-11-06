@@ -1,10 +1,10 @@
 import logging
 import sys
 import scipy.signal._savitzky_golay as savgol
+from scipy.optimize import newton as newt
 import numpy as np
 from parameters import Parameters
 import physics
-from numeric import newton
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import (RawDataImportError,
                               InputError,
@@ -39,7 +39,7 @@ from utils.exceptions import (RawDataImportError,
 #
 # saved in parameters:
 # - - - - - - - - - - -
-# bunch_phaselength Bunch phase length in beam reference profile
+# bunch_phaselength Bunch phase length in beam reference profile (NOT ANY MORE)
 # tangentfoot_low   Used for estimation of bunch duration
 # tangentfoot_up
 # phiwrap           Phase covering the an integer of rf periods
@@ -51,8 +51,8 @@ from utils.exceptions import (RawDataImportError,
 
 class TimeSpace:
 
-    def __init__(self):
-        self.par = None
+    def __init__(self, parameters):
+        self.par = parameters
         self.profiles = np.array([])
         self.profile_charge = None   # Total charge in profile
 
@@ -62,126 +62,111 @@ class TimeSpace:
 
     # Main function for the time space class
     # @profile
-    def create(self, parameter, raw_data):
-        self.par = parameter
-        self.get_profiles(raw_data)
-        self.adjust_profiles()
-
-        self.profile_charge = self.total_profilecharge(
-                                self.profiles[self.par.beam_ref_frame - 1],
-                                self.par.dtbin, self.par.rebin,
-                                self.par.pickup_sensitivity)
-
-        self.profiles = self.normalize_profiles(self.profiles)
+    def create(self, raw_data):
+        
+        # Converting from raw data to profiles.
+        # Result is saved in self.profiles
+        (self.profiles,
+         self.profile_charge) = self.create_profiles(raw_data)
 
         if self.par.xat0 < 0:
-            idx = self.par.beam_ref_frame - 1
             (self.par.fit_xat0,
              self.par.tangentfoot_low,
-             self.par.tangentfoot_up,
-             self.par.bunch_phaselength) = self._fit_xat0(
-                                                self.profiles[idx, :], idx)
+             self.par.tangentfoot_up) = self.fit_xat0()
             self.par.xat0 = self.par.fit_xat0
 
-        self.par.x_origin = self.calc_xorigin(
-                                self.par.beam_ref_frame - 1, self.par.dturns,
-                                self.par.phi0, self.par.h_num,
-                                self.par.omega_rev0, self.par.dtbin,
-                                self.par.xat0)
+        self.par.x_origin = self.calc_xorigin()
 
         (self.par.phiwrap,
-         self.par.wrap_length) = self._find_wrap_length(
-                                    self.par.profile_count, self.par.dturns,
-                                    self.par.dtbin, self.par.h_num,
-                                    self.par.omega_rev0,
-                                    self.par.profile_length, self.par.bdot)
+         self.par.wrap_length) = self.find_wrap_length()
 
-        self.par.yat0 = self._find_yat0(self.par.profile_length)
+        self.par.yat0 = self.find_yat0()
+
+        logging.info(f'x at zero: {self.par.xat0}')
+        logging.info(f'y at zero: {self.par.yat0}')
 
         if self.par.self_field_flag:
             self._calc_using_self_field()
 
-    # Subroutine for reading raw data from numpy array,
-    # subtracting baseline
-    # and splitting the raw data to profiles.
-    def get_profiles(self, raw_data):
+    # Creating profiles, updates profile length and calculates profile charge.
+    def create_profiles(self, raw_data):
 
         # Asserting that the correct amount of measurement-data is provided.
         ta.assert_equal(len(raw_data), 'length of raw_data',
                         self.par.all_data, RawDataImportError)
 
         # Subtracting baseline from raw data
-        data = self.subtract_baseline(
-                        raw_data, self.par.frame_skipcount,
-                        self.par.beam_ref_frame, self.par.framelength,
-                        self.par.preskip_length, self.par.profile_length)
+        raw_data = self.subtract_baseline(raw_data)
 
         # Splitting up raw data to profiles
-        self.profiles = self.rawdata_to_profiles(
-                            data, self.par.profile_count,
-                            self.par.profile_length, self.par.frame_skipcount,
-                            self.par.framelength, self.par.preskip_length,
-                            self.par.postskip_length)
+        profiles = self.rawdata_to_profiles(raw_data)
 
-    # Subroutine for re-binning profiles
-    #  and converting negative values to zeros.
-    def adjust_profiles(self):
+        # Rebinning
         if self.par.rebin > 1:
-            (self.profiles,
-             self.par.profile_length) = self.rebin(self.profiles,
-                                                   self.par.rebin,
-                                                   self.par.profile_length,
-                                                   self.par.profile_count)
+            profiles, self.par.profile_length = self.rebin(profiles)
 
-        self.profiles = self.negative_profile_data_zero(self.profiles)
+        # Setting negative numbers to zero.
+        profiles = profiles.clip(0.0)
+
+        ref_prof = self.par.beam_ref_frame - 1
+        profile_charge = self.calc_profilecharge(profiles[ref_prof])
+
+        profiles = self.normalize_profiles(profiles)
+
+        logging.info('Profiles created successfully.')
+
+        return profiles, profile_charge
+
 
     # Contains functions for calculations using the self-field voltage
     def _calc_using_self_field(self):
         logging.info("Calculating self-fields")
-        self.dsprofiles = self._filter()
+        
+        self.dsprofiles = savgol.savgol_filter(
+                            x=self.profiles, window_length=7,
+                            polyorder=4, deriv=1)
+
         self.vself = self._calculate_self()
 
     # Perform at fit for finding x at 0
-    # Set bunch_phaselength variable, needed for phaselow function
-    def _fit_xat0(self, profile, refprofile_index, threshold_value=0.15):
-        logging.info("Performing fit for xat0")
+    def fit_xat0(self):
+        ref_idx = self.par.beam_ref_frame - 1
+        ref_prof = self.profiles[ref_idx]
+        ref_turn = ref_idx * self.par.dturns
 
-        tangentfoot_up, tangentfoot_low = self._calc_tangentfeet(
-                                                profile, refprofile_index,
-                                                self.par.profile_length,
-                                                threshold_value)
+        logging.info(f'Performing fit for xat0 '
+                     f'using reference profile: {ref_idx}')
 
-        thisturn = refprofile_index * self.par.dturns
+        (tfoot_up,
+         tfoot_low) = self.calc_tangentfeet(ref_prof)
 
-        bunch_duration = (tangentfoot_up - tangentfoot_low) * self.par.dtbin
+        bunch_duration = (tfoot_up - tfoot_low) * self.par.dtbin
 
-        # bunch_phase_length is needed in phaselow
-        self.par.bunch_phaselength = (self.par.h_num * bunch_duration
-                                      * self.par.omega_rev0[thisturn])
+        # bunch_phase_length is needed in phase_low function
+        # To be moved out of parameters
+        bunch_phaselength = (self.par.h_num * bunch_duration
+                             * self.par.omega_rev0[ref_turn])
+
+        logging.info(f'Calculated bunch phase length: {bunch_phaselength}')
 
         # Find roots of phaselow function
-        xstart_newt = (self.par.phi0[thisturn]
-                       - self.par.bunch_phaselength / 2.0)
+        xstart_newt = (self.par.phi0[ref_turn] - bunch_phaselength / 2.0)
 
-        # phaselow and dPhaseLow are functions from Physics module
-        phil = newton(physics.phase_low, physics.dphase_low, xstart_newt,
-                      self.par, thisturn, 0.0001)
+        phil = newt(func=physics.phase_low,
+                     x0=xstart_newt,
+                     fprime=physics.dphase_low,
+                     tol=0.0001,
+                     maxiter=100,
+                     args=(self.par, bunch_phaselength, ref_turn))
 
-        fit_xat0 = (tangentfoot_low + (self.par.phi0[thisturn] - phil)
+        fit_xat0 = (tfoot_low + (self.par.phi0[ref_turn] - phil)
                     / (self.par.h_num
-                       * self.par.omega_rev0[thisturn]
+                       * self.par.omega_rev0[ref_turn]
                        * self.par.dtbin))
 
-        return (fit_xat0, tangentfoot_low,
-                tangentfoot_up, self.par.bunch_phaselength)
+        logging.info(f'Fitted x at zero: {fit_xat0}')
 
-    # Savitzky-Golay smoothing filter (if self_field_flag is True)
-    def _filter(self):
-        filtered_profiles = savgol.savgol_filter(x=self.profiles,
-                                                 window_length=7,
-                                                 polyorder=4,
-                                                 deriv=1)
-        return filtered_profiles
+        return fit_xat0, tfoot_low, tfoot_up
 
     # Calculate self-field voltage (if self_field_flag is True)
     def _calculate_self(self):
@@ -199,134 +184,124 @@ class TimeSpace:
         return vself
 
     # Original function for subtracting baseline of raw data input profiles.
-    @staticmethod
-    def subtract_baseline(data, frame_skipcount, beam_ref_frame, frame_length,
-                          preskip_length, profile_length, percentage=0.05):
-        # Find the baseline from the first 5% (by default) of
-        # beam reference profile.
-        i0 = int((frame_skipcount + beam_ref_frame - 1) * frame_length
-                 + preskip_length)
+    # Finds the baseline from the first 5% (by default) of the beam reference profile.
+    def subtract_baseline(self, raw_data, percentage=0.05):
+        istart = int((self.par.frame_skipcount + self.par.beam_ref_frame - 1)
+                     * self.par.framelength + self.par.preskip_length)
 
-        ta.assert_inrange(percentage, 'percentage', 0.0, 1.0, InputError,
-                          'The chosen percentage of data to create baseline'
-                          'from is not valid')
+        ta.assert_inrange(percentage, 'percentage',
+                          0.0, 1.0, InputError,
+                          'The chosen percentage of raw_data '
+                          'to create baseline from is not valid')
 
-        i_five_percent = int(np.floor(i0 + percentage * profile_length + 1))
-        baseline = (np.sum(data[i0:i_five_percent])
-                    / np.real(np.floor(percentage * profile_length + 1)))
+        iend = int(np.floor(percentage * self.par.profile_length
+                            + istart + 1))
 
-        logging.debug(f"A baseline was found with the value: {str(baseline)}")
-        return data - baseline
+        baseline = (np.sum(raw_data[istart:iend])
+                    / np.real(np.floor(percentage
+                              * self.par.profile_length + 1))) # Should this '+1' be here?
+        
+        logging.info(f'A baseline was found with the value: {str(baseline)}')
+        
+        return raw_data - baseline
 
     # Turns list of raw data into (profile count, profile length) shaped array.
-    @staticmethod
-    def rawdata_to_profiles(data, profile_count, profile_length,
-                            frame_skipcount, framelength, preskip_length,
-                            postskip_length):
-        profiles = np.zeros((profile_count, profile_length))
-        for i in range(profile_count):
-            profile_start = ((frame_skipcount + i) * framelength
-                             + preskip_length)
-            profile_end = ((frame_skipcount + i + 1) * framelength
-                           - postskip_length)
-            profiles[i, :] = data[profile_start:profile_end]
-        logging.info(f'{str(profile_count)} profiles '
-                     f'with length {profile_length} '
-                     f'created from raw data')
+    def rawdata_to_profiles(self, raw_data):
+        profiles = raw_data.reshape((self.par.profile_count,
+                                     self.par.framelength))
+        profiles = profiles[:, self.par.preskip_length:
+                               -self.par.postskip_length]
+        
+        ta.assert_equal(profiles.shape[1], 'profile length',
+                        self.par.profile_length, InputError,
+                        'raw data was reshaped to profiles with '
+                        'a wrong shape.')
+
+        logging.debug(f'{self.par.profile_count} profiles '
+                      f'with length {self.par.profile_length} '
+                      f'created from raw data')
+
         return profiles
+
 
     # Re-binning of profiles from original number of bins to smaller number of
     # bins specified in input parameters
-    @staticmethod
-    def rebin(profiles, rebin_factor, profile_length, profile_count):
+    def rebin(self, profiles):
         # Find new profile length
-        if profile_length % rebin_factor == 0:
-            new_profile_length = int(profile_length / rebin_factor)
+        if self.par.profile_length % self.par.rebin == 0:
+            new_prof_len = int(self.par.profile_length / self.par.rebin)
         else:
-            new_profile_length = int(profile_length / rebin_factor) + 1
+            new_prof_len = int(self.par.profile_length / self.par.rebin) + 1
 
-        ta.assert_greater(new_profile_length,
+        ta.assert_greater(new_prof_len,
                           'rebinned profile length', 1,
                           RebinningError,
                           f'The length of the profiles after re-binning'
                           f'is not valid...\nMake sure that the re-binning '
-                          f'factor ({rebin_factor}) is not larger than'
-                          f'the original profile length ({profile_length})')
+                          f'factor ({self.par.rebin}) is not larger than'
+                          f'the original profile length '
+                          f'({self.par.profile_length})')
 
         # Re-binning profiles until second last bin
-        new_profilelist = np.zeros((profile_count, new_profile_length))
-        for p in range(profile_count):
-            for i in range(new_profile_length - 1):
+        new_profilelist = np.zeros((self.par.profile_count, new_prof_len))
+        for p in range(self.par.profile_count):
+            for i in range(new_prof_len - 1):
                 binvalue = 0.0
-                for bincounter in range(rebin_factor):
-                    binvalue += profiles[p, i * rebin_factor + bincounter]
+                for bincounter in range(self.par.rebin):
+                    binvalue += profiles[p, i * self.par.rebin + bincounter]
                 new_profilelist[p, i] = binvalue
 
         # Re-binning last profile bins
-        for p in range(profile_count):
+        for p in range(self.par.profile_count):
             binvalue = 0.0
-            for i in range((new_profile_length - 1) * rebin_factor,
-                            profile_length):
+            for i in range((new_prof_len - 1) * self.par.rebin,
+                            self.par.profile_length):
                 binvalue += profiles[p, i]
-            binvalue *= (float(rebin_factor)
-                         / float(profile_length
-                                 - (new_profile_length - 1)
-                                 * rebin_factor))
+            binvalue *= (float(self.par.rebin)
+                         / float(self.par.profile_length
+                                 - (new_prof_len - 1)
+                                 * self.par.rebin))
             new_profilelist[p, -1] = binvalue
 
-        logging.info("Profile rebinned with a rebin factor of "
-                     + str(rebin_factor))
+        logging.info('Profile rebinned with a rebin factor of '
+                     + str(self.par.rebin))
 
-        return new_profilelist, new_profile_length
+        return new_profilelist, new_prof_len
 
-    # Setting all negative profile data to zero
-    @staticmethod
-    def negative_profile_data_zero(profiles):
-        profiles = np.where(profiles < 0, 0, profiles)
-        ta.assert_array_not_equal(profiles,
-                                  'profile without negative numbers', 0,
-                                  'The whole profile was reduced to zeroes '
-                                  'when changing negative numbers to zeroes.')
-        return profiles
-
-    # Normalize profile data to number between 0 and 1
-    @staticmethod
-    def normalize_profiles(profiles):
+    def normalize_profiles(self, profiles):
         return profiles / np.vstack(np.sum(profiles, axis=1))
 
     # Calculate the total charge of profile
-    @staticmethod
-    def total_profilecharge(ref_prof, dtbin, rebin, pickup_sens):
-        return (np.sum(ref_prof) * dtbin
-                / (rebin * physics.e_UNIT * pickup_sens))
+    def calc_profilecharge(self, ref_prof):
+        return (np.sum(ref_prof) * self.par.dtbin
+                / (self.par.rebin * physics.e_UNIT
+                   * self.par.pickup_sensitivity))
 
     # Calculate the absolute difference (in bins) between phase=0 and
     # origin of the reconstructed phase space coordinate system.
-    @staticmethod
-    def calc_xorigin(beam_ref_frame, dturns, phi0,
-                     h_num, omega_rev0, dtbin, xat0):
-        reference_turn = beam_ref_frame * dturns
-        x_origin = (phi0[reference_turn]
-                    / (h_num
-                       * omega_rev0[reference_turn]
-                       * dtbin)
-                    - xat0)
+    def calc_xorigin(self):
+        reference_turn = (self.par.beam_ref_frame - 1) * self.par.dturns
+        x_origin = (self.par.phi0[reference_turn]
+                    / (self.par.h_num
+                       * self.par.omega_rev0[reference_turn]
+                       * self.par.dtbin)
+                    - self.par.xat0)
 
-        logging.debug("xat0: " + str(xat0) + ", x_origin: " + str(x_origin))
-
+        logging.debug(f'xat0: {self.par.xat0}, x_origin: {x_origin}')
         return x_origin
 
     # return index of last bins to the left and right of max valued bin,
     # with value over the threshold.
-    @staticmethod
-    def _calc_tangentbins(profile, profile_length, threshold):
-        maxbin = np.argmax(profile)
+    def _calc_tangentbins(self, ref_profile, threshold_coeff=0.15):
+        threshold = threshold_coeff * np.max(ref_profile)
+
+        maxbin = np.argmax(ref_profile)
         for ibin in range(maxbin, 0, -1):
-            if profile[ibin] < threshold:
+            if ref_profile[ibin] < threshold:
                 tangent_bin_low = ibin + 1
                 break
-        for ibin in range(maxbin, profile_length):
-            if profile[ibin] < threshold:
+        for ibin in range(maxbin, self.par.profile_length):
+            if ref_profile[ibin] < threshold:
                 tangent_bin_up = ibin - 1
                 break
 
@@ -334,61 +309,52 @@ class TimeSpace:
 
     # Find foot tangents of profile. Needed to estimate bunch duration
     # when performing a fit to find xat0
-    @staticmethod
-    def _calc_tangentfeet(profile, refprofile_index,
-                          profile_length, threshold_value):
-        index_array = np.arange(profile_length, dtype=float) + 0.5
+    def calc_tangentfeet(self, ref_prof):       
+        index_array = np.arange(self.par.profile_length) + 0.5
 
-        threshold = threshold_value * np.max(profile.data)
+        (tanbin_up,
+         tanbin_low) = self._calc_tangentbins(ref_prof)
 
-        (tangent_bin_up,
-         tangent_bin_low) = TimeSpace._calc_tangentbins(
-                                    profile, profile_length, threshold)
-
-        logging.info("findxat0: beam.ref.indx.: " + str(refprofile_index)
-                     + ", threshold: " + str(threshold))
-
-        [bl, al] = np.polyfit(index_array[tangent_bin_low - 2:
-                                          tangent_bin_low + 2],
-                              profile[tangent_bin_low - 2:
-                                      tangent_bin_low + 2],
+        [bl, al] = np.polyfit(index_array[tanbin_low - 2:
+                                          tanbin_low + 2],
+                              ref_prof[tanbin_low - 2:
+                                       tanbin_low + 2],
                               deg=1)
 
-        [bu, au] = np.polyfit(index_array[tangent_bin_up - 1:
-                                          tangent_bin_up + 3],
-                              profile[tangent_bin_up - 1:
-                                      tangent_bin_up + 3],
+        [bu, au] = np.polyfit(index_array[tanbin_up - 1:
+                                          tanbin_up + 3],
+                              ref_prof[tanbin_up - 1:
+                                       tanbin_up + 3],
                               deg=1)
 
-        tangentfoot_low = -1 * al / bl
-        tangentfoot_up = -1 * au / bu
+        tanfoot_low = -1 * al / bl
+        tanfoot_up = -1 * au / bu
 
-        logging.debug("tangent_foot_low = " + str(tangentfoot_low)
-                      + ", tangent_foot_up = " + str(tangentfoot_up))
-
-        return tangentfoot_up, tangentfoot_low
+        logging.info(f'tangent_foot_low: {tanfoot_low:0.7f}, '
+                     f'tangent_foot_up: {tanfoot_up:0.7f}')
+        return tanfoot_up, tanfoot_low
 
     # Calculate the number of bins in the first
     # integer number of rf periods, larger than the image width.
-    @staticmethod
-    def _find_wrap_length(profile_count, dturns, dtbin, h_num, omega_rev0,
-                          profile_length, bdot):
-        if bdot > 0.0:
-            last_turn_index = ((profile_count - 1) * dturns - 1)
-            drad_bin = h_num * omega_rev0[last_turn_index] * dtbin
+    # -f: fortran compensation
+    def find_wrap_length(self):
+        if self.par.bdot > 0.0:
+            last_turn_index = ((self.par.profile_count - 1)
+                               * self.par.dturns - 1)
+            drad_bin = (self.par.h_num * self.par.omega_rev0[last_turn_index]
+                        * self.par.dtbin)
         else:
-            drad_bin = h_num * omega_rev0[0] * dtbin
+            drad_bin = (self.par.h_num * self.par.omega_rev0[0]
+                        * self.par.dtbin)
 
-        phiwrap = (np.ceil(profile_length * drad_bin / (2*np.pi)) * 2 * np.pi)
+        phiwrap = np.ceil(self.par.profile_length
+                           * drad_bin / (2*np.pi)) * 2 * np.pi
 
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 
-        logging.debug(f"findwrap_length: phiwrap =  {str(phiwrap)},"
-                      f" wrap_length =  {str(wrap_length)}")
+        logging.info(f'phi wrap =  {str(phiwrap)}, '
+                      f'wrap length =  {str(wrap_length)}')
         return phiwrap, wrap_length
 
-    @staticmethod
-    def _find_yat0(profile_length):
-        yat0 = profile_length / 2.0
-        logging.debug("yat0 = " + str(yat0))
-        return yat0
+    def find_yat0(self):
+        return self.par.profile_length / 2.0
