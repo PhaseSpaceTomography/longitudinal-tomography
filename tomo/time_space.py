@@ -213,8 +213,12 @@ class TimeSpace:
     def rawdata_to_profiles(self, raw_data):
         profiles = raw_data.reshape((self.par.profile_count,
                                      self.par.framelength))
-        profiles = profiles[:, self.par.preskip_length:
-                               -self.par.postskip_length]
+        
+        if self.par.postskip_length > 0:
+            profiles = profiles[:, self.par.preskip_length:
+                                   -self.par.postskip_length]
+        else:
+            profiles = profiles[:, self.par.preskip_length:]
         
         ta.assert_equal(profiles.shape[1], 'profile length',
                         self.par.profile_length, InputError,
