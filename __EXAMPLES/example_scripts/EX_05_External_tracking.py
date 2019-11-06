@@ -41,8 +41,8 @@ def main():
     param.parse_from_txt(raw_parameters)
     param.fill()
 
-    ts = TimeSpace()
-    ts.create(param, raw_data)
+    ts = TimeSpace(param)
+    ts.create(raw_data)
 
     mi = MapInfo(ts)
     dEbin = mi.find_dEbin()
@@ -97,18 +97,14 @@ def example_particles_outside_bucket(tracker):
     xp_f, yp_f = tracker.track(initial_coordinates=(my_xp, my_yp),
                                filter_lost=True) 
     
-    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 6),
+    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(10, 13),
                                    sharex=True, sharey=True)
 
     ax1.set_title('Unfiltered')
     ax1.plot(xp_uf, yp_uf, zorder=5)
-    ax1.scatter(xp_uf[:, 0], yp_uf[:, 0], color='black',
-                marker='.', zorder=10, label='Particle\nstart position')
 
     ax2.set_title('Filtered')
     ax2.plot(xp_f, yp_f, zorder=5)
-    ax2.scatter(xp_f[:, 0], yp_f[:, 0], color='black',
-                marker='.', zorder=10, label='Particle\nstart position')
 
     # Showing separatrix
     for ax in (ax1, ax2):
