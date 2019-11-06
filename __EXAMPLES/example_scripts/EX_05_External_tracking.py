@@ -8,7 +8,9 @@ from main import main as tomo_main
 from parameters import Parameters
 from time_space import TimeSpace
 from map_info import MapInfo
+from tomography.tomography_py import TomographyPy
 from tracking.tracking import Tracking
+from utils.exs_tools import show
 
 
 BASE_PATH = os.path.dirname(
@@ -53,8 +55,15 @@ def main():
     # Particle tracking
     tracker = Tracking(ts, mi)
 
+    # Example on how to insert and track your own particles.
     example_track_particles(tracker)
+
+    # Example on tracking your own particles with and without filtering.
     example_particles_outside_bucket(tracker)
+    
+    # Example on how to set up your own initial distribution of particles,
+    #  then to track them and later to use them in the reconstruction.
+    example_track_and_tomo(tracker)
 
 
 def example_track_particles(tracker):
@@ -114,6 +123,82 @@ def example_particles_outside_bucket(tracker):
 
     plt.tight_layout()
     plt.show()
+
+
+def example_track_and_tomo(tracker):
+    
+    # Creating an initial distribution of test particles.
+    # The particles will start both inside and outside of the separatrix.
+    x = np.arange(tracker.mapinfo.imin,
+                  tracker.mapinfo.imax)
+    y = np.arange(np.min(tracker.mapinfo.jmin),
+                  np.max(tracker.mapinfo.jmax))
+
+    xx, yy = np.meshgrid(x, y)
+
+    xx = np.ascontiguousarray(xx.flatten().astype(float))
+    yy = np.ascontiguousarray(yy.flatten().astype(float))
+
+    # Plotting initial distribution of particles
+    # ------------------------------------------------------------------------
+    fig, ax = plt.subplots()
+    ax.set_title('Initial distribution of test particles')
+    ax.scatter(xx, yy, s=0.5, label='Test particles')
+    ax.plot(tracker.mapinfo.jmin, color='black', label='Bucket area')
+    ax.plot(tracker.mapinfo.jmax, color='black')
+    ax.set_xlim((-25, tracker.timespace.par.profile_length + 25))
+    ax.set_ylim((-25, tracker.timespace.par.profile_length + 25))
+    ax.legend()
+    plt.show()
+    # ------------------------------------------------------------------------
+
+    # Tracking needed for asserting that no particles are outside of the bucket
+    #  area after reconstruction.
+    xp, yp = tracker.track(initial_coordinates=(xx, yy),
+                           filter_lost=True)
+
+    # Plotting the paths of some of the particles
+    # ------------------------------------------------------------------------
+    fig, ax = plt.subplots()
+    ax.set_title('Paths of some tracked particles.\n'
+                 'Many particles are filtered out.')
+    skit_pts = 500
+    ax.plot(xp[:, ::skit_pts], yp[:, ::skit_pts])
+    ax.plot(tracker.mapinfo.jmin, color='black', label='Bucket area')
+    ax.plot(tracker.mapinfo.jmax, color='black')
+    ax.legend()
+    plt.show()
+    # ------------------------------------------------------------------------
+
+    # Produces the same output as the original Fortran profgram
+    # Now needs to be transposed and subtracted by one to fit python/C++ version.
+    # This will be changed in future updates.
+    xp = xp.T.astype(int) - 1
+    yp = yp.T.astype(int) - 1
+
+    # In order to run the tomography, all you need from the
+    #  time space object are:
+    #  - the measured profiles
+    #  - nr of profiles
+    #  - nr of bins
+    #  - nr of iterations
+    # It is important for the tomography algorithom to work, that
+    #  none of the particles are at x values outside of the bins
+    #  (larger xp value than profile_length - 1)
+    # Automatic handling for this in the tomo routine
+    #  will be implemented shortly
+    tomo = TomographyPy(tracker.timespace, xp, yp)
+
+    particle_weights = tomo.run()
+
+    rec_prof_idx = 0
+    phase_space = tomo.create_phase_space_image(
+                    xp, yp, particle_weights,
+                    tracker.timespace.par.profile_length,
+                    rec_prof_idx)
+
+    show(phase_space, tomo.diff, tracker.timespace.profiles[rec_prof_idx])
+
     
 if __name__ == '__main__':
     main()
