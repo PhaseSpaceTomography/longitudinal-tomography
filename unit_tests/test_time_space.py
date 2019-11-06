@@ -126,12 +126,15 @@ class TestTimeSpace(unittest.TestCase):
     
         fit_xat0, ltfoot, utfoot = self.timespace.fit_xat0()
     
-        self.assertEqual(utfoot, 186.58843537414958,
+        self.assertAlmostEqual(
+            utfoot, 186.58843537414958,
             msg='Error in calculation of the upper tangent foot')
-        self.assertEqual(ltfoot, 15.464929214929239,
-                         msg='Error in calculation of the lower tangent foot')
-        self.assertAlmostEqual(fit_xat0, 91.9098144506852,
-                               msg='Error in calculation of fitted x at zero')
+        self.assertAlmostEqual(
+            ltfoot, 15.464929214929239,
+            msg='Error in calculation of the lower tangent foot')
+        self.assertAlmostEqual(
+            fit_xat0, 91.9098144506852,
+            msg='Error in calculation of fitted x at zero')
 
 
     def test_calc_tangentbin_C500(self):
