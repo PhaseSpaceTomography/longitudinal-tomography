@@ -5,48 +5,48 @@ from tomography.__tomography import Tomography
 # This class is using python only, speed up with numba. 
 class TomographyPy(Tomography):
 
-    def __init__(self, timespace, tracked_xp, tracked_yp):
-        super().__init__(timespace, tracked_xp, tracked_yp)
+    def __init__(self, profiles, x_coords):
+        super().__init__(profiles, x_coords)
 
-    def run(self):
-        nparts = self.xp.shape[0]
-        weights = np.zeros(nparts)
+    def run(self, niter=20):
+        self.diff = np.zeros(niter + 1)
+        weights = np.zeros(self.nparts)
         flat_points = self.xp.copy()
 
-        reciprocal_pts = self.reciprocal_particles(nparts)
+        reciprocal_pts = self._reciprocal_particles()
 
-        for i in range(self.ts.par.profile_count):
-            flat_points[:, i] += self.ts.par.profile_length * i
+        for i in range(self.nprofs):
+            flat_points[:, i] += self.nbins * i
 
-        weights = self.back_project_flattened(self.ts.profiles.flatten(),
-                                              flat_points,
-                                              weights, nparts)
+        weights = self.back_project_flattened(
+                    self.profiles.flatten(), flat_points,
+                    weights, self.nparts)
 
-        for i in range(self.ts.par.num_iter):
-            print(f'iteration: {str(i + 1)} of {self.ts.par.num_iter}')
+        for i in range(niter):
+            print(f'iteration: {str(i + 1)} of {niter}')
 
-            self.recreated = self.project(flat_points, weights, nparts)
+            self.recreated = self.project(flat_points, weights)
 
-            diff_prof = self.ts.profiles - self.recreated
-            self.diff[i] = self.discrepancy(diff_prof)
+            diff_prof = self.profiles - self.recreated
+            self.diff[i] = self._discrepancy(diff_prof)
 
             diff_prof *= reciprocal_pts.T
 
-            weights = self.back_project_flattened(diff_prof.flatten(),
-                                                  flat_points,
-                                                  weights, nparts)
+            weights = self.back_project_flattened(
+                        diff_prof.flatten(), flat_points,
+                        weights, self.nparts)
         
-        self.recreated = self.project(flat_points, weights, nparts)
+        self.recreated = self.project(flat_points, weights)
 
-        diff_prof = self.ts.profiles - self.recreated
-        self.diff[-1] = self.discrepancy(diff_prof)
+        diff_prof = self.profiles - self.recreated
+        self.diff[-1] = self._discrepancy(diff_prof)
         
         return weights
 
-    def project(self, flat_points, weights, nparts):
+    def project(self, flat_points, weights):
         rec = self._project_flattened(self.recreated.flatten(),
-                                      flat_points, weights, nparts)
-        rec = rec.reshape(self.ts.profiles.shape)
+                                      flat_points, weights, self.nparts)
+        rec = rec.reshape(self.profiles.shape)
         rec = self._suppress_zeros_normalize(rec)
         return rec
 

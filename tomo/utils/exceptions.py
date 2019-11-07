@@ -107,3 +107,6 @@ class PhaseSpaceReducedToZeroes(Exception):
     pass
 
 
+class XPOutOfImageWidthError(Exception):
+    pass
+

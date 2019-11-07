@@ -90,9 +90,10 @@ def main(*args):
     yp = np.ceil(yp).astype(int).T - 1
     
     # Reconstructing phase space  
-    tomo = TomographyCpp(ts, xp, yp)
-    # weight = tomo.run()
-    weight = tomo.run_cpp()
+    # tomo = TomographyPy(ts.profiles, xp)
+    tomo = TomographyCpp(ts.profiles, xp)
+    weight = tomo.run()
+    # weight = tomo.run_cpp()
 
     for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
         image = TomographyCpp.create_phase_space_image(
