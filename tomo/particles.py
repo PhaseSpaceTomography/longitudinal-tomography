@@ -1,8 +1,6 @@
 import numpy as np
-from numba import njit          # Needed for fortran style init.
+from numba import njit          # Needed for fortran style init. To be removed.
 from map_info import MapInfo
-import sys
-import time as tm
 
 # This class sets up the inital particle distribution of the test particles.
 # The class is NOT NEEDED for the tracking of the particles, but is meant as
@@ -45,7 +43,7 @@ class Particles(object):
     # fractions of bins. 
     def __init__(self, timespace):
         self._timespace = timespace
-        self._mapinfo = MapInfo(self._timespace)
+        self._mapinfo = MapInfo(self._timespace) # To be renamed?
         self._mapinfo.find_ijlimits()
         self.dEbin = self._mapinfo.dEbin
 
