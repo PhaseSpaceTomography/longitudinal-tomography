@@ -4,6 +4,10 @@ from numba import njit
 from tracking.particle_tracker import ParticleTracker
 from cpp_routines.tomolib_wrappers import kick, drift, kick_and_drift
 
+# =================================================================================
+# ======================== NB! Needs to be rewritten. =============================
+# =================================================================================
+
 # This is an experimental class, using a full c++ version
 #   of the kick and drift routine.
 # Not as thoroughly tested as the tracking.py version.

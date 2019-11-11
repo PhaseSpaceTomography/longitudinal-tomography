@@ -71,7 +71,8 @@ class Tracking(ParticleTracker):
         return out_dphi, out_denergy
 
     # =========================== OLD ROUTINES ===============================
-
+    #  To be deleted
+    #
     # Optional tuple should contain the initial values
     #  of the particles coordinates
     #  which should be the start of the tracking
