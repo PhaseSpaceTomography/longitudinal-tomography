@@ -8,8 +8,67 @@ from cpp_routines.tomolib_wrappers import kick, drift
 
 class Tracking(ParticleTracker):
 
-    def __init__(self, ts, mi):
-        super().__init__(ts, mi)
+    def __init__(self, parameter):
+        super().__init__(parameter)
+
+
+    def track(self, initial_coordinates, rec_prof=0):
+        (in_dphi,
+         in_denergy,
+         nparts) = self._assert_initial_parts(initial_coordinates)
+
+        # Calculating radio frequency voltage multiplied by the
+        #  particle charge at each turn.
+        # To be moved to parameters object!
+        rf1v, rf2v = self.rfv_at_turns()
+
+        dphi = np.ascontiguousarray(np.copy(in_dphi))
+        denergy = np.ascontiguousarray(np.copy(in_denergy))
+
+        # Tracking particles
+        if self.parameter.self_field_flag:
+            raise NotImplementedError('kick and drift - '
+                                      'self voltage not implemented (yet)')
+            # xp, yp = self.kick_and_drift_self(
+            #         xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
+        else:
+            all_dphi, all_denergy = self.kick_and_drift(
+                                        denergy, dphi, rf1v, rf2v)
+
+        return all_dphi, all_denergy
+
+    
+    def kick_and_drift(self, denergy, dphi, rf1v, rf2v):
+        nparts = len(denergy)
+        out_dphi = np.zeros((self.parameter.profile_count, nparts))
+        out_denergy = np.copy(out_dphi)
+
+        out_dphi[0] = dphi
+        out_denergy[0] = denergy
+
+        turn = 0
+        profile = 0
+        oh.print_tracking_status_ccc(profile)
+        while turn < self.nturns:
+            # Calculating change in phase for each particle at a turn
+            dphi = drift(denergy, dphi, self.parameter.dphase,
+                         nparts, turn)
+            turn += 1
+            # Calculating change in energy for each particle at a turn
+            denergy = kick(self.parameter, denergy, dphi, rf1v, rf2v,
+                           nparts, turn)
+
+            if turn % self.parameter.dturns == 0:
+                profile += 1
+                out_dphi[profile] = dphi
+                out_denergy[profile] = denergy
+                oh.print_tracking_status_ccc(profile)
+
+        return out_dphi, out_denergy
+
+
+
+
 
     # Optional tuple should contain the initial values
     #  of the particles coordinates
@@ -18,7 +77,7 @@ class Tracking(ParticleTracker):
     # If optional tuple is not provided, the particles
     #  will be tracked based on a homogeneous distribution of particles
     #  within the i and jlimits
-    def track(self, initial_coordinates=(), rec_prof=0, filter_lost=True):
+    def old_track(self, initial_coordinates=(), rec_prof=0, filter_lost=True):
         if len(initial_coordinates) > 0:
             # In this case, only the particles spescified by the user is tracked.
             # User input is checked for correctness before returning the values.
@@ -74,7 +133,7 @@ class Tracking(ParticleTracker):
         return xp, yp
 
     # Function for tracking particles, including self field voltages
-    def kick_and_drift_self(self, xp, yp, denergy,
+    def old_kick_and_drift_self(self, xp, yp, denergy,
                             dphi, rf1v, rf2v, n_turns, n_part):
         tpar = self.timespace.par
 
@@ -106,7 +165,7 @@ class Tracking(ParticleTracker):
 
         return xp, yp
 
-    def kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
+    def old_kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):
         turn = 0
         profile = 0
@@ -140,8 +199,8 @@ class Tracking(ParticleTracker):
                     / (h_num * omega_rev0 * dtbin))
         return temp_xp
 
-    def coords_to_physical(self, xp, yp, turn=0):
-        return super().coords_to_physical(
-                self.timespace.par, xp, yp,
-                self.mapinfo.dEbin,
-                self.timespace.x_origin)
+    # def coords_to_physical(self, xp, yp, turn=0):
+    #     return super().coords_to_physical(
+    #             self.timespace.par, xp, yp,
+    #             self.mapinfo.dEbin,
+    #             self.timespace.x_origin)
