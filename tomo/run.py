@@ -29,7 +29,7 @@ timespace = TimeSpace(parameters)
 timespace.create(raw_data)
 
 # Initiating particles obj.
-particles = Particles()
+particles = Particles(timespace)
 
 # ------------------------------------------------------------------------------
 # EXAMPLE, use of particles object - manual coordinates
@@ -40,25 +40,24 @@ particles = Particles()
 xcoords = np.array([100, 100, 100, 75, 100, 125])
 ycoords = np.array([75, 100, 125, 100, 100, 100])
 
-particles.set_coordinates(xcoords, ycoords, timespace)
+particles.set_coordinates(xcoords, ycoords)
 dphi, deneregy = particles.init_coords_to_physical(turn=0)
 
 tracker = Tracking(parameters)
 xp, yp = tracker.track((dphi, deneregy))
 
 # Converting from physical units to coordinate system
-xp, yp = Particles.physical_to_coords(xp, yp, timespace)
+xp, yp = particles.physical_to_coords(xp, yp)
 
 # ------------------------------------------------------------------------------
 # EXAMPLE, use of particles object - automatic distribution
 # ------------------------------------------------------------------------------
-particles.homogeneous_distribution(timespace, ff=True)
+particles.homogeneous_distribution(ff=True)
 dphi, deneregy = particles.init_coords_to_physical(turn=0)
 
 tracker = Tracking(parameters)
 xp, yp = tracker.track((dphi, deneregy))
-
-xp, yp = Particles.physical_to_coords(xp, yp, timespace)
+xp, yp = particles.physical_to_coords(xp, yp)
 
 # Needed for tomo routine.
 # Will be removed eventually. 
