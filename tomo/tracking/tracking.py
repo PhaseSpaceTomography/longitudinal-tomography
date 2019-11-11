@@ -8,7 +8,6 @@ from cpp_routines.tomolib_wrappers import kick, drift
 
 class Tracking(ParticleTracker):
 
-    # The tracking routine works on a copy of the input coordinates.
     # Input should be thee coordinates of the particles given in
     #  phase and energy.
     # The output is the particles position in phase and energy for 
@@ -16,7 +15,7 @@ class Tracking(ParticleTracker):
     def __init__(self, parameter):
         super().__init__(parameter)
 
-
+    # The tracking routine works on a COPY of the input coordinates.
     def track(self, initial_coordinates, rec_prof=0):
         (in_dphi,
          in_denergy,
