@@ -62,7 +62,7 @@ class MapInfo:
 
     def __init__(self, time_space):
 
-        self.par = time_space.par
+        self.par = time_space.par # Namechanges coming.
 
         self.x_origin = time_space.x_origin
 
@@ -117,7 +117,7 @@ class MapInfo:
     def find_dEbin(self):
         # Calculating turn and phases at the beam reference point
         turn = (self.par.beam_ref_frame - 1) * self.par.dturns    
-        phases = self.calculate_phases(turn)
+        phases = self._calculate_phases(turn)
         return self._calc_energy_pxl(phases, turn)
 
     # Calculating the difference of energy of one pixel.
@@ -130,10 +130,10 @@ class MapInfo:
                             'reconstructed phase space is invalid.')
         if self.par.demax < 0.0:
             if physics.vrft(self.par.vrf2, self.par.vrf2dot, turn) != 0.0:
-                energies_low = self.trajectoryheight(
+                energies_low = self._trajectoryheight(
                 				phases, phases[0], delta_e_known, turn)
 
-                energies_up = self.trajectoryheight(
+                energies_up = self._trajectoryheight(
                 				phases, phases[profile_length],
                                 delta_e_known, turn)
 
@@ -174,7 +174,7 @@ class MapInfo:
 
         # Calculating turn and phases at the filmstart reference point
         turn = (self.par.filmstart - 1) * self.par.dturns
-        phases = self.calculate_phases(turn)
+        phases = self._calculate_phases(turn)
 
         # Jmax to int already here? 
         jmax = self._find_jmax(phases, turn, dEbin)
@@ -197,14 +197,14 @@ class MapInfo:
         # finding max energy at edges of profiles
         for i in range(self.par.profile_length + 1):
             temp_energy = np.floor(self.par.yat0
-                                   + self.trajectoryheight(
+                                   + self._trajectoryheight(
                                         phases[i], phases[0], energy, turn)
                                    / dEbin)
             
             jmax_low[i] = int(temp_energy)
 
             temp_energy = np.floor(self.par.yat0
-                                   + self.trajectoryheight(
+                                   + self._trajectoryheight(
                                         phases[i],
                                         phases[self.par.profile_length],
                                         energy, turn)
@@ -262,7 +262,7 @@ class MapInfo:
         return jmin, jmax, imin, imax
 
     # Returns an array of phases for a given turn
-    def calculate_phases(self, turn):
+    def _calculate_phases(self, turn):
         indarr = np.arange(self.par.profile_length + 1)
         ta.assert_equal(len(indarr),
                         'index array length',
@@ -304,37 +304,36 @@ class MapInfo:
                             'jmin and jmax should have the same shape')
 
     # Trajectory height calculator
-    def trajectoryheight(self, phi, phi_known, delta_e_known, turn):
-        temp1 = delta_e_known**2
-        temp2 = 2.0 * self.par.q / float(self.par.dphase[turn])
-        temp3 = (physics.vrft(self.par.vrf1, self.par.vrf1dot, turn)
-                 * (np.cos(phi) - np.cos(phi_known))
-                 + physics.vrft(self.par.vrf2, self.par.vrf2dot, turn)
-                 * (np.cos(self.par.h_ratio * (phi - self.par.phi12))
-                    - np.cos(self.par.h_ratio
-                             * (phi_known - self.par.phi12)))
-                 / self.par.h_ratio
-                 + (phi - phi_known)
-                 * physics.short_rf_voltage_formula(
+    def _trajectoryheight(self, phi, phi_known, delta_e_known, turn):
+        cplx_height = 2.0 * self.par.q / float(self.par.dphase[turn])
+        cplx_height *= (physics.vrft(self.par.vrf1, self.par.vrf1dot, turn)
+                        * (np.cos(phi) - np.cos(phi_known))
+                        + physics.vrft(self.par.vrf2, self.par.vrf2dot, turn)
+                        * (np.cos(self.par.h_ratio * (phi - self.par.phi12))
+                        - np.cos(self.par.h_ratio
+                                 * (phi_known - self.par.phi12)))
+                        / self.par.h_ratio
+                        + (phi - phi_known)
+                        * physics.short_rf_voltage_formula(
                             self.par.phi0[turn], self.par.vrf1,
                             self.par.vrf1dot, self.par.vrf2,
                             self.par.vrf2dot, self.par.h_ratio,
                             self.par.phi12, self.par.time_at_turn, turn))
+        cplx_height += delta_e_known**2
 
-        ans = temp1 + temp2 * temp3
-
-        if np.size(ans) > 1:
+        if np.size(cplx_height) > 1:
             # Returning array
-            ans = np.array(ans, dtype=complex)
-            complex_height = np.sqrt(ans)
+            cplx_height = np.array(cplx_height, dtype=complex)
+            cplx_height = np.sqrt(cplx_height)
         else:
             # Returning scalar
-            complex_height = np.sqrt(complex(ans))
+            cplx_height = np.sqrt(complex(cplx_height))
 
-        return complex_height.real
+        return cplx_height.real
 
     # Needed for tomoscope in the CCC.
     # Written in the same format as the original fortran version.
+    # To be moved to tomoIO
     def print_plotinfo_ccc(self, ts):
         rec_prof = self.par.filmstart - 1 # '-1' Fortran compensation
         rec_turn = rec_prof * self.par.dturns
