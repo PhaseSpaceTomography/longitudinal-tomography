@@ -10,7 +10,7 @@ class ParticleTracker:
 
     # Checks that the input arguments are correct, and spilts
     #  up to initial x and y coordnates. Also reads the start profile.
-    def _assert_initial_parts(init_coords):
+    def _assert_initial_parts(self, init_coords):
         correct = False
         if len(init_coords) == 2:
             in_xp = np.copy(init_coords[0])

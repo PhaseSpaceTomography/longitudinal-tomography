@@ -8,6 +8,11 @@ from cpp_routines.tomolib_wrappers import kick, drift
 
 class Tracking(ParticleTracker):
 
+    # The tracking routine works on a copy of the input coordinates.
+    # Input should be thee coordinates of the particles given in
+    #  phase and energy.
+    # The output is the particles position in phase and energy for 
+    #  each of the turns where a profile measurment is performed.
     def __init__(self, parameter):
         super().__init__(parameter)
 
@@ -22,8 +27,8 @@ class Tracking(ParticleTracker):
         # To be moved to parameters object!
         rf1v, rf2v = self.rfv_at_turns()
 
-        dphi = np.ascontiguousarray(np.copy(in_dphi))
-        denergy = np.ascontiguousarray(np.copy(in_denergy))
+        dphi = np.ascontiguousarray(in_dphi)
+        denergy = np.ascontiguousarray(in_denergy)
 
         # Tracking particles
         if self.parameter.self_field_flag:
@@ -66,9 +71,7 @@ class Tracking(ParticleTracker):
 
         return out_dphi, out_denergy
 
-
-
-
+    # =========================== OLD ROUTINES ===============================
 
     # Optional tuple should contain the initial values
     #  of the particles coordinates
@@ -77,7 +80,7 @@ class Tracking(ParticleTracker):
     # If optional tuple is not provided, the particles
     #  will be tracked based on a homogeneous distribution of particles
     #  within the i and jlimits
-    def old_track(self, initial_coordinates=(), rec_prof=0, filter_lost=True):
+    def _old_track(self, initial_coordinates=(), rec_prof=0, filter_lost=True):
         if len(initial_coordinates) > 0:
             # In this case, only the particles spescified by the user is tracked.
             # User input is checked for correctness before returning the values.
@@ -133,7 +136,7 @@ class Tracking(ParticleTracker):
         return xp, yp
 
     # Function for tracking particles, including self field voltages
-    def old_kick_and_drift_self(self, xp, yp, denergy,
+    def _old_kick_and_drift_self(self, xp, yp, denergy,
                             dphi, rf1v, rf2v, n_turns, n_part):
         tpar = self.timespace.par
 
@@ -145,10 +148,10 @@ class Tracking(ParticleTracker):
             
             turn += 1
             
-            temp_xp = self.calc_xp_sf(dphi, tpar.phi0[turn],
-                                      self.timespace.x_origin, tpar.h_num,
-                                      tpar.omega_rev0[turn], tpar.dtbin,
-                                      tpar.phiwrap)
+            temp_xp = self._calc_xp_sf(dphi, tpar.phi0[turn],
+                                       self.timespace.x_origin, tpar.h_num,
+                                       tpar.omega_rev0[turn], tpar.dtbin,
+                                       tpar.phiwrap)
 
             selfvolt = self.timespace.vself[
                         profile,np.floor(temp_xp).astype(int)]
@@ -165,7 +168,7 @@ class Tracking(ParticleTracker):
 
         return xp, yp
 
-    def old_kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
+    def _old_kick_and_drift(self, xp, yp, denergy, dphi, rf1v, rf2v,
                        n_turns, n_part):
         turn = 0
         profile = 0
@@ -193,7 +196,7 @@ class Tracking(ParticleTracker):
 
     @staticmethod
     @njit
-    def calc_xp_sf(dphi, phi0, x_origin, h_num, omega_rev0, dtbin, phiwrap):
+    def _calc_xp_sf(dphi, phi0, x_origin, h_num, omega_rev0, dtbin, phiwrap):
         temp_xp = (dphi + phi0 - x_origin * h_num * omega_rev0 * dtbin)
         temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
                     / (h_num * omega_rev0 * dtbin))
@@ -204,3 +207,5 @@ class Tracking(ParticleTracker):
     #             self.timespace.par, xp, yp,
     #             self.mapinfo.dEbin,
     #             self.timespace.x_origin)
+
+    # ======================== END OLD ROUTINES ============================
