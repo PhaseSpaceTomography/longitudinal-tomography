@@ -18,14 +18,14 @@ from utils.tomo_io import InputHandler, OutputHandler
 
 # Loading input
 raw_param, raw_data = InputHandler.get_input_from_file()
-par = Parameters()
-par.parse_from_txt(raw_param)
-par.fill()
+parameters = Parameters()
+parameters.parse_from_txt(raw_param)
+parameters.fill()
 
-output_path = OutputHandler.adjust_outpath(par.output_dir)
+output_path = OutputHandler.adjust_outpath(parameters.output_dir)
 
 # Setting up time space object
-timespace = TimeSpace(par)
+timespace = TimeSpace(parameters)
 timespace.create(raw_data)
 
 # Initiating particles obj.
@@ -43,7 +43,7 @@ ycoords = np.array([75, 100, 125, 100, 100, 100])
 particles.set_coordinates(xcoords, ycoords, timespace)
 dphi, deneregy = particles.init_coords_to_physical(turn=0)
 
-tracker = Tracking(timespace.par)
+tracker = Tracking(parameters)
 xp, yp = tracker.track((dphi, deneregy))
 
 # Converting from physical units to coordinate system
@@ -55,7 +55,7 @@ xp, yp = Particles.physical_to_coords(xp, yp, timespace)
 particles.homogeneous_distribution(timespace, ff=True)
 dphi, deneregy = particles.init_coords_to_physical(turn=0)
 
-tracker = Tracking(timespace.par)
+tracker = Tracking(parameters)
 xp, yp = tracker.track((dphi, deneregy))
 
 xp, yp = Particles.physical_to_coords(xp, yp, timespace)
