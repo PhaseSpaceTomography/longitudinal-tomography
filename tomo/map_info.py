@@ -239,7 +239,7 @@ class MapInfo:
                 return i
 
     # Adjustment of limits in relation to
-    # 	specified input min/max index and found max/min in profile.
+    # 	specified input min/max index and found min/max in profile.
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates limits in i axis.
     def _adjust_limits(self, jmax, jmin, allbin_min, allbin_max):
