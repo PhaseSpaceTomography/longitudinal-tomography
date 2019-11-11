@@ -247,7 +247,7 @@ class MapInfo:
         if self.par.profile_mini > allbin_min or self.par.full_pp_flag:
             imin = self.par.profile_mini
             jmax[:self.par.profile_mini] = np.floor(self.par.yat0)
-            jmin = np.ceil(2.0 * self.par.yat0 - jmax + 0.5) # Check this out!
+            jmin = np.ceil(2.0 * self.par.yat0 - jmax + 0.5)
         else:
             imin = allbin_min
 
