@@ -134,6 +134,22 @@ class OutputHandler:
             for element in phase_space:
                 f.write(f'  {element:0.7E}\n')
 
+    @staticmethod
+    def create_phase_space_image(xp, yp, weight, n_bins, film):
+        phase_space = np.zeros((n_bins, n_bins))
+    
+        # Creating n_bins * n_bins phase-space image
+        for x, y, w in zip(xp[:, film], yp[:, film], weight):
+            phase_space[x, y] += w
+    
+        # Surpressing negative numbers
+        phase_space = phase_space.clip(0.0)
+
+        # Normalizing
+        phase_space /= np.sum(phase_space)
+
+        return phase_space
+
     # --------------------------------------------------------------- #
     #                         DISCREPANCY                             #
     # --------------------------------------------------------------- #
