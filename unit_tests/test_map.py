@@ -44,7 +44,7 @@ class TestMap(unittest.TestCase):
         ca = TestMap.c500.arrays
         turn = 0
 
-        phases = self.mi.calculate_phases(turn)
+        phases = self.mi._calculate_phases(turn)
 
         nptest.assert_almost_equal(phases, ca['phases'],
                                    err_msg='Difference in '
@@ -56,8 +56,8 @@ class TestMap(unittest.TestCase):
         turn = 0
         test_ans = 287470.8666145134
 
-        ans = self.mi.trajectoryheight(ca['phases'], ca['phases'][0],
-                                       energy, turn)
+        ans = self.mi._trajectoryheight(ca['phases'], ca['phases'][0],
+                                        energy, turn)
 
         self.assertAlmostEqual(ans[0], 0.0,
                                msg='trajectory height (array): '
@@ -75,8 +75,8 @@ class TestMap(unittest.TestCase):
         turn = 0
         expected_ans = 287470.8666145134
 
-        ans = self.mi.trajectoryheight(ca['phases'][1], ca['phases'][0],
-                                       energy, turn)
+        ans = self.mi._trajectoryheight(ca['phases'][1], ca['phases'][0],
+                                        energy, turn)
 
         self.assertAlmostEqual(ans, expected_ans,
                                msg='trajectory height not '
