@@ -1,9 +1,12 @@
+import numpy as np
+from numba import njit
+from scipy import optimize
+
+
 """
     Physics formulas
                     """
-import numpy as np
-from numba import njit
-from numeric import newton
+
 
 # Constants:
 C = 2.99792458e8
@@ -34,7 +37,6 @@ def rfvolt_rf1(phi, parameters, rf_turn):
     return (v1 * np.sin(phi)
             - 2 * np.pi * parameters.mean_orbit_rad
                 * parameters.bending_rad * parameters.bdot * q_sign)
-
 
 # Needed by the Newton root finder to calculate phi0
 def drfvolt_rf1(phi, parameters, rf_turn):
@@ -91,11 +93,19 @@ def vrft(vrf, vrfDot, turn_time):
 
 # Synchronous phase for a particle on the normal orbit
 def find_synch_phase(parameters, rf_turn, phi_lower, phi_upper):
-    phi_start = newton(rfvolt_rf1, drfvolt_rf1,
-                       (phi_lower + phi_upper) / 2.0,
-                       parameters, rf_turn, 0.001)
-    return newton(rf_voltage, drf_voltage,
-                  phi_start, parameters, rf_turn, 0.001)
+    phi_start = optimize.newton(func=rfvolt_rf1,
+                                x0=(phi_lower + phi_upper) / 2.0,
+                                fprime=drfvolt_rf1,
+                                tol=0.0001,
+                                maxiter=100,
+                                args=(parameters, rf_turn))
+    synch_phase = optimize.newton(func=rf_voltage,
+                                  x0=phi_start,
+                                  fprime=drf_voltage,
+                                  tol=0.0001,
+                                  maxiter=100,
+                                  args=(parameters, rf_turn))
+    return synch_phase.item()
 
 
 def find_phi_lower_upper(parameters, rf_turn):
