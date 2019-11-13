@@ -6,6 +6,7 @@ import logging
 import physics
 import numpy as np
 import numeric
+from scipy.optimize import newton as newt
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import (InputError,
                               MachineParameterError,
@@ -288,11 +289,14 @@ class Parameters:
             self.time_at_turn[i] = (self.time_at_turn[i - 1]
                                     + 2 * np.pi * self.mean_orbit_rad
                                     / (self.beta0[i - 1] * physics.C))
-
-            self.phi0[i] = numeric.newton(physics.rf_voltage,
-                                          physics.drf_voltage,
-                                          self.phi0[i - 1], self, i, 0.001)
-
+         
+            self.phi0[i] = newt(func=physics.rf_voltage,
+                                x0=self.phi0[i - 1],
+                                fprime=physics.drf_voltage,
+                                tol=0.0001,
+                                maxiter=100,
+                                args=(self, i))
+            
             self.e0[i] = (self.e0[i - 1]
                           + self.q
                           * physics.short_rf_voltage_formula(
@@ -316,10 +320,13 @@ class Parameters:
             self.time_at_turn[i] = (self.time_at_turn[i + 1]
                                     - 2 * np.pi * self.mean_orbit_rad
                                     / (self.beta0[i] * physics.C))
-
-            self.phi0[i] = numeric.newton(physics.rf_voltage,
-                                          physics.drf_voltage,
-                                          self.phi0[i + 1], self, i, 0.001)
+            
+            self.phi0[i] = newt(func=physics.rf_voltage,
+                                x0=self.phi0[i + 1],
+                                fprime=physics.drf_voltage,
+                                tol=0.0001,
+                                maxiter=100,
+                                args=(self, i))
 
         # Calculate phase slip factor at each turn
         self.eta0 = physics.phase_slip_factor(self)
