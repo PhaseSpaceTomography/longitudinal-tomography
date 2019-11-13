@@ -60,11 +60,11 @@ from utils.exceptions import (EnergyBinningError,
 
 class MapInfo:
 
-    def __init__(self, time_space):
+    def __init__(self, time_space): # Change to parameter
 
         self.par = time_space.par # Namechanges coming.
 
-        self.x_origin = time_space.x_origin
+        self.x_origin = time_space.x_origin # To be moved to parameter class
 
         self.jmin = []
         self.jmax = []

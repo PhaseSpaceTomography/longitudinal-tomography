@@ -79,12 +79,13 @@ class TimeSpace:
              self.tangentfoot_up) = self.fit_xat0()
             self.par.xat0 = self.fitted_xat0
 
-        self.x_origin = self.calc_xorigin()
+        self.x_origin = self.calc_xorigin() # Move to parameter class?
+                                            #  Should it check that xat0 >= 0?
 
         (self.phiwrap,
          self.wrap_length) = self.find_wrap_length()
 
-        self.par.yat0 = self.find_yat0()
+        self.par.yat0 = self.find_yat0()  #Move to parameter class?
 
         logging.info(f'x at zero: {self.par.xat0}')
         logging.info(f'y at zero: {self.par.yat0}')
@@ -124,8 +125,7 @@ class TimeSpace:
 
     # Contains functions for calculations using the self-field voltage
     def _calc_using_self_field(self):
-        logging.info("Calculating self-fields")
-        
+        logging.info('Calculating self-fields')
         self.dsprofiles = savgol.savgol_filter(
                             x=self.profiles, window_length=7,
                             polyorder=4, deriv=1)
@@ -143,31 +143,26 @@ class TimeSpace:
 
         (tfoot_up,
          tfoot_low) = self.calc_tangentfeet(ref_prof)
-
         bunch_duration = (tfoot_up - tfoot_low) * self.par.dtbin
 
         # bunch_phase_length is needed in phase_low function
         # To be moved out of parameters
         bunch_phaselength = (self.par.h_num * bunch_duration
                              * self.par.omega_rev0[ref_turn])
-
         logging.info(f'Calculated bunch phase length: {bunch_phaselength}')
 
         # Find roots of phaselow function
         xstart_newt = (self.par.phi0[ref_turn] - bunch_phaselength / 2.0)
-
         phil = newt(func=physics.phase_low,
                      x0=xstart_newt,
                      fprime=physics.dphase_low,
                      tol=0.0001,
                      maxiter=100,
                      args=(self.par, bunch_phaselength, ref_turn))
-
         fitted_xat0 = (tfoot_low + (self.par.phi0[ref_turn] - phil)
                     / (self.par.h_num
                        * self.par.omega_rev0[ref_turn]
                        * self.par.dtbin))
-
         logging.info(f'Fitted x at zero: {fitted_xat0}')
 
         return fitted_xat0, tfoot_low, tfoot_up
@@ -356,7 +351,7 @@ class TimeSpace:
                         * self.par.dtbin)
 
         phiwrap = np.ceil(self.par.profile_length
-                           * drad_bin / (2*np.pi)) * 2 * np.pi
+                           * drad_bin / (2 * np.pi)) * 2 * np.pi
 
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 

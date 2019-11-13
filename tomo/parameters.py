@@ -103,8 +103,8 @@ class Parameters:
 
         # Parameters to be collected from file:
         # =====================================
-        self.xat0 = 0.0
-        self.yat0 = 0.0
+        self.xat0 = 0.0     # Pit may be performed in TimeSpace class
+        self.yat0 = 0.0     # Calculated in timeSpace class
 
         self.rebin = 0
         self.rawdata_file = ''
