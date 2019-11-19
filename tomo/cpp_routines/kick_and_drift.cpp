@@ -29,19 +29,35 @@ void kick_gpu(const double * __restrict__ dphi,
 // Uses BLonD fast_sin function.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void kick(const double * __restrict__ dphi,
-                     double * __restrict__ denergy,
-                     const double rfv1,
-                     const double rfv2,
-                     const double phi0,
-                     const double phi12,
-                     const double hratio,
-                     const int nr_particles,
-                     const double acc_kick){
+extern "C" void kick_up(const double * __restrict__ dphi,
+                        double * __restrict__ denergy,
+                        const double rfv1,
+                        const double rfv2,
+                        const double phi0,
+                        const double phi12,
+                        const double hratio,
+                        const int nr_particles,
+                        const double acc_kick){
 
     #pragma omp parallel for
     for (int i=0; i < nr_particles; i++)    
-        denergy[i] = denergy[i] + rfv1 * vdt::fast_sin(dphi[i] + phi0)
+        denergy[i] += rfv1 * vdt::fast_sin(dphi[i] + phi0)
+                     + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+}
+
+extern "C" void kick_down(const double * __restrict__ dphi,
+                          double * __restrict__ denergy,
+                          const double rfv1,
+                          const double rfv2,
+                          const double phi0,
+                          const double phi12,
+                          const double hratio,
+                          const int nr_particles,
+                          const double acc_kick){
+
+    #pragma omp parallel for
+    for (int i=0; i < nr_particles; i++)    
+        denergy[i] -= rfv1 * vdt::fast_sin(dphi[i] + phi0)
                      + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
 }
 
@@ -50,15 +66,26 @@ extern "C" void kick(const double * __restrict__ dphi,
 // Used for both GPU and CPU version.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void drift(double * __restrict__ dphi,
-                      const double * __restrict__ denergy,
-                      const double dphase,
-                      const int nr_particles){
+extern "C" void drift_up(double * __restrict__ dphi,
+                         const double * __restrict__ denergy,
+                         const double dphase,
+                         const int nr_particles){
 
     #pragma acc parallel loop device_type(nvidia) vector_length(32)
     #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
         dphi[i] -= dphase * denergy[i];
+}
+
+extern "C" void drift_down(double * __restrict__ dphi,
+                           const double * __restrict__ denergy,
+                           const double dphase,
+                           const int nr_particles){
+
+    #pragma acc parallel loop device_type(nvidia) vector_length(32)
+    #pragma omp parallel for
+    for (int i = 0; i < nr_particles; i++)
+        dphi[i] += dphase * denergy[i];
 }
 
 
@@ -135,7 +162,7 @@ extern "C" void kick_and_drift_gpu(
                   copyout(xp[:nprofs][:nparts], yp[:nprofs][:nparts])
     {
     while(turn < nturns){
-        drift(dphi, denergy, dphase[turn], nparts);
+        drift_up(dphi, denergy, dphase[turn], nparts);
         
         turn++;
         
@@ -191,11 +218,11 @@ extern "C" void kick_and_drift(
     cout << "Tracking to profile " << profile + 1 << endl;
 
     while(turn < nturns){
-        drift(dphi, denergy, dphase[turn], nparts);
+        drift_up(dphi, denergy, dphase[turn], nparts);
         
         turn++;
         
-        kick(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
+        kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
              hratio, nparts, deltaE0[turn]);   
         
         if (turn % dturns == 0){
