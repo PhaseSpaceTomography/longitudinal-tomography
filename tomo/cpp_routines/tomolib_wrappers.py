@@ -71,24 +71,32 @@ _proj.restypes = None
 # =============================================================
 
 
-def kick(parameters, denergy, dphi, rfv1, rfv2, nr_part, turn):
-    _tomolib.kick(_get_pointer(dphi),
-                  _get_pointer(denergy),
-                  ct.c_double(rfv1[turn]),
-                  ct.c_double(rfv2[turn]),
-                  ct.c_double(parameters.phi0[turn]),
-                  ct.c_double(parameters.phi12),
-                  ct.c_double(parameters.h_ratio),
-                  ct.c_int(nr_part),
-                  ct.c_double(parameters.deltaE0[turn]))
+def kick(parameters, denergy, dphi, rfv1, rfv2, nr_part, turn, up=True):
+    args = (_get_pointer(dphi),
+            _get_pointer(denergy),
+            ct.c_double(rfv1[turn]),
+            ct.c_double(rfv2[turn]),
+            ct.c_double(parameters.phi0[turn]),
+            ct.c_double(parameters.phi12),
+            ct.c_double(parameters.h_ratio),
+            ct.c_int(nr_part),
+            ct.c_double(parameters.deltaE0[turn]))
+    if up:
+        _tomolib.kick_up(*args)
+    else:
+        _tomolib.kick_down(*args)
     return denergy
 
 
-def drift(denergy, dphi, dphase, nr_part, turn):
-    _tomolib.drift(_get_pointer(dphi),
-                   _get_pointer(denergy),
-                   ct.c_double(dphase[turn]),
-                   ct.c_int(nr_part))
+def drift(denergy, dphi, dphase, nr_part, turn, up=True):
+    args = (_get_pointer(dphi),
+            _get_pointer(denergy),
+            ct.c_double(dphase[turn]),
+            ct.c_int(nr_part))
+    if up:
+        _tomolib.drift_up(*args)
+    else:
+        _tomolib.drift_down(*args)
     return dphi
 
 def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
