@@ -149,6 +149,26 @@ class Particles(object):
 
         return xp, yp
 
+
+    def filter_lost_paricles(self, xp, yp):
+        nr_lost_pts = 0
+
+        # Find all invalid particle values
+        invalid_pts = np.argwhere(
+                        np.logical_or(
+                            xp >= self._timespace.par.profile_length, xp < 0))
+            
+        if np.size(invalid_pts) > 0:
+            # Find all invalid particles
+            invalid_pts = np.unique(invalid_pts.T[1])
+            nr_lost_pts = len(invalid_pts)
+            # Removing invalid particles
+            xp = np.delete(xp, invalid_pts, axis=1)
+            yp = np.delete(yp, invalid_pts, axis=1)
+
+        return xp, yp, nr_lost_pts
+
+
     # =========================== OLD ROUTINES ===============================
     # ------------------ Fortran style particle initialization ---------------
     # To be deleted in future.
@@ -173,7 +193,8 @@ class Particles(object):
                         self._mapinfo.jmax, xp,
                         yp, points[0], points[1])
 
-        return xp, yp, nparts
+        self.x_coords = xp
+        self.y_coords = yp
 
     def _populate_bins(self, snpt):
         xCoords = ((2.0 * np.arange(1, snpt + 1) - 1)
