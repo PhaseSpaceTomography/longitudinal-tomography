@@ -170,11 +170,14 @@ class OutputHandler:
     # Write output for particle tracking in Fortran style.
     # The Fortran algorithm is a little different, so
     #  the last part is not valid. Meanwhile, it is needed
-    #  for the tomoscope. To be changed in future. 
+    #  for the tomoscope. To be changed in future.
+    # Profile numbers are added by one in order to compensate for
+    # differences in python and fortran arrays. Fortrans counts from
+    # one, python counts from 0. 
     @classmethod
-    def print_tracking_status_ccc(cls, profile):
-        print(f' Tracking from time slice  {profile} to  {profile + 1},'\
-              f'   0.000% went outside the image width.')
+    def print_tracking_status_ccc(cls, ref_prof, to_profile):
+        print(f' Tracking from time slice  {ref_prof + 1} to  '\
+              f'{to_profile + 1},   0.000% went outside the image width.')
 
     # --------------------------------------------------------------- #
     #                         COORDINATES                             #

@@ -99,7 +99,7 @@ class Tracking(ParticleTracker):
                 profile += 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                oh.print_tracking_status_ccc(profile)
+                oh.print_tracking_status_ccc(rec_prof, profile)
 
         # Starting again from homogeous distribution
         dphi = np.copy(out_dphi[rec_prof])
@@ -122,7 +122,7 @@ class Tracking(ParticleTracker):
                 profile -= 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                oh.print_tracking_status_ccc(profile)
+                oh.print_tracking_status_ccc(rec_prof, profile)
 
         return out_dphi, out_denergy 
 
