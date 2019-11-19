@@ -36,8 +36,8 @@ particles = Particles(timespace)
 # ------------------------------------------------------------------------------
 
 # TEMP
-reconstr_idx = timespace.par.beam_ref_frame
-reconstruct_turn = reconstr_idx * 12 
+reconstr_idx = timespace.par.beam_ref_frame - 1
+reconstruct_turn = reconstr_idx * timespace.par.dturns
 # END TEMP
 
 particles.homogeneous_distribution(ff=True)
