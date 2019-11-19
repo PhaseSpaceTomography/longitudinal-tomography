@@ -44,7 +44,7 @@ class Tracking(ParticleTracker):
     
     def _kick_and_drift(self, denergy, dphi, rf1v, rf2v):
         nparts = len(denergy)
-        out_dphi = np.zeros((self.parameter.profile_count, nparts))
+        out_dphi = np.zeros((self.parameter.nprofiles, nparts))
         out_denergy = np.copy(out_dphi)
 
         out_dphi[0] = dphi
@@ -74,7 +74,7 @@ class Tracking(ParticleTracker):
         nparts = len(denergy)
         
         # Creating arrays for all tracked particles
-        out_dphi = np.zeros((self.parameter.profile_count, nparts))
+        out_dphi = np.zeros((self.parameter.nprofiles, nparts))
         out_denergy = np.copy(out_dphi)
 
         # Setting homogeneous coordinates to profile to be reconstructed.
@@ -147,7 +147,7 @@ class Tracking(ParticleTracker):
             #  within the i-jlimits.
             ixp, iyp, nparts = self._homogeneous_distribution()
 
-        xp = np.zeros((self.timespace.par.profile_count, nparts))
+        xp = np.zeros((self.timespace.par.nprofiles, nparts))
         yp = np.copy(xp)
 
         # Calculating radio frequency voltage multiplied by the
@@ -157,7 +157,7 @@ class Tracking(ParticleTracker):
         # Calculating the number of turns of which
         #  the particles should be tracked through. 
         nturns = (self.timespace.par.dturns
-                  * (self.timespace.par.profile_count - 1))
+                  * (self.timespace.par.nprofiles - 1))
 
         # Converting from coordinates to physical units
         dphi, denergy = self.coords_to_physical(ixp, iyp)

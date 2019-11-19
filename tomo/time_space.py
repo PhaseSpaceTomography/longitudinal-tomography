@@ -161,10 +161,10 @@ class TimeSpace:
 
     # Calculate self-field voltage (if self_field_flag is True)
     def _calculate_self(self):
-        vself = np.zeros((self.par.profile_count - 1,
+        vself = np.zeros((self.par.nprofiles - 1,
                           self.wrap_length + 1),
                          dtype=float)
-        for i in range(self.par.profile_count - 1):
+        for i in range(self.par.nprofiles - 1):
             vself[
                 i, :self.par.nbins] = (0.5 * self.profile_charge
                                        * (self.par.sfc[i]
@@ -198,7 +198,7 @@ class TimeSpace:
 
     # Turns list of raw data into (profile count, profile length) shaped array.
     def rawdata_to_profiles(self, raw_data):
-        profiles = raw_data.reshape((self.par.profile_count,
+        profiles = raw_data.reshape((self.par.nprofiles,
                                      self.par.framelength))
         
         if self.par.postskip_length > 0:
@@ -212,7 +212,7 @@ class TimeSpace:
                         'raw data was reshaped to profiles with '
                         'a wrong shape.')
 
-        logging.debug(f'{self.par.profile_count} profiles '
+        logging.debug(f'{self.par.nprofiles} profiles '
                       f'with length {self.par.nbins} '
                       f'created from raw data')
 
@@ -238,8 +238,8 @@ class TimeSpace:
                           f'({self.par.nbins})')
 
         # Re-binning profiles until second last bin
-        new_profilelist = np.zeros((self.par.profile_count, new_prof_len))
-        for p in range(self.par.profile_count):
+        new_profilelist = np.zeros((self.par.nprofiles, new_prof_len))
+        for p in range(self.par.nprofiles):
             for i in range(new_prof_len - 1):
                 binvalue = 0.0
                 for bincounter in range(self.par.rebin):
@@ -247,7 +247,7 @@ class TimeSpace:
                 new_profilelist[p, i] = binvalue
 
         # Re-binning last profile bins
-        for p in range(self.par.profile_count):
+        for p in range(self.par.nprofiles):
             binvalue = 0.0
             for i in range((new_prof_len - 1) * self.par.rebin,
                            self.par.nbins):
@@ -321,7 +321,7 @@ class TimeSpace:
     # -f: fortran compensation
     def find_wrap_length(self):
         if self.par.bdot > 0.0:
-            last_turn_index = ((self.par.profile_count - 1)
+            last_turn_index = ((self.par.nprofiles - 1)
                                * self.par.dturns - 1)
             drad_bin = (self.par.h_num * self.par.omega_rev0[last_turn_index]
                         * self.par.dtbin)

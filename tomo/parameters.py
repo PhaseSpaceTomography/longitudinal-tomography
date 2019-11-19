@@ -39,7 +39,7 @@ from utils.exceptions import (InputError,
 # framecount        Number of frames in input data
 # frame_skipcount   Ignore this number of frames/traces from the beginning of the 'raw' input file
 # snpt              Square root of number of test particles tracked from each pixel of reconstructed phase space
-# num_iter          Number of iterations in the reconstruction process
+# niter          Number of iterations in the reconstruction process
 # machine_ref_frame Frame to which machine parameters are referenced (b0,VRF1,VRF2...)
 # beam_ref_frame    Frame to which beam parameters are referenced
 # filmstart         First profile to be reconstructed
@@ -87,7 +87,7 @@ from utils.exceptions import (InputError,
 #
 # calculated variables:
 # ---------------------
-# profile_count     Number of profiles
+# nprofiles         Number of profiles
 # nbins             Length of profile (in number of bins)
 # profile_mini      Index of first and last "active" index in profile
 # profile_maxi
@@ -102,7 +102,7 @@ class Parameters:
 
         # Parameters directly read from file:
         # =====================================
-        self._xat0 = 0.0             # May become changed in TimeSpace class
+        self._xat0 = 0.0
 
         self.rebin = 0
         self.rawdata_file = ''
@@ -119,7 +119,7 @@ class Parameters:
         self.imax_skip = 0
         self.frame_skipcount = 0
         self.snpt = 0
-        self.num_iter = 0
+        self.niter = 0
         self.machine_ref_frame = 0
         self.beam_ref_frame = 0
         self.filmstep = 0
@@ -161,11 +161,11 @@ class Parameters:
         self.eta0 = []
         self.e0 = []
 
-        self.profile_count = 0
-        self._nbins = 0             # May become changed in TimeSpace class
+        self.nprofiles = 0
+        self._nbins = 0
         
-        self.yat0 = 0.0             # May become changed in TimeSpace class
-        self.xorigin = None         # May become changed in TimeSpace class
+        self.yat0 = 0.0
+        self.xorigin = None
 
         self.profile_mini = 0
         self.profile_maxi = 0
@@ -226,7 +226,7 @@ class Parameters:
         self.filmstart = int(input_array[43])
         self.filmstop = int(input_array[45])
         self.filmstep = int(input_array[47])
-        self.num_iter = int(input_array[49])
+        self.niter = int(input_array[49])
         self.snpt = int(input_array[51])
         self.full_pp_flag = bool(int(input_array[53]))
         self.beam_ref_frame = int(input_array[55])
@@ -259,7 +259,7 @@ class Parameters:
         self.dtbin = self.dtbin * self.rebin
         self.xat0 = self.xat0 / float(self.rebin)
 
-        self.profile_count = self.framecount - self.frame_skipcount
+        self.nprofiles = self.framecount - self.frame_skipcount
         self._nbins = (self.framelength - self.preskip_length
                        - self.postskip_length)
 
@@ -426,8 +426,8 @@ class Parameters:
         ta.assert_not_equal(self.filmstep, 'film step', 0, InputError)
 
         # Reconstruction parameter assertions
-        ta.assert_greater(self.num_iter, 'num_iter', 0, InputError,
-                          'NB: num_iter is the number of iterations of the '
+        ta.assert_greater(self.niter, 'niter', 0, InputError,
+                          'NB: niter is the number of iterations of the '
                           'reconstruction process')
         ta.assert_greater(self.snpt, 'snpt', 0, InputError,
                           'NB: snpt is the square root '

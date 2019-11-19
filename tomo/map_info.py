@@ -337,7 +337,7 @@ class MapInfo:
         
         out_s = f' plotinfo.data\n'\
                 f'Number of profiles used in each reconstruction,\n'\
-                  f' profilecount = {ts.par.profile_count}\n'\
+                  f' profilecount = {ts.par.nprofiles}\n'\
                 f'Width (in pixels) of each image = '\
                   f'length (in bins) of each profile,\n'\
                 f' profilelength = {ts.par.nbins}\n'\

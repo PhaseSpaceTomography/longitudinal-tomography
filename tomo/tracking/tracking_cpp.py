@@ -31,7 +31,7 @@ class TrackingCpp(ParticleTracker):
             #  within the i-jlimits.
             ixp, iyp, nparts = self._homogeneous_distribution()
 
-        xp = np.zeros((self.timespace.par.profile_count, nparts))
+        xp = np.zeros((self.timespace.par.nprofiles, nparts))
         yp = np.copy(xp)
 
         # Calculating radio frequency voltage multiplied by the
@@ -41,7 +41,7 @@ class TrackingCpp(ParticleTracker):
         # Calculating the number of turns of which
         #  the particles should be tracked through. 
         nturns = (self.timespace.par.dturns
-                  * (self.timespace.par.profile_count - 1))
+                  * (self.timespace.par.nprofiles - 1))
 
         dphi, denergy = self.coords_to_physical(ixp, iyp)
 

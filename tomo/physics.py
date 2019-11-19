@@ -140,8 +140,8 @@ def revolution_freq(parameters):
 
 # Calculates self field coefficient for each profile
 def calc_self_field_coeffs(parameters):
-    sfc = np.zeros(parameters.profile_count)
-    for i in range(parameters.profile_count):
+    sfc = np.zeros(parameters.nprofiles)
+    for i in range(parameters.nprofiles):
         this_turn = i * parameters.dturns
         sfc[i] = ((e_UNIT / parameters.omega_rev0[this_turn])
                   * ((1.0 / parameters.beta0[this_turn]

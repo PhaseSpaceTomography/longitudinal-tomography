@@ -5,7 +5,7 @@ class ParticleTracker:
     # The tracking routine works on a copy of the input coordinates.
     def __init__(self, parameter):
         self.parameter = parameter
-        self.nturns = parameter.dturns * (parameter.profile_count - 1)
+        self.nturns = parameter.dturns * (parameter.nprofiles - 1)
 
 
     # Checks that the input arguments are correct, and spilts
