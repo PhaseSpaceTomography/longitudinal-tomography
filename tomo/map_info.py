@@ -134,7 +134,7 @@ class MapInfo:
                 				phases, phases[0], delta_e_known, turn)
 
                 energies_up = self._trajectoryheight(
-                				phases, phases[profile_length],
+                				phases, phases[self.par.profile_length],
                                 delta_e_known, turn)
 
                 return (min(np.amax(energies_low), np.amax(energies_up))
