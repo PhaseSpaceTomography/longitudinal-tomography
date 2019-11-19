@@ -29,18 +29,18 @@ timespace = TimeSpace(machine)
 timespace.create(raw_data)
 
 # Initiating particles obj.
-particles = Particles(timespace)
+particles = Particles(machine)
 
 # ------------------------------------------------------------------------------
 # EXAMPLE, use of particles object - automatic distribution
 # ------------------------------------------------------------------------------
 
 # TEMP
-reconstr_idx = timespace.machine.beam_ref_frame - 1
-reconstruct_turn = reconstr_idx * timespace.machine.dturns
+reconstr_idx = machine.beam_ref_frame - 1
+reconstruct_turn = reconstr_idx * machine.dturns
 # END TEMP
 
-particles.homogeneous_distribution(ff=True)
+particles.homogeneous_distribution()# ff=True)
 
 # particles.fortran_homogeneous_distribution(timespace)
 dphi, deneregy = particles.init_coords_to_physical(turn=reconstruct_turn)

@@ -60,9 +60,8 @@ from utils.exceptions import (EnergyBinningError,
 
 class MapInfo:
 
-    def __init__(self, time_space): # Change to parameter
-
-        self.machine = time_space.machine
+    def __init__(self, machine):
+        self.machine = machine
 
         self.jmin = []
         self.jmax = []
