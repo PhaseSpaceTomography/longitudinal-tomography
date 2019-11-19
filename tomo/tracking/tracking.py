@@ -12,8 +12,8 @@ class Tracking(ParticleTracker):
     #  phase and energy.
     # The output is the particles position in phase and energy for 
     #  each of the turns where a profile measurment is performed.
-    def __init__(self, parameter):
-        super().__init__(parameter)
+    def __init__(self, machine):
+        super().__init__(machine)
 
     # The tracking routine works on a COPY of the input coordinates.
     def track(self, initial_coordinates, rec_prof=0):
@@ -23,14 +23,14 @@ class Tracking(ParticleTracker):
 
         # Calculating radio frequency voltage multiplied by the
         #  particle charge at each turn.
-        # To be moved to parameters object!
+        # To be moved to machine object!
         rf1v, rf2v = self.rfv_at_turns()
 
         dphi = np.ascontiguousarray(in_dphi)
         denergy = np.ascontiguousarray(in_denergy)
 
         # Tracking particles
-        if self.parameter.self_field_flag:
+        if self.machine.self_field_flag:
             raise NotImplementedError('kick and drift - '
                                       'self voltage not implemented (yet)')
             # xp, yp = self.kick_and_drift_self(
@@ -44,7 +44,7 @@ class Tracking(ParticleTracker):
     
     def _kick_and_drift(self, denergy, dphi, rf1v, rf2v):
         nparts = len(denergy)
-        out_dphi = np.zeros((self.parameter.nprofiles, nparts))
+        out_dphi = np.zeros((self.machine.nprofiles, nparts))
         out_denergy = np.copy(out_dphi)
 
         out_dphi[0] = dphi
@@ -55,14 +55,14 @@ class Tracking(ParticleTracker):
         oh.print_tracking_status_ccc(profile)
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dphi = drift(denergy, dphi, self.parameter.dphase,
+            dphi = drift(denergy, dphi, self.machine.dphase,
                          nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = kick(self.parameter, denergy, dphi, rf1v, rf2v,
+            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
                            nparts, turn)
 
-            if turn % self.parameter.dturns == 0:
+            if turn % self.machine.dturns == 0:
                 profile += 1
                 out_dphi[profile] = dphi
                 out_denergy[profile] = denergy
@@ -74,28 +74,28 @@ class Tracking(ParticleTracker):
         nparts = len(denergy)
         
         # Creating arrays for all tracked particles
-        out_dphi = np.zeros((self.parameter.nprofiles, nparts))
+        out_dphi = np.zeros((self.machine.nprofiles, nparts))
         out_denergy = np.copy(out_dphi)
 
         # Setting homogeneous coordinates to profile to be reconstructed.
         out_dphi[rec_prof] = np.copy(dphi)
         out_denergy[rec_prof] = np.copy(denergy)
         
-        rec_turn = rec_prof * self.parameter.dturns
+        rec_turn = rec_prof * self.machine.dturns
         turn = rec_turn
         profile = rec_prof
         
         # Tracking 'upwards'
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dphi = drift(denergy, dphi, self.parameter.dphase,
+            dphi = drift(denergy, dphi, self.machine.dphase,
                          nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = kick(self.parameter, denergy, dphi, rf1v, rf2v,
+            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
                            nparts, turn)
 
-            if turn % self.parameter.dturns == 0:
+            if turn % self.machine.dturns == 0:
                 profile += 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
@@ -110,15 +110,15 @@ class Tracking(ParticleTracker):
         # Tracking 'downwards'
         while turn > 0:
             # Calculating change in energy for each particle at a turn
-            denergy = kick(self.parameter, denergy, dphi, rf1v, rf2v,
+            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
                            nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
-            dphi = drift(denergy, dphi, self.parameter.dphase,
+            dphi = drift(denergy, dphi, self.machine.dphase,
                          nparts, turn, up=False)
 
 
-            if turn % self.parameter.dturns == 0:
+            if turn % self.machine.dturns == 0:
                 profile -= 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)

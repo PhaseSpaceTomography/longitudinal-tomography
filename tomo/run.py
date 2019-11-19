@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Tomo modules
-from parameters import Parameters
+from machine import Machine
 from time_space import TimeSpace
 from particles import Particles
 from tracking.tracking import Tracking
@@ -18,14 +18,14 @@ from utils.tomo_io import InputHandler, OutputHandler
 
 # Loading input
 raw_param, raw_data = InputHandler.get_input_from_file()
-parameters = Parameters()
-parameters.parse_from_txt(raw_param)
-parameters.fill()
+machine = Machine()
+machine.parse_from_txt(raw_param)
+machine.fill()
 
-output_path = OutputHandler.adjust_outpath(parameters.output_dir)
+output_path = OutputHandler.adjust_outpath(machine.output_dir)
 
 # Setting up time space object
-timespace = TimeSpace(parameters)
+timespace = TimeSpace(machine)
 timespace.create(raw_data)
 
 # Initiating particles obj.
@@ -36,8 +36,8 @@ particles = Particles(timespace)
 # ------------------------------------------------------------------------------
 
 # TEMP
-reconstr_idx = timespace.par.beam_ref_frame - 1
-reconstruct_turn = reconstr_idx * timespace.par.dturns
+reconstr_idx = timespace.machine.beam_ref_frame - 1
+reconstruct_turn = reconstr_idx * timespace.machine.dturns
 # END TEMP
 
 particles.homogeneous_distribution(ff=True)
@@ -45,7 +45,7 @@ particles.homogeneous_distribution(ff=True)
 # particles.fortran_homogeneous_distribution(timespace)
 dphi, deneregy = particles.init_coords_to_physical(turn=reconstruct_turn)
 
-tracker = Tracking(parameters)
+tracker = Tracking(machine)
 
 xp, yp = tracker.track((dphi, deneregy), rec_prof=reconstr_idx)
 xp, yp = particles.physical_to_coords(xp, yp)
@@ -62,7 +62,7 @@ tomo = TomographyCpp(timespace.profiles, xp)
 weight = tomo.run()
 
 # Creating image
-nbins = timespace.par.nbins
+nbins = timespace.machine.nbins
 image = OutputHandler.create_phase_space_image(xp, yp, weight, nbins,
                                                film=reconstr_idx)
 

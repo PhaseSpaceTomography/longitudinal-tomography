@@ -71,21 +71,21 @@ class Particles(object):
                                               self._mapinfo.imax + 1])
 
         # creating the distribution of particles within one cell.
-        parts_in_bin = ((2.0 * np.arange(1, self._timespace.par.snpt + 1) - 1)
-                        / (2.0 * self._timespace.par.snpt))
+        bin_pts = ((2.0 * np.arange(1, self._timespace.machine.snpt + 1) - 1)
+                        / (2.0 * self._timespace.machine.snpt))
 
         # Creating x coordinates
         nbins_x = self._mapinfo.imax - self._mapinfo.imin
         x = np.arange(self._mapinfo.imin, self._mapinfo.imax, dtype=float)
-        x = np.repeat(x, self._timespace.par.snpt)
-        x += np.tile(parts_in_bin, nbins_x)
+        x = np.repeat(x, self._timespace.machine.snpt)
+        x += np.tile(bin_pts, nbins_x)
         
         # Creating y coordinates.
         nbins_y = np.max(self._mapinfo.jmax) - np.min(self._mapinfo.jmin)
         y = np.arange(np.min(self._mapinfo.jmin),
                       np.max(self._mapinfo.jmax), dtype=float)
-        y = np.repeat(y, self._timespace.par.snpt)        
-        y += np.tile(parts_in_bin, nbins_y)
+        y = np.repeat(y, self._timespace.machine.snpt)        
+        y += np.tile(bin_pts, nbins_y)
 
         coords = np.meshgrid(x, y)
         coords = np.array([coords[0].flatten(), coords[1].flatten()])
@@ -113,12 +113,12 @@ class Particles(object):
     # and energy (y-axis).
     # This format is needed for the particle tracking routine.  
     def init_coords_to_physical(self, turn):
-        dphi = ((self.x_coords + self._timespace.par.xorigin)
-                * self._timespace.par.h_num
-                * self._timespace.par.omega_rev0[turn]
-                * self._timespace.par.dtbin
-                - self._timespace.par.phi0[turn])
-        denergy = (self.y_coords - self._timespace.par.yat0) * self.dEbin
+        dphi = ((self.x_coords + self._timespace.machine.xorigin)
+                * self._timespace.machine.h_num
+                * self._timespace.machine.omega_rev0[turn]
+                * self._timespace.machine.dtbin
+                - self._timespace.machine.phi0[turn])
+        denergy = (self.y_coords - self._timespace.machine.yat0) * self.dEbin
         return dphi, denergy
 
     # Convert from physical units to coordinates in bins.
@@ -132,20 +132,21 @@ class Particles(object):
         nprof = tracked_denergy.shape[0]
 
         profiles = np.arange(nprof)
-        turns = profiles * self._timespace.par.dturns
+        turns = profiles * self._timespace.machine.dturns
 
         xp = np.zeros(tracked_dphi.shape)
         yp = np.zeros(tracked_dphi.shape)
 
         xp[profiles] = ((tracked_dphi[profiles] 
-                         + np.vstack(self._timespace.par.phi0[turns]))
-                        / (float(self._timespace.par.h_num)
-                           * np.vstack(self._timespace.par.omega_rev0[turns])
-                           * self._timespace.par.dtbin)
-                        - self._timespace.par.xorigin)
+                         + np.vstack(self._timespace.machine.phi0[turns]))
+                        / (float(self._timespace.machine.h_num)
+                           * np.vstack(
+                                self._timespace.machine.omega_rev0[turns])
+                           * self._timespace.machine.dtbin)
+                        - self._timespace.machine.xorigin)
 
         yp[profiles] = (tracked_denergy[profiles] / float(self._mapinfo.dEbin)
-                        + self._timespace.par.yat0)
+                        + self._timespace.machine.yat0)
 
         return xp, yp
 
@@ -156,7 +157,7 @@ class Particles(object):
         # Find all invalid particle values
         invalid_pts = np.argwhere(
                         np.logical_or(
-                            xp >= self._timespace.par.nbins, xp < 0))
+                            xp >= self._timespace.machine.nbins, xp < 0))
             
         if np.size(invalid_pts) > 0:
             # Find all invalid particles
@@ -179,8 +180,8 @@ class Particles(object):
         self._mapinfo.find_ijlimits()
         self.dEbin = self._mapinfo.dEbin
         
-        points = self._populate_bins(timespace.par.snpt)
-        nparts = self._find_nr_of_particles(timespace.par.snpt)
+        points = self._populate_bins(timespace.machine.snpt)
+        nparts = self._find_nr_of_particles(timespace.machine.snpt)
         
         xp = np.zeros(nparts)
         yp = np.copy(xp)
@@ -188,7 +189,7 @@ class Particles(object):
         # Creating the first profile with equally distributed points
         (xp,
          yp) = self._init_tracked_point(
-                        timespace.par.snpt, self._mapinfo.imin,
+                        timespace.machine.snpt, self._mapinfo.imin,
                         self._mapinfo.imax, self._mapinfo.jmin,
                         self._mapinfo.jmax, xp,
                         yp, points[0], points[1])
@@ -234,10 +235,10 @@ class Particles(object):
     #  the old particle tracking. Kept for reference.
     def fortran_physical_to_coords(self):
         raise NotImplementedError('Not implemented, only kept for refere')
-        xp[profiles] = ((dphi + timespace.par.phi0[turn])
-                       / (float(timespace.par.h_num)
-                       * timespace.par.omega_rev0[turn]
-                       * timespace.par.dtbin)
-                       - timespace.par.xorigin)
-        yp[profiles] = denergy / float(dEbin) + timespace.yat0
+        xp[profiles] = ((dphi + timespace.machine.phi0[turn])
+                       / (float(timespace.machine.h_num)
+                       * timespace.machine.omega_rev0[turn]
+                       * timespace.machine.dtbin)
+                       - timespace.machine.xorigin)
+        yp[profiles] = denergy / float(dEbin) + timespace.machine.yat0
     # ======================== END OLD ROUTINES ============================

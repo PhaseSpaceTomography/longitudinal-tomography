@@ -2,7 +2,7 @@ import logging
 from scipy import signal
 from scipy import optimize
 import numpy as np
-from parameters import Parameters
+from machine import Machine
 import physics
 from utils.assertions import TomoAssertions as ta
 from utils.exceptions import (RawDataImportError,
@@ -46,8 +46,8 @@ from utils.exceptions import (RawDataImportError,
 
 class TimeSpace:
 
-    def __init__(self, parameters):
-        self.par = parameters
+    def __init__(self, machine):
+        self.machine = machine
         self.profiles = np.array([])
         self.profile_charge = None   # Total charge in profile
 
@@ -70,19 +70,19 @@ class TimeSpace:
         (self.profiles,
          self.profile_charge) = self.create_profiles(raw_data)
 
-        if self.par.xat0 < 0:
+        if self.machine.xat0 < 0:
             (self.fitted_xat0,
              self.tangentfoot_low,
              self.tangentfoot_up) = self.fit_xat0()
-            self.par.xat0 = self.fitted_xat0
+            self.machine.xat0 = self.fitted_xat0
 
         (self.phiwrap,
          self.wrap_length) = self.find_wrap_length()
 
-        logging.info(f'x at zero: {self.par.xat0}')
-        logging.info(f'y at zero: {self.par.yat0}')
+        logging.info(f'x at zero: {self.machine.xat0}')
+        logging.info(f'y at zero: {self.machine.yat0}')
 
-        if self.par.self_field_flag:
+        if self.machine.self_field_flag:
             self._calc_using_self_field()
 
     # Creating profiles, updates profile length and calculates profile charge.
@@ -90,7 +90,7 @@ class TimeSpace:
 
         # Asserting that the correct amount of measurement-data is provided.
         ta.assert_equal(len(raw_data), 'length of raw_data',
-                        self.par.all_data, RawDataImportError)
+                        self.machine.all_data, RawDataImportError)
 
         # Subtracting baseline from raw data
         raw_data = self.subtract_baseline(raw_data)
@@ -99,13 +99,13 @@ class TimeSpace:
         profiles = self.rawdata_to_profiles(raw_data)
 
         # Rebinning
-        if self.par.rebin > 1:
-            profiles, self.par.nbins = self.rebin(profiles)
+        if self.machine.rebin > 1:
+            profiles, self.machine.nbins = self.rebin(profiles)
 
         # Setting negative numbers to zero.
         profiles = profiles.clip(0.0)
 
-        ref_prof = self.par.beam_ref_frame - 1
+        ref_prof = self.machine.beam_ref_frame - 1
         profile_charge = self.calc_profilecharge(profiles[ref_prof])
 
         profiles = self.normalize_profiles(profiles)
@@ -126,71 +126,74 @@ class TimeSpace:
 
     # Perform at fit for finding x at 0
     def fit_xat0(self):
-        ref_idx = self.par.beam_ref_frame - 1
+        ref_idx = self.machine.beam_ref_frame - 1
         ref_prof = self.profiles[ref_idx]
-        ref_turn = ref_idx * self.par.dturns
+        ref_turn = ref_idx * self.machine.dturns
 
         logging.info(f'Performing fit for xat0 '
                      f'using reference profile: {ref_idx}')
 
         (tfoot_up,
          tfoot_low) = self.calc_tangentfeet(ref_prof)
-        bunch_duration = (tfoot_up - tfoot_low) * self.par.dtbin
+        bunch_duration = (tfoot_up - tfoot_low) * self.machine.dtbin
 
         # bunch_phase_length is needed in phase_low function
-        # To be moved out of parameters
-        bunch_phaselength = (self.par.h_num * bunch_duration
-                             * self.par.omega_rev0[ref_turn])
+        bunch_phaselength = (self.machine.h_num * bunch_duration
+                             * self.machine.omega_rev0[ref_turn])
         logging.info(f'Calculated bunch phase length: {bunch_phaselength}')
 
         # Find roots of phaselow function
-        x0 = self.par.phi0[ref_turn] - bunch_phaselength / 2.0
+        x0 = self.machine.phi0[ref_turn] - bunch_phaselength / 2.0
         phil = optimize.newton(func=physics.phase_low,
                                x0=x0,
                                fprime=physics.dphase_low,
                                tol=0.0001,
                                maxiter=100,
-                               args=(self.par, bunch_phaselength, ref_turn))
-        fitted_xat0 = (tfoot_low + (self.par.phi0[ref_turn] - phil)
-                    / (self.par.h_num
-                       * self.par.omega_rev0[ref_turn]
-                       * self.par.dtbin))
+                               args=(self.machine, bunch_phaselength,
+                                     ref_turn))
+        fitted_xat0 = (tfoot_low + (self.machine.phi0[ref_turn] - phil)
+                    / (self.machine.h_num
+                       * self.machine.omega_rev0[ref_turn]
+                       * self.machine.dtbin))
         logging.info(f'Fitted x at zero: {fitted_xat0}')
 
         return fitted_xat0, tfoot_low, tfoot_up
 
     # Calculate self-field voltage (if self_field_flag is True)
     def _calculate_self(self):
-        vself = np.zeros((self.par.nprofiles - 1,
+        vself = np.zeros((self.machine.nprofiles - 1,
                           self.wrap_length + 1),
                          dtype=float)
-        for i in range(self.par.nprofiles - 1):
+        for i in range(self.machine.nprofiles - 1):
             vself[
-                i, :self.par.nbins] = (0.5 * self.profile_charge
-                                       * (self.par.sfc[i]
-                                          * self.dsprofiles[i,:self.par.nbins]
-                                          + self.par.sfc[i + 1]
-                                          * self.dsprofiles[i + 1,
-                                                            :self.par.nbins]))
+                i, :self.machine.nbins] = (0.5 * self.profile_charge
+                                       * (self.machine.sfc[i]
+                                          * self.dsprofiles[
+                                                i,:self.machine.nbins]
+                                          + self.machine.sfc[i + 1]
+                                          * self.dsprofiles[
+                                                i + 1, :self.machine.nbins]))
         return vself
 
     # Original function for subtracting baseline of raw data input profiles.
-    # Finds the baseline from the first 5% (by default) of the beam reference profile.
+    # Finds the baseline from the first 5% (by default)
+    #  of the beam reference profile.
     def subtract_baseline(self, raw_data, percentage=0.05):
-        istart = int((self.par.frame_skipcount + self.par.beam_ref_frame - 1)
-                     * self.par.framelength + self.par.preskip_length)
+        istart = int((self.machine.frame_skipcount
+                      + self.machine.beam_ref_frame - 1)
+                     * self.machine.framelength + self.machine.preskip_length)
 
         ta.assert_inrange(percentage, 'percentage',
                           0.0, 1.0, InputError,
                           'The chosen percentage of raw_data '
                           'to create baseline from is not valid')
 
-        iend = int(np.floor(percentage * self.par.nbins
+        iend = int(np.floor(percentage * self.machine.nbins
                             + istart + 1))
 
         baseline = (np.sum(raw_data[istart:iend])
                     / np.real(np.floor(percentage
-                                       * self.par.nbins + 1)))
+                                       * self.machine.nbins + 1)))
         
         logging.info(f'A baseline was found with the value: {str(baseline)}')
         
@@ -198,22 +201,22 @@ class TimeSpace:
 
     # Turns list of raw data into (profile count, profile length) shaped array.
     def rawdata_to_profiles(self, raw_data):
-        profiles = raw_data.reshape((self.par.nprofiles,
-                                     self.par.framelength))
+        profiles = raw_data.reshape((self.machine.nprofiles,
+                                     self.machine.framelength))
         
-        if self.par.postskip_length > 0:
-            profiles = profiles[:, self.par.preskip_length:
-                                   -self.par.postskip_length]
+        if self.machine.postskip_length > 0:
+            profiles = profiles[:, self.machine.preskip_length:
+                                   -self.machine.postskip_length]
         else:
-            profiles = profiles[:, self.par.preskip_length:]
+            profiles = profiles[:, self.machine.preskip_length:]
         
         ta.assert_equal(profiles.shape[1], 'profile length',
-                        self.par.nbins, InputError,
+                        self.machine.nbins, InputError,
                         'raw data was reshaped to profiles with '
                         'a wrong shape.')
 
-        logging.debug(f'{self.par.nprofiles} profiles '
-                      f'with length {self.par.nbins} '
+        logging.debug(f'{self.machine.nprofiles} profiles '
+                      f'with length {self.machine.nbins} '
                       f'created from raw data')
 
         return profiles
@@ -223,43 +226,44 @@ class TimeSpace:
     # bins specified in input parameters
     def rebin(self, profiles):
         # Find new profile length
-        if self.par.nbins % self.par.rebin == 0:
-            new_prof_len = int(self.par.nbins / self.par.rebin)
+        if self.machine.nbins % self.machine.rebin == 0:
+            new_prof_len = int(self.machine.nbins / self.machine.rebin)
         else:
-            new_prof_len = int(self.par.nbins / self.par.rebin) + 1
+            new_prof_len = int(self.machine.nbins / self.machine.rebin) + 1
 
         ta.assert_greater(new_prof_len,
                           'rebinned profile length', 1,
                           RebinningError,
                           f'The length of the profiles after re-binning'
                           f'is not valid...\nMake sure that the re-binning '
-                          f'factor ({self.par.rebin}) is not larger than'
+                          f'factor ({self.machine.rebin}) is not larger than'
                           f'the original profile length '
-                          f'({self.par.nbins})')
+                          f'({self.machine.nbins})')
 
         # Re-binning profiles until second last bin
-        new_profilelist = np.zeros((self.par.nprofiles, new_prof_len))
-        for p in range(self.par.nprofiles):
+        new_profilelist = np.zeros((self.machine.nprofiles, new_prof_len))
+        for p in range(self.machine.nprofiles):
             for i in range(new_prof_len - 1):
                 binvalue = 0.0
-                for bincounter in range(self.par.rebin):
-                    binvalue += profiles[p, i * self.par.rebin + bincounter]
+                for bincounter in range(self.machine.rebin):
+                    binvalue += profiles[p, i * self.machine.rebin
+                                            + bincounter]
                 new_profilelist[p, i] = binvalue
 
         # Re-binning last profile bins
-        for p in range(self.par.nprofiles):
+        for p in range(self.machine.nprofiles):
             binvalue = 0.0
-            for i in range((new_prof_len - 1) * self.par.rebin,
-                           self.par.nbins):
+            for i in range((new_prof_len - 1) * self.machine.rebin,
+                           self.machine.nbins):
                 binvalue += profiles[p, i]
-            binvalue *= (float(self.par.rebin)
-                         / float(self.par.nbins
+            binvalue *= (float(self.machine.rebin)
+                         / float(self.machine.nbins
                                  - (new_prof_len - 1)
-                                 * self.par.rebin))
+                                 * self.machine.rebin))
             new_profilelist[p, -1] = binvalue
 
         logging.info('Profile rebinned with a rebin factor of '
-                     + str(self.par.rebin))
+                     + str(self.machine.rebin))
 
         return new_profilelist, new_prof_len
 
@@ -268,9 +272,9 @@ class TimeSpace:
 
     # Calculate the total charge of profile
     def calc_profilecharge(self, ref_prof):
-        return (np.sum(ref_prof) * self.par.dtbin
-                / (self.par.rebin * physics.e_UNIT
-                   * self.par.pickup_sensitivity))
+        return (np.sum(ref_prof) * self.machine.dtbin
+                / (self.machine.rebin * physics.e_UNIT
+                   * self.machine.pickup_sensitivity))
 
     # return index of last bins to the left and right of max valued bin,
     # with value over the threshold.
@@ -282,7 +286,7 @@ class TimeSpace:
             if ref_profile[ibin] < threshold:
                 tangent_bin_low = ibin + 1
                 break
-        for ibin in range(maxbin, self.par.nbins):
+        for ibin in range(maxbin, self.machine.nbins):
             if ref_profile[ibin] < threshold:
                 tangent_bin_up = ibin - 1
                 break
@@ -292,7 +296,7 @@ class TimeSpace:
     # Find foot tangents of profile. Needed to estimate bunch duration
     # when performing a fit to find xat0
     def calc_tangentfeet(self, ref_prof):       
-        index_array = np.arange(self.par.nbins) + 0.5
+        index_array = np.arange(self.machine.nbins) + 0.5
 
         (tanbin_up,
          tanbin_low) = self._calc_tangentbins(ref_prof)
@@ -320,16 +324,19 @@ class TimeSpace:
     # integer number of rf periods, larger than the image width.
     # -f: fortran compensation
     def find_wrap_length(self):
-        if self.par.bdot > 0.0:
-            last_turn_index = ((self.par.nprofiles - 1)
-                               * self.par.dturns - 1)
-            drad_bin = (self.par.h_num * self.par.omega_rev0[last_turn_index]
-                        * self.par.dtbin)
+        if self.machine.bdot > 0.0:
+            last_turn_index = ((self.machine.nprofiles - 1)
+                               * self.machine.dturns - 1)
+            drad_bin = (self.machine.h_num
+                        * self.machine.omega_rev0[last_turn_index]
+                        * self.machine.dtbin)
         else:
-            drad_bin = (self.par.h_num * self.par.omega_rev0[0]
-                        * self.par.dtbin)
+            drad_bin = (self.machine.h_num
+                        * self.machine.omega_rev0[0]
+                        * self.machine.dtbin)
 
-        phiwrap = np.ceil(self.par.nbins * drad_bin / (2 * np.pi)) * 2 * np.pi
+        phiwrap = np.ceil(self.machine.nbins * drad_bin
+                          / (2 * np.pi)) * 2 * np.pi
 
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 

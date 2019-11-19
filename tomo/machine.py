@@ -10,9 +10,9 @@ from utils.exceptions import (InputError,
 # ================
 # About the class:
 # ================
-# The parameter class receives input parameters and machine settings for the reconstruction.
+# The machine class receives input parameters and machine settings for the reconstruction.
 # These parameters creates the basis of the interpretation of the measured profiles in the time_space class,
-# and the particle tracking in the reconstruction class. The parameter class also stores
+# and the particle tracking in the reconstruction class. The machine class also stores
 # information created in time space calculations.
 #
 # =====================================
@@ -96,7 +96,7 @@ from utils.exceptions import (InputError,
 #                       and origin of the reconstructed phase-space coordinate system.
 
 
-class Parameters:
+class Machine:
 
     def __init__(self):
 

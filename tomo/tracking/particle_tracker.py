@@ -3,9 +3,9 @@ import numpy as np
 class ParticleTracker:
 
     # The tracking routine works on a copy of the input coordinates.
-    def __init__(self, parameter):
-        self.parameter = parameter
-        self.nturns = parameter.dturns * (parameter.nprofiles - 1)
+    def __init__(self, machine):
+        self.machine = machine
+        self.nturns = machine.dturns * (machine.nprofiles - 1)
 
 
     # Checks that the input arguments are correct, and spilts
@@ -29,12 +29,12 @@ class ParticleTracker:
 
         return in_xp, in_yp, len(in_xp)
 
-    # To be moved to parameters class
+    # To be moved to machine class
     def rfv_at_turns(self):
-        rf1v = (self.parameter.vrf1
-                + self.parameter.vrf1dot
-                * self.parameter.time_at_turn) * self.parameter.q
-        rf2v = (self.parameter.vrf2
-                + self.parameter.vrf2dot
-                * self.parameter.time_at_turn) * self.parameter.q
+        rf1v = (self.machine.vrf1
+                + self.machine.vrf1dot
+                * self.machine.time_at_turn) * self.machine.q
+        rf2v = (self.machine.vrf2
+                + self.machine.vrf2dot
+                * self.machine.time_at_turn) * self.machine.q
         return rf1v, rf2v
