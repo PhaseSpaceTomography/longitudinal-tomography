@@ -64,8 +64,6 @@ class MapInfo:
 
         self.par = time_space.par # Namechanges coming.
 
-        self.x_origin = time_space.x_origin # To be moved to parameter class
-
         self.jmin = []
         self.jmax = []
         self.imin = -1
@@ -134,11 +132,11 @@ class MapInfo:
                 				phases, phases[0], delta_e_known, turn)
 
                 energies_up = self._trajectoryheight(
-                				phases, phases[self.par.profile_length],
+                				phases, phases[self.par.nbins],
                                 delta_e_known, turn)
 
                 return (min(np.amax(energies_low), np.amax(energies_up))
-                        / (self.par.profile_length - self.par.yat0))
+                        / (self.par.nbins - self.par.yat0))
             else:
                 return (self.par.beta0[turn]
                         * np.sqrt(self.par.e0[turn]
@@ -152,24 +150,23 @@ class MapInfo:
                         * self.par.h_num
                         * self.par.omega_rev0[turn])
         else:
-            return float(self.par.demax) / (self.par.profile_length
-                                            - self.par.yat0)
+            return float(self.par.demax) / (self.par.nbins - self.par.yat0)
 
     # Finding limits for tracking all pixels in reconstructed phase space.
     def _limits_track_all_pxl(self):
-        jmax = np.zeros(self.par.profile_length)
+        jmax = np.zeros(self.par.nbins)
         jmin = np.copy(jmax)
 
-        jmax[:] = self.par.profile_length
+        jmax[:] = self.par.nbins
         jmin[:] = np.ceil(2.0 * self.par.yat0 - jmax + 0.5)
 
         allbin_min = np.int32(0)
-        allbin_max = np.int32(self.par.profile_length)
+        allbin_max = np.int32(self.par.nbins)
         return jmin, jmax, allbin_min, allbin_max
 
     # Finding limits for tracking active pixels (stated in parameters)
     def _limits_track_active_pxl(self, dEbin):
-        jmax = np.zeros(self.par.profile_length)
+        jmax = np.zeros(self.par.nbins)
         jmin = np.copy(jmax)
 
         # Calculating turn and phases at the filmstart reference point
@@ -191,11 +188,11 @@ class MapInfo:
     def _find_jmax(self, phases, turn, dEbin):
 
         energy = 0.0
-        jmax_low = np.zeros(self.par.profile_length + 1)
-        jmax_up = np.zeros(self.par.profile_length + 1)
+        jmax_low = np.zeros(self.par.nbins + 1)
+        jmax_up = np.zeros(self.par.nbins + 1)
 
         # finding max energy at edges of profiles
-        for i in range(self.par.profile_length + 1):
+        for i in range(self.par.nbins + 1):
             temp_energy = np.floor(self.par.yat0
                                    + self._trajectoryheight(
                                         phases[i], phases[0], energy, turn)
@@ -206,17 +203,17 @@ class MapInfo:
             temp_energy = np.floor(self.par.yat0
                                    + self._trajectoryheight(
                                         phases[i],
-                                        phases[self.par.profile_length],
+                                        phases[self.par.nbins],
                                         energy, turn)
                                    / dEbin)
 
             jmax_up[i] = int(temp_energy)
 
-        jmax = np.zeros(self.par.profile_length)
-        for i in range(self.par.profile_length):
+        jmax = np.zeros(self.par.nbins)
+        for i in range(self.par.nbins):
             jmax[i] = min([jmax_up[i], jmax_up[i + 1],
                            jmax_low[i], jmax_low[i + 1],
-                           self.par.profile_length])
+                           self.par.nbins])
         return jmax
 
     # Function for finding minimum energy (j min) for each bin in profile
@@ -228,13 +225,13 @@ class MapInfo:
 
     # Finding index for minimum phase for profile
     def _find_allbin_min(self, jmin, jmax):
-        for i in range(0, self.par.profile_length):
+        for i in range(0, self.par.nbins):
             if jmax[i] - jmin[i] >= 0:
                 return i
 
     # Finding index for maximum phase for profile
     def _find_allbin_max(self, jmin, jmax):
-        for i in range(self.par.profile_length - 1, 0, -1):
+        for i in range(self.par.nbins - 1, 0, -1):
             if jmax[i] - jmin[i] >= 0:
                 return i
 
@@ -254,7 +251,7 @@ class MapInfo:
         if self.par.profile_maxi < allbin_max or self.par.full_pp_flag:
             imax = self.par.profile_maxi - 1 # -1 in order to count from idx 0
             jmax[self.par.profile_maxi
-                 :self.par.profile_length] = np.floor(self.par.yat0)
+                 :self.par.nbins] = np.floor(self.par.yat0)
             jmin = np.ceil(2.0 * self.par.yat0 - jmax + 0.5)
         else:
             imax = allbin_max
@@ -263,14 +260,14 @@ class MapInfo:
 
     # Returns an array of phases for a given turn
     def _calculate_phases(self, turn):
-        indarr = np.arange(self.par.profile_length + 1)
+        indarr = np.arange(self.par.nbins + 1)
         ta.assert_equal(len(indarr),
                         'index array length',
-                        self.par.profile_length + 1,
+                        self.par.nbins + 1,
                         MapCreationError,
                         'The index array should have length '
-                        'profile_length + 1')
-        phases = ((self.x_origin + indarr)
+                        'nbins + 1')
+        phases = ((self.par.xorigin + indarr)
                   * self.par.dtbin
                   * self.par.h_num
                   * self.par.omega_rev0[turn])
@@ -296,7 +293,7 @@ class MapInfo:
                                      msg=f'jmin and jmax out of bounds ',
                                      index_offset=self.imin)
             ta.assert_array_less_eq(self.jmax[self.imin:self.imax],
-                                    self.par.profile_length,
+                                    self.par.nbins,
                                     EnergyLimitsError,
                                     f'jmin and jmax out of bounds ')
             ta.assert_equal(self.jmin.shape, 'jmin',
@@ -343,7 +340,7 @@ class MapInfo:
                   f' profilecount = {ts.par.profile_count}\n'\
                 f'Width (in pixels) of each image = '\
                   f'length (in bins) of each profile,\n'\
-                f' profilelength = {ts.par.profile_length}\n'\
+                f' profilelength = {ts.par.nbins}\n'\
                 f'Width (in s) of each pixel = width of each profile bin,\n'\
                 f' dtbin = {ts.par.dtbin:0.4E}\n'\
                 f'Height (in eV) of each pixel,\n'\

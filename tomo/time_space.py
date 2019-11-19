@@ -42,8 +42,7 @@ from utils.exceptions import (RawDataImportError,
 # phiwrap           Phase covering the an integer of rf periods
 # wrap_length       Maximum number of bins to cover an integer number of rf periods
 # fitted_xat0          Value of (if) fitted xat0
-# x_origin          absolute difference in bins between phase=0
-#                       and origin of the reconstructed phase-space coordinate system.
+
 
 class TimeSpace:
 
@@ -61,7 +60,6 @@ class TimeSpace:
         self.phiwrap = 0.0
         self.wrap_length = 0
         self.fitted_xat0 = 0.0
-        self.x_origin = 0.0
 
     # Main function for the time space class
     # @profile
@@ -78,13 +76,8 @@ class TimeSpace:
              self.tangentfoot_up) = self.fit_xat0()
             self.par.xat0 = self.fitted_xat0
 
-        self.x_origin = self.calc_xorigin() # Move to parameter class?
-                                            #  Should it check that xat0 >= 0?
-
         (self.phiwrap,
          self.wrap_length) = self.find_wrap_length()
-
-        self.par.yat0 = self.find_yat0()  #Move to parameter class?
 
         logging.info(f'x at zero: {self.par.xat0}')
         logging.info(f'y at zero: {self.par.yat0}')
@@ -107,7 +100,7 @@ class TimeSpace:
 
         # Rebinning
         if self.par.rebin > 1:
-            profiles, self.par.profile_length = self.rebin(profiles)
+            profiles, self.par.nbins = self.rebin(profiles)
 
         # Setting negative numbers to zero.
         profiles = profiles.clip(0.0)
@@ -172,13 +165,13 @@ class TimeSpace:
                           self.wrap_length + 1),
                          dtype=float)
         for i in range(self.par.profile_count - 1):
-            vself[i, 0:self.par.profile_length]\
-                = (0.5
-                   * self.profile_charge
-                   * (self.par.sfc[i]
-                      * self.dsprofiles[i, :self.par.profile_length]
-                      + self.par.sfc[i + 1]
-                      * self.dsprofiles[i + 1, :self.par.profile_length]))
+            vself[
+                i, :self.par.nbins] = (0.5 * self.profile_charge
+                                       * (self.par.sfc[i]
+                                          * self.dsprofiles[i,:self.par.nbins]
+                                          + self.par.sfc[i + 1]
+                                          * self.dsprofiles[i + 1,
+                                                            :self.par.nbins]))
         return vself
 
     # Original function for subtracting baseline of raw data input profiles.
@@ -192,12 +185,12 @@ class TimeSpace:
                           'The chosen percentage of raw_data '
                           'to create baseline from is not valid')
 
-        iend = int(np.floor(percentage * self.par.profile_length
+        iend = int(np.floor(percentage * self.par.nbins
                             + istart + 1))
 
         baseline = (np.sum(raw_data[istart:iend])
                     / np.real(np.floor(percentage
-                                       * self.par.profile_length + 1)))
+                                       * self.par.nbins + 1)))
         
         logging.info(f'A baseline was found with the value: {str(baseline)}')
         
@@ -215,12 +208,12 @@ class TimeSpace:
             profiles = profiles[:, self.par.preskip_length:]
         
         ta.assert_equal(profiles.shape[1], 'profile length',
-                        self.par.profile_length, InputError,
+                        self.par.nbins, InputError,
                         'raw data was reshaped to profiles with '
                         'a wrong shape.')
 
         logging.debug(f'{self.par.profile_count} profiles '
-                      f'with length {self.par.profile_length} '
+                      f'with length {self.par.nbins} '
                       f'created from raw data')
 
         return profiles
@@ -230,10 +223,10 @@ class TimeSpace:
     # bins specified in input parameters
     def rebin(self, profiles):
         # Find new profile length
-        if self.par.profile_length % self.par.rebin == 0:
-            new_prof_len = int(self.par.profile_length / self.par.rebin)
+        if self.par.nbins % self.par.rebin == 0:
+            new_prof_len = int(self.par.nbins / self.par.rebin)
         else:
-            new_prof_len = int(self.par.profile_length / self.par.rebin) + 1
+            new_prof_len = int(self.par.nbins / self.par.rebin) + 1
 
         ta.assert_greater(new_prof_len,
                           'rebinned profile length', 1,
@@ -242,7 +235,7 @@ class TimeSpace:
                           f'is not valid...\nMake sure that the re-binning '
                           f'factor ({self.par.rebin}) is not larger than'
                           f'the original profile length '
-                          f'({self.par.profile_length})')
+                          f'({self.par.nbins})')
 
         # Re-binning profiles until second last bin
         new_profilelist = np.zeros((self.par.profile_count, new_prof_len))
@@ -257,10 +250,10 @@ class TimeSpace:
         for p in range(self.par.profile_count):
             binvalue = 0.0
             for i in range((new_prof_len - 1) * self.par.rebin,
-                            self.par.profile_length):
+                           self.par.nbins):
                 binvalue += profiles[p, i]
             binvalue *= (float(self.par.rebin)
-                         / float(self.par.profile_length
+                         / float(self.par.nbins
                                  - (new_prof_len - 1)
                                  * self.par.rebin))
             new_profilelist[p, -1] = binvalue
@@ -279,19 +272,6 @@ class TimeSpace:
                 / (self.par.rebin * physics.e_UNIT
                    * self.par.pickup_sensitivity))
 
-    # Calculate the absolute difference (in bins) between phase=0 and
-    # origin of the reconstructed phase space coordinate system.
-    def calc_xorigin(self):
-        reference_turn = (self.par.beam_ref_frame - 1) * self.par.dturns
-        x_origin = (self.par.phi0[reference_turn]
-                    / (self.par.h_num
-                       * self.par.omega_rev0[reference_turn]
-                       * self.par.dtbin)
-                    - self.par.xat0)
-
-        logging.debug(f'xat0: {self.par.xat0}, x_origin: {x_origin}')
-        return x_origin
-
     # return index of last bins to the left and right of max valued bin,
     # with value over the threshold.
     def _calc_tangentbins(self, ref_profile, threshold_coeff=0.15):
@@ -302,7 +282,7 @@ class TimeSpace:
             if ref_profile[ibin] < threshold:
                 tangent_bin_low = ibin + 1
                 break
-        for ibin in range(maxbin, self.par.profile_length):
+        for ibin in range(maxbin, self.par.nbins):
             if ref_profile[ibin] < threshold:
                 tangent_bin_up = ibin - 1
                 break
@@ -312,7 +292,7 @@ class TimeSpace:
     # Find foot tangents of profile. Needed to estimate bunch duration
     # when performing a fit to find xat0
     def calc_tangentfeet(self, ref_prof):       
-        index_array = np.arange(self.par.profile_length) + 0.5
+        index_array = np.arange(self.par.nbins) + 0.5
 
         (tanbin_up,
          tanbin_low) = self._calc_tangentbins(ref_prof)
@@ -349,14 +329,10 @@ class TimeSpace:
             drad_bin = (self.par.h_num * self.par.omega_rev0[0]
                         * self.par.dtbin)
 
-        phiwrap = np.ceil(self.par.profile_length
-                           * drad_bin / (2 * np.pi)) * 2 * np.pi
+        phiwrap = np.ceil(self.par.nbins * drad_bin / (2 * np.pi)) * 2 * np.pi
 
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 
         logging.info(f'phi wrap =  {str(phiwrap)}, '
                       f'wrap length =  {str(wrap_length)}')
         return phiwrap, wrap_length
-
-    def find_yat0(self):
-        return self.par.profile_length / 2.0

@@ -101,11 +101,11 @@ def drift(denergy, dphi, dphase, nr_part, turn, up=True):
 
 def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                    deltaE0, omega_rev0, dphase, phi12, hratio,
-                   hnum, dtbin, x_origin, dEbin, yat0, dturns,
+                   hnum, dtbin, xorigin, dEbin, yat0, dturns,
                    nturns, npts, gpu_flag=False):
     args = (_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
              rfv1, rfv2, phi0, deltaE0, omega_rev0, dphase, phi12, hratio,
-             hnum, dtbin, x_origin, dEbin, yat0, dturns, nturns, npts)
+             hnum, dtbin, xorigin, dEbin, yat0, dturns, nturns, npts)
     
     if gpu_flag:
         # Info here might not be true.

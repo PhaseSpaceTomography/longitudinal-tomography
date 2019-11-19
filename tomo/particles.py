@@ -113,7 +113,7 @@ class Particles(object):
     # and energy (y-axis).
     # This format is needed for the particle tracking routine.  
     def init_coords_to_physical(self, turn):
-        dphi = ((self.x_coords + self._timespace.x_origin)
+        dphi = ((self.x_coords + self._timespace.par.xorigin)
                 * self._timespace.par.h_num
                 * self._timespace.par.omega_rev0[turn]
                 * self._timespace.par.dtbin
@@ -142,7 +142,7 @@ class Particles(object):
                         / (float(self._timespace.par.h_num)
                            * np.vstack(self._timespace.par.omega_rev0[turns])
                            * self._timespace.par.dtbin)
-                        - self._timespace.x_origin)
+                        - self._timespace.par.xorigin)
 
         yp[profiles] = (tracked_denergy[profiles] / float(self._mapinfo.dEbin)
                         + self._timespace.par.yat0)
@@ -156,7 +156,7 @@ class Particles(object):
         # Find all invalid particle values
         invalid_pts = np.argwhere(
                         np.logical_or(
-                            xp >= self._timespace.par.profile_length, xp < 0))
+                            xp >= self._timespace.par.nbins, xp < 0))
             
         if np.size(invalid_pts) > 0:
             # Find all invalid particles
@@ -238,6 +238,6 @@ class Particles(object):
                        / (float(timespace.par.h_num)
                        * timespace.par.omega_rev0[turn]
                        * timespace.par.dtbin)
-                       - timespace.x_origin)
+                       - timespace.par.xorigin)
         yp[profiles] = denergy / float(dEbin) + timespace.yat0
     # ======================== END OLD ROUTINES ============================

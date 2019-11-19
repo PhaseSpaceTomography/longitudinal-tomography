@@ -206,7 +206,7 @@ class Tracking(ParticleTracker):
             turn += 1
             
             temp_xp = self._calc_xp_sf(dphi, tpar.phi0[turn],
-                                       self.timespace.x_origin, tpar.h_num,
+                                       self.timespace.par.xorigin, tpar.h_num,
                                        tpar.omega_rev0[turn], tpar.dtbin,
                                        tpar.phiwrap)
 
@@ -245,7 +245,7 @@ class Tracking(ParticleTracker):
                                / (float(self.timespace.par.h_num)
                                * self.timespace.par.omega_rev0[turn]
                                * self.timespace.par.dtbin)
-                               - self.timespace.x_origin)
+                               - self.timespace.par.xorigin)
                 yp[profile] = (denergy / float(self.mapinfo.dEbin)
                                + self.timespace.par.yat0)
                 oh.print_tracking_status_ccc(profile)
@@ -253,8 +253,8 @@ class Tracking(ParticleTracker):
 
     @staticmethod
     @njit
-    def _calc_xp_sf(dphi, phi0, x_origin, h_num, omega_rev0, dtbin, phiwrap):
-        temp_xp = (dphi + phi0 - x_origin * h_num * omega_rev0 * dtbin)
+    def _calc_xp_sf(dphi, phi0, xorigin, h_num, omega_rev0, dtbin, phiwrap):
+        temp_xp = (dphi + phi0 - xorigin * h_num * omega_rev0 * dtbin)
         temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
                     / (h_num * omega_rev0 * dtbin))
         return temp_xp
@@ -263,6 +263,6 @@ class Tracking(ParticleTracker):
     #     return super().coords_to_physical(
     #             self.timespace.par, xp, yp,
     #             self.mapinfo.dEbin,
-    #             self.timespace.x_origin)
+    #             self.timespace.par.xorigin)
 
     # ======================== END OLD ROUTINES ============================

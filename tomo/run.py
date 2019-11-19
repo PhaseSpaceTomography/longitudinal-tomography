@@ -62,7 +62,7 @@ tomo = TomographyCpp(timespace.profiles, xp)
 weight = tomo.run()
 
 # Creating image
-nbins = timespace.par.profile_length
+nbins = timespace.par.nbins
 image = OutputHandler.create_phase_space_image(xp, yp, weight, nbins,
                                                film=reconstr_idx)
 

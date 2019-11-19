@@ -88,19 +88,21 @@ from utils.exceptions import (InputError,
 # calculated variables:
 # ---------------------
 # profile_count     Number of profiles
-# profile_length    Length of profile (in number of bins)
+# nbins             Length of profile (in number of bins)
 # profile_mini      Index of first and last "active" index in profile
 # profile_maxi
 # all_data          Total number of data points in the 'raw' input file
+# x_origin          absolute difference in bins between phase=0
+#                       and origin of the reconstructed phase-space coordinate system.
+
 
 class Parameters:
 
     def __init__(self):
 
-        # Parameters to be collected from file:
+        # Parameters directly read from file:
         # =====================================
-        self.xat0 = 0.0     # Pit may be performed in TimeSpace class
-        self.yat0 = 0.0     # Calculated in timeSpace class
+        self._xat0 = 0.0             # May become changed in TimeSpace class
 
         self.rebin = 0
         self.rawdata_file = ''
@@ -160,12 +162,36 @@ class Parameters:
         self.e0 = []
 
         self.profile_count = 0
-        self.profile_length = 0
+        self._nbins = 0             # May become changed in TimeSpace class
+        
+        self.yat0 = 0.0             # May become changed in TimeSpace class
+        self.xorigin = None         # May become changed in TimeSpace class
 
         self.profile_mini = 0
         self.profile_maxi = 0
 
         self.all_data = 0
+
+    @property
+    def xat0(self):
+        return self._xat0
+
+    @xat0.setter
+    def xat0(self, in_xat0):
+        self._xat0 = in_xat0
+        logging.info('xorigin was updated when '\
+                     'the value of xat0 was changed.')
+        self.xorigin = self._calc_xorigin()
+
+    @property
+    def nbins(self):
+        return self._nbins
+
+    @nbins.setter
+    def nbins(self, in_nbins):
+        self._nbins = in_nbins
+        logging.info('yat0 was updated when the value nbins was changed.')
+        self.yat0 = self._find_yat0()
 
     # Fills up parameters object complete based
     #  on partly filled object.
@@ -178,6 +204,7 @@ class Parameters:
 
     # Converts array of raw-input to parameter values.
     # Array must be a direct read from input file.
+    # To be moved to external module
     def parse_from_txt(self, input_array):
         for i in range(len(input_array)):
             input_array[i] = input_array[i].strip('\r\n')
@@ -194,7 +221,7 @@ class Parameters:
         self.imin_skip = int(input_array[31])
         self.imax_skip = int(input_array[34])
         self.rebin = int(input_array[36])
-        self.xat0 = float(input_array[39])
+        self._xat0 = float(input_array[39])
         self.demax = float(input_array[41])
         self.filmstart = int(input_array[43])
         self.filmstop = int(input_array[45])
@@ -233,8 +260,8 @@ class Parameters:
         self.xat0 = self.xat0 / float(self.rebin)
 
         self.profile_count = self.framecount - self.frame_skipcount
-        self.profile_length = (self.framelength - self.preskip_length
-                               - self.postskip_length)
+        self._nbins = (self.framelength - self.preskip_length
+                       - self.postskip_length)
 
         self.profile_mini, self.profile_maxi = self._find_imin_imax()
 
@@ -336,13 +363,27 @@ class Parameters:
     # The indexes outside of these are treated as 0
     def _find_imin_imax(self):
         profile_mini = self.imin_skip/self.rebin
-        if (self.profile_length - self.imax_skip) % self.rebin == 0:
-            profile_maxi = ((self.profile_length - self.imax_skip)
-                            / self.rebin)
+        if (self._nbins - self.imax_skip) % self.rebin == 0:
+            profile_maxi = ((self._nbins - self.imax_skip) / self.rebin)
         else:
-            profile_maxi = ((self.profile_length - self.imax_skip)
-                            / self.rebin + 1)
+            profile_maxi = ((self._nbins - self.imax_skip) / self.rebin + 1)
         return int(profile_mini), int(profile_maxi)
+
+    # Calculate the absolute difference (in bins) between phase=0 and
+    # origin of the reconstructed phase space coordinate system.
+    def _calc_xorigin(self):
+        reference_turn = (self.beam_ref_frame - 1) * self.dturns
+        xorigin = (self.phi0[reference_turn]
+                   / (self.h_num
+                      * self.omega_rev0[reference_turn]
+                      * self.dtbin)
+                   - self.xat0)
+
+        logging.debug(f'xat0: {self.xat0}, xorigin: {xorigin}')
+        return xorigin
+
+    def _find_yat0(self):
+        return self.nbins / 2.0
 
     # Asserting that the input parameters from user are valid
     def _assert_input(self):
@@ -425,7 +466,7 @@ class Parameters:
     # Asserting that some of the parameters calculated are valid
     def _assert_parameters(self):
         # Calculated parameters
-        ta.assert_greater_or_equal(self.profile_length, 'profile length', 0,
+        ta.assert_greater_or_equal(self._nbins, 'profile length', 0,
                                    InputError,
                                    f'Make sure that the sum of post- and'
                                    f'pre-skip length is less'
