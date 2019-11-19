@@ -2,6 +2,9 @@ import os
 import sys
 import numpy as np
 import logging as log
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from utils.exceptions import InputError
 
 class InputHandler:
@@ -190,3 +193,42 @@ class OutputHandler:
         np.save(output_path + 'xp', xp)
         log.info('Saving yp')
         np.save(output_path + 'yp', yp)
+
+    # --------------------------------------------------------------- #
+    #                         END PRODUCT                             #
+    # --------------------------------------------------------------- #
+
+    @classmethod
+    def show(cls, image, diff, profile):
+        gs = gridspec.GridSpec(4, 4)
+
+        fig = plt.figure()
+    
+        img = fig.add_subplot(gs[1:, :3])
+        profs1 = fig.add_subplot(gs[0, :3])
+        profs2 = fig.add_subplot(gs[1:4, 3])
+        convg = fig.add_subplot(gs[0, 3])
+
+        cimg = img.imshow(image.T, origin='lower',
+                          interpolation='nearest', cmap='hot')
+
+        profs1.plot(np.sum(image, axis=1), label='reconstructed')
+        profs1.plot(profile, label='measured')
+        profs1.legend()
+
+        profs2.plot(np.sum(image, axis=0), np.arange(image.shape[0]))
+
+        convg.plot(diff, label='discrepancy')
+        convg.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        convg.legend()
+
+        for ax in (profs1, profs2, convg):
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+        convg.set_xticks(np.arange(len(diff)))
+        convg.set_xticklabels([])
+
+        plt.gcf().set_size_inches(8, 8)
+        plt.tight_layout()
+        plt.show()

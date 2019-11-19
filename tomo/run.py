@@ -66,5 +66,4 @@ nbins = timespace.par.profile_length
 image = OutputHandler.create_phase_space_image(xp, yp, weight, nbins,
                                                film=reconstr_idx)
 
-plt.imshow(image.T, cmap='hot', origin='lower', interpolation='nearest')
-plt.show()
+OutputHandler.show(image, tomo.diff, timespace.profiles[reconstr_idx])
