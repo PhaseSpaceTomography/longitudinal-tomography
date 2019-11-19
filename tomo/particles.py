@@ -75,8 +75,8 @@ class Particles(object):
                         / (2.0 * self._machine.snpt))
 
         # Creating x coordinates
-        nbins_x = self._mapinfo.imax - self._mapinfo.imin
-        x = np.arange(self._mapinfo.imin, self._mapinfo.imax, dtype=float)
+        x = np.arange(self._mapinfo.imin, self._mapinfo.imax + 1, dtype=float)
+        nbins_x = len(x)
         x = np.repeat(x, self._machine.snpt)
         x += np.tile(bin_pts, nbins_x)
         
