@@ -21,11 +21,6 @@ class Tracking(ParticleTracker):
          in_denergy,
          nparts) = self._assert_initial_parts(initial_coordinates)
 
-        # Calculating radio frequency voltage multiplied by the
-        #  particle charge at each turn.
-        # To be moved to machine object!
-        rf1v, rf2v = self.rfv_at_turns()
-
         dphi = np.ascontiguousarray(in_dphi)
         denergy = np.ascontiguousarray(in_denergy)
 
@@ -36,8 +31,12 @@ class Tracking(ParticleTracker):
             # xp, yp = self.kick_and_drift_self(
             #         xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
-            all_dphi, all_denergy = self.kick_and_drift(
-                                        denergy, dphi, rf1v, rf2v, rec_prof)
+            (all_dphi,
+             all_denergy) = self.kick_and_drift(
+                                denergy, dphi,
+                                self.machine.vrf1_at_turn,
+                                self.machine.vrf2_at_turn,
+                                rec_prof)
 
         return all_dphi, all_denergy
 

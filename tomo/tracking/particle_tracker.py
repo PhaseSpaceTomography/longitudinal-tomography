@@ -28,13 +28,3 @@ class ParticleTracker:
             raise AssertionError(err_msg)
 
         return in_xp, in_yp, len(in_xp)
-
-    # To be moved to machine class
-    def rfv_at_turns(self):
-        rf1v = (self.machine.vrf1
-                + self.machine.vrf1dot
-                * self.machine.time_at_turn) * self.machine.q
-        rf2v = (self.machine.vrf2
-                + self.machine.vrf2dot
-                * self.machine.time_at_turn) * self.machine.q
-        return rf1v, rf2v

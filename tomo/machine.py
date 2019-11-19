@@ -160,6 +160,8 @@ class Machine:
         self.beta0 = []
         self.eta0 = []
         self.e0 = []
+        self.vrf1_at_turn = []
+        self.vrf2_at_turn = []
 
         self.nprofiles = 0
         self._nbins = 0
@@ -361,6 +363,10 @@ class Machine:
         # Calculate revolution frequency at each turn
         self.omega_rev0 = physics.revolution_freq(self)
 
+        # Calculate RF-voltages at each turn
+        (self.vrf1_at_turn,
+         self.vrf2_at_turn) = self.rfv_at_turns()
+
     # Finding min and max index in profiles.
     # The indexes outside of these are treated as 0
     def _find_imin_imax(self):
@@ -386,6 +392,13 @@ class Machine:
 
     def _find_yat0(self):
         return self.nbins / 2.0
+
+    # Calculates rf voltage for each turn based on a linear approximation.
+    # Result is multiplied by particle charge.
+    def rfv_at_turns(self):
+        rf1v = (self.vrf1 + self.vrf1dot * self.time_at_turn) * self.q
+        rf2v = (self.vrf2 + self.vrf2dot * self.time_at_turn) * self.q
+        return rf1v, rf2v
 
     # Asserting that the input parameters from user are valid
     def _assert_input(self):
