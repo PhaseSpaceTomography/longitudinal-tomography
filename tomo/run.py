@@ -32,37 +32,30 @@ timespace.create(raw_data)
 particles = Particles(timespace)
 
 # ------------------------------------------------------------------------------
-# EXAMPLE, use of particles object - manual coordinates
-# Setting the initial position of the particles using the xy coordinate system.
-# The particles can also be directly tracked, if given to the 
-#  tracking object in phase and and energy.
-# ------------------------------------------------------------------------------
-xcoords = np.array([100, 100, 100, 75, 100, 125])
-ycoords = np.array([75, 100, 125, 100, 100, 100])
-
-particles.set_coordinates(xcoords, ycoords)
-dphi, deneregy = particles.init_coords_to_physical(turn=0)
-
-tracker = Tracking(parameters)
-xp, yp = tracker.track((dphi, deneregy))
-
-# Converting from physical units to coordinate system
-xp, yp = particles.physical_to_coords(xp, yp)
-
-# ------------------------------------------------------------------------------
 # EXAMPLE, use of particles object - automatic distribution
 # ------------------------------------------------------------------------------
+
+# TEMP
+reconstr_idx = timespace.par.beam_ref_frame
+reconstruct_turn = reconstr_idx * 12 
+# END TEMP
+
 particles.homogeneous_distribution(ff=True)
-dphi, deneregy = particles.init_coords_to_physical(turn=0)
+
+# particles.fortran_homogeneous_distribution(timespace)
+dphi, deneregy = particles.init_coords_to_physical(turn=reconstruct_turn)
 
 tracker = Tracking(parameters)
-xp, yp = tracker.track((dphi, deneregy))
+
+xp, yp = tracker.track((dphi, deneregy), rec_prof=reconstr_idx)
 xp, yp = particles.physical_to_coords(xp, yp)
 
+xp, yp, lost = particles.filter_lost_paricles(xp, yp)
+print(f'Lost particles: {lost}')
+
 # Needed for tomo routine.
-# Will be removed eventually. 
-xp = np.ceil(xp).astype(int).T - 1
-yp = np.ceil(yp).astype(int).T - 1
+xp = xp.astype(np.int32).T
+yp = yp.astype(np.int32).T
 
 # Tomography!
 tomo = TomographyCpp(timespace.profiles, xp)
@@ -70,9 +63,8 @@ weight = tomo.run()
 
 # Creating image
 nbins = timespace.par.profile_length
-rec_prof = 0
-image = OutputHandler.create_phase_space_image(
-                    xp, yp, weight, nbins, rec_prof)
+image = OutputHandler.create_phase_space_image(xp, yp, weight, nbins,
+                                               film=reconstr_idx)
 
 plt.imshow(image.T, cmap='hot', origin='lower', interpolation='nearest')
 plt.show()
