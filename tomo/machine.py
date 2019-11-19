@@ -205,6 +205,8 @@ class Parameters:
     # Converts array of raw-input to parameter values.
     # Array must be a direct read from input file.
     # To be moved to external module
+    # In this function, the conversion from
+    #  Fortran to python indexing should happen.
     def parse_from_txt(self, input_array):
         for i in range(len(input_array)):
             input_array[i] = input_array[i].strip('\r\n')
