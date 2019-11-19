@@ -37,12 +37,12 @@ class Tracking(ParticleTracker):
             #         xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
             all_dphi, all_denergy = self.kick_and_drift(
-                                        denergy, dphi, rf1v, rf2v)
+                                        denergy, dphi, rf1v, rf2v, rec_prof)
 
         return all_dphi, all_denergy
 
     
-    def kick_and_drift(self, denergy, dphi, rf1v, rf2v):
+    def _kick_and_drift(self, denergy, dphi, rf1v, rf2v):
         nparts = len(denergy)
         out_dphi = np.zeros((self.parameter.profile_count, nparts))
         out_denergy = np.copy(out_dphi)
@@ -69,6 +69,63 @@ class Tracking(ParticleTracker):
                 oh.print_tracking_status_ccc(profile)
 
         return out_dphi, out_denergy
+
+    def kick_and_drift(self, denergy, dphi, rf1v, rf2v, rec_prof):
+        nparts = len(denergy)
+        
+        # Creating arrays for all tracked particles
+        out_dphi = np.zeros((self.parameter.profile_count, nparts))
+        out_denergy = np.copy(out_dphi)
+
+        # Setting homogeneous coordinates to profile to be reconstructed.
+        out_dphi[rec_prof] = np.copy(dphi)
+        out_denergy[rec_prof] = np.copy(denergy)
+        
+        rec_turn = rec_prof * self.parameter.dturns
+        turn = rec_turn
+        profile = rec_prof
+        
+        # Tracking 'upwards'
+        while turn < self.nturns:
+            # Calculating change in phase for each particle at a turn
+            dphi = drift(denergy, dphi, self.parameter.dphase,
+                         nparts, turn)
+            turn += 1
+            # Calculating change in energy for each particle at a turn
+            denergy = kick(self.parameter, denergy, dphi, rf1v, rf2v,
+                           nparts, turn)
+
+            if turn % self.parameter.dturns == 0:
+                profile += 1
+                out_dphi[profile] = np.copy(dphi)
+                out_denergy[profile] = np.copy(denergy)
+                oh.print_tracking_status_ccc(profile)
+
+        # Starting again from homogeous distribution
+        dphi = np.copy(out_dphi[rec_prof])
+        denergy = np.copy(out_denergy[rec_prof])
+        turn = rec_turn
+        profile = rec_prof
+
+        # Tracking 'downwards'
+        while turn > 0:
+            # Calculating change in energy for each particle at a turn
+            denergy = kick(self.parameter, denergy, dphi, rf1v, rf2v,
+                           nparts, turn, up=False)
+            turn -= 1
+            # Calculating change in phase for each particle at a turn
+            dphi = drift(denergy, dphi, self.parameter.dphase,
+                         nparts, turn, up=False)
+
+
+            if turn % self.parameter.dturns == 0:
+                profile -= 1
+                out_dphi[profile] = np.copy(dphi)
+                out_denergy[profile] = np.copy(denergy)
+                oh.print_tracking_status_ccc(profile)
+
+        return out_dphi, out_denergy 
+
 
     # =========================== OLD ROUTINES ===============================
     #  To be deleted
