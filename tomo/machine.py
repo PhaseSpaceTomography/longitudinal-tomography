@@ -102,77 +102,73 @@ class Machine:
 
         # Parameters directly read from file:
         # =====================================
-        self._xat0 = 0.0
+        self._xat0 = None
 
-        self.rebin = 0
-        self.rawdata_file = ''
-        self.output_dir = ''
-        self.framecount = 0
-        self.framelength = 0
-        self.dtbin = 0.0
-        self.demax = 0.0
-        self.dturns = 0
-        self.preskip_length = 0
-        self.postskip_length = 0
+        self.rebin = None
+        self.rawdata_file = None
+        self.output_dir = None
+        self.framecount = None
+        self.framelength = None
+        self.dtbin = None
+        self.demax = None
+        self.dturns = None
+        self.preskip_length = None
+        self.postskip_length = None
 
-        self.imin_skip = 0
-        self.imax_skip = 0
-        self.frame_skipcount = 0
-        self.snpt = 0
-        self.niter = 0
-        self.machine_ref_frame = 0
-        self.beam_ref_frame = 0
-        self.filmstep = 0
-        self.filmstart = 0
-        self.filmstop = 0
-        self.full_pp_flag = False
+        self.imin_skip = None
+        self.imax_skip = None
+        self.frame_skipcount = None
+        self.snpt = None
+        self.niter = None
+        self.machine_ref_frame = None
+        self.beam_ref_frame = None
+        self.filmstep = None
+        self.filmstart = None
+        self.filmstop = None
+        self.full_pp_flag = None
 
         # Machine and Particle Parameters:
-        self.vrf1 = 0.0
-        self.vrf2 = 0.0
-        self.vrf1dot = 0.0
-        self.vrf2dot = 0.0
-        self.mean_orbit_rad = 0.0
-        self.bending_rad = 0.0
-        self.b0 = 0.0
-        self.bdot = 0.0
-        self.phi12 = 0.0
-        self.h_ratio = 0.0
-        self.h_num = 0.0
-        self.trans_gamma = 0.0
-        self.e_rest = 0.0
-        self.q = 0.0
+        self.vrf1 = None
+        self.vrf2 = None
+        self.vrf1dot = None
+        self.vrf2dot = None
+        self.mean_orbit_rad = None
+        self.bending_rad = None
+        self.b0 = None
+        self.bdot = None
+        self.phi12 = None
+        self.h_ratio = None
+        self.h_num = None
+        self.trans_gamma = None
+        self.e_rest = None
+        self.q = None
 
         # Space charge parameters:
-        self.self_field_flag = False
-        self.g_coupling = 0.0
-        self.zwall_over_n = 0.0
-        self.pickup_sensitivity = 0.0
+        self.self_field_flag = None
+        self.g_coupling = None
+        self.zwall_over_n = None
+        self.pickup_sensitivity = None
 
         # calculated parameters:
         # ======================
-        self.time_at_turn = []
-        self.omega_rev0 = []
-        self.phi0 = []
-        self.dphase = []
-        self.deltaE0 = []
-        self.sfc = []
-        self.beta0 = []
-        self.eta0 = []
-        self.e0 = []
-        self.vrf1_at_turn = []
-        self.vrf2_at_turn = []
-
-        self.nprofiles = 0
-        self._nbins = 0
-        
-        self.yat0 = 0.0
-        self.xorigin = None
-
-        self.profile_mini = 0
-        self.profile_maxi = 0
-
-        self.all_data = 0
+        # time_at_turn
+        # omega_rev0
+        # phi0
+        # dphase
+        # deltaE0
+        # sfc
+        # beta0
+        # eta0
+        # e0
+        # vrf1_at_turn
+        # vrf2_at_turn
+        # nprofiles
+        # _nbins
+        # yat0
+        # xorigin
+        # profile_mini
+        # profile_maxi
+        # all_data
 
     @property
     def xat0(self):
@@ -181,9 +177,10 @@ class Machine:
     @xat0.setter
     def xat0(self, in_xat0):
         self._xat0 = in_xat0
-        logging.info('xorigin was updated when '\
-                     'the value of xat0 was changed.')
-        self.xorigin = self._calc_xorigin()
+        self._calc_xorigin()
+        logging.info(f'xorigin was updated when '\
+                     f'the value of xat0 was changed.\n'
+                     f'xat0: {self.xat0}, xorigin: {self.xorigin}')
 
     @property
     def nbins(self):
@@ -192,8 +189,10 @@ class Machine:
     @nbins.setter
     def nbins(self, in_nbins):
         self._nbins = in_nbins
-        logging.info('yat0 was updated when the value nbins was changed.')
-        self.yat0 = self._find_yat0()
+        self._find_yat0()
+        logging.info(f'yat0 was updated when the '
+                     f'value nbins was changed.\n'
+                     f'New value: {self.yat0}')
 
     # Fills up parameters object complete based
     #  on partly filled object.
@@ -331,17 +330,15 @@ class Machine:
     # origin of the reconstructed phase space coordinate system.
     def _calc_xorigin(self):
         reference_turn = (self.beam_ref_frame - 1) * self.dturns
-        xorigin = (self.phi0[reference_turn]
-                   / (self.h_num
-                      * self.omega_rev0[reference_turn]
-                      * self.dtbin)
-                   - self.xat0)
-
+        self.xorigin = (self.phi0[reference_turn]
+                        / (self.h_num
+                           * self.omega_rev0[reference_turn]
+                           * self.dtbin)
+                        - self.xat0)
         logging.debug(f'xat0: {self.xat0}, xorigin: {xorigin}')
-        return xorigin
 
     def _find_yat0(self):
-        return self.nbins / 2.0
+        self.yat0 = self.nbins / 2.0
 
     # Calculates rf voltage for each turn based on a linear approximation.
     # Result is multiplied by particle charge.
@@ -440,22 +437,12 @@ class Machine:
                                    f'pre-skip length: {self.preskip_length}\n'
                                    f'post-skip length: {self.postskip_length}')
 
-        ta.assert_array_shape_equal([self.time_at_turn,
-                                     self.omega_rev0,
-                                     self.phi0,
-                                     self.dphase,
-                                     self.deltaE0,
-                                     self.beta0,
-                                     self.eta0,
-                                     self.e0],
-                                    ['time_at_turn',
-                                     'omega_re0',
-                                     'phi0',
-                                     'dphase',
-                                     'deltaE0',
-                                     'beta0',
-                                     'eta0',
-                                     'e0'],
+        ta.assert_array_shape_equal([self.time_at_turn, self.omega_rev0,
+                                     self.phi0, self.dphase, self.deltaE0,
+                                     self.beta0, self.eta0, self.e0],
+                                    ['time_at_turn', 'omega_re0',
+                                     'phi0', 'dphase', 'deltaE0',
+                                     'beta0', 'eta0', 'e0'],
                                     (self._calc_number_of_turns() + 1, ))
 
     # Calculating total number of machine turns
