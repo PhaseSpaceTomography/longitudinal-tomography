@@ -1,6 +1,8 @@
 import numpy as np
 from numba import njit          # Needed for fortran style init. To be removed.
 from map_info import MapInfo
+from machine import Machine 
+from utils.assertions import assert_machine
 
 # This class sets up the inital particle distribution of the test particles.
 # The class is NOT NEEDED for the tracking of the particles, but is meant as
@@ -168,6 +170,12 @@ class Particles(object):
             yp = np.delete(yp, invalid_pts, axis=1)
 
         return xp, yp, nr_lost_pts
+
+    def _assert_machine(self, machine):
+        needed_parameters = ['snpt', 'xorigin', 'h_num', 
+                             'omga_rev0', 'dtbin', 'phi0',
+                             'yat0', 'dturns', 'nbins']
+        assert_machine(machine, needed_parameters)
 
 
     # =========================== OLD ROUTINES ===============================

@@ -1,6 +1,6 @@
 import numpy as np
 from machine import Machine
-from utils.exceptions import MachineParameterError
+from utils.assertions import assert_machine
 
 
 class ParticleTracker:
@@ -42,11 +42,7 @@ class ParticleTracker:
     # variables to perform the tracking.
     # Does not check parameters for calculating using self-fields.
     def _assert_machine(self, machine):
-        tracking_parameters = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
-                               'nprofiles', 'dphase', 'dturns', 'phi0',
-                               'phi12', 'h_ratio', 'deltaE0']
-        for par in tracking_parameters:
-            if not hasattr(machine, par):
-                err_msg = f'Missing machine parameter: {par}.\n'\
-                          f'Have you remebered to use machine.fill()?'
-                raise MachineParameterError(err_msg)
+        needed_parameters = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
+                             'nprofiles', 'dphase', 'dturns', 'phi0',
+                             'phi12', 'h_ratio', 'deltaE0']
+        assert_machine(machine, needed_parameters)
