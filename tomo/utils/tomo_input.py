@@ -18,7 +18,6 @@ def get_user_input():
         read = _get_input_args()
     else:
         read = _get_input_stdin()
-    
     return _split_input(read)
 
 
@@ -41,7 +40,7 @@ def _get_input_args():
         else:
             raise InputError(f'The chosen output directory: '
                              f'"{output_dir}" does not exist!')
-    return read
+    return np.array(read)
 
 
 # Read machine parameters via stdin.
@@ -50,38 +49,74 @@ def _get_input_args():
 def _get_input_stdin():
     read = []
     finished = False
+    piped_raw_data = False
+    
     line_num = 0
-    ndata_points = 97
-    while not finished:
-        print(line_num)
+    ndata_points = PARAMETER_LENGTH
+
+    while line_num < ndata_points:
         read.append(sys.stdin.readline())
-        if line_num == 16:
-            nframes = int(read[-1])
-        if line_num == 20:
-            nbins = int(read[-1])
-            ndata_points += nframes * nbins
+        if line_num == RAW_DATA_FILE_IDX:
+            if 'pipe' in read[-1]:
+                piped_raw_data = True
+        if piped_raw_data:
+            if line_num == 16:
+                nframes = int(read[-1])
+            if line_num == 20:
+                nbins = int(read[-1])
+                ndata_points += nframes * nbins
         if line_num == ndata_points:
             finished = True
         line_num += 1
-    return read
+    return np.array(read)
 
 
 # Splits the read input data to machine parameters and raw data.
 # If the raw data is not already read from the input file, the
 #  data will be found in the file given by the parameter file.
 def _split_input(read_input):
+    nframes_idx = 16
+    nbins_idx = 20
+    ndata = 0
+    read_parameters = None
+    read_data = None
+        
     try:
         read_parameters = read_input[:PARAMETER_LENGTH]
+        ndata = (int(read_parameters[nbins_idx])
+                 * int(read_parameters[nframes_idx]))
         for i in range(PARAMETER_LENGTH):
             read_parameters[i] = read_parameters[i].strip('\r\n')
-        if read_parameters[RAW_DATA_FILE_IDX] == 'pipe':
+    except:
+        err_msg = 'Something went wrong while accessing machine parameters.'
+        raise InputError(err_msg)
+
+    if read_parameters[RAW_DATA_FILE_IDX] == 'pipe':
+        try:
             read_data = np.array(read_input[PARAMETER_LENGTH:], dtype=float)
-        else:
+        except:
+            err_msg = 'Pipelined raw-data could not be casted to float.'
+            raise InputError(err_msg)
+    else:
+        try:
             read_data = np.genfromtxt(read_parameters[RAW_DATA_FILE_IDX],
                                       dtype=float)
-    except:
-        raise InputError('Something went wrong while loading the input.')
-        
+        except FileNotFoundError:
+            err_msg = f'The given file path for the raw-data:\n'\
+                      f'{read_parameters[RAW_DATA_FILE_IDX]}\n'\
+                      f'Could not be found'
+            raise FileNotFoundError(err_msg)
+        except Exception:
+            err_msg = 'Something went wrong while loading raw_data.'
+            raise Exception(err_msg)
+            
+
+    if not len(read_data) == ndata:
+        raise InputError(f'Wrong amount of datapoints loaded.\n'
+                         f'Expected: {ndata}\n'
+                         f'Loaded:   {len(read_data)}')
+
+
     return read_parameters, read_data
 
 
@@ -138,6 +173,3 @@ def input_to_machine(input_array):
     machine.zwall_over_n = float(input_array[95])
     machine.pickup_sensitivity = float(input_array[97])
     return machine
-
-
-
