@@ -24,6 +24,9 @@ class Tracking(ParticleTracker):
         dphi = np.ascontiguousarray(in_dphi)
         denergy = np.ascontiguousarray(in_denergy)
 
+        rfv1 = self.machine.vrf1_at_turn * self.machine.q
+        rfv2 = self.machine.vrf2_at_turn * self.machine.q 
+
         # Tracking particles
         if self.machine.self_field_flag:
             raise NotImplementedError('kick and drift - '
@@ -33,10 +36,7 @@ class Tracking(ParticleTracker):
         else:
             (all_dphi,
              all_denergy) = self.kick_and_drift(
-                                denergy, dphi,
-                                self.machine.vrf1_at_turn,
-                                self.machine.vrf2_at_turn,
-                                rec_prof)
+                                denergy, dphi, rfv1, rfv2, rec_prof)
 
         return all_dphi, all_denergy
 

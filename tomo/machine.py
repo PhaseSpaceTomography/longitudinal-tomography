@@ -345,8 +345,8 @@ class Machine:
     # Calculates rf voltage for each turn based on a linear approximation.
     # Result is multiplied by particle charge.
     def rfv_at_turns(self):
-        rf1v = (self.vrf1 + self.vrf1dot * self.time_at_turn) * self.q
-        rf2v = (self.vrf2 + self.vrf2dot * self.time_at_turn) * self.q
+        rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn
+        rf2v = self.vrf2 + self.vrf2dot * self.time_at_turn
         return rf1v, rf2v
 
     # Asserting that the input parameters from user are valid
