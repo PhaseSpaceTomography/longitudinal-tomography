@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import logging
 import physics
-from utils.assertions import TomoAssertions as ta
+import utils.assertions as ta
 from utils.exceptions import (EnergyBinningError,
                               EnergyLimitsError,
                               PhaseLimitsError,

@@ -4,7 +4,7 @@ from scipy import optimize
 import numpy as np
 from machine import Machine
 import physics
-from utils.assertions import TomoAssertions as ta
+import utils.assertions as ta
 from utils.exceptions import (RawDataImportError,
                               InputError,
                               RebinningError)

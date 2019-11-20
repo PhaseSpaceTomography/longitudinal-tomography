@@ -2,7 +2,7 @@ import logging
 import physics
 import numpy as np
 from scipy import optimize
-from utils.assertions import TomoAssertions as ta
+import utils.assertions as ta
 from utils.exceptions import (InputError,
                               MachineParameterError,
                               SpaceChargeParameterError)

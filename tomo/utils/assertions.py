@@ -1,5 +1,5 @@
 from utils.exceptions import *
-from machine import Machine
+from tomo.machine import Machine
 import numpy as np
 
 
@@ -82,11 +82,10 @@ def assert_array_not_equal(array, array_name, limit,
 
 def assert_array_shape_equal(arrays, array_names,
                             demanded_shape, extra_text=''):
-    TomoAssertions.assert_greater_or_equal(len(arrays), 'number of arrays',
-                                           2, AssertionError,
-                                           f'Unable to compare arrays, '
-                                           f'since less than two '
-                                           f'arrays are given.')
+    assert_greater_or_equal(len(arrays), 'number of arrays', 2,
+                            AssertionError,
+                            'Unable to compare arrays, since less than two '
+                            'arrays are given.')
     ok = True
     counter = 0
     array_error_str = ''
@@ -108,46 +107,31 @@ def assert_array_in_range(array, low_lim, up_lim, error_class,
                           msg='', index_offset=0):
     log_arr = np.where(np.logical_or(array < low_lim, array > up_lim),
                         False, True)
-    TomoAssertions._assert_log_arr(log_arr,
-                                   error_class,
-                                   index_offset,
-                                   msg)
+    _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
 def assert_array_greater(array, limit, error_class,
                          msg='', index_offset=''):
     log_arr = np.where(array <= limit, False, True)
-    TomoAssertions._assert_log_arr(log_arr,
-                                   error_class,
-                                   index_offset,
-                                   msg)
+    _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
 def assert_array_greater_eq(array, limit, error_class,
                          msg='', index_offset=''):
     log_arr = np.where(array < limit, False, True)
-    TomoAssertions._assert_log_arr(log_arr,
-                                   error_class,
-                                   index_offset,
-                                   msg)
+    _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
 def assert_array_less(array, limit, error_class,
                          msg='', index_offset=''):
     log_arr = np.where(array >= limit, False, True)
-    TomoAssertions._assert_log_arr(log_arr,
-                                   error_class,
-                                   index_offset,
-                                   msg)
+    _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
 def assert_array_less_eq(array, limit, error_class,
                          msg='', index_offset=''):
     log_arr = np.where(array > limit, False, True)
-    TomoAssertions._assert_log_arr(log_arr,
-                                   error_class,
-                                   index_offset,
-                                   msg)
+    _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
 
