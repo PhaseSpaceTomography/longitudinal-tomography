@@ -212,11 +212,13 @@ class OutputHandler:
         cimg = img.imshow(image.T, origin='lower',
                           interpolation='nearest', cmap='hot')
 
-        profs1.plot(np.sum(image, axis=1), label='reconstructed')
         profs1.plot(profile, label='measured')
+        profs1.plot(np.sum(image, axis=1),
+                    label='reconstructed')
         profs1.legend()
 
-        profs2.plot(np.sum(image, axis=0), np.arange(image.shape[0]))
+        profs2.plot(np.sum(image, axis=0),
+                    np.arange(image.shape[0]))
 
         convg.plot(diff, label='discrepancy')
         convg.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
