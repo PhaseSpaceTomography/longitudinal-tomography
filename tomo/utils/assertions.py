@@ -1,62 +1,49 @@
-from utils.exceptions import *
-from tomo.machine import Machine
 import numpy as np
+from tomo.machine import Machine
+from utils.exceptions import (MachineParameterError,
+                              UnequalArrayShapes,
+                              InvalidParticleError,
+                              MachineParameterError)
 
-
+# =========================================================
+#                      SCALAR ASSERTIONS
+# =========================================================
 def assert_greater(var, var_name, limit, error_class, extra_text=''):
     if var <= limit:
-        error_message = (f'\nInput parameter "{var_name}" has the '
-                         f'unexpected value: {var}.\n'
-                         f'Expected value: {var_name} > {limit}.')
-        error_message += f'\n{extra_text}'
-        raise error_class(error_message)
+        msg = _write_std_err_msg(var_name, var, limit, '>', extra_text)
+        raise error_class(msg)
 
 
 def assert_less(var, var_name, limit, error_class, extra_text=''):
     if var >= limit:
-        error_message = (f'\nInput parameter "{var_name}" has the '
-                         f'unexpected value: {var}.\n'
-                         f'Expected value: {var_name} < {limit}.')
-        error_message += f'\n{extra_text}'
-        raise error_class(error_message)
+        msg = _write_std_err_msg(var_name, var, limit, '>', extra_text)
+        raise error_class(msg)
 
 
 def assert_equal(var, var_name, limit, error_class, extra_text=''):
     if var != limit:
-        error_message = (f'\nInput parameter "{var_name}" has the '
-                         f'unexpected value: {var}.\n'
-                         f'Expected value: {var_name} == {limit}.')
-        error_message += f'\n{extra_text}'
-        raise error_class(error_message)
+        msg = _write_std_err_msg(var_name, var, limit, '==', extra_text)
+        raise error_class(msg)
 
 
 def assert_not_equal(var, var_name, limit, error_class, extra_text=''):
     if var == limit:
-        error_message = (f'\nInput parameter "{var_name}" has the '
-                         f'unexpected value: {var}.\n'
-                         f'Expected value: {var_name} != {limit}.')
-        error_message += f'\n{extra_text}'
-        raise error_class(error_message)
+        msg = _write_std_err_msg(var_name, var, limit, '!=', extra_text)
+        raise error_class(msg)
 
 
 def assert_less_or_equal(var, var_name, limit,
                          error_class, extra_text=''):
     if var > limit:
-        error_message = (f'\nInput parameter "{var_name}" has the '
-                         f'unexpected value: {var}.\n'
-                         f'Expected value: {var_name} <= {limit}.')
-        error_message += f'\n{extra_text}'
-        raise error_class(error_message)
+        msg = _write_std_err_msg(var_name, var, limit, '<=', extra_text)
+        raise error_class(msg)
 
 
 def assert_greater_or_equal(var, var_name, limit,
                             error_class, extra_text=''):
     if var < limit:
-        error_message = (f'\nInput parameter "{var_name}" has the '
-                         f'unexpected value: {var}.\n'
-                         f'Expected value: {var_name} >= {limit}.')
-        error_message += f'\n{extra_text}'
-        raise error_class(error_message)
+        msg = _write_std_err_msg(var_name, var, limit, '>=', extra_text)
+        raise error_class(msg)
 
 
 def assert_inrange(var, var_name, low_lim, up_lim,
@@ -68,6 +55,11 @@ def assert_inrange(var, var_name, low_lim, up_lim,
                          f'[{low_lim}, {up_lim}].')
         error_message += f'\n{extra_text}'
         raise error_class(error_message)
+
+
+# =========================================================
+#                      ARRAY ASSERTIONS
+# =========================================================
 
 
 def assert_array_not_equal(array, array_name, limit,
@@ -141,12 +133,19 @@ def _assert_log_arr(log_array_ok, error_class, index_offset, msg):
             f'{np.argwhere(log_array_ok == False).flatten() + index_offset}\n'
         raise error_class(error_msg + msg)
 
-
+# =========================================================
+#                 TRACKING/PARTICLE ASSERTIONS
+# =========================================================
 
 def assert_only_valid_particles(xp, n_bins, msg=''):
     if np.any(np.logical_or(xp >= n_bins, xp < 0)):
         err_msg = f'Invalid (lost) particle(s) was found in xp\n'
         raise InvalidParticleError(err_msg + msg)
+
+
+# =========================================================
+#                     MACHINE ASSERTIONS
+# =========================================================
 
 
 def assert_machine(machine, needed_parameters):
@@ -155,3 +154,17 @@ def assert_machine(machine, needed_parameters):
             err_msg = (f'Missing machine parameter: {par}.\n'
                        f'Have you remebered to use machine.fill()?')
             raise MachineParameterError(err_msg)
+
+
+# =========================================================
+#                     ASSERTION UTILITIES
+# =========================================================
+
+
+# Standard error message for asserting scalars.
+def _write_std_err_msg(var_name, var, limit, operator, extra):
+    error_message = (f'\nInput parameter "{var_name}" has the '
+                     f'unexpected value: {var}.\n'
+                     f'Expected value: {var_name} {operator} {limit}.')
+    error_message += f'\n{extra}'
+    return error_message
