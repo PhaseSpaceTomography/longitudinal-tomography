@@ -15,15 +15,14 @@ from utils.exceptions import (InputError,
 # and the particle tracking in the reconstruction class. The machine class also stores
 # information created in time space calculations.
 #
-# =====================================
-# Parameters to be collected from file:
-# =====================================
+# ========================
+# Parameters to be loaded:
+# ========================
 # Settings for reconstruction:
 # ----------------------------
 # xat0              Synchronous phase in bins in beam_ref_frame
-#                       read form file as time (in frame bins) from the lower profile bound to the synchronous phase
-#                       (if < 0, a fit is performed) in the "bunch reference" frame
-# yat0              Synchronous energy (0 in relative terms) in reconstructed phase space coordinate system
+#                    read form file as time (in frame bins) from the lower profile bound to the synchronous phase
+#                    (if < 0, a fit is performed) in the "bunch reference" frame
 # rebin             Re-binning factor - Number of frame bins to re-bin into one profile bin
 # rawdata_file      Input data file
 # output_dir        Directory in which to write all output
@@ -39,7 +38,7 @@ from utils.exceptions import (InputError,
 # framecount        Number of frames in input data
 # frame_skipcount   Ignore this number of frames/traces from the beginning of the 'raw' input file
 # snpt              Square root of number of test particles tracked from each pixel of reconstructed phase space
-# niter          Number of iterations in the reconstruction process
+# niter             Number of iterations in the reconstruction process
 # machine_ref_frame Frame to which machine parameters are referenced (b0,VRF1,VRF2...)
 # beam_ref_frame    Frame to which beam parameters are referenced
 # filmstart         First profile to be reconstructed
@@ -78,7 +77,7 @@ from utils.exceptions import (InputError,
 # omega_rev0        Revolution frequency at each turn
 # phi0              Synchronous phase angle at the end of each turn
 # dphase            Coefficient used for calculating difference from phase n to phase n + 1.
-#                       needed in trajectory height calculator and longtrack.
+#                    needed in trajectory height calculator and longtrack.
 # sfc               Self-field_coefficient
 # beta0             Lorenz beta factor (v/c) at the end of each turn
 # eta0              Phase slip factor at each turn
@@ -92,16 +91,18 @@ from utils.exceptions import (InputError,
 # profile_mini      Index of first and last "active" index in profile
 # profile_maxi
 # all_data          Total number of data points in the 'raw' input file
-# x_origin          absolute difference in bins between phase=0
-#                       and origin of the reconstructed phase-space coordinate system.
-
+# xorigin           absolute difference in bins between phase=0
+#                    and origin of the reconstructed phase-space coordinate system.
+# yat0              Synchronous energy (0 in relative terms)
+#                    in reconstructed phase space coordinate system
 
 class Machine:
 
     def __init__(self):
 
-        # Parameters directly read from file:
-        # =====================================
+        # ========================
+        # Parameters to be loaded:
+        # ========================
         self._xat0 = None
 
         self.rebin = None
@@ -151,6 +152,7 @@ class Machine:
 
         # calculated parameters:
         # ======================
+        # xorigin
         # time_at_turn
         # omega_rev0
         # phi0
@@ -335,7 +337,7 @@ class Machine:
                            * self.omega_rev0[reference_turn]
                            * self.dtbin)
                         - self.xat0)
-        logging.debug(f'xat0: {self.xat0}, xorigin: {xorigin}')
+        logging.debug(f'xat0: {self.xat0}, xorigin: {self.xorigin}')
 
     def _find_yat0(self):
         self.yat0 = self.nbins / 2.0
