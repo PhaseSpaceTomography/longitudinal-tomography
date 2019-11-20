@@ -1,12 +1,24 @@
 import numpy as np
+from machine import Machine
+from utils.exceptions import MachineParameterError
+
 
 class ParticleTracker:
 
     # The tracking routine works on a copy of the input coordinates.
     def __init__(self, machine):
+
+        if not isinstance(machine, Machine):
+            err_msg = 'Input argument must be Machine.'
+            raise MachineParameterError(err_msg)
+
+        self._assert_machine(machine)
+        
         self.machine = machine
         self.nturns = machine.dturns * (machine.nprofiles - 1)
 
+        import sys
+        sys.exit()
 
     # Checks that the input arguments are correct, and spilts
     #  up to initial x and y coordnates. Also reads the start profile.
@@ -28,3 +40,16 @@ class ParticleTracker:
             raise AssertionError(err_msg)
 
         return in_xp, in_yp, len(in_xp)
+
+    # Checks that the given machine object includes the nesscessary
+    # variables to perform the tracking.
+    # Does not check parameters for calculating using self-fields.
+    def _assert_machine(self, machine):
+        tracking_parameters = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
+                               'nprofiles', 'dphase', 'dturns', 'phi0',
+                               'phi12', 'h_ratio', 'deltaE0']
+        for par in tracking_parameters:
+            if not hasattr(machine, par):
+                err_msg = f'Missing machine parameter: {par}.\n'\
+                          f'Have you remebered to use machine.fill()?'
+                raise MachineParameterError(err_msg)
