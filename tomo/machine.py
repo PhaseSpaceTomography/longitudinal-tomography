@@ -204,56 +204,6 @@ class Machine:
         self._init_parameters()
         self._assert_parameters()
 
-    # Converts array of raw-input to parameter values.
-    # Array must be a direct read from input file.
-    # To be moved to external module
-    # In this function, the conversion from
-    #  Fortran to python indexing should happen.
-    def parse_from_txt(self, input_array):
-        for i in range(len(input_array)):
-            input_array[i] = input_array[i].strip('\r\n')
-
-        self.rawdata_file = input_array[12]
-        self.output_dir = input_array[14]
-        self.framecount = int(input_array[16])
-        self.frame_skipcount = int(input_array[18])
-        self.framelength = int(input_array[20])
-        self.dtbin = float(input_array[22])
-        self.dturns = int(input_array[24])
-        self.preskip_length = int(input_array[26])
-        self.postskip_length = int(input_array[28])
-        self.imin_skip = int(input_array[31])
-        self.imax_skip = int(input_array[34])
-        self.rebin = int(input_array[36])
-        self._xat0 = float(input_array[39])
-        self.demax = float(input_array[41])
-        self.filmstart = int(input_array[43])
-        self.filmstop = int(input_array[45])
-        self.filmstep = int(input_array[47])
-        self.niter = int(input_array[49])
-        self.snpt = int(input_array[51])
-        self.full_pp_flag = bool(int(input_array[53]))
-        self.beam_ref_frame = int(input_array[55])
-        self.machine_ref_frame = int(input_array[57])
-        self.vrf1 = float(input_array[61])
-        self.vrf1dot = float(input_array[63])
-        self.vrf2 = float(input_array[65])
-        self.vrf2dot = float(input_array[67])
-        self.h_num = float(input_array[69])
-        self.h_ratio = float(input_array[71])
-        self.phi12 = float(input_array[73])
-        self.b0 = float(input_array[75])
-        self.bdot = float(input_array[77])
-        self.mean_orbit_rad = float(input_array[79])
-        self.bending_rad = float(input_array[81])
-        self.trans_gamma = float(input_array[83])
-        self.e_rest = float(input_array[85])
-        self.q = float(input_array[87])
-        self.self_field_flag = bool(int(input_array[91]))
-        self.g_coupling = float(input_array[93])
-        self.zwall_over_n = float(input_array[95])
-        self.pickup_sensitivity = float(input_array[97])
-
     # Subroutine for setting up parameters based on given input file.
     # Values are calculated immediately after the 'single' cavity of the ring
     def _init_parameters(self):

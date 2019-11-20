@@ -10,16 +10,19 @@ from time_space import TimeSpace
 from particles import Particles
 from tracking.tracking import Tracking
 from tomography.tomography_cpp import TomographyCpp
-from utils.tomo_io import InputHandler, OutputHandler
+from utils.tomo_io import OutputHandler
+import utils.tomo_input as tin
 
 # =========================
 #        Program 
 # =========================
 
 # Loading input
-raw_param, raw_data = InputHandler.get_input_from_file()
-machine = Machine()
-machine.parse_from_txt(raw_param)
+raw_param, raw_data = tin.get_user_input()
+
+machine = tin.input_to_machine(raw_param)
+# machine = Machine()
+# machine.parse_from_txt(raw_param)
 machine.fill()
 
 output_path = OutputHandler.adjust_outpath(machine.output_dir)
