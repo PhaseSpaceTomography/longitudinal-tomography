@@ -148,7 +148,7 @@ def input_to_machine(input_array):
     machine.rebin               = int(input_array[36])
     machine._xat0               = float(input_array[39])
     machine.demax               = float(input_array[41])
-    machine.filmstart           = int(input_array[43])
+    machine.filmstart           = int(input_array[43]) -1
     machine.filmstop            = int(input_array[45])
     machine.filmstep            = int(input_array[47])
     machine.niter               = int(input_array[49])

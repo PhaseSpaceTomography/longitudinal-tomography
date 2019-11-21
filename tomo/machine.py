@@ -385,8 +385,7 @@ class Machine:
                                 1, InputError)
 
         # Assertions: profile to be reconstructed
-        assert_greater_or_equal(self.filmstart, 'film start',
-                                1, InputError)
+        assert_greater_or_equal(self.filmstart, 'film start', InputError)
         assert_greater_or_equal(self.filmstop, 'film stop',
                                 self.filmstart, InputError)
         assert_less_or_equal(abs(self.filmstep), 'film step',

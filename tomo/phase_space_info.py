@@ -176,7 +176,7 @@ class PhaseSpaceInfo:
         jmin = np.copy(jmax)
 
         # Calculating turn and phases at the filmstart reference point
-        turn = (self.machine.filmstart - 1) * self.machine.dturns
+        turn = self.machine.filmstart * self.machine.dturns
         phases = self._calculate_phases(turn)
 
         # Jmax to int already here? 
@@ -246,7 +246,6 @@ class PhaseSpaceInfo:
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates limits in i axis.
     def _adjust_limits(self, jmax, jmin, allbin_min, allbin_max):
-        film = self.machine.filmstart - 1
         if (self.machine.profile_mini > allbin_min
                                         or self.machine.full_pp_flag):
             imin = self.machine.profile_mini
@@ -281,7 +280,7 @@ class PhaseSpaceInfo:
         return phases
 
     def _assert_correct_arrays(self):
-        for film in range(self.machine.filmstart - 1,
+        for film in range(self.machine.filmstart,
                           self.machine.filmstop,
                           self.machine.filmstep):
 
@@ -341,7 +340,7 @@ class PhaseSpaceInfo:
     # Written in the same format as the original fortran version.
     # To be moved to tomoIO
     def print_plotinfo_ccc(self, ts):
-        rec_prof = self.machine.filmstart - 1 # '-1' Fortran compensation
+        rec_prof = self.machine.filmstart
         rec_turn = rec_prof * self.machine.dturns
         
         out_s = f' plotinfo.data\n'\
