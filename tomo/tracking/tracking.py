@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 import logging as log
 from utils.tomo_io import OutputHandler as oh
-from tracking.particle_tracker import ParticleTracker
+from .particle_tracker import ParticleTracker
 from cpp_routines.tomolib_wrappers import kick, drift
 
 
