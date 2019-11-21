@@ -1,8 +1,8 @@
 import numpy as np
-from utils.exceptions import (MachineParameterError,
-                              UnequalArrayShapes,
-                              InvalidParticleError,
-                              MachineParameterError)
+from .exceptions import (MachineParameterError,
+                         UnequalArrayShapes,
+                         InvalidParticleError,
+                         MachineParameterError)
 
 # =========================================================
 #                      SCALAR ASSERTIONS
