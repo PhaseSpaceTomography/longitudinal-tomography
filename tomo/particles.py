@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit          # Needed for fortran style init. To be removed.
-from map_info import MapInfo
+from phase_space_info import PhaseSpaceInfo
 from machine import Machine 
 from utils.assertions import assert_machine
 
@@ -45,9 +45,9 @@ class Particles(object):
     # fractions of bins. 
     def __init__(self, machine):
         self._machine = machine
-        self._mapinfo = MapInfo(self._machine) # To be renamed?
-        self._mapinfo.find_ijlimits()
-        self.dEbin = self._mapinfo.dEbin
+        self._psinfo = PhaseSpaceInfo(self._machine) # To be renamed?
+        self._psinfo.find_ijlimits()
+        self.dEbin = self._psinfo.dEbin
 
         self.x_coords = None
         self.y_coords = None
@@ -56,7 +56,7 @@ class Particles(object):
     # tomoscope application.
     # The function wil create a homogeneous distribution of particles within
     # an area defined by the user. The area is given by the i and jlimits
-    # found in the _mapinfo object. Depending on the 'full_pp_flag' set in
+    # found in the _psinfo object. Depending on the 'full_pp_flag' set in
     # the input parameters, the particles will be distribted in the bucket
     # area or the full image width.
     # This creates a particle distribution resembeling the original Fortran
@@ -65,27 +65,27 @@ class Particles(object):
     # the x (phase) and y (energy) axis.
     def homogeneous_distribution(self, ff=False):
         if ff:
-            self._mapinfo.print_plotinfo_ccc(self._machine)
+            self._psinfo.print_plotinfo_ccc(self._machine)
 
-        nbins_y = np.sum(self._mapinfo.jmax[self._mapinfo.imin:
-                                            self._mapinfo.imax + 1]
-                         - self._mapinfo.jmin[self._mapinfo.imin:
-                                              self._mapinfo.imax + 1])
+        nbins_y = np.sum(self._psinfo.jmax[self._psinfo.imin:
+                                            self._psinfo.imax + 1]
+                        - self._psinfo.jmin[self._psinfo.imin:
+                                             self._psinfo.imax + 1])
 
         # creating the distribution of particles within one cell.
         bin_pts = ((2.0 * np.arange(1, self._machine.snpt + 1) - 1)
                         / (2.0 * self._machine.snpt))
 
         # Creating x coordinates
-        x = np.arange(self._mapinfo.imin, self._mapinfo.imax + 1, dtype=float)
+        x = np.arange(self._psinfo.imin, self._psinfo.imax + 1, dtype=float)
         nbins_x = len(x)
         x = np.repeat(x, self._machine.snpt)
         x += np.tile(bin_pts, nbins_x)
         
         # Creating y coordinates.
-        nbins_y = np.max(self._mapinfo.jmax) - np.min(self._mapinfo.jmin)
-        y = np.arange(np.min(self._mapinfo.jmin),
-                      np.max(self._mapinfo.jmax), dtype=float)
+        nbins_y = np.max(self._psinfo.jmax) - np.min(self._psinfo.jmin)
+        y = np.arange(np.min(self._psinfo.jmin),
+                      np.max(self._psinfo.jmax), dtype=float)
         y = np.repeat(y, self._machine.snpt)        
         y += np.tile(bin_pts, nbins_y)
 
@@ -94,9 +94,9 @@ class Particles(object):
 
         # Remove particles outside of the ijlimits.
         coords = coords[:,coords[1]
-                          < self._mapinfo.jmax[coords[0].astype(int)]]
+                          < self._psinfo.jmax[coords[0].astype(int)]]
         coords = coords[:, coords[1]
-                          > self._mapinfo.jmin[coords[0].astype(int)]]
+                          > self._psinfo.jmin[coords[0].astype(int)]]
 
         self.x_coords = coords[0]
         self.y_coords = coords[1]
@@ -147,7 +147,7 @@ class Particles(object):
                            * self._machine.dtbin)
                         - self._machine.xorigin)
 
-        yp[profiles] = (tracked_denergy[profiles] / float(self._mapinfo.dEbin)
+        yp[profiles] = (tracked_denergy[profiles] / float(self._psinfo.dEbin)
                         + self._machine.yat0)
 
         return xp, yp
@@ -184,9 +184,9 @@ class Particles(object):
     # Much slower and particles are araanged in a different way.
     # ------------------------------------------------------------------------
     def fortran_homogeneous_distribution(self, machine):
-        self._mapinfo = MapInfo(machine)
-        self._mapinfo.find_ijlimits()
-        self.dEbin = self._mapinfo.dEbin
+        self._psinfo = MapInfo(machine)
+        self._psinfo.find_ijlimits()
+        self.dEbin = self._psinfo.dEbin
         
         points = self._populate_bins(machine.snpt)
         nparts = self._find_nr_of_particles(machine.snpt)
@@ -197,9 +197,9 @@ class Particles(object):
         # Creating the first profile with equally distributed points
         (xp,
          yp) = self._init_tracked_point(
-                        machine.snpt, self._mapinfo.imin,
-                        self._mapinfo.imax, self._mapinfo.jmin,
-                        self._mapinfo.jmax, xp,
+                        machine.snpt, self._psinfo.imin,
+                        self._psinfo.imax, self._psinfo.jmin,
+                        self._psinfo.jmax, xp,
                         yp, points[0], points[1])
 
         self.x_coords = xp
@@ -215,11 +215,11 @@ class Particles(object):
         return [xCoords, yCoords]
 
     def _find_nr_of_particles(self, snpt):
-        jdiff = (self._mapinfo.jmax
-                 - self._mapinfo.jmin)
+        jdiff = (self._psinfo.jmax
+                 - self._psinfo.jmin)
 
-        pxls = np.sum(jdiff[self._mapinfo.imin
-                            :self._mapinfo.imax + 1])
+        pxls = np.sum(jdiff[self._psinfo.imin
+                            :self._psinfo.imax + 1])
         return int(pxls * snpt**2)
 
     @staticmethod

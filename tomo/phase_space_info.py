@@ -64,7 +64,7 @@ from utils.exceptions import (EnergyBinningError,
 #                     or if full_pp_flag (track all pixels) is true.
 
 
-class MapInfo:
+class PhaseSpaceInfo:
 
     def __init__(self, machine):
         self.machine = machine
