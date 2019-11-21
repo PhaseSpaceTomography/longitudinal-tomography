@@ -4,16 +4,22 @@ import subprocess
 import ctypes
 import argparse
 
-
-# TODO: Add arguments?
 # TODO: Add compilation for windows?
 
 def main(gpu_flag):
     path = os.path.realpath(__file__)
-    basepath = os.sep.join(path.split(os.sep)[:-1]) + '/cpp_routines/'
+    base_path = os.sep.join(path.split(os.sep)[:-1])
+    cpp_dir_path = base_path + '/cpp_routines/'
 
-    cpp_files = [os.path.join(basepath, 'reconstruct.cpp'),
-                 os.path.join(basepath, 'kick_and_drift.cpp')]
+    cpp_files = [os.path.join(cpp_dir_path, 'reconstruct.cpp'),
+                 os.path.join(cpp_dir_path, 'kick_and_drift.cpp')]
+
+    # Add tomo_v3 to python path?
+    # usr_py_path = os.environ['PYTHONPATH'].split(os.pathsep)
+    # if base_path not in usr_py_path:
+    #     ans = input('Do you want to add tomo to your python path? [y, n]')
+    #     if ans.lower() == 'y' or ans.lower() == 'yes':
+    #         sys.path.append(base_path)
 
     # Sets flags
     c_flags = ['-std=c++11', '-shared', '-O3']
@@ -33,10 +39,10 @@ def main(gpu_flag):
     # Setting system spescific parameters
     if 'posix' in os.name:
         c_flags += ['-fPIC']
-        libname = os.path.join(basepath, 'tomolib.so')
+        libname = os.path.join(cpp_dir_path, 'tomolib.so')
     elif 'win' in sys.platform:
         # TODO: Find out if this works
-        libname = os.path.join(basepath, 'tomolib.dll')
+        libname = os.path.join(cpp_dir_path, 'tomolib.dll')
     else:
         print('YOU ARE NOT USING A WINDOWS'
               'OR LINUX OPERATING SYSTEM. ABORTING...')
@@ -65,7 +71,6 @@ def main(gpu_flag):
         print('\nCompilation succeeded!')
     except Exception as e:
         print('\nCompilation failed.')
-        # print(f'Error: {e}')
 
 
 def _get_parser():
