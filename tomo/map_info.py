@@ -132,8 +132,7 @@ class MapInfo:
                          'The specified maximum energy of '
                          'reconstructed phase space is invalid.')
         if self.machine.demax < 0.0:
-            if physics.vrft(self.machine.vrf2,
-                            self.machine.vrf2dot, turn) != 0.0:
+            if vrft(self.machine.vrf2, self.machine.vrf2dot, turn) != 0.0:
                 energies_low = self._trajectoryheight(
                 				phases, phases[0], delta_e_known, turn)
 
@@ -147,8 +146,8 @@ class MapInfo:
                 return (self.machine.beta0[turn]
                         * np.sqrt(self.machine.e0[turn]
                                   * self.machine.q
-                                  * physics.vrft(self.machine.vrf1,
-                                                 self.machine.vrf1dot, turn)
+                                  * vrft(self.machine.vrf1,
+                                         self.machine.vrf1dot, turn)
                                   * np.cos(self.machine.phi0[turn])
                                   / (2 * np.pi * self.machine.h_num
                                      * self.machine.eta0[turn]))
@@ -311,18 +310,16 @@ class MapInfo:
     # Trajectory height calculator
     def _trajectoryheight(self, phi, phi_known, delta_e_known, turn):
         cplx_height = 2.0 * self.machine.q / float(self.machine.dphase[turn])
-        cplx_height *= (physics.vrft(self.machine.vrf1,
-                                     self.machine.vrf1dot, turn)
+        cplx_height *= (vrft(self.machine.vrf1, self.machine.vrf1dot, turn)
                         * (np.cos(phi) - np.cos(phi_known))
-                        + physics.vrft(self.machine.vrf2,
-                                       self.machine.vrf2dot, turn)
+                        + vrft(self.machine.vrf2, self.machine.vrf2dot, turn)
                         * (np.cos(self.machine.h_ratio
                                   * (phi - self.machine.phi12))
                         - np.cos(self.machine.h_ratio
                                  * (phi_known - self.machine.phi12)))
                         / self.machine.h_ratio
                         + (phi - phi_known)
-                        * physics.short_rf_voltage_formula(
+                        * short_rf_voltage_formula(
                             self.machine.phi0[turn], self.machine.vrf1,
                             self.machine.vrf1dot, self.machine.vrf2,
                             self.machine.vrf2dot, self.machine.h_ratio,
