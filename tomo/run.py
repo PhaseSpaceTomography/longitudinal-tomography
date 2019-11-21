@@ -34,7 +34,7 @@ timespace.create(raw_data)
 # ------------------------------------------------------------------------------
 
 # TEMP
-reconstr_idx = machine.beam_ref_frame - 1
+reconstr_idx = machine.beam_ref_frame
 reconstruct_turn = reconstr_idx * machine.dturns
 # END TEMP
 

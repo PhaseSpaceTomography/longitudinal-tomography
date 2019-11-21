@@ -119,7 +119,7 @@ class PhaseSpaceInfo:
 
     def find_dEbin(self):
         # Calculating turn and phases at the beam reference point
-        turn = (self.machine.beam_ref_frame - 1) * self.machine.dturns    
+        turn = self.machine.beam_ref_frame * self.machine.dturns    
         phases = self._calculate_phases(turn)
         return self._calc_energy_pxl(phases, turn)
 

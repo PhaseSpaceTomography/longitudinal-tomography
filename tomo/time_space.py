@@ -104,8 +104,8 @@ class TimeSpace:
         # Setting negative numbers to zero.
         profiles = profiles.clip(0.0)
 
-        ref_prof = self.machine.beam_ref_frame - 1
-        profile_charge = self.calc_profilecharge(profiles[ref_prof])
+        profile_charge = self.calc_profilecharge(
+                            profiles[self.machine.beam_ref_frame])
 
         profiles = self.normalize_profiles(profiles)
 
@@ -125,7 +125,7 @@ class TimeSpace:
 
     # Perform at fit for finding x at 0
     def fit_xat0(self):
-        ref_idx = self.machine.beam_ref_frame - 1
+        ref_idx = self.machine.beam_ref_frame
         ref_prof = self.profiles[ref_idx]
         ref_turn = ref_idx * self.machine.dturns
 
@@ -179,8 +179,9 @@ class TimeSpace:
     #  of the beam reference profile.
     def subtract_baseline(self, raw_data, percentage=0.05):
         istart = int((self.machine.frame_skipcount
-                      + self.machine.beam_ref_frame - 1)
-                     * self.machine.framelength + self.machine.preskip_length)
+                      + self.machine.beam_ref_frame)
+                     * self.machine.framelength
+                     + self.machine.preskip_length)
 
         assert_inrange(percentage, 'percentage',
                        0.0, 1.0, InputError,

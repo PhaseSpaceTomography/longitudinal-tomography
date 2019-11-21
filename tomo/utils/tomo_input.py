@@ -123,7 +123,9 @@ def _split_input(read_input):
 # Function to convert from array containing the lines in an input file
 #  to a partially filled machine object.
 # The array must contain a direct read from an input file.
-# TODO: Conversion from Fortran to python indexing.
+# Some variables are subtracted by one.
+#  This is in order to convert from Fortran to C style indexing.
+#  Fortran counts (by defalut) from 1.
 def input_to_machine(input_array):
     if len(input_array) != PARAMETER_LENGTH:
         raise InputError
@@ -132,44 +134,44 @@ def input_to_machine(input_array):
             input_array[i] = input_array[i].strip('\r\n')
 
     machine = Machine()
-    machine.rawdata_file = input_array[12]
-    machine.output_dir = input_array[14]
-    machine.framecount = int(input_array[16])
-    machine.frame_skipcount = int(input_array[18])
-    machine.framelength = int(input_array[20])
-    machine.dtbin = float(input_array[22])
-    machine.dturns = int(input_array[24])
-    machine.preskip_length = int(input_array[26])
-    machine.postskip_length = int(input_array[28])
-    machine.imin_skip = int(input_array[31])
-    machine.imax_skip = int(input_array[34])
-    machine.rebin = int(input_array[36])
-    machine._xat0 = float(input_array[39])
-    machine.demax = float(input_array[41])
-    machine.filmstart = int(input_array[43])
-    machine.filmstop = int(input_array[45])
-    machine.filmstep = int(input_array[47])
-    machine.niter = int(input_array[49])
-    machine.snpt = int(input_array[51])
-    machine.full_pp_flag = bool(int(input_array[53]))
-    machine.beam_ref_frame = int(input_array[55])
-    machine.machine_ref_frame = int(input_array[57])
-    machine.vrf1 = float(input_array[61])
-    machine.vrf1dot = float(input_array[63])
-    machine.vrf2 = float(input_array[65])
-    machine.vrf2dot = float(input_array[67])
-    machine.h_num = float(input_array[69])
-    machine.h_ratio = float(input_array[71])
-    machine.phi12 = float(input_array[73])
-    machine.b0 = float(input_array[75])
-    machine.bdot = float(input_array[77])
-    machine.mean_orbit_rad = float(input_array[79])
-    machine.bending_rad = float(input_array[81])
-    machine.trans_gamma = float(input_array[83])
-    machine.e_rest = float(input_array[85])
-    machine.q = float(input_array[87])
-    machine.self_field_flag = bool(int(input_array[91]))
-    machine.g_coupling = float(input_array[93])
-    machine.zwall_over_n = float(input_array[95])
-    machine.pickup_sensitivity = float(input_array[97])
+    machine.rawdata_file        = input_array[12]
+    machine.output_dir          = input_array[14]
+    machine.framecount          = int(input_array[16])
+    machine.frame_skipcount     = int(input_array[18])
+    machine.framelength         = int(input_array[20])
+    machine.dtbin               = float(input_array[22])
+    machine.dturns              = int(input_array[24])
+    machine.preskip_length      = int(input_array[26])
+    machine.postskip_length     = int(input_array[28])
+    machine.imin_skip           = int(input_array[31])
+    machine.imax_skip           = int(input_array[34])
+    machine.rebin               = int(input_array[36])
+    machine._xat0               = float(input_array[39])
+    machine.demax               = float(input_array[41])
+    machine.filmstart           = int(input_array[43])
+    machine.filmstop            = int(input_array[45])
+    machine.filmstep            = int(input_array[47])
+    machine.niter               = int(input_array[49])
+    machine.snpt                = int(input_array[51])
+    machine.full_pp_flag        = bool(int(input_array[53]))
+    machine.beam_ref_frame      = int(input_array[55]) - 1
+    machine.machine_ref_frame   = int(input_array[57])
+    machine.vrf1                = float(input_array[61])
+    machine.vrf1dot             = float(input_array[63])
+    machine.vrf2                = float(input_array[65])
+    machine.vrf2dot             = float(input_array[67])
+    machine.h_num               = float(input_array[69])
+    machine.h_ratio             = float(input_array[71])
+    machine.phi12               = float(input_array[73])
+    machine.b0                  = float(input_array[75])
+    machine.bdot                = float(input_array[77])
+    machine.mean_orbit_rad      = float(input_array[79])
+    machine.bending_rad         = float(input_array[81])
+    machine.trans_gamma         = float(input_array[83])
+    machine.e_rest              = float(input_array[85])
+    machine.q                   = float(input_array[87])
+    machine.self_field_flag     = bool(int(input_array[91]))
+    machine.g_coupling          = float(input_array[93])
+    machine.zwall_over_n        = float(input_array[95])
+    machine.pickup_sensitivity  = float(input_array[97])
     return machine

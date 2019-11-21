@@ -336,7 +336,7 @@ class Machine:
     # Calculate the absolute difference (in bins) between phase=0 and
     # origin of the reconstructed phase space coordinate system.
     def _calc_xorigin(self):
-        reference_turn = (self.beam_ref_frame - 1) * self.dturns
+        reference_turn = self.beam_ref_frame * self.dturns
         self.xorigin = (self.phi0[reference_turn]
                         / (self.h_num
                            * self.omega_rev0[reference_turn]
@@ -407,7 +407,7 @@ class Machine:
                                 'machine ref. frame',
                                 1, InputError)
         assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
-                                1, InputError)
+                                0, InputError)
 
         # Machine parameter assertion
         assert_greater_or_equal(self.h_num, 'harmonic number',
