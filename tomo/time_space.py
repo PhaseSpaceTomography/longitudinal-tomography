@@ -3,11 +3,10 @@ from scipy import signal
 from scipy import optimize
 import numpy as np
 from machine import Machine
-import physics
-import utils.assertions as ta
-from utils.exceptions import (RawDataImportError,
-                              InputError,
-                              RebinningError)
+from physics import phase_low, dphase_low, e_UNIT
+from utils.assertions import assert_equal, assert_inrange, assert_greater
+from utils.exceptions import (RawDataImportError, InputError,
+                               RebinningError)
 # ================
 # About TimeSpace:
 # ================
@@ -89,8 +88,8 @@ class TimeSpace:
     def create_profiles(self, raw_data):
 
         # Asserting that the correct amount of measurement-data is provided.
-        ta.assert_equal(len(raw_data), 'length of raw_data',
-                        self.machine.all_data, RawDataImportError)
+        assert_equal(len(raw_data), 'length of raw_data',
+                     self.machine.all_data, RawDataImportError)
 
         # Subtracting baseline from raw data
         raw_data = self.subtract_baseline(raw_data)
@@ -144,9 +143,9 @@ class TimeSpace:
 
         # Find roots of phaselow function
         x0 = self.machine.phi0[ref_turn] - bunch_phaselength / 2.0
-        phil = optimize.newton(func=physics.phase_low,
+        phil = optimize.newton(func=phase_low,
                                x0=x0,
-                               fprime=physics.dphase_low,
+                               fprime=dphase_low,
                                tol=0.0001,
                                maxiter=100,
                                args=(self.machine, bunch_phaselength,
@@ -183,10 +182,10 @@ class TimeSpace:
                       + self.machine.beam_ref_frame - 1)
                      * self.machine.framelength + self.machine.preskip_length)
 
-        ta.assert_inrange(percentage, 'percentage',
-                          0.0, 1.0, InputError,
-                          'The chosen percentage of raw_data '
-                          'to create baseline from is not valid')
+        assert_inrange(percentage, 'percentage',
+                       0.0, 1.0, InputError,
+                       'The chosen percentage of raw_data '
+                       'to create baseline from is not valid')
 
         iend = int(np.floor(percentage * self.machine.nbins
                             + istart + 1))
@@ -210,10 +209,10 @@ class TimeSpace:
         else:
             profiles = profiles[:, self.machine.preskip_length:]
         
-        ta.assert_equal(profiles.shape[1], 'profile length',
-                        self.machine.nbins, InputError,
-                        'raw data was reshaped to profiles with '
-                        'a wrong shape.')
+        assert_equal(profiles.shape[1], 'profile length',
+                     self.machine.nbins, InputError,
+                     'raw data was reshaped to profiles with '
+                     'a wrong shape.')
 
         logging.debug(f'{self.machine.nprofiles} profiles '
                       f'with length {self.machine.nbins} '
@@ -231,14 +230,14 @@ class TimeSpace:
         else:
             new_prof_len = int(self.machine.nbins / self.machine.rebin) + 1
 
-        ta.assert_greater(new_prof_len,
-                          'rebinned profile length', 1,
-                          RebinningError,
-                          f'The length of the profiles after re-binning'
-                          f'is not valid...\nMake sure that the re-binning '
-                          f'factor ({self.machine.rebin}) is not larger than'
-                          f'the original profile length '
-                          f'({self.machine.nbins})')
+        assert_greater(new_prof_len,
+                       'rebinned profile length', 1,
+                       RebinningError,
+                       f'The length of the profiles after re-binning'
+                       f'is not valid...\nMake sure that the re-binning '
+                       f'factor ({self.machine.rebin}) is not larger than'
+                       f'the original profile length '
+                       f'({self.machine.nbins})')
 
         # Re-binning profiles until second last bin
         new_profilelist = np.zeros((self.machine.nprofiles, new_prof_len))
@@ -273,7 +272,7 @@ class TimeSpace:
     # Calculate the total charge of profile
     def calc_profilecharge(self, ref_prof):
         return (np.sum(ref_prof) * self.machine.dtbin
-                / (self.machine.rebin * physics.e_UNIT
+                / (self.machine.rebin * e_UNIT
                    * self.machine.pickup_sensitivity))
 
     # return index of last bins to the left and right of max valued bin,
