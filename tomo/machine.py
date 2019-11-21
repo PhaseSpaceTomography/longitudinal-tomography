@@ -248,7 +248,7 @@ class Machine:
     # The reference frame where the start-values are calculated is the machine reference frame.
     # (machine ref. frame -1 to adjust for fortran input files)
     def _array_initial_values(self):
-        i0 = (self.machine_ref_frame - 1) * self.dturns
+        i0 = self.machine_ref_frame * self.dturns
         self.time_at_turn[i0] = 0
         self.e0[i0] = physics.b_to_e(self)
         self.beta0[i0] = physics.lorenz_beta(self, i0)
@@ -405,7 +405,7 @@ class Machine:
         # Reference frame assertions
         assert_greater_or_equal(self.machine_ref_frame,
                                 'machine ref. frame',
-                                1, InputError)
+                                0, InputError)
         assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
                                 0, InputError)
 

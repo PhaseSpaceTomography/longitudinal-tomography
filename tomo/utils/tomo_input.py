@@ -155,7 +155,7 @@ def input_to_machine(input_array):
     machine.snpt                = int(input_array[51])
     machine.full_pp_flag        = bool(int(input_array[53]))
     machine.beam_ref_frame      = int(input_array[55]) - 1
-    machine.machine_ref_frame   = int(input_array[57])
+    machine.machine_ref_frame   = int(input_array[57]) - 1
     machine.vrf1                = float(input_array[61])
     machine.vrf1dot             = float(input_array[63])
     machine.vrf2                = float(input_array[65])
