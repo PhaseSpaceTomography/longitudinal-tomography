@@ -2,7 +2,14 @@ import numpy as np
 import sys
 import logging
 import physics
-import utils.assertions as ta
+from physics import vrft, short_rf_voltage_formula
+from utils.assertions import (assert_greater,
+                              assert_not_equal,
+                              assert_equal,
+                              assert_inrange,
+                              assert_less_or_equal,
+                              assert_array_in_range,
+                              assert_array_less_eq)
 from utils.exceptions import (EnergyBinningError,
                               EnergyLimitsError,
                               PhaseLimitsError,
@@ -82,7 +89,7 @@ class MapInfo:
         self.dEbin = self.find_dEbin()
 
         # If dEbin is less than 0, an error is raised.  
-        ta.assert_greater(self.dEbin, 'dEbin', 0.0, EnergyBinningError)
+        assert_greater(self.dEbin, 'dEbin', 0.0, EnergyBinningError)
 
         # Is this still a valid choise with the new method?
         if self.machine.full_pp_flag == 1:
@@ -121,10 +128,10 @@ class MapInfo:
     # This will be the height of each pixel in the physical coordinate system
     def _calc_energy_pxl(self, phases, turn):
         delta_e_known = 0.0
-        ta.assert_not_equal(self.machine.demax, 'dEmax',
-                            0.0, EnergyBinningError,
-                            'The specified maximum energy of '
-                            'reconstructed phase space is invalid.')
+        assert_not_equal(self.machine.demax, 'dEmax',
+                         0.0, EnergyBinningError,
+                         'The specified maximum energy of '
+                         'reconstructed phase space is invalid.')
         if self.machine.demax < 0.0:
             if physics.vrft(self.machine.vrf2,
                             self.machine.vrf2dot, turn) != 0.0:
@@ -263,12 +270,12 @@ class MapInfo:
     # Returns an array of phases for a given turn
     def _calculate_phases(self, turn):
         indarr = np.arange(self.machine.nbins + 1)
-        ta.assert_equal(len(indarr),
-                        'index array length',
-                        self.machine.nbins + 1,
-                        MapCreationError,
-                        'The index array should have length '
-                        'nbins + 1')
+        assert_equal(len(indarr),
+                     'index array length',
+                     self.machine.nbins + 1,
+                     MapCreationError,
+                     'The index array should have length '
+                     'nbins + 1')
         phases = ((self.machine.xorigin + indarr)
                   * self.machine.dtbin
                   * self.machine.h_num
@@ -281,26 +288,26 @@ class MapInfo:
                           self.machine.filmstep):
 
             # Testing imin and imax
-            ta.assert_inrange(self.imin, 'imin', 0, self.imax,
-                              PhaseLimitsError,
-                              f'imin and imax out of bounds')
-            ta.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
-                                    PhaseLimitsError,
-                                    f'imin and imax out of bounds')
+            assert_inrange(self.imin, 'imin', 0, self.imax,
+                           PhaseLimitsError,
+                           f'imin and imax out of bounds')
+            assert_less_or_equal(self.imax, 'imax', self.jmax.size,
+                                 PhaseLimitsError,
+                                 f'imin and imax out of bounds')
 
             # Testing jmin and jmax
-            ta.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
-                                     self.jmax[self.imin:self.imax],
-                                     EnergyLimitsError,
-                                     msg=f'jmin and jmax out of bounds ',
-                                     index_offset=self.imin)
-            ta.assert_array_less_eq(self.jmax[self.imin:self.imax],
-                                    self.machine.nbins,
-                                    EnergyLimitsError,
-                                    f'jmin and jmax out of bounds ')
-            ta.assert_equal(self.jmin.shape, 'jmin',
-                            self.jmax.shape, ArrayLengthError,
-                            'jmin and jmax should have the same shape')
+            assert_array_in_range(self.jmin[self.imin:self.imax], 0,
+                                  self.jmax[self.imin:self.imax],
+                                  EnergyLimitsError,
+                                  msg=f'jmin and jmax out of bounds ',
+                                  index_offset=self.imin)
+            assert_array_less_eq(self.jmax[self.imin:self.imax],
+                                 self.machine.nbins,
+                                 EnergyLimitsError,
+                                 f'jmin and jmax out of bounds ')
+            assert_equal(self.jmin.shape, 'jmin',
+                         self.jmax.shape, ArrayLengthError,
+                         'jmin and jmax should have the same shape')
 
     # Trajectory height calculator
     def _trajectoryheight(self, phi, phi_known, delta_e_known, turn):
