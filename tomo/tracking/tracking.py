@@ -15,14 +15,24 @@ class Tracking(ParticleTracker):
     def __init__(self, machine):
         super().__init__(machine)
 
-    # The tracking routine works on a COPY of the input coordinates.
-    def track(self, initial_coordinates, rec_prof=0):
-        (in_dphi,
-         in_denergy,
-         nparts) = self._assert_initial_parts(initial_coordinates)
+    # Initial coordinates must be given as phase-space coordinates.
+    # The function also returns phase and energies as phase-space coordinates.
+    # Phase is given as difference in time (dt)
+    def track(self, initial_coordinates=None, rec_prof=0, ftn=False):
 
-        dphi = np.ascontiguousarray(in_dphi)
-        denergy = np.ascontiguousarray(in_denergy)
+        if initial_coordinates is None:
+            log.info('Creating homogeneous distribution of particles.')
+            self.particles.homogeneous_distribution(ff=ftn)
+        else:
+            log.info('Using initial particle coordinates set by user.')
+            self.particles.set_coordinates(initial_coordinates[0],
+                                           initial_coordinates[1])
+
+        rectrn = rec_prof * self.machine.dturns
+        dphi0, denergy0 = self.particles.init_coords_to_physical(turn=rectrn)
+
+        dphi = np.ascontiguousarray(dphi0)
+        denergy = np.ascontiguousarray(denergy0)
 
         rfv1 = self.machine.vrf1_at_turn * self.machine.q
         rfv2 = self.machine.vrf2_at_turn * self.machine.q 
@@ -34,11 +44,17 @@ class Tracking(ParticleTracker):
             # xp, yp = self.kick_and_drift_self(
             #         xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
-            (all_dphi,
-             all_denergy) = self.kick_and_drift(
-                                denergy, dphi, rfv1, rfv2, rec_prof)
+            (xp, yp) = self.kick_and_drift(denergy, dphi,
+                                           rfv1, rfv2, rec_prof)
 
-        return all_dphi, all_denergy
+        xp, yp = self.particles.physical_to_coords(xp, yp)
+        xp, yp, lost = self.particles.filter_lost_paricles(xp, yp)
+        log.info(f'number of lost particles: {lost}')
+
+        xp = xp.astype(np.int32).T
+        yp = yp.astype(np.int32).T
+
+        return xp, yp
 
     
     def _kick_and_drift(self, denergy, dphi, rf1v, rf2v):

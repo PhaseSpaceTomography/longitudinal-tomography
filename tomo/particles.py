@@ -106,7 +106,7 @@ class Particles(object):
     def set_coordinates(self, in_x, in_y):
         if len(in_x) != len(in_y):
             raise AssertionError('Different shape of arrays containing '
-                                 'x and y coordinates')
+                                 'x and y coordinates for particles')
         self.x_coords = in_x
         self.y_coords = in_y
 

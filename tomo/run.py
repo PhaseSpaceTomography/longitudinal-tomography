@@ -21,8 +21,6 @@ import utils.tomo_input as tin
 raw_param, raw_data = tin.get_user_input()
 
 machine = tin.input_to_machine(raw_param)
-# machine = Machine()
-# machine.parse_from_txt(raw_param)
 machine.fill()
 
 output_path = OutputHandler.adjust_outpath(machine.output_dir)
@@ -30,9 +28,6 @@ output_path = OutputHandler.adjust_outpath(machine.output_dir)
 # Setting up time space object
 timespace = TimeSpace(machine)
 timespace.create(raw_data)
-
-# Initiating particles obj.
-particles = Particles(machine)
 
 # ------------------------------------------------------------------------------
 # EXAMPLE, use of particles object - automatic distribution
@@ -43,22 +38,8 @@ reconstr_idx = machine.beam_ref_frame - 1
 reconstruct_turn = reconstr_idx * machine.dturns
 # END TEMP
 
-particles.homogeneous_distribution()# ff=True)
-
-# particles.fortran_homogeneous_distribution(timespace)
-dphi, deneregy = particles.init_coords_to_physical(turn=reconstruct_turn)
-
 tracker = Tracking(machine)
-
-xp, yp = tracker.track((dphi, deneregy), rec_prof=reconstr_idx)
-xp, yp = particles.physical_to_coords(xp, yp)
-
-xp, yp, lost = particles.filter_lost_paricles(xp, yp)
-print(f'Lost particles: {lost}')
-
-# Needed for tomo routine.
-xp = xp.astype(np.int32).T
-yp = yp.astype(np.int32).T
+xp, yp = tracker.track(rec_prof=reconstr_idx)
 
 # Tomography!
 tomo = TomographyCpp(timespace.profiles, xp)
