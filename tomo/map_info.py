@@ -1,7 +1,6 @@
 import numpy as np
 import sys
 import logging
-import physics
 from physics import vrft, short_rf_voltage_formula
 from utils.assertions import (assert_greater,
                               assert_not_equal,
