@@ -4,7 +4,7 @@ import os
 import sys
 
 from machine import Machine
-from utils.exceptions import InputError
+from .exceptions import InputError
 
 # Some constants for the input file containing machine parameters
 PARAMETER_LENGTH = 98
