@@ -2,7 +2,12 @@ import logging
 import physics
 import numpy as np
 from scipy import optimize
-import utils.assertions as ta
+from utils.assertions import (assert_greater,
+                              assert_inrange,
+                              assert_greater_or_equal,
+                              assert_less_or_equal,
+                              assert_not_equal,
+                              assert_array_shape_equal)
 from utils.exceptions import (InputError,
                               MachineParameterError,
                               SpaceChargeParameterError)
@@ -357,100 +362,100 @@ class Machine:
         #    with arrays starting from 0.
 
         # Frame assertions
-        ta.assert_greater(self.framecount, "frame count", 0, InputError)
-        ta.assert_inrange(self.frame_skipcount, "frame skip-count",
-                          0, self.framecount, InputError)
-        ta.assert_greater(self.framelength, "frame length", 0, InputError)
-        ta.assert_inrange(self.preskip_length, "pre-skip length",
-                          0, self.framelength, InputError)
-        ta.assert_inrange(self.postskip_length, "post-skip length",
-                          0, self.framelength, InputError)
+        assert_greater(self.framecount, "frame count", 0, InputError)
+        assert_inrange(self.frame_skipcount, "frame skip-count",
+                       0, self.framecount, InputError)
+        assert_greater(self.framelength, "frame length", 0, InputError)
+        assert_inrange(self.preskip_length, "pre-skip length",
+                       0, self.framelength, InputError)
+        assert_inrange(self.postskip_length, "post-skip length",
+                       0, self.framelength, InputError)
 
         # Bin assertions
-        ta.assert_greater(self.dtbin, "dtbin", 0, InputError,
-                          'NB: dtbin is the difference of time in bin')
-        ta.assert_greater(self.dturns, "dturns", 0, InputError,
-                          'NB: dturns is the number of machine turns'
-                          'between each measurement')
-        ta.assert_inrange(self.imin_skip, 'imin skip',
-                          0, self.framelength, InputError)
-        ta.assert_inrange(self.imax_skip, 'imax skip',
-                          0, self.framelength, InputError)
-        ta.assert_greater_or_equal(self.rebin, 're-binning factor',
-                                   1, InputError)
+        assert_greater(self.dtbin, "dtbin", 0, InputError,
+                       'NB: dtbin is the difference of time in bin')
+        assert_greater(self.dturns, "dturns", 0, InputError,
+                       'NB: dturns is the number of machine turns'
+                       'between each measurement')
+        assert_inrange(self.imin_skip, 'imin skip',
+                       0, self.framelength, InputError)
+        assert_inrange(self.imax_skip, 'imax skip',
+                       0, self.framelength, InputError)
+        assert_greater_or_equal(self.rebin, 're-binning factor',
+                                1, InputError)
 
         # Assertions: profile to be reconstructed
-        ta.assert_greater_or_equal(self.filmstart, 'film start',
-                                   1, InputError)
-        ta.assert_greater_or_equal(self.filmstop, 'film stop',
-                                   self.filmstart, InputError)
-        ta.assert_less_or_equal(abs(self.filmstep), 'film step',
-                                abs(self.filmstop - self.filmstart + 1),
-                                InputError)
-        ta.assert_not_equal(self.filmstep, 'film step', 0, InputError)
+        assert_greater_or_equal(self.filmstart, 'film start',
+                                1, InputError)
+        assert_greater_or_equal(self.filmstop, 'film stop',
+                                self.filmstart, InputError)
+        assert_less_or_equal(abs(self.filmstep), 'film step',
+                             abs(self.filmstop - self.filmstart + 1),
+                             InputError)
+        assert_not_equal(self.filmstep, 'film step', 0, InputError)
 
         # Reconstruction parameter assertions
-        ta.assert_greater(self.niter, 'niter', 0, InputError,
-                          'NB: niter is the number of iterations of the '
-                          'reconstruction process')
-        ta.assert_greater(self.snpt, 'snpt', 0, InputError,
-                          'NB: snpt is the square root '
-                          'of #tracked particles.')
+        assert_greater(self.niter, 'niter', 0, InputError,
+                       'NB: niter is the number of iterations of the '
+                       'reconstruction process')
+        assert_greater(self.snpt, 'snpt', 0, InputError,
+                       'NB: snpt is the square root '
+                       'of #tracked particles.')
 
         # Reference frame assertions
-        ta.assert_greater_or_equal(self.machine_ref_frame,
-                                   'machine ref. frame',
-                                   1, InputError)
-        ta.assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
-                                   1, InputError)
+        assert_greater_or_equal(self.machine_ref_frame,
+                                'machine ref. frame',
+                                1, InputError)
+        assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
+                                1, InputError)
 
         # Machine parameter assertion
-        ta.assert_greater_or_equal(self.h_num, 'harmonic number',
-                                   1, MachineParameterError)
-        ta.assert_greater_or_equal(self.h_ratio, 'harmonic ratio',
-                                   1, MachineParameterError)
-        ta.assert_greater(self.b0, 'B field (B0)',
-                          0, MachineParameterError)
-        ta.assert_greater(self.mean_orbit_rad, "mean orbit radius",
-                          0, MachineParameterError)
-        ta.assert_greater(self.bending_rad, "Bending radius",
-                          0, MachineParameterError)
-        ta.assert_greater(self.e_rest, 'rest energy',
-                          0, MachineParameterError)
+        assert_greater_or_equal(self.h_num, 'harmonic number',
+                                1, MachineParameterError)
+        assert_greater_or_equal(self.h_ratio, 'harmonic ratio',
+                                1, MachineParameterError)
+        assert_greater(self.b0, 'B field (B0)',
+                       0, MachineParameterError)
+        assert_greater(self.mean_orbit_rad, "mean orbit radius",
+                       0, MachineParameterError)
+        assert_greater(self.bending_rad, "Bending radius",
+                       0, MachineParameterError)
+        assert_greater(self.e_rest, 'rest energy',
+                       0, MachineParameterError)
 
         # Space charge parameter assertion
-        ta.assert_greater_or_equal(self.pickup_sensitivity,
-                                   'pick-up sensitivity',
-                                   0, SpaceChargeParameterError)
-        ta.assert_greater_or_equal(self.g_coupling, 'g_coupling',
-                                   0, SpaceChargeParameterError,
-                                   'NB: g_coupling:'
-                                   'geometrical coupling coefficient')
+        assert_greater_or_equal(self.pickup_sensitivity,
+                                'pick-up sensitivity',
+                                0, SpaceChargeParameterError)
+        assert_greater_or_equal(self.g_coupling, 'g_coupling',
+                                0, SpaceChargeParameterError,
+                                'NB: g_coupling:'
+                                'geometrical coupling coefficient')
 
     # Asserting that some of the parameters calculated are valid
     def _assert_parameters(self):
         # Calculated parameters
-        ta.assert_greater_or_equal(self._nbins, 'profile length', 0,
-                                   InputError,
-                                   f'Make sure that the sum of post- and'
-                                   f'pre-skip length is less'
-                                   f'than the frame length\n'
-                                   f'frame length: {self.framelength}\n'
-                                   f'pre-skip length: {self.preskip_length}\n'
-                                   f'post-skip length: {self.postskip_length}')
+        assert_greater_or_equal(self._nbins, 'profile length', 0,
+                                InputError,
+                                f'Make sure that the sum of post- and'
+                                f'pre-skip length is less'
+                                f'than the frame length\n'
+                                f'frame length: {self.framelength}\n'
+                                f'pre-skip length: {self.preskip_length}\n'
+                                f'post-skip length: {self.postskip_length}')
 
-        ta.assert_array_shape_equal([self.time_at_turn, self.omega_rev0,
-                                     self.phi0, self.dphase, self.deltaE0,
-                                     self.beta0, self.eta0, self.e0],
-                                    ['time_at_turn', 'omega_re0',
-                                     'phi0', 'dphase', 'deltaE0',
-                                     'beta0', 'eta0', 'e0'],
-                                    (self._calc_number_of_turns() + 1, ))
+        assert_array_shape_equal([self.time_at_turn, self.omega_rev0,
+                                  self.phi0, self.dphase, self.deltaE0,
+                                  self.beta0, self.eta0, self.e0],
+                                 ['time_at_turn', 'omega_re0',
+                                  'phi0', 'dphase', 'deltaE0',
+                                  'beta0', 'eta0', 'e0'],
+                                 (self._calc_number_of_turns() + 1, ))
 
     # Calculating total number of machine turns
     def _calc_number_of_turns(self):
         all_turns = (self.framecount - self.frame_skipcount - 1) * self.dturns
-        ta.assert_greater(all_turns, 'all_turns', 0, InputError,
-                          'Make sure that frame skip-count'
-                          'do not exceed number of frames')
+        assert_greater(all_turns, 'all_turns', 0, InputError,
+                       'Make sure that frame skip-count'
+                       'do not exceed number of frames')
         return all_turns
