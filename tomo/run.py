@@ -10,20 +10,22 @@ from time_space import TimeSpace
 from particles import Particles
 from tracking.tracking import Tracking
 from tomography.tomography_cpp import TomographyCpp
-from utils.tomo_io import OutputHandler
 import utils.tomo_input as tin
+from utils.tomo_input import get_user_input, input_to_machine
+from utils.tomo_output import (show, adjust_outpath,
+                               create_phase_space_image)
 
 # =========================
 #        Program 
 # =========================
 
 # Loading input
-raw_param, raw_data = tin.get_user_input()
+raw_param, raw_data = get_user_input()
 
-machine = tin.input_to_machine(raw_param)
+machine = input_to_machine(raw_param)
 machine.fill()
 
-output_path = OutputHandler.adjust_outpath(machine.output_dir)
+output_path = adjust_outpath(machine.output_dir)
 
 # Setting up time space object
 timespace = TimeSpace(machine)
@@ -33,10 +35,7 @@ timespace.create(raw_data)
 # EXAMPLE, use of particles object - automatic distribution
 # ------------------------------------------------------------------------------
 
-# TEMP
-reconstr_idx = machine.beam_ref_frame
-reconstruct_turn = reconstr_idx * machine.dturns
-# END TEMP
+reconstr_idx = machine.filmstart
 
 tracker = Tracking(machine)
 xp, yp = tracker.track(rec_prof=reconstr_idx)
@@ -47,7 +46,7 @@ weight = tomo.run()
 
 # Creating image
 nbins = timespace.machine.nbins
-image = OutputHandler.create_phase_space_image(xp, yp, weight, nbins,
-                                               film=reconstr_idx)
+image = create_phase_space_image(xp, yp, weight, nbins,
+                                 rec_prof=reconstr_idx)
 
-OutputHandler.show(image, tomo.diff, timespace.profiles[reconstr_idx])
+show(image, tomo.diff, timespace.profiles[reconstr_idx])
