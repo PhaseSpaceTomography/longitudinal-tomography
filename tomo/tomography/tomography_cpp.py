@@ -1,6 +1,6 @@
 import numpy as np
 import ctypes
-from cpp_routines import tomolib_wrappers as tlw
+from cpp_routines.tomolib_wrappers import back_project, project, reconstruct
 from tomography.__tomography import Tomography
 
 class TomographyCpp(Tomography):
@@ -18,8 +18,8 @@ class TomographyCpp(Tomography):
         flat_profs = np.ascontiguousarray(
                         self.waterfall.flatten()).astype(ctypes.c_double)
         weight = np.zeros(self.nparts)
-        weight = tlw.back_project(
-                    weight, flat_points, flat_profs, self.nparts, self.nprofs)
+        weight = back_project(weight, flat_points, flat_profs,
+                              self.nparts, self.nprofs)
 
         print(' Iterating...')
         for i in range(niter):
@@ -33,8 +33,8 @@ class TomographyCpp(Tomography):
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts.T
          
-            weight = tlw.back_project(weight, flat_points, diff_waterfall,
-                                      self.nparts, self.nprofs)
+            weight = back_project(weight, flat_points, diff_waterfall,
+                                  self.nparts, self.nprofs)
 
         self.recreated = self.project(flat_points, weight)
 
@@ -49,8 +49,8 @@ class TomographyCpp(Tomography):
     # Project using c++ routine from tomolib_wrappers.
     # Normalizes and supresses zeroes.
     def project(self, flat_points, weight):
-        rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
-                          weight, self.nparts, self.nprofs, self.nbins)
+        rec = project(np.zeros(self.recreated.shape), flat_points,
+                      weight, self.nparts, self.nprofs, self.nbins)
         
         rec = self._suppress_zeros_normalize(rec)
         return rec
@@ -71,8 +71,7 @@ class TomographyCpp(Tomography):
         diff_waterfall = np.ascontiguousarray(
                         self.waterfall.flatten().astype(ctypes.c_double))
 
-        weight = tlw.reconstruct(
-                    weight, self.xp, diff_waterfall, self.diff, 
-                    niter, self.nbins, self.nparts, self.nprofs)
+        weight = reconstruct(weight, self.xp, diff_waterfall, self.diff, 
+                             niter, self.nbins, self.nparts, self.nprofs)
 
         return weight
