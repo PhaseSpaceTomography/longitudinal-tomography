@@ -362,19 +362,19 @@ class Machine:
         #    with arrays starting from 0.
 
         # Frame assertions
-        assert_greater(self.framecount, "frame count", 0, InputError)
-        assert_inrange(self.frame_skipcount, "frame skip-count",
+        assert_greater(self.framecount, 'frame count', 0, InputError)
+        assert_inrange(self.frame_skipcount, 'frame skip-count',
                        0, self.framecount, InputError)
-        assert_greater(self.framelength, "frame length", 0, InputError)
-        assert_inrange(self.preskip_length, "pre-skip length",
+        assert_greater(self.framelength, 'frame length', 0, InputError)
+        assert_inrange(self.preskip_length, 'pre-skip length',
                        0, self.framelength, InputError)
-        assert_inrange(self.postskip_length, "post-skip length",
+        assert_inrange(self.postskip_length, 'post-skip length',
                        0, self.framelength, InputError)
 
         # Bin assertions
-        assert_greater(self.dtbin, "dtbin", 0, InputError,
+        assert_greater(self.dtbin, 'dtbin', 0, InputError,
                        'NB: dtbin is the difference of time in bin')
-        assert_greater(self.dturns, "dturns", 0, InputError,
+        assert_greater(self.dturns, 'dturns', 0, InputError,
                        'NB: dturns is the number of machine turns'
                        'between each measurement')
         assert_inrange(self.imin_skip, 'imin skip',
