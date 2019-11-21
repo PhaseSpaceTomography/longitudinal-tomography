@@ -1,5 +1,4 @@
 import numpy as np
-from tomo.machine import Machine
 from utils.exceptions import (MachineParameterError,
                               UnequalArrayShapes,
                               InvalidParticleError,
