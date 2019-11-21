@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit, prange
-from tomography.__tomography import Tomography
+from .__tomography import Tomography
 
 # This class is using python only, speed up with numba. 
 class TomographyPy(Tomography):

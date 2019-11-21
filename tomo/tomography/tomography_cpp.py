@@ -1,7 +1,7 @@
 import numpy as np
 import ctypes
 from cpp_routines.tomolib_wrappers import back_project, project, reconstruct
-from tomography.__tomography import Tomography
+from .__tomography import Tomography
 
 class TomographyCpp(Tomography):
 
