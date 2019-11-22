@@ -8,7 +8,7 @@ from utils.assertions import assert_equal, assert_inrange, assert_greater
 from utils.exceptions import (RawDataImportError, InputError,
                                RebinningError)
 # ================
-# About TimeSpace:
+# About TimeSpace:   <- fix!
 # ================
 # The TimeSpace class handles import and processing of data in time domain.
 #  - importing raw data, and converting it to profiles, specified by input parameters.
@@ -43,7 +43,7 @@ from utils.exceptions import (RawDataImportError, InputError,
 # fitted_xat0          Value of (if) fitted xat0
 
 
-class TimeSpace:
+class Profiles:
 
     def __init__(self, machine):
         self.machine = machine
