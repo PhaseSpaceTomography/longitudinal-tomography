@@ -56,35 +56,6 @@ class Tracking(ParticleTracker):
 
         return xp, yp
 
-    
-    def _kick_and_drift(self, denergy, dphi, rf1v, rf2v):
-        nparts = len(denergy)
-        out_dphi = np.zeros((self.machine.nprofiles, nparts))
-        out_denergy = np.copy(out_dphi)
-
-        out_dphi[0] = dphi
-        out_denergy[0] = denergy
-
-        turn = 0
-        profile = 0
-        print_tracking_status_ftn(profile)
-        while turn < self.nturns:
-            # Calculating change in phase for each particle at a turn
-            dphi = drift(denergy, dphi, self.machine.dphase,
-                         nparts, turn)
-            turn += 1
-            # Calculating change in energy for each particle at a turn
-            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
-                           nparts, turn)
-
-            if turn % self.machine.dturns == 0:
-                profile += 1
-                out_dphi[profile] = dphi
-                out_denergy[profile] = denergy
-                print_tracking_status_ftn(profile)
-
-        return out_dphi, out_denergy
-
     def kick_and_drift(self, denergy, dphi, rf1v, rf2v, rec_prof):
         nparts = len(denergy)
         
