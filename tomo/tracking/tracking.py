@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 import logging as log
-from utils.tomo_io import OutputHandler as oh
+from utils.tomo_output import print_tracking_status_ftn 
 from .particle_tracker import ParticleTracker
 from cpp_routines.tomolib_wrappers import kick, drift
 
@@ -67,7 +67,7 @@ class Tracking(ParticleTracker):
 
         turn = 0
         profile = 0
-        oh.print_tracking_status_ccc(profile)
+        print_tracking_status_ftn(profile)
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
             dphi = drift(denergy, dphi, self.machine.dphase,
@@ -81,7 +81,7 @@ class Tracking(ParticleTracker):
                 profile += 1
                 out_dphi[profile] = dphi
                 out_denergy[profile] = denergy
-                oh.print_tracking_status_ccc(profile)
+                print_tracking_status_ftn(profile)
 
         return out_dphi, out_denergy
 
@@ -114,7 +114,7 @@ class Tracking(ParticleTracker):
                 profile += 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                oh.print_tracking_status_ccc(rec_prof, profile)
+                print_tracking_status_ftn(rec_prof, profile)
 
         # Starting again from homogeous distribution
         dphi = np.copy(out_dphi[rec_prof])
@@ -137,7 +137,7 @@ class Tracking(ParticleTracker):
                 profile -= 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                oh.print_tracking_status_ccc(rec_prof, profile)
+                print_tracking_status_ftn(rec_prof, profile)
 
         return out_dphi, out_denergy 
 
@@ -214,7 +214,7 @@ class Tracking(ParticleTracker):
 
         profile = 0
         turn = 0
-        oh.print_tracking_status_ccc(profile)
+        print_tracking_status_ftn(profile)
         while turn < n_turns:
             dphi = drift(denergy, dphi, tpar.dphase, n_part, turn)
             
@@ -236,7 +236,7 @@ class Tracking(ParticleTracker):
                 profile += 1
                 xp[profile] = temp_xp
                 yp[profile] = denergy / self.mapinfo.dEbin + tpar.yat0
-                oh.print_tracking_status_ccc(profile)
+                print_tracking_status_ftn(profile)
 
         return xp, yp
 
@@ -244,7 +244,7 @@ class Tracking(ParticleTracker):
                        n_turns, n_part):
         turn = 0
         profile = 0
-        oh.print_tracking_status_ccc(profile)
+        print_tracking_status_ftn(profile)
         while turn < n_turns:
             # Calculating change in phase for each particle at a turn
             dphi = drift(denergy, dphi, self.timespace.par.dphase,
@@ -263,7 +263,7 @@ class Tracking(ParticleTracker):
                                - self.timespace.par.xorigin)
                 yp[profile] = (denergy / float(self.mapinfo.dEbin)
                                + self.timespace.par.yat0)
-                oh.print_tracking_status_ccc(profile)
+                print_tracking_status_ftn(profile)
         return xp, yp
 
     @staticmethod
