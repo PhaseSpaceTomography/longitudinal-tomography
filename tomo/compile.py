@@ -8,18 +8,11 @@ import argparse
 
 def main(gpu_flag):
     path = os.path.realpath(__file__)
-    base_path = os.sep.join(path.split(os.sep)[:-1])
-    cpp_dir_path = base_path + '/cpp_routines/'
+    base_path = os.sep.join(path.split(os.sep)[:-2])
+    cpp_dir_path = base_path + '/tomo/cpp_routines/'
 
     cpp_files = [os.path.join(cpp_dir_path, 'reconstruct.cpp'),
                  os.path.join(cpp_dir_path, 'kick_and_drift.cpp')]
-
-    # Add tomo_v3 to python path?
-    # usr_py_path = os.environ['PYTHONPATH'].split(os.pathsep)
-    # if base_path not in usr_py_path:
-    #     ans = input('Do you want to add tomo to your python path? [y, n]')
-    #     if ans.lower() == 'y' or ans.lower() == 'yes':
-    #         sys.path.append(base_path)
 
     # Sets flags
     c_flags = ['-std=c++11', '-shared', '-O3']
@@ -72,6 +65,8 @@ def main(gpu_flag):
     except Exception as e:
         print('\nCompilation failed.')
 
+    _add_to_pyhtonpath(base_path)
+
 
 def _get_parser():
     parser = argparse.ArgumentParser(
@@ -84,6 +79,13 @@ def _get_parser():
                         const=True,
                         help='Compile for gpu')
     return parser
+
+def _add_to_pyhtonpath(tomo_path):
+    usr_py_path = os.environ['PYTHONPATH'].split(os.pathsep)
+    if tomo_path not in usr_py_path:
+        print(usr_py_path)
+        print(f'Please add {tomo_path} to your PYTHONPATH.')
+
 
 if __name__ == '__main__':
     parser = _get_parser()
