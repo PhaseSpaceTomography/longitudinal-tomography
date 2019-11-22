@@ -68,6 +68,45 @@ def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
     return phase_space
 
 # --------------------------------------------------------------- #
+#                          PLOT INFO                              #
+# --------------------------------------------------------------- #
+
+# Returns string containing plot info for tomoscope application
+# psi: phase_space_info object
+# prf: profiles object
+# '+ 1': Converting from Python to Fortran indexing
+def write_plotinfo_ftn(psi, prf):
+    rec_prof = psi.machine.filmstart
+    rec_turn = rec_prof * psi.machine.dturns
+    out_s = f' plotinfo.data\n'\
+            f'Number of profiles used in each reconstruction,\n'\
+              f' profilecount = {psi.machine.nprofiles}\n'\
+            f'Width (in pixels) of each image = '\
+              f'length (in bins) of each profile,\n'\
+            f' profilelength = {psi.machine.nbins}\n'\
+            f'Width (in s) of each pixel = width of each profile bin,\n'\
+            f' dtbin = {psi.machine.dtbin:0.4E}\n'\
+            f'Height (in eV) of each pixel,\n'\
+            f' dEbin = {psi.dEbin:0.4E}\n'\
+            f'Number of elementary charges in each image,\n'\
+              f' eperimage = '\
+              f'{prf.profile_charge:0.3E}\n'\
+            f'Position (in pixels) of the reference synchronous point:\n'\
+            f' xat0 =  {psi.machine.xat0:.3f}\n'\
+            f' yat0 =  {psi.machine.yat0:.3f}\n'\
+            f'Foot tangent fit results (in bins):\n'\
+            f' tangentfootl =    {prf.tangentfoot_low:.3f}\n'\
+            f' tangentfootu =    {prf.tangentfoot_up:.3f}\n'\
+            f' fit xat0 =   {prf.fitted_xat0:.3f}\n'\
+            f'Synchronous phase (in radians):\n'\
+            f' phi0( {rec_prof+1}) = {psi.machine.phi0[rec_turn]:.4f}\n'\
+            f'Horizontal range (in pixels) of the region in '\
+              f'phase space of map elements:\n'\
+            f' imin( {rec_prof+1}) =   {psi.imin} and '\
+              f'imax( {rec_prof+1}) =  {psi.imax}'
+    return(out_s)
+
+# --------------------------------------------------------------- #
 #                         DISCREPANCY                             #
 # --------------------------------------------------------------- #
 

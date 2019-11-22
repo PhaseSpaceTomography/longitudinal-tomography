@@ -3,7 +3,7 @@ import logging as log
 from machine import Machine
 from particles import Particles
 from utils.assertions import assert_machine
-
+from utils.tomo_output import write_plotinfo_ftn
 
 
 class ParticleTracker:
@@ -19,6 +19,7 @@ class ParticleTracker:
         self.machine = machine
 
         self.particles = Particles(self.machine)
+
         self.nturns = machine.dturns * (machine.nprofiles - 1)
         self._ftn_flag = False
 
@@ -31,6 +32,7 @@ class ParticleTracker:
                              'phi12', 'h_ratio', 'deltaE0']
         assert_machine(machine, needed_parameters)
 
-    def show_fortran_output(self):
-        log.info('Fortran style output for particle tracking enabeled!')
+    def show_fortran_output(self, profile_charge):
         self._ftn_flag = True
+        log.info('Fortran style output for particle tracking enabled!')
+        print(write_plotinfo_ftn(self.particles._psinfo, profile_charge))
