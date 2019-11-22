@@ -220,8 +220,8 @@ class Machine:
         self.xat0 = self.xat0 / float(self.rebin)
 
         self.nprofiles = self.framecount - self.frame_skipcount
-        self._nbins = (self.framelength - self.preskip_length
-                       - self.postskip_length)
+        self.nbins = (self.framelength - self.preskip_length
+                      - self.postskip_length)
 
         self.profile_mini, self.profile_maxi = self._find_imin_imax()
 
