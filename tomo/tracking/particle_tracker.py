@@ -1,7 +1,9 @@
 import numpy as np
+import logging as log
 from machine import Machine
 from particles import Particles
 from utils.assertions import assert_machine
+
 
 
 class ParticleTracker:
@@ -18,6 +20,7 @@ class ParticleTracker:
 
         self.particles = Particles(self.machine)
         self.nturns = machine.dturns * (machine.nprofiles - 1)
+        self._ftn_flag = False
 
     # Checks that the given machine object includes the nesscessary
     # variables to perform the tracking.
@@ -27,3 +30,7 @@ class ParticleTracker:
                              'nprofiles', 'dphase', 'dturns', 'phi0',
                              'phi12', 'h_ratio', 'deltaE0']
         assert_machine(machine, needed_parameters)
+
+    def show_fortran_output(self):
+        log.info('Fortran style output for particle tracking enabeled!')
+        self._ftn_flag = True

@@ -38,6 +38,7 @@ timespace.create(raw_data)
 reconstr_idx = machine.filmstart
 
 tracker = Tracking(machine)
+tracker.show_fortran_output()
 xp, yp = tracker.track(rec_prof=reconstr_idx)
 
 # Tomography!

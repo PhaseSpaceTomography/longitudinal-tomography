@@ -18,11 +18,11 @@ class Tracking(ParticleTracker):
     # Initial coordinates must be given as phase-space coordinates.
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as difference in time (dt)
-    def track(self, initial_coordinates=None, rec_prof=0, ftn=False):
+    def track(self, initial_coordinates=None, rec_prof=0):
 
         if initial_coordinates is None:
             log.info('Creating homogeneous distribution of particles.')
-            self.particles.homogeneous_distribution(ff=ftn)
+            self.particles.homogeneous_distribution()
         else:
             log.info('Using initial particle coordinates set by user.')
             self.particles.set_coordinates(initial_coordinates[0],
@@ -41,11 +41,14 @@ class Tracking(ParticleTracker):
         if self.machine.self_field_flag:
             raise NotImplementedError('kick and drift - '
                                       'self voltage not implemented (yet)')
+            log.info('Tracking particles... (Self-fields enabled)')
             # xp, yp = self.kick_and_drift_self(
             #         xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
+            log.info('Tracking particles... (Self-fields disabled)')
             (xp, yp) = self.kick_and_drift(denergy, dphi,
                                            rfv1, rfv2, rec_prof)
+        log.info('Tracking completed!')
 
         xp, yp = self.particles.physical_to_coords(xp, yp)
         xp, yp, lost = self.particles.filter_lost_paricles(xp, yp)
@@ -85,7 +88,8 @@ class Tracking(ParticleTracker):
                 profile += 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                print_tracking_status_ftn(rec_prof, profile)
+                if self._ftn_flag:
+                    print_tracking_status_ftn(rec_prof, profile)
 
         # Starting again from homogeous distribution
         dphi = np.copy(out_dphi[rec_prof])
@@ -108,7 +112,8 @@ class Tracking(ParticleTracker):
                 profile -= 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                print_tracking_status_ftn(rec_prof, profile)
+                if self._ftn_flag:
+                    print_tracking_status_ftn(rec_prof, profile)
 
         return out_dphi, out_denergy 
 
