@@ -3,6 +3,7 @@ import logging as log
 import os
 import sys
 from machine import Machine
+from profiles import Profiles
 from .exceptions import InputError
 from .assertions import assert_inrange
 
@@ -194,7 +195,7 @@ def raw_data_to_waterfall(machine, raw_data):
 # Original function for subtracting baseline of raw data input profiles.
 # Finds the baseline from the first 5% (by default)
 #  of the beam reference profile.
-def _calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
+def calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
     assert_inrange(percent, 'percent', 0.0, 1.0, InputError,
                    'The chosen percent of raw_data '
                    'to create baseline from is not valid')
@@ -262,3 +263,16 @@ def _rebin_last(data, rbn):
     ans[:] *= rbn / (nbins - (new_nbins - 1) * rbn)
     ans = ans.reshape((nprofs, 1))
     return ans
+
+def raw_data_to_profiles(raw_data, machine):
+    # <Insert some assertions here>
+    waterfall = raw_data_to_waterfall(machine, raw_data)
+    waterfall[:] -= calc_baseline_ftn(waterfall, 0)
+    waterfall = rebin(waterfall, 4)
+
+    # Change: should be able to take waterfall as kwarg.
+    prof = Profiles(machine)
+    prof.waterfall = waterfall
+
+    return prof
+    
