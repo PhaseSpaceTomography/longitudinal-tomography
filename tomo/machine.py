@@ -186,7 +186,7 @@ class Machine:
         self._xat0 = in_xat0
         self._calc_xorigin()
         logging.info(f'xorigin was updated when '\
-                     f'the value of xat0 was changed.\n'
+                     f'the value of xat0 was changed.\nNew values - '
                      f'xat0: {self.xat0}, xorigin: {self.xorigin}')
 
     @property
@@ -198,8 +198,8 @@ class Machine:
         self._nbins = in_nbins
         self._find_yat0()
         logging.info(f'yat0 was updated when the '
-                     f'value nbins was changed.\n'
-                     f'New value: {self.yat0}')
+                     f'number of profile bins changed.\n'
+                     f'New value for yat0: {self.yat0}')
 
     # Fills up parameters object complete based
     #  on partly filled object.
