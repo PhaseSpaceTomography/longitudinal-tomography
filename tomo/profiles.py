@@ -1,4 +1,4 @@
-import logging
+import logging as log
 from scipy import signal
 from scipy import optimize
 import numpy as np
@@ -47,8 +47,9 @@ class Profiles:
 
     def __init__(self, machine):
         self.machine = machine
-        self.profiles = np.array([])
-        self.profile_charge = None   # Total charge in profile
+        self._waterfall = None
+        self.profile_charge = None   # Total charge in reference profile
+
 
         # Self field variables:
         self.vself = None            # Self-field voltage
@@ -60,14 +61,35 @@ class Profiles:
         self.wrap_length = 0
         self.fitted_xat0 = 0.0
 
+    # ================ NEW ================
+
+    @property
+    def waterfall(self):
+        return self._waterfall
+
+    @waterfall.setter
+    def waterfall(self, new_waterfall):
+        if not hasattr(new_waterfall, '__iter__'):
+            raise InputError('waterfall should be an iterable.')
+        self._waterfall = new_waterfall.clip(0.0)
+        self.profile_charge = self.calc_profilecharge(
+                                self._waterfall[self.machine.beam_ref_frame])
+        self._waterfall = (self._waterfall
+                            / np.vstack(np.sum(self._waterfall, axis=1)))
+        log.info(f'Waterfall loaded. profile charge: '
+                 f'{self.profile_charge:.3E}')
+
+    
+    # ============== END NEW ===============
+
     # Main function for the time space class
     # @profile
     def create(self, raw_data):
         
         # Converting from raw data to profiles.
         # Result is saved in self.profiles
-        (self.profiles,
-         self.profile_charge) = self.create_profiles(raw_data)
+        # (self.profiles,
+        #  self.profile_charge) = self.create_profiles(raw_data)
 
         if self.machine.xat0 < 0:
             (self.fitted_xat0,
@@ -78,8 +100,8 @@ class Profiles:
         (self.phiwrap,
          self.wrap_length) = self.find_wrap_length()
 
-        logging.info(f'x at zero: {self.machine.xat0}')
-        logging.info(f'y at zero: {self.machine.yat0}')
+        log.info(f'x at zero: {self.machine.xat0}')
+        log.info(f'y at zero: {self.machine.yat0}')
 
         if self.machine.self_field_flag:
             self._calc_using_self_field()
@@ -109,14 +131,14 @@ class Profiles:
 
         profiles = self.normalize_profiles(profiles)
 
-        logging.info('Profiles created successfully.')
+        log.info('Profiles created successfully.')
 
         return profiles, profile_charge
 
 
     # Contains functions for calculations using the self-field voltage
     def _calc_using_self_field(self):
-        logging.info('Calculating self-fields')
+        log.info('Calculating self-fields')
         self.dsprofiles = signal.savgol_filter(
                             x=self.profiles, window_length=7,
                             polyorder=4, deriv=1)
@@ -129,7 +151,7 @@ class Profiles:
         ref_prof = self.profiles[ref_idx]
         ref_turn = ref_idx * self.machine.dturns
 
-        logging.info(f'Performing fit for xat0 '
+        log.info(f'Performing fit for xat0 '
                      f'using reference profile: {ref_idx}')
 
         (tfoot_up,
@@ -139,7 +161,7 @@ class Profiles:
         # bunch_phase_length is needed in phase_low function
         bunch_phaselength = (self.machine.h_num * bunch_duration
                              * self.machine.omega_rev0[ref_turn])
-        logging.info(f'Calculated bunch phase length: {bunch_phaselength}')
+        log.info(f'Calculated bunch phase length: {bunch_phaselength}')
 
         # Find roots of phaselow function
         x0 = self.machine.phi0[ref_turn] - bunch_phaselength / 2.0
@@ -154,7 +176,7 @@ class Profiles:
                     / (self.machine.h_num
                        * self.machine.omega_rev0[ref_turn]
                        * self.machine.dtbin))
-        logging.info(f'Fitted x at zero: {fitted_xat0}')
+        log.info(f'Fitted x at zero: {fitted_xat0}')
 
         return fitted_xat0, tfoot_low, tfoot_up
 
@@ -195,7 +217,7 @@ class Profiles:
                     / np.real(np.floor(percentage
                                        * self.machine.nbins + 1)))
         
-        logging.info(f'A baseline was found with the value: {str(baseline)}')
+        log.info(f'A baseline was found with the value: {str(baseline)}')
         
         return raw_data - baseline
 
@@ -215,7 +237,7 @@ class Profiles:
                      'raw data was reshaped to profiles with '
                      'a wrong shape.')
 
-        logging.debug(f'{self.machine.nprofiles} profiles '
+        log.debug(f'{self.machine.nprofiles} profiles '
                       f'with length {self.machine.nbins} '
                       f'created from raw data')
 
@@ -262,13 +284,10 @@ class Profiles:
                                  * self.machine.rebin))
             new_profilelist[p, -1] = binvalue
 
-        logging.info('Profile rebinned with a rebin factor of '
+        log.info('Profile rebinned with a rebin factor of '
                      + str(self.machine.rebin))
 
         return new_profilelist, new_prof_len
-
-    def normalize_profiles(self, profiles):
-        return profiles / np.vstack(np.sum(profiles, axis=1))
 
     # Calculate the total charge of profile
     def calc_profilecharge(self, ref_prof):
@@ -316,7 +335,7 @@ class Profiles:
         tanfoot_low = -1 * al / bl
         tanfoot_up = -1 * au / bu
 
-        logging.info(f'tangent_foot_low: {tanfoot_low:0.7f}, '
+        log.info(f'tangent_foot_low: {tanfoot_low:0.7f}, '
                      f'tangent_foot_up: {tanfoot_up:0.7f}')
         return tanfoot_up, tanfoot_low
 
@@ -340,6 +359,6 @@ class Profiles:
 
         wrap_length = int(np.ceil(phiwrap / drad_bin))
 
-        logging.info(f'phi wrap =  {str(phiwrap)}, '
+        log.info(f'phi wrap =  {str(phiwrap)}, '
                       f'wrap length =  {str(wrap_length)}')
         return phiwrap, wrap_length
