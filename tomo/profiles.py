@@ -52,9 +52,10 @@ class Profiles:
 
 
         # Self field variables:
-        self.vself = None            # Self-field voltage
-        self.dsprofiles = None       # Smoothed derivative of profiles
+        # self.vself = None            # Self-field voltage
+        # self.dsprofiles = None       # Smoothed derivative of profiles
 
+        # To be moved out of class?
         self.tangentfoot_low = 0.0
         self.tangentfoot_up = 0.0
         self.phiwrap = 0.0
@@ -81,6 +82,18 @@ class Profiles:
         log.info(f'Waterfall loaded. (profile charge: '
                  f'{self.profile_charge:.3E}, nbins: {self.machine.nbins})')
 
+    def calc_self_fields(self, filtered_profiles=None):
+        if filtered_profiles is None:
+            self.dsprofiles = signal.savgol_filter(
+                                x=self._waterfall, window_length=7,
+                                polyorder=4, deriv=1)
+        else:
+            # Insert assertions.
+            # Create spescialized exceptions.
+            self.dsprofiles = filtered_profiles
+
+        self.vself = self._calculate_self()
+
     
     # ============== END NEW ===============
 
@@ -90,8 +103,6 @@ class Profiles:
         
         # Converting from raw data to profiles.
         # Result is saved in self.profiles
-        (self.profiles,
-         self.profile_charge) = self.create_profiles(raw_data)
 
         if self.machine.xat0 < 0:
             (self.fitted_xat0,
@@ -105,38 +116,6 @@ class Profiles:
         log.info(f'x at zero: {self.machine.xat0}')
         log.info(f'y at zero: {self.machine.yat0}')
 
-        if self.machine.self_field_flag:
-            self._calc_using_self_field()
-
-    # Creating profiles, updates profile length and calculates profile charge.
-    def create_profiles(self, raw_data):
-
-        # Asserting that the correct amount of measurement-data is provided.
-        assert_equal(len(raw_data), 'length of raw_data',
-                     self.machine.all_data, RawDataImportError)
-
-        # Subtracting baseline from raw data
-        raw_data = self.subtract_baseline(raw_data)
-
-        # Splitting up raw data to profiles
-        profiles = self.rawdata_to_profiles(raw_data)
-
-        # Rebinning
-        if self.machine.rebin > 1:
-            profiles, self.machine.nbins = self.rebin(profiles)
-
-        # Setting negative numbers to zero.
-        profiles = profiles.clip(0.0)
-
-        profile_charge = self.calc_profilecharge(
-                            profiles[self.machine.beam_ref_frame])
-
-        profiles = self.normalize_profiles(profiles)
-
-        log.info('Profiles created successfully.')
-
-        return profiles, profile_charge
-
 
     # Contains functions for calculations using the self-field voltage
     def _calc_using_self_field(self):
@@ -144,7 +123,6 @@ class Profiles:
         self.dsprofiles = signal.savgol_filter(
                             x=self.profiles, window_length=7,
                             polyorder=4, deriv=1)
-
         self.vself = self._calculate_self()
 
     # Perform at fit for finding x at 0
@@ -197,99 +175,6 @@ class Profiles:
                                           * self.dsprofiles[
                                                 i + 1, :self.machine.nbins]))
         return vself
-
-    # Original function for subtracting baseline of raw data input profiles.
-    # Finds the baseline from the first 5% (by default)
-    #  of the beam reference profile.
-    def subtract_baseline(self, raw_data, percentage=0.05):
-        istart = int((self.machine.frame_skipcount
-                      + self.machine.beam_ref_frame)
-                     * self.machine.framelength
-                     + self.machine.preskip_length)
-
-        assert_inrange(percentage, 'percentage',
-                       0.0, 1.0, InputError,
-                       'The chosen percentage of raw_data '
-                       'to create baseline from is not valid')
-
-        iend = int(np.floor(percentage * self.machine.nbins
-                            + istart + 1))
-
-        baseline = (np.sum(raw_data[istart:iend])
-                    / np.real(np.floor(percentage
-                                       * self.machine.nbins + 1)))
-        
-        log.info(f'A baseline was found with the value: {str(baseline)}')
-        
-        return raw_data - baseline
-
-    # Turns list of raw data into (profile count, profile length) shaped array.
-    def rawdata_to_profiles(self, raw_data):
-        profiles = raw_data.reshape((self.machine.nprofiles,
-                                     self.machine.framelength))
-        
-        if self.machine.postskip_length > 0:
-            profiles = profiles[:, self.machine.preskip_length:
-                                   -self.machine.postskip_length]
-        else:
-            profiles = profiles[:, self.machine.preskip_length:]
-        
-        assert_equal(profiles.shape[1], 'profile length',
-                     self.machine.nbins, InputError,
-                     'raw data was reshaped to profiles with '
-                     'a wrong shape.')
-
-        log.debug(f'{self.machine.nprofiles} profiles '
-                      f'with length {self.machine.nbins} '
-                      f'created from raw data')
-
-        return profiles
-
-
-    # Re-binning of profiles from original number of bins to smaller number of
-    # bins specified in input parameters
-    def rebin(self, profiles):
-        # Find new profile length
-        if self.machine.nbins % self.machine.rebin == 0:
-            new_prof_len = int(self.machine.nbins / self.machine.rebin)
-        else:
-            new_prof_len = int(self.machine.nbins / self.machine.rebin) + 1
-
-        assert_greater(new_prof_len,
-                       'rebinned profile length', 1,
-                       RebinningError,
-                       f'The length of the profiles after re-binning'
-                       f'is not valid...\nMake sure that the re-binning '
-                       f'factor ({self.machine.rebin}) is not larger than'
-                       f'the original profile length '
-                       f'({self.machine.nbins})')
-
-        # Re-binning profiles until second last bin
-        new_profilelist = np.zeros((self.machine.nprofiles, new_prof_len))
-        for p in range(self.machine.nprofiles):
-            for i in range(new_prof_len - 1):
-                binvalue = 0.0
-                for bincounter in range(self.machine.rebin):
-                    binvalue += profiles[p, i * self.machine.rebin
-                                            + bincounter]
-                new_profilelist[p, i] = binvalue
-
-        # Re-binning last profile bins
-        for p in range(self.machine.nprofiles):
-            binvalue = 0.0
-            for i in range((new_prof_len - 1) * self.machine.rebin,
-                           self.machine.nbins):
-                binvalue += profiles[p, i]
-            binvalue *= (float(self.machine.rebin)
-                         / float(self.machine.nbins
-                                 - (new_prof_len - 1)
-                                 * self.machine.rebin))
-            new_profilelist[p, -1] = binvalue
-
-        log.info('Profile rebinned with a rebin factor of '
-                     + str(self.machine.rebin))
-
-        return new_profilelist, new_prof_len
 
     # Calculate the total charge of profile
     def calc_profilecharge(self, ref_prof):
