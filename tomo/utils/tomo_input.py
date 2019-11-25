@@ -4,7 +4,7 @@ import os
 import sys
 from machine import Machine
 from .exceptions import InputError
-from .assertions import 
+from .assertions import assert_inrange
 
 # Some constants for the input file containing machine parameters
 PARAMETER_LENGTH = 98
@@ -204,35 +204,83 @@ def subtract_baseline_ftn(waterfall, ref_prof, percent=0.05):
 
 
 def rebin():
-    to_rebin = np.array([[1, 2, 4, 5, 6, 6, 1],
-                         [1, 3, 4, 7, 6, 8, 1]], dtype=float)
-    
+    to_rebin = np.array([[1, 2, 4, 5, 6, 6],
+                         [1, 3, 4, 7, 6, 8]], dtype=float)
+
+    print('Original')
+    print(to_rebin)
+
     rbn = 2
-    nprofs = to_rebin.shape[0]
-    nbins = to_rebin.shape[1]
+
+    if to_rebin.shape[1] % rbn == 0:
+        rebinned = _rebin_even(to_rebin, rbn)
+    else:
+        rebinned = np.zeros((to_rebin.shape[0],
+                             int(to_rebin.shape[1] / rbn) + 1))
+        rebinned[:,:-1] = _rebin_even(to_rebin[:,:-1], rbn)
+        rebinned[:,-1] = _rebin_last(to_rebin, rbn)[:, 0]
+
+    print(rebinned)
+
+
+
+def _rebin_even(data, rbn):
+    if data.shape[1] % rbn != 0:
+        raise AssertionError('Length of input data must be an even number.')
+
+    ans = np.copy(data)
+    
+    nprofs = data.shape[0]
+    nbins = data.shape[1]
 
     new_nbins = int(nbins / rbn)
-    if nbins % rbn != 0.0:
-        new_nbins += 1
-
-    fully_rebinned = np.zeros((nprofs, new_nbins))
-    rebinned = np.copy(to_rebin[:,:-rbn])
-
     all_bins = new_nbins * nprofs
-    rebinned = rebinned.reshape(all_bins - rbn, rbn)
-    rebinned = np.sum(rebinned, axis=1)
-    rebinned = rebinned.reshape((nprofs, new_nbins - 1))
-
-    # Rebin only the last bin
-    last_bin = np.copy(to_rebin[:,-rbn:])
-    last_bin = np.sum(last_bin, axis=1)
-    last_bin = last_bin * rbn / (nbins - (new_nbins - 1) * rbn)
-    last_bin = last_bin.reshape((nprofs, 1))
-
-    fully_rebinned[:,:-1] = rebinned
-    fully_rebinned[:,-1] = last_bin[:,0]
-
-    print(fully_rebinned)
-    print('rebinned:')
     
+    ans = ans.reshape((all_bins, rbn))
+    ans = np.sum(ans, axis=1)
+    ans = ans.reshape((nprofs, new_nbins))
 
+    return ans
+
+def _rebin_last(data, rbn):
+    nprofs = data.shape[0]
+    nbins = data.shape[1]
+    new_nbins = int(nbins / rbn)
+
+    i0 = (new_nbins - 1) * rbn
+    ans = np.copy(data[:,i0:])
+    ans = np.sum(ans, axis=1)
+    ans = ans * rbn / (nbins - (new_nbins - 1) * rbn)
+    ans = ans.reshape((nprofs, 1))
+    return ans
+
+    # rbn = 2
+    # nprofs = to_rebin.shape[0]
+    # nbins = to_rebin.shape[1]
+    # last_bin = nbins
+
+    # new_nbins = int(nbins / rbn)
+    # if nbins % rbn != 0.0:
+    #     new_nbins += 1
+    #     last_bin = nbins - 1
+
+    # print(new_nbins)
+
+    # fully_rebinned = np.zeros((nprofs, new_nbins))
+    # rebinned = np.copy(to_rebin[:,:last_bin])
+    # all_bins = (new_nbins - 1) * nprofs
+    # rebinned = rebinned.reshape((all_bins, rbn))
+    # rebinned = np.sum(rebinned, axis=1)
+    # rebinned = rebinned.reshape((nprofs, new_nbins - 1))
+
+    # print(rebinned)
+    # sys.exit()
+
+    # # Rebin only the last bin
+    # last_bin = np.copy(to_rebin[:,-1])
+    # last_bin = np.sum(last_bin, axis=1)
+    # last_bin = last_bin * rbn / (nbins - (new_nbins - 1) * rbn)
+    # last_bin = last_bin.reshape((nprofs, 1))
+
+    # fully_rebinned[:,:-1] = rebinned
+    # fully_rebinned[:,-1] = last_bin[:,0]
