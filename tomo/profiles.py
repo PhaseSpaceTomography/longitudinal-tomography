@@ -71,13 +71,15 @@ class Profiles:
     def waterfall(self, new_waterfall):
         if not hasattr(new_waterfall, '__iter__'):
             raise InputError('waterfall should be an iterable.')
+        log.info('Loading waterfall...')
         self._waterfall = new_waterfall.clip(0.0)
         self.profile_charge = self.calc_profilecharge(
                                 self._waterfall[self.machine.beam_ref_frame])
         self._waterfall = (self._waterfall
                             / np.vstack(np.sum(self._waterfall, axis=1)))
-        log.info(f'Waterfall loaded. profile charge: '
-                 f'{self.profile_charge:.3E}')
+        self.machine.nbins = self._waterfall.shape[1]
+        log.info(f'Waterfall loaded. (profile charge: '
+                 f'{self.profile_charge:.3E}, nbins: {self.machine.nbins})')
 
     
     # ============== END NEW ===============
@@ -88,8 +90,8 @@ class Profiles:
         
         # Converting from raw data to profiles.
         # Result is saved in self.profiles
-        # (self.profiles,
-        #  self.profile_charge) = self.create_profiles(raw_data)
+        (self.profiles,
+         self.profile_charge) = self.create_profiles(raw_data)
 
         if self.machine.xat0 < 0:
             (self.fitted_xat0,
