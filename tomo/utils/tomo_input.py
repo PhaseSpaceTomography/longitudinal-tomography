@@ -188,11 +188,13 @@ def raw_data_to_waterfall(machine, raw_data):
     else:
         waterfall = waterfall[:, machine.preskip_length:]
 
+    return waterfall
+
 
 # Original function for subtracting baseline of raw data input profiles.
 # Finds the baseline from the first 5% (by default)
 #  of the beam reference profile.
-def subtract_baseline_ftn(waterfall, ref_prof, percent=0.05):
+def _calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
     assert_inrange(percent, 'percent', 0.0, 1.0, InputError,
                    'The chosen percent of raw_data '
                    'to create baseline from is not valid')
@@ -200,30 +202,23 @@ def subtract_baseline_ftn(waterfall, ref_prof, percent=0.05):
     nbins = len(waterfall[ref_prof])
     iend = int(percent * nbins) 
 
-    baseline = np.sum(waterfall[raw_data, :iend]) / np.floor(percent * nbins)
+    return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
 
 
-def rebin():
-    to_rebin = np.array([[1, 2, 4, 5, 6, 6],
-                         [1, 3, 4, 7, 6, 8]], dtype=float)
+def rebin(waterfall, rbn):
+    data = np.copy(waterfall)
 
-    print('Original')
-    print(to_rebin)
+    # Check that there is enough data to for the given rebin factor.
 
-    rbn = 2
-
-    if to_rebin.shape[1] % rbn == 0:
-        rebinned = _rebin_even(to_rebin, rbn)
+    if data.shape[1] % rbn == 0:
+        rebinned = _rebin_even(data, rbn)
     else:
-        rebinned = np.zeros((to_rebin.shape[0],
-                             int(to_rebin.shape[1] / rbn) + 1))
-        rebinned[:,:-1] = _rebin_even(to_rebin[:,:-1], rbn)
-        rebinned[:,-1] = _rebin_last(to_rebin, rbn)[:, 0]
+        rebinned = _rebin_odd(data, rbn)
 
-    print(rebinned)
+    return rebinned
 
-
-
+# Rebins an 2d array given a rebin factor (rbn).
+# The given array MUST have a length equal to an even number.
 def _rebin_even(data, rbn):
     if data.shape[1] % rbn != 0:
         raise AssertionError('Length of input data must be an even number.')
@@ -242,6 +237,20 @@ def _rebin_even(data, rbn):
 
     return ans
 
+
+# Rebins an 2d array given a rebin factor (rbn).
+# The given array MUST have vector length equal to an odd number.
+def _rebin_odd(data, rbn):
+    nprofs = data.shape[0]
+    nbins = data.shape[1]
+    ans = np.zeros((nprofs, int(nbins / rbn) + 1))
+    ans[:,:-1] = _rebin_even(data[:,:-1], rbn)
+    ans[:,-1] = _rebin_last(data, rbn)[:, 0]
+    return ans
+
+
+# Rebins last indices of an 2d array given a rebin factor (rbn).
+# Needed for the rebinning of odd arrays.
 def _rebin_last(data, rbn):
     nprofs = data.shape[0]
     nbins = data.shape[1]
@@ -250,37 +259,6 @@ def _rebin_last(data, rbn):
     i0 = (new_nbins - 1) * rbn
     ans = np.copy(data[:,i0:])
     ans = np.sum(ans, axis=1)
-    ans = ans * rbn / (nbins - (new_nbins - 1) * rbn)
+    ans[:] *= rbn / (nbins - (new_nbins - 1) * rbn)
     ans = ans.reshape((nprofs, 1))
     return ans
-
-    # rbn = 2
-    # nprofs = to_rebin.shape[0]
-    # nbins = to_rebin.shape[1]
-    # last_bin = nbins
-
-    # new_nbins = int(nbins / rbn)
-    # if nbins % rbn != 0.0:
-    #     new_nbins += 1
-    #     last_bin = nbins - 1
-
-    # print(new_nbins)
-
-    # fully_rebinned = np.zeros((nprofs, new_nbins))
-    # rebinned = np.copy(to_rebin[:,:last_bin])
-    # all_bins = (new_nbins - 1) * nprofs
-    # rebinned = rebinned.reshape((all_bins, rbn))
-    # rebinned = np.sum(rebinned, axis=1)
-    # rebinned = rebinned.reshape((nprofs, new_nbins - 1))
-
-    # print(rebinned)
-    # sys.exit()
-
-    # # Rebin only the last bin
-    # last_bin = np.copy(to_rebin[:,-1])
-    # last_bin = np.sum(last_bin, axis=1)
-    # last_bin = last_bin * rbn / (nbins - (new_nbins - 1) * rbn)
-    # last_bin = last_bin.reshape((nprofs, 1))
-
-    # fully_rebinned[:,:-1] = rebinned
-    # fully_rebinned[:,-1] = last_bin[:,0]
