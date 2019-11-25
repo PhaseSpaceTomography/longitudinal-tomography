@@ -2,9 +2,9 @@ import numpy as np
 import logging as log
 import os
 import sys
-
 from machine import Machine
 from .exceptions import InputError
+from .assertions import 
 
 # Some constants for the input file containing machine parameters
 PARAMETER_LENGTH = 98
@@ -175,3 +175,64 @@ def input_to_machine(input_array):
     machine.zwall_over_n        = float(input_array[95])
     machine.pickup_sensitivity  = float(input_array[97])
     return machine
+
+# Convert from one-dimentional list of raw data to waterfall.
+# Works on a copy of the raw data
+def raw_data_to_waterfall(machine, raw_data):
+    waterfall = np.copy(raw_data)
+    waterfall = raw_data.reshape((machine.nprofiles, machine.framelength))
+
+    if machine.postskip_length > 0:
+        waterfall = waterfall[:, machine.preskip_length:
+                                -machine.postskip_length]
+    else:
+        waterfall = waterfall[:, machine.preskip_length:]
+
+
+# Original function for subtracting baseline of raw data input profiles.
+# Finds the baseline from the first 5% (by default)
+#  of the beam reference profile.
+def subtract_baseline_ftn(waterfall, ref_prof, percent=0.05):
+    assert_inrange(percent, 'percent', 0.0, 1.0, InputError,
+                   'The chosen percent of raw_data '
+                   'to create baseline from is not valid')
+
+    nbins = len(waterfall[ref_prof])
+    iend = int(percent * nbins) 
+
+    baseline = np.sum(waterfall[raw_data, :iend]) / np.floor(percent * nbins)
+
+
+def rebin():
+    to_rebin = np.array([[1, 2, 4, 5, 6, 6, 1],
+                         [1, 3, 4, 7, 6, 8, 1]], dtype=float)
+    
+    rbn = 2
+    nprofs = to_rebin.shape[0]
+    nbins = to_rebin.shape[1]
+
+    new_nbins = int(nbins / rbn)
+    if nbins % rbn != 0.0:
+        new_nbins += 1
+
+    fully_rebinned = np.zeros((nprofs, new_nbins))
+    rebinned = np.copy(to_rebin[:,:-rbn])
+
+    all_bins = new_nbins * nprofs
+    rebinned = rebinned.reshape(all_bins - rbn, rbn)
+    rebinned = np.sum(rebinned, axis=1)
+    rebinned = rebinned.reshape((nprofs, new_nbins - 1))
+
+    # Rebin only the last bin
+    last_bin = np.copy(to_rebin[:,-rbn:])
+    last_bin = np.sum(last_bin, axis=1)
+    last_bin = last_bin * rbn / (nbins - (new_nbins - 1) * rbn)
+    last_bin = last_bin.reshape((nprofs, 1))
+
+    fully_rebinned[:,:-1] = rebinned
+    fully_rebinned[:,-1] = last_bin[:,0]
+
+    print(fully_rebinned)
+    print('rebinned:')
+    
+
