@@ -210,6 +210,18 @@ class Machine:
         self._init_parameters()
         self._assert_parameters()
 
+    # Function for setting the xat0 if a fit has been performed.
+    # Saves parameters gathered from fit, needed by the 'print_plotinfo'
+    #  function.
+    # Fit info should be a tuple of the following format:
+    # (fitted_xat0, lower foot tangent, upper foot tangent)  
+    def load_fitted_xat0_ftn(self, fit_info):
+        logging.info('Saving fitted xat0 to machine object.')
+        self.fitted_xat0 = fit_info[0]
+        self.tangentfoot_low = fit_info[1]
+        self.tangentfoot_up = fit_info[2]
+        self.xat0 = self.fitted_xat0
+
     # Subroutine for setting up parameters based on given input file.
     # Values are calculated immediately after the 'single' cavity of the ring
     def _init_parameters(self):

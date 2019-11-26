@@ -20,7 +20,7 @@ from utils.tomo_output import (show, adjust_outpath,
 # Loading input
 raw_param, raw_data = get_user_input()
 
-# Generating maxhine object
+# Generating machine object
 machine = input_to_machine(raw_param)
 machine.fill()
 
@@ -31,8 +31,9 @@ output_path = adjust_outpath(machine.output_dir)
 profiles = raw_data_to_profiles(raw_data, machine)
 
 # profiles.calc_self_fields()
-# fitted_xat0, up_foot_tan, low_foot_tan = fit_xat0(profiles)
-
+if profiles.machine.xat0 < 0:
+    fit_info = fit_xat0(profiles)
+    machine.load_fitted_xat0_ftn(fit_info)
 
 reconstr_idx = machine.filmstart
 
