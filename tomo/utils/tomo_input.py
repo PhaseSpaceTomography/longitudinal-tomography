@@ -2,9 +2,10 @@ import numpy as np
 import os
 import sys
 from profiles import Profiles
-from data_threatment import raw_data_to_waterfall, calc_baseline_ftn, rebin
+from machine import Machine
+from data_treatment import raw_data_to_waterfall, calc_baseline_ftn, rebin
 from .exceptions import InputError
-
+from .assertions import assert_inrange
 # Some constants for the input file containing machine parameters
 PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12

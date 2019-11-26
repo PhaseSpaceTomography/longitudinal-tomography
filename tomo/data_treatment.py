@@ -1,4 +1,6 @@
 import numpy as np
+from utils.assertions import assert_inrange
+from utils.exceptions import InputError
 
 # Convert from one-dimentional list of raw data to waterfall.
 # Works on a copy of the raw data
