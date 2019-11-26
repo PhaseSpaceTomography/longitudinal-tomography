@@ -179,8 +179,8 @@ def input_to_machine(input_array):
 def raw_data_to_profiles(raw_data, machine):
     # <Insert some assertions here>
     waterfall = raw_data_to_waterfall(machine, raw_data)
-    waterfall[:] -= calc_baseline_ftn(waterfall, 0)
-    waterfall = rebin(waterfall, 4)
+    waterfall[:] -= calc_baseline_ftn(waterfall, machine.beam_ref_frame)
+    waterfall = rebin(waterfall, machine.rebin)
 
     # Change: should be able to take waterfall as kwarg.
     prof = Profiles(machine, waterfall)
