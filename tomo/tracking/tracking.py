@@ -18,7 +18,7 @@ class Tracking(ParticleTracker):
     # Initial coordinates must be given as phase-space coordinates.
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as difference in time (dt)
-    def track(self, initial_coordinates=None, rec_prof=0, profiles=None):
+    def track(self, initial_coordinates=None, rec_prof=0):
 
         if initial_coordinates is None:
             log.info('Creating homogeneous distribution of particles.')
@@ -38,15 +38,15 @@ class Tracking(ParticleTracker):
         rfv2 = self.machine.vrf2_at_turn * self.machine.q 
 
         # Tracking particles
-        if profiles is not None:
+        if self._self_field_flag:
             log.info('Tracking particles... (Self-fields enabled)')
             xp, yp = self.kick_and_drift_self(denergy, dphi, rfv1,
-                                              rfv2, rec_prof, profiles)
+                                              rfv2, rec_prof)
         else:
             log.info('Tracking particles... (Self-fields disabled)')
-            xp, yp = self.kick_and_drift(denergy, dphi,
-                                         rfv1, rfv2, rec_prof)
+            xp, yp = self.kick_and_drift(denergy, dphi, rfv1, rfv2, rec_prof)
             xp, yp = self.particles.physical_to_coords(xp, yp)
+        
         log.info('Tracking completed!')
 
         xp, yp, lost = self.particles.filter_lost_paricles(xp, yp)
@@ -116,7 +116,7 @@ class Tracking(ParticleTracker):
         return out_dphi, out_denergy
 
     def kick_and_drift_self(self, denergy, dphi, rf1v, rf2v,
-                            rec_prof, profiles):
+                            rec_prof):
         nparts = len(denergy)
 
         # Creating arrays for all tracked particles
@@ -135,7 +135,7 @@ class Tracking(ParticleTracker):
                             dphi, self.machine.phi0[rec_turn],
                             self.machine.xorigin,self.machine.h_num,
                             self.machine.omega_rev0[rec_turn],
-                            self.machine.dtbin, profiles.phiwrap)
+                            self.machine.dtbin, self._phiwrap)
 
         yp[rec_prof] = denergy / self.particles.dEbin + self.machine.yat0
 
@@ -151,8 +151,8 @@ class Tracking(ParticleTracker):
                                        self.machine.h_num,
                                        self.machine.omega_rev0[turn],
                                        self.machine.dtbin,
-                                       profiles.phiwrap)
-            selfvolt = profiles.vself[iprof, temp_xp.astype(int) - 1]
+                                       self._phiwrap)
+            selfvolt = self._vself[iprof, temp_xp.astype(int) - 1]
 
             denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
                            nparts, turn)
@@ -173,7 +173,7 @@ class Tracking(ParticleTracker):
         temp_xp = xp[rec_prof]
 
         while turn > 0:
-            selfvolt = profiles.vself[iprof, temp_xp.astype(int)]
+            selfvolt = self._vself[iprof, temp_xp.astype(int)]
 
             denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
                            nparts, turn, up=False)
@@ -188,7 +188,7 @@ class Tracking(ParticleTracker):
             temp_xp = self._calc_xp_sf(
                         dphi, self.machine.phi0[turn], self.machine.xorigin,
                         self.machine.h_num, self.machine.omega_rev0[turn],
-                        self.machine.dtbin, profiles.phiwrap)
+                        self.machine.dtbin, self._phiwrap)
 
             if turn % self.machine.dturns == 0:
                 print(iprof)
@@ -196,8 +196,6 @@ class Tracking(ParticleTracker):
                 yp[iprof] = (denergy / self.particles.dEbin
                                + self.machine.yat0)
                 iprof -= 1
-
-
 
         return xp, yp
 

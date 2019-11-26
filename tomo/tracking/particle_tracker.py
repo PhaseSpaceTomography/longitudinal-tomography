@@ -23,6 +23,7 @@ class ParticleTracker:
 
         self.nturns = machine.dturns * (machine.nprofiles - 1)
         self._ftn_flag = False
+        self._self_field_flag = False
 
     # Checks that the given machine object includes the nesscessary
     # variables to perform the tracking.
@@ -40,3 +41,13 @@ class ParticleTracker:
         self._ftn_flag = True
         log.info('Fortran style output for particle tracking enabled!')
         print(write_plotinfo_ftn(self.particles._psinfo, profile_charge))
+
+    def enable_self_fields(self, profiles):
+        # Check that all necessarry variables are present.
+        self._phiwrap = profiles.phiwrap
+        self._vself = profiles.vself
+        self._self_field_flag = True
+        log.info('Tracking using self fields enabled!')
+
+
+

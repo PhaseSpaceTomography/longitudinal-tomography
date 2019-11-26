@@ -30,7 +30,8 @@ output_path = adjust_outpath(machine.output_dir)
 # Creating profiles object
 profiles = raw_data_to_profiles(raw_data, machine)
 
-# profiles.calc_self_fields()
+profiles.calc_self_fields()
+
 if profiles.machine.xat0 < 0:
     fit_info = fit_xat0(profiles)
     machine.load_fitted_xat0_ftn(fit_info)
@@ -40,6 +41,8 @@ reconstr_idx = machine.filmstart
 # Tracking...
 tracker = Tracking(machine)
 tracker.enable_fortran_output(profiles.profile_charge)
+tracker.enable_self_fields(profiles)
+
 xp, yp = tracker.track(rec_prof=reconstr_idx)
 
 # Tomography!
