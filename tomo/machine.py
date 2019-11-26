@@ -2,12 +2,9 @@ import logging
 import physics
 import numpy as np
 from scipy import optimize
-from utils.assertions import (assert_greater,
-                              assert_inrange,
-                              assert_greater_or_equal,
-                              assert_less_or_equal,
-                              assert_not_equal,
-                              assert_array_shape_equal)
+from utils.assertions import (assert_machine_input,
+                              assert_parameter_arrays,
+                              assert_greater)
 from utils.exceptions import (InputError,
                               MachineParameterError,
                               SpaceChargeParameterError)
@@ -206,9 +203,9 @@ class Machine:
     #  partly filled based on input from 
     #  e.g. input file. 
     def fill(self):
-        self._assert_input()
+        assert_machine_input(self)
         self._init_parameters()
-        self._assert_parameters()
+        assert_parameter_arrays(self)
 
     # Function for setting the xat0 if a fit has been performed.
     # Saves parameters gathered from fit, needed by the 'print_plotinfo'
@@ -338,7 +335,7 @@ class Machine:
     # Finding min and max index in profiles.
     # The indexes outside of these are treated as 0
     def _find_imin_imax(self):
-        profile_mini = self.imin_skip/self.rebin
+        profile_mini = self.imin_skip / self.rebin
         if (self._nbins - self.imax_skip) % self.rebin == 0:
             profile_maxi = ((self._nbins - self.imax_skip) / self.rebin)
         else:
@@ -365,103 +362,6 @@ class Machine:
         rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn
         rf2v = self.vrf2 + self.vrf2dot * self.time_at_turn
         return rf1v, rf2v
-
-    # Asserting that the input parameters from user are valid
-    def _assert_input(self):
-        # Note that some of the assertions is setting the lower limit as 1.
-        # This is because of calibrating from input files meant for Fortran,
-        #    where arrays by default starts from 1, to the Python version
-        #    with arrays starting from 0.
-
-        # Frame assertions
-        assert_greater(self.framecount, 'frame count', 0, InputError)
-        assert_inrange(self.frame_skipcount, 'frame skip-count',
-                       0, self.framecount, InputError)
-        assert_greater(self.framelength, 'frame length', 0, InputError)
-        assert_inrange(self.preskip_length, 'pre-skip length',
-                       0, self.framelength, InputError)
-        assert_inrange(self.postskip_length, 'post-skip length',
-                       0, self.framelength, InputError)
-
-        # Bin assertions
-        assert_greater(self.dtbin, 'dtbin', 0, InputError,
-                       'NB: dtbin is the difference of time in bin')
-        assert_greater(self.dturns, 'dturns', 0, InputError,
-                       'NB: dturns is the number of machine turns'
-                       'between each measurement')
-        assert_inrange(self.imin_skip, 'imin skip',
-                       0, self.framelength, InputError)
-        assert_inrange(self.imax_skip, 'imax skip',
-                       0, self.framelength, InputError)
-        assert_greater_or_equal(self.rebin, 're-binning factor',
-                                1, InputError)
-
-        # Assertions: profile to be reconstructed
-        assert_greater_or_equal(self.filmstart, 'film start', 0, InputError)
-        assert_greater_or_equal(self.filmstop, 'film stop',
-                                self.filmstart, InputError)
-        assert_less_or_equal(abs(self.filmstep), 'film step',
-                             abs(self.filmstop - self.filmstart + 1),
-                             InputError)
-        assert_not_equal(self.filmstep, 'film step', 0, InputError)
-
-        # Reconstruction parameter assertions
-        assert_greater(self.niter, 'niter', 0, InputError,
-                       'NB: niter is the number of iterations of the '
-                       'reconstruction process')
-        assert_greater(self.snpt, 'snpt', 0, InputError,
-                       'NB: snpt is the square root '
-                       'of #tracked particles.')
-
-        # Reference frame assertions
-        assert_greater_or_equal(self.machine_ref_frame,
-                                'machine ref. frame',
-                                0, InputError)
-        assert_greater_or_equal(self.beam_ref_frame, 'beam ref. frame',
-                                0, InputError)
-
-        # Machine parameter assertion
-        assert_greater_or_equal(self.h_num, 'harmonic number',
-                                1, MachineParameterError)
-        assert_greater_or_equal(self.h_ratio, 'harmonic ratio',
-                                1, MachineParameterError)
-        assert_greater(self.b0, 'B field (B0)',
-                       0, MachineParameterError)
-        assert_greater(self.mean_orbit_rad, "mean orbit radius",
-                       0, MachineParameterError)
-        assert_greater(self.bending_rad, "Bending radius",
-                       0, MachineParameterError)
-        assert_greater(self.e_rest, 'rest energy',
-                       0, MachineParameterError)
-
-        # Space charge parameter assertion
-        assert_greater_or_equal(self.pickup_sensitivity,
-                                'pick-up sensitivity',
-                                0, SpaceChargeParameterError)
-        assert_greater_or_equal(self.g_coupling, 'g_coupling',
-                                0, SpaceChargeParameterError,
-                                'NB: g_coupling:'
-                                'geometrical coupling coefficient')
-
-    # Asserting that some of the parameters calculated are valid
-    def _assert_parameters(self):
-        # Calculated parameters
-        assert_greater_or_equal(self._nbins, 'profile length', 0,
-                                InputError,
-                                f'Make sure that the sum of post- and'
-                                f'pre-skip length is less'
-                                f'than the frame length\n'
-                                f'frame length: {self.framelength}\n'
-                                f'pre-skip length: {self.preskip_length}\n'
-                                f'post-skip length: {self.postskip_length}')
-
-        assert_array_shape_equal([self.time_at_turn, self.omega_rev0,
-                                  self.phi0, self.dphase, self.deltaE0,
-                                  self.beta0, self.eta0, self.e0],
-                                 ['time_at_turn', 'omega_re0',
-                                  'phi0', 'dphase', 'deltaE0',
-                                  'beta0', 'eta0', 'e0'],
-                                 (self._calc_number_of_turns() + 1, ))
 
     # Calculating total number of machine turns
     def _calc_number_of_turns(self):
