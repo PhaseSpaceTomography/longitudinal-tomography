@@ -25,7 +25,7 @@ def fit_xat0(profiles):
                       * profiles.machine.omega_rev0[ref_turn]
                       * profiles.machine.dtbin))
 
-    return fitted_xat0, tfoot_low, tfoot_up
+    return (fitted_xat0, tfoot_low, tfoot_up)
 
 
 # Find foot tangents of profile. Needed to estimate bunch duration
