@@ -32,7 +32,7 @@ class ParticleTracker:
                              'phi12', 'h_ratio', 'deltaE0']
         assert_machine(machine, needed_parameters)
 
-    def show_fortran_output(self, profile_charge):
+    def enable_fortran_output(self, profile_charge):
         self._ftn_flag = True
         log.info('Fortran style output for particle tracking enabled!')
         print(write_plotinfo_ftn(self.particles._psinfo, profile_charge))
