@@ -35,19 +35,18 @@ def rebin(waterfall, rbn):
     data = np.copy(waterfall)
 
     # Check that there is enough data to for the given rebin factor.
-
     if data.shape[1] % rbn == 0:
-        rebinned = _rebin_even(data, rbn)
+        rebinned = _rebin_dividable(data, rbn)
     else:
-        rebinned = _rebin_odd(data, rbn)
+        rebinned = _rebin_individable(data, rbn)
 
     return rebinned
 
 # Rebins an 2d array given a rebin factor (rbn).
 # The given array MUST have a length equal to an even number.
-def _rebin_even(data, rbn):
+def _rebin_dividable(data, rbn):
     if data.shape[1] % rbn != 0:
-        raise AssertionError('Length of input data must be an even number.')
+        raise AssertionError('Input array must be dividable on rebin factor.')
 
     ans = np.copy(data)
     
@@ -66,11 +65,14 @@ def _rebin_even(data, rbn):
 
 # Rebins an 2d array given a rebin factor (rbn).
 # The given array MUST have vector length equal to an odd number.
-def _rebin_odd(data, rbn):
+def _rebin_individable(data, rbn):
     nprofs = data.shape[0]
     nbins = data.shape[1]
+
     ans = np.zeros((nprofs, int(nbins / rbn) + 1))
-    ans[:,:-1] = _rebin_even(data[:,:-1], rbn)
+
+    last_data_idx = int(nbins / rbn) * rbn
+    ans[:,:-1] = _rebin_dividable(data[:,:last_data_idx], rbn)
     ans[:,-1] = _rebin_last(data, rbn)[:, 0]
     return ans
 
@@ -80,11 +82,10 @@ def _rebin_odd(data, rbn):
 def _rebin_last(data, rbn):
     nprofs = data.shape[0]
     nbins = data.shape[1]
-    new_nbins = int(nbins / rbn)
 
-    i0 = (new_nbins - 1) * rbn
+    i0 = (int(nbins / rbn) - 1) * rbn
     ans = np.copy(data[:,i0:])
     ans = np.sum(ans, axis=1)
-    ans[:] *= rbn / (nbins - (new_nbins - 1) * rbn)
+    ans[:] *= rbn / (nbins - i0)
     ans = ans.reshape((nprofs, 1))
     return ans
