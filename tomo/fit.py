@@ -2,7 +2,8 @@ import numpy as np
 from scipy import optimize
 from physics import phase_low, dphase_low 
 
-
+# Original function for finding xat0
+# Finds xat0 based on a linear fit on a refence profile.  
 def fit_xat0(profiles):
     ref_idx = profiles.machine.beam_ref_frame
     ref_prof = profiles.waterfall[ref_idx] 
