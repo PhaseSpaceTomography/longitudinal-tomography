@@ -18,7 +18,7 @@ class Tracking(ParticleTracker):
     # Initial coordinates must be given as phase-space coordinates.
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as difference in time (dt)
-    def track(self, initial_coordinates=None, rec_prof=0):
+    def track(self, initial_coordinates=None, rec_prof=0, profiles=None):
 
         if initial_coordinates is None:
             log.info('Creating homogeneous distribution of particles.')
@@ -38,19 +38,17 @@ class Tracking(ParticleTracker):
         rfv2 = self.machine.vrf2_at_turn * self.machine.q 
 
         # Tracking particles
-        if self.machine.self_field_flag:
-            raise NotImplementedError('kick and drift - '
-                                      'self voltage not implemented (yet)')
+        if profiles is not None:
             log.info('Tracking particles... (Self-fields enabled)')
-            # xp, yp = self.kick_and_drift_self(
-            #         xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
+            xp, yp = self.kick_and_drift_self(denergy, dphi, rfv1,
+                                              rfv2, rec_prof, profiles)
         else:
             log.info('Tracking particles... (Self-fields disabled)')
-            (xp, yp) = self.kick_and_drift(denergy, dphi,
-                                           rfv1, rfv2, rec_prof)
+            xp, yp = self.kick_and_drift(denergy, dphi,
+                                         rfv1, rfv2, rec_prof)
+            xp, yp = self.particles.physical_to_coords(xp, yp)
         log.info('Tracking completed!')
 
-        xp, yp = self.particles.physical_to_coords(xp, yp)
         xp, yp, lost = self.particles.filter_lost_paricles(xp, yp)
         log.info(f'number of lost particles: {lost}')
 
@@ -115,7 +113,98 @@ class Tracking(ParticleTracker):
                 if self._ftn_flag:
                     print_tracking_status_ftn(rec_prof, profile)
 
-        return out_dphi, out_denergy 
+        return out_dphi, out_denergy
+
+    def kick_and_drift_self(self, denergy, dphi, rf1v, rf2v,
+                            rec_prof, profiles):
+        nparts = len(denergy)
+
+        # Creating arrays for all tracked particles
+        xp = np.zeros((self.machine.nprofiles, nparts))
+        yp = np.copy(xp)
+
+        rec_turn = rec_prof * self.machine.dturns
+        turn = rec_turn
+        iprof = rec_prof
+        
+        # To be saved for downwards tracking
+        dphi0 = np.copy(dphi)
+        denergy0 = np.copy(denergy)
+
+        xp[rec_prof] = self._calc_xp_sf(
+                            dphi, self.machine.phi0[rec_turn],
+                            self.machine.xorigin,self.machine.h_num,
+                            self.machine.omega_rev0[rec_turn],
+                            self.machine.dtbin, profiles.phiwrap)
+
+        yp[rec_prof] = denergy / self.particles.dEbin + self.machine.yat0
+
+        print(iprof)
+        while turn < self.nturns:
+            dphi = drift(denergy, dphi, self.machine.dphase,
+                         nparts, turn)      
+
+            turn += 1
+
+            temp_xp = self._calc_xp_sf(dphi, self.machine.phi0[turn],
+                                       self.machine.xorigin,
+                                       self.machine.h_num,
+                                       self.machine.omega_rev0[turn],
+                                       self.machine.dtbin,
+                                       profiles.phiwrap)
+            selfvolt = profiles.vself[iprof, temp_xp.astype(int) - 1]
+
+            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
+                           nparts, turn)
+            denergy += selfvolt * self.machine.q
+
+            if turn % self.machine.dturns == 0:
+                iprof += 1
+                xp[iprof] = temp_xp
+                yp[iprof] = (denergy / self.particles.dEbin
+                               + self.machine.yat0)
+                print(iprof)
+
+
+        dphi = dphi0
+        denergy = denergy0
+        turn = rec_turn
+        iprof = rec_prof - 1
+        temp_xp = xp[rec_prof]
+
+        while turn > 0:
+            selfvolt = profiles.vself[iprof, temp_xp.astype(int)]
+
+            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
+                           nparts, turn, up=False)
+
+            denergy += selfvolt * self.machine.q
+
+            turn -= 1
+
+            dphi = drift(denergy, dphi, self.machine.dphase,
+                         nparts, turn, up=False) 
+
+            temp_xp = self._calc_xp_sf(
+                        dphi, self.machine.phi0[turn], self.machine.xorigin,
+                        self.machine.h_num, self.machine.omega_rev0[turn],
+                        self.machine.dtbin, profiles.phiwrap)
+
+            if turn % self.machine.dturns == 0:
+                print(iprof)
+                xp[iprof] = temp_xp
+                yp[iprof] = (denergy / self.particles.dEbin
+                               + self.machine.yat0)
+                iprof -= 1
+
+
+
+        return xp, yp
+
+
+
+
+
 
 
     # =========================== OLD ROUTINES ===============================
