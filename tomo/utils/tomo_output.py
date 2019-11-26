@@ -72,39 +72,54 @@ def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
 # --------------------------------------------------------------- #
 
 # Returns string containing plot info for tomoscope application
-# psi: phase_space_info object
-# prf: profiles object
 # '+ 1': Converting from Python to Fortran indexing
-def write_plotinfo_ftn(psi, prf):
-    rec_prof = psi.machine.filmstart
-    rec_turn = rec_prof * psi.machine.dturns
+def write_plotinfo_ftn(ps_info, profile_charge):
+    rec_prof = ps_info.machine.filmstart
+    rec_turn = rec_prof * ps_info.machine.dturns
+
+    # Check if a Fortran styled fit has been performed.
+    fit_performed = True
+    fit_info_vars = ['fitted_xat0', 'tangentfoot_low', 'tangentfoot_up']
+    for var in fit_info_vars:
+        if not hasattr(ps_info.machine, var):
+            fit_performed = False
+            break
+    if fit_performed:
+        tangentfoot_low = ps_info.machine.tangentfoot_low
+        tangentfoot_up = ps_info.machine.tangentfoot_up
+        fitted_xat0 = ps_info.machine.fitted_xat0
+    else:
+        tangentfoot_low = 0.0
+        tangentfoot_up = 0.0
+        fitted_xat0 = 0.0
+
     out_s = f' plotinfo.data\n'\
             f'Number of profiles used in each reconstruction,\n'\
-              f' profilecount = {psi.machine.nprofiles}\n'\
+              f' profilecount = {ps_info.machine.nprofiles}\n'\
             f'Width (in pixels) of each image = '\
               f'length (in bins) of each profile,\n'\
-            f' profilelength = {psi.machine.nbins}\n'\
+            f' profilelength = {ps_info.machine.nbins}\n'\
             f'Width (in s) of each pixel = width of each profile bin,\n'\
-            f' dtbin = {psi.machine.dtbin:0.4E}\n'\
+            f' dtbin = {ps_info.machine.dtbin:0.4E}\n'\
             f'Height (in eV) of each pixel,\n'\
-            f' dEbin = {psi.dEbin:0.4E}\n'\
+            f' dEbin = {ps_info.dEbin:0.4E}\n'\
             f'Number of elementary charges in each image,\n'\
               f' eperimage = '\
-              f'{prf.profile_charge:0.3E}\n'\
+              f'{profile_charge:0.3E}\n'\
             f'Position (in pixels) of the reference synchronous point:\n'\
-            f' xat0 =  {psi.machine.xat0:.3f}\n'\
-            f' yat0 =  {psi.machine.yat0:.3f}\n'\
+            f' xat0 =  {ps_info.machine.xat0:.3f}\n'\
+            f' yat0 =  {ps_info.machine.yat0:.3f}\n'\
             f'Foot tangent fit results (in bins):\n'\
-            f' tangentfootl =    {prf.tangentfoot_low:.3f}\n'\
-            f' tangentfootu =    {prf.tangentfoot_up:.3f}\n'\
-            f' fit xat0 =   {prf.fitted_xat0:.3f}\n'\
+            f' tangentfootl =    {tangentfoot_low:.3f}\n'\
+            f' tangentfootu =    {tangentfoot_up:.3f}\n'\
+            f' fit xat0 =   {fitted_xat0:.3f}\n'\
             f'Synchronous phase (in radians):\n'\
-            f' phi0( {rec_prof+1}) = {psi.machine.phi0[rec_turn]:.4f}\n'\
+            f' phi0( {rec_prof+1}) = {ps_info.machine.phi0[rec_turn]:.4f}\n'\
             f'Horizontal range (in pixels) of the region in '\
               f'phase space of map elements:\n'\
-            f' imin( {rec_prof+1}) =   {psi.imin} and '\
-              f'imax( {rec_prof+1}) =  {psi.imax}'
-    return(out_s)
+            f' imin( {rec_prof+1}) =   {ps_info.imin} and '\
+            f'imax( {rec_prof+1}) =  {ps_info.imax}'
+    return out_s
 
 # --------------------------------------------------------------- #
 #                         DISCREPANCY                             #
