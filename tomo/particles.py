@@ -1,7 +1,5 @@
 import numpy as np
-from numba import njit          # Needed for fortran style init. To be removed.
 from phase_space_info import PhaseSpaceInfo
-from machine import Machine 
 from utils.assertions import assert_machine
 
 # This class sets up the inital particle distribution of the test particles.
@@ -45,15 +43,13 @@ class Particles(object):
     # fractions of bins. 
     def __init__(self, machine):
         self._machine = machine
-        self._psinfo = PhaseSpaceInfo(self._machine) # To be renamed?
+        self._psinfo = PhaseSpaceInfo(self._machine)
         self._psinfo.find_ijlimits()
         self.dEbin = self._psinfo.dEbin
 
         self.x_coords = None
         self.y_coords = None
 
-    # Use the ff-flag for giving a Fortran style output needed for the
-    # tomoscope application.
     # The function wil create a homogeneous distribution of particles within
     # an area defined by the user. The area is given by the i and jlimits
     # found in the _psinfo object. Depending on the 'full_pp_flag' set in
@@ -63,10 +59,7 @@ class Particles(object):
     # version.
     # The particles coordinates will be saved as fractions of bins in
     # the x (phase) and y (energy) axis.
-    def homogeneous_distribution(self, ff=False):
-        if ff:
-            self._psinfo.print_plotinfo_ccc(self._machine)
-
+    def homogeneous_distribution(self):
         nbins_y = np.sum(self._psinfo.jmax[self._psinfo.imin:
                                             self._psinfo.imax + 1]
                         - self._psinfo.jmin[self._psinfo.imin:
@@ -149,7 +142,6 @@ class Particles(object):
 
         yp[profiles] = (tracked_denergy[profiles] / float(self._psinfo.dEbin)
                         + self._machine.yat0)
-
         return xp, yp
 
 
@@ -176,77 +168,3 @@ class Particles(object):
                              'omga_rev0', 'dtbin', 'phi0',
                              'yat0', 'dturns', 'nbins']
         assert_machine(machine, needed_parameters)
-
-
-    # =========================== OLD ROUTINES ===============================
-    # ------------------ Fortran style particle initialization ---------------
-    # To be deleted in future.
-    # Much slower and particles are araanged in a different way.
-    # ------------------------------------------------------------------------
-    def fortran_homogeneous_distribution(self, machine):
-        self._psinfo = MapInfo(machine)
-        self._psinfo.find_ijlimits()
-        self.dEbin = self._psinfo.dEbin
-        
-        points = self._populate_bins(machine.snpt)
-        nparts = self._find_nr_of_particles(machine.snpt)
-        
-        xp = np.zeros(nparts)
-        yp = np.copy(xp)
-
-        # Creating the first profile with equally distributed points
-        (xp,
-         yp) = self._init_tracked_point(
-                        machine.snpt, self._psinfo.imin,
-                        self._psinfo.imax, self._psinfo.jmin,
-                        self._psinfo.jmax, xp,
-                        yp, points[0], points[1])
-
-        self.x_coords = xp
-        self.y_coords = yp
-
-    def _populate_bins(self, snpt):
-        xCoords = ((2.0 * np.arange(1, snpt + 1) - 1)
-                   / (2.0 * snpt))
-        yCoords = xCoords
-
-        xCoords = xCoords.repeat(snpt, 0).reshape((snpt, snpt))
-        yCoords = np.repeat([yCoords], snpt, 0)
-        return [xCoords, yCoords]
-
-    def _find_nr_of_particles(self, snpt):
-        jdiff = (self._psinfo.jmax
-                 - self._psinfo.jmin)
-
-        pxls = np.sum(jdiff[self._psinfo.imin
-                            :self._psinfo.imax + 1])
-        return int(pxls * snpt**2)
-
-    @staticmethod
-    @njit
-    def _init_tracked_point(snpt, imin, imax,
-                            jmin, jmax, xp, yp,
-                            xpoints, ypoints):
-        k = 0
-        for iLim in range(imin, imax + 1):
-            for jLim in range(jmin[iLim], jmax[iLim]):
-                for i in range(snpt):
-                    for j in range(snpt):
-                        xp[k] = iLim + xpoints[i, j]
-                        yp[k] = jLim + ypoints[i, j]
-                        k += 1
-        return xp, yp
-
-    # ---------------- End Fortran style particle initialization -----------------
-
-    # The function which was called for each profile measurement turn in
-    #  the old particle tracking. Kept for reference.
-    def fortran_physical_to_coords(self):
-        raise NotImplementedError('Not implemented, only kept for reference')
-        xp[profiles] = ((dphi + timespace.machine.phi0[turn])
-                       / (float(timespace.machine.h_num)
-                       * timespace.machine.omega_rev0[turn]
-                       * timespace.machine.dtbin)
-                       - timespace.machine.xorigin)
-        yp[profiles] = denergy / float(dEbin) + timespace.machine.yat0
-    # ======================== END OLD ROUTINES ============================
