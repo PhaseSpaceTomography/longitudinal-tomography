@@ -5,13 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Tomo modules
-from machine import Machine
-from profiles import Profiles
-from particles import Particles
 from tracking.tracking import Tracking
 from tomography.tomography_cpp import TomographyCpp
-import utils.tomo_input as tin
-from utils.tomo_input import get_user_input, input_to_machine
+from fit import fit_xat0
+from utils.tomo_input import (get_user_input, input_to_machine,
+                              raw_data_to_profiles)
 from utils.tomo_output import (show, adjust_outpath,
                                create_phase_space_image)
 
@@ -22,31 +20,32 @@ from utils.tomo_output import (show, adjust_outpath,
 # Loading input
 raw_param, raw_data = get_user_input()
 
+# Generating maxhine object
 machine = input_to_machine(raw_param)
 machine.fill()
 
+# Stancardizing output path format
 output_path = adjust_outpath(machine.output_dir)
 
-# Setting up profiles object
-profiles = Profiles(machine)
-profiles.create(raw_data)
+# Creating profiles object
+profiles = raw_data_to_profiles(raw_data, machine)
 
-# ------------------------------------------------------------------------------
-# EXAMPLE, use of particles object - automatic distribution
-# ------------------------------------------------------------------------------
+# profiles.calc_self_fields()
+# fitted_xat0, up_foot_tan, low_foot_tan = fit_xat0(profiles)
+
 
 reconstr_idx = machine.filmstart
+
+# Tracking...
 tracker = Tracking(machine)
-tracker.show_fortran_output(profiles)
+# tracker.show_fortran_output(profiles)         <- Not working (show plotinfo)
 xp, yp = tracker.track(rec_prof=reconstr_idx)
 
 # Tomography!
-tomo = TomographyCpp(profiles.profiles, xp)
+tomo = TomographyCpp(profiles.waterfall, xp)
 weight = tomo.run()
 
-# Creating image
+# Creating and presenting phase-space image
 nbins = profiles.machine.nbins
-image = create_phase_space_image(xp, yp, weight, nbins,
-                                 rec_prof=reconstr_idx)
-
-show(image, tomo.diff, profiles.profiles[reconstr_idx])
+image = create_phase_space_image(xp, yp, weight, nbins, reconstr_idx)
+show(image, tomo.diff, profiles.waterfall[reconstr_idx])
