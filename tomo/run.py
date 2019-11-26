@@ -38,7 +38,7 @@ reconstr_idx = machine.filmstart
 
 # Tracking...
 tracker = Tracking(machine)
-# tracker.show_fortran_output(profiles)         <- Not working (show plotinfo)
+tracker.enable_fortran_output(profiles.profile_charge)
 xp, yp = tracker.track(rec_prof=reconstr_idx)
 
 # Tomography!
