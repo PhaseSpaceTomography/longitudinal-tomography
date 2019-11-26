@@ -1,5 +1,5 @@
 import numpy as np
-from scipy import signal, optimize
+from scipy import optimize
 from physics import phase_low, dphase_low 
 
 
