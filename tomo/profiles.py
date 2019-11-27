@@ -72,6 +72,9 @@ class Profiles:
                 / (self.machine.rebin * e_UNIT
                    * self.machine.pickup_sensitivity))
 
+    # Calculate self-fields based on filtered profiles.
+    # If filtered profiles are not provided by the user,
+    # standard filter (savitzky-golay smoothing filter) is used.
     def calc_self_fields(self, filtered_profiles=None):
         if filtered_profiles is None:
             self.dsprofiles = signal.savgol_filter(
@@ -83,13 +86,13 @@ class Profiles:
             self.dsprofiles = filtered_profiles
 
         (self.phiwrap,
-         self.wrap_length) = self.find_wrap_length()
+         self.wrap_length) = self._find_wrap_length()
 
         self.vself = self._calculate_self()
 
     # Calculate the number of bins in the first
     # integer number of rf periods, larger than the image width.
-    def find_wrap_length(self):
+    def _find_wrap_length(self):
         if self.machine.bdot > 0.0:
             last_turn_index = ((self.machine.nprofiles - 1)
                                * self.machine.dturns - 1)
@@ -110,7 +113,7 @@ class Profiles:
                  f'wrap length =  {str(wrap_length)}')
         return phiwrap, wrap_length
 
-    # Calculate self-field voltage (if self_field_flag is True)
+    # Calculate self-field voltages
     def _calculate_self(self):
         sfc = calc_self_field_coeffs(self.machine)
         vself = np.zeros((self.machine.nprofiles - 1,
