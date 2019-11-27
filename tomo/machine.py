@@ -222,7 +222,8 @@ class Machine:
     # Subroutine for setting up parameters based on given input file.
     # Values are calculated immediately after the 'single' cavity of the ring
     def _init_parameters(self):
-        self._calc_parameter_arrays()
+        # Fills up arrays with values for each turn.
+        self._turn_values()
 
         # Changes due to re-bin factor > 1
         self.dtbin = self.dtbin * self.rebin
@@ -235,10 +236,10 @@ class Machine:
         self.profile_mini, self.profile_maxi = self._find_imin_imax()
 
         # calculating total number of data points in the input file
-        self.all_data = self.framecount * self.framelength
+        # self.all_data = self.framecount * self.framelength
 
         # Find self field coefficient for each profile
-        self.sfc = physics.calc_self_field_coeffs(self)
+        # self.sfc = physics.calc_self_field_coeffs(self)
 
     # Initiating arrays in order to store information about parameters
     # that has a different value every turn.
@@ -271,7 +272,7 @@ class Machine:
     # First is the arrays inited at index of machine ref. frame (i0).
     # Based on this value are the rest of the values calculated;
     # first, upwards from i0 to total number of turns + 1, then downwards from i0 to 0 (first turn).
-    def _calc_parameter_arrays(self):
+    def _turn_values(self):
         all_turns = self._calc_number_of_turns()
         self._init_arrays(all_turns)
         i0 = self._array_initial_values()

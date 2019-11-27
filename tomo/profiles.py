@@ -1,7 +1,7 @@
 import logging as log
 import numpy as np
 from scipy import signal
-from physics import e_UNIT
+from physics import e_UNIT, calc_self_field_coeffs
 from utils.assertions import assert_equal, assert_inrange, assert_greater
 from utils.exceptions import (RawDataImportError, InputError,
                                RebinningError)
@@ -112,15 +112,16 @@ class Profiles:
 
     # Calculate self-field voltage (if self_field_flag is True)
     def _calculate_self(self):
+        sfc = calc_self_field_coeffs(self.machine)
         vself = np.zeros((self.machine.nprofiles - 1,
                           self.wrap_length + 1),
                          dtype=float)
         for i in range(self.machine.nprofiles - 1):
             vself[i, :self.machine.nbins] = (0.5 * self.profile_charge
-                                             * (self.machine.sfc[i]
+                                             * (sfc[i]
                                              * self.dsprofiles[
                                                 i,:self.machine.nbins]
-                                             + self.machine.sfc[i + 1]
+                                             + sfc[i + 1]
                                              * self.dsprofiles[
                                                 i + 1, :self.machine.nbins]))
         return vself
