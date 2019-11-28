@@ -1,6 +1,6 @@
 import numpy as np
 import logging as log
-from machine import Machine
+from new_machine import Machine
 from particles import Particles
 from utils.assertions import assert_machine, assert_greater_or_equal
 from utils.exceptions import MachineParameterError

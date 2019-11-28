@@ -107,20 +107,20 @@ class Machine:
         # ========================
         self._xat0 = None
 
-        self.rebin = None
-        self.rawdata_file = None
+        # self.rebin = None
+        # self.rawdata_file = None
         self.output_dir = None
-        self.framecount = None
-        self.framelength = None
-        self.dtbin = None
+        # self.framecount = None
+        # self.framelength = None
+        self._dtbin = None
         self.demax = None
         self.dturns = None
-        self.preskip_length = None
-        self.postskip_length = None
+        # self.preskip_length = None
+        # self.postskip_length = None
 
-        self.imin_skip = None
-        self.imax_skip = None
-        self.frame_skipcount = None
+        # self.imin_skip = None
+        # self.imax_skip = None
+        # self.frame_skipcount = None
         self.snpt = None
         self.niter = None
         self.machine_ref_frame = None
@@ -151,6 +151,11 @@ class Machine:
         self.g_coupling = None
         self.zwall_over_n = None
         self.pickup_sensitivity = None
+
+        # New
+        # To substitute for self.profile_maxi and self.profile_mini 
+        self.max_dt = None              # If imin and max_skip is given
+        self.min_dt = None              # as phase, these can be give here one time.
 
         # calculated parameters:
         # ======================
@@ -195,9 +200,21 @@ class Machine:
         self._nbins = in_nbins
         self._find_yat0()
         logging.info(f'yat0 was updated when the '
-                     f'number of profile bins changed.\n'
-                     f'New value for yat0: {self.yat0}')
+                     f'number of profile bins changed.\nNew values - '
+                     f'nbins: {self.nbins}, yat0: {self.yat0}')
 
+    @property
+    def dtbin(self):
+        return self._dtbin
+
+    @dtbin.setter
+    def dtbin(self, value):
+        self._dtbin = value
+        self._calc_xorigin()
+        logging.info(f'xorigin was updated when '\
+                     f'the value of dtbin was changed.\nNew values - '
+                     f'dtbin: {self.dtbin}, xorigin: {self.xorigin}')
+    
     # Fills up parameters object complete based
     #  on partly filled object.
     #  partly filled based on input from 
@@ -226,14 +243,23 @@ class Machine:
         self._turn_values()
 
         # Changes due to re-bin factor > 1
-        self.dtbin = self.dtbin * self.rebin
-        self.xat0 = self.xat0 / float(self.rebin)
+        # self.dtbin = self.dtbin * self.rebin
+        # self.xat0 = self.xat0 / float(self.rebin)
 
-        self.nprofiles = self.framecount - self.frame_skipcount
-        self.nbins = (self.framelength - self.preskip_length
-                      - self.postskip_length)
+        # All of these can be moved out! (I think)...
+        # self.nprofiles = self.framecount - self.frame_skipcount
+        # self.nbins = (self.framelength - self.preskip_length
+        #               - self.postskip_length)
+        # ...
 
-        self.profile_mini, self.profile_maxi = self._find_imin_imax()
+        # To be removed..
+        # self.profile_mini, self.profile_maxi = self._find_imin_imax()
+        # ...
+
+        # Then these ones can also be calculated outside.
+        # Gives max reconstuction area in phase, not bin.
+        # self.find_min_max_dt()
+        # In this case, the parameters to be stored are fewer.
 
         # calculating total number of data points in the input file
         # self.all_data = self.framecount * self.framelength
@@ -335,13 +361,17 @@ class Machine:
 
     # Finding min and max index in profiles.
     # The indexes outside of these are treated as 0
-    def _find_imin_imax(self):
-        profile_mini = self.imin_skip / self.rebin
-        if (self._nbins - self.imax_skip) % self.rebin == 0:
-            profile_maxi = ((self._nbins - self.imax_skip) / self.rebin)
-        else:
-            profile_maxi = ((self._nbins - self.imax_skip) / self.rebin + 1)
-        return int(profile_mini), int(profile_maxi)
+    # def _find_imin_imax(self):
+    #     profile_mini = self.imin_skip / self.rebin
+    #     if (self._nbins - self.imax_skip) % self.rebin == 0:
+    #         profile_maxi = ((self._nbins - self.imax_skip) / self.rebin)
+    #     else:
+    #         profile_maxi = ((self._nbins - self.imax_skip) / self.rebin + 1)
+    #     return int(profile_mini), int(profile_maxi)
+
+    def find_min_max_dt(self):
+        self.min_dt = self.imin_skip * self.dtbin
+        self.max_dt = (self.nbins - self.imax_skip) * self.dtbin
 
     # Calculate the absolute difference (in bins) between phase=0 and
     # origin of the reconstructed phase space coordinate system.

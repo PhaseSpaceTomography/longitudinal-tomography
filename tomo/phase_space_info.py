@@ -68,7 +68,6 @@ class PhaseSpaceInfo:
 
     def __init__(self, machine):
         self.machine = machine
-
         self.jmin = []
         self.jmax = []
         self.imin = -1
@@ -91,14 +90,12 @@ class PhaseSpaceInfo:
         assert_greater(self.dEbin, 'dEbin', 0.0, EnergyBinningError)
 
         # Is this still a valid choise with the new method?
-        if self.machine.full_pp_flag == 1:
-            (jmin,
-             jmax,
+        if self.machine.full_pp_flag == True:
+            (jmin,jmax,
              allbin_min,
              allbin_max) = self._limits_track_all_pxl()
         else:
-            (jmin,
-             jmax,
+            (jmin, jmax,
              allbin_min,
              allbin_max) = self._limits_track_active_pxl(self.dEbin)
         
@@ -246,18 +243,21 @@ class PhaseSpaceInfo:
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates limits in i axis.
     def _adjust_limits(self, jmax, jmin, allbin_min, allbin_max):
-        if (self.machine.profile_mini > allbin_min
-                                        or self.machine.full_pp_flag):
-            imin = self.machine.profile_mini
-            jmax[:self.machine.profile_mini] = np.floor(self.machine.yat0)
+
+        # Maximum and minimum bin, as spescified by user.
+        max_dtbin = int(np.ceil(self.machine.max_dt / self.machine.dtbin))
+        min_dtbin = int(self.machine.min_dt / self.machine.dtbin)
+
+        if (min_dtbin > allbin_min or self.machine.full_pp_flag):
+            imin = min_dtbin
+            jmax[:min_dtbin] = np.floor(self.machine.yat0)
             jmin = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
         else:
             imin = allbin_min
 
-        if self.machine.profile_maxi < allbin_max or self.machine.full_pp_flag:
-            imax = self.machine.profile_maxi - 1 # -1 in order to count from idx 0
-            jmax[self.machine.profile_maxi
-                 :self.machine.nbins] = np.floor(self.machine.yat0)
+        if max_dtbin < allbin_max or self.machine.full_pp_flag:
+            imax = max_dtbin - 1 # -1 in order to count from idx 0
+            jmax[max_dtbin: self.machine.nbins] = np.floor(self.machine.yat0)
             jmin = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
         else:
             imax = allbin_max

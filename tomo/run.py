@@ -8,7 +8,7 @@ import numpy as np
 from tracking.tracking import Tracking
 from tomography.tomography_cpp import TomographyCpp
 from fit import fit_xat0
-from utils.tomo_input import (get_user_input, input_to_machine,
+from utils.tomo_input import (get_user_input, txt_input_to_machine,
                               raw_data_to_profiles)
 from utils.tomo_output import (show, adjust_outpath,
                                create_phase_space_image)
@@ -21,16 +21,14 @@ from utils.tomo_output import (show, adjust_outpath,
 raw_param, raw_data = get_user_input()
 
 # Generating machine object
-machine = input_to_machine(raw_param)
-machine.fill()
-
-# Stancardizing output path format
-output_path = adjust_outpath(machine.output_dir)
+machine, frames = txt_input_to_machine(raw_param)  # <- fortran style read
+machine.values_at_turns()
+frames.raw_data = raw_data
 
 # Creating profiles object
-profiles = raw_data_to_profiles(raw_data, machine)
-
-profiles.calc_self_fields()
+profiles = raw_data_to_profiles(frames.to_waterfall(), machine,
+                                frames.rebin, frames.sampling_time)
+# profiles.calc_self_fields()
 
 if profiles.machine.xat0 < 0:
     fit_info = fit_xat0(profiles)
@@ -41,7 +39,7 @@ reconstr_idx = machine.filmstart
 # Tracking...
 tracker = Tracking(machine)
 tracker.enable_fortran_output(profiles.profile_charge)
-tracker.enable_self_fields(profiles)
+# tracker.enable_self_fields(profiles)
 
 xp, yp = tracker.track(rec_prof=reconstr_idx)
 

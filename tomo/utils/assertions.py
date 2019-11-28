@@ -4,8 +4,7 @@ from .exceptions import (MachineParameterError,
                          InvalidParticleError,
                          MachineParameterError,
                          InputError,
-                         SpaceChargeParameterError,
-                         )
+                         SpaceChargeParameterError)
 
 # =========================================================
 #                      SCALAR ASSERTIONS
@@ -162,14 +161,14 @@ def assert_machine(machine, needed_parameters):
 def assert_machine_input(machine):
 
     # Frame assertions
-    assert_greater(machine.framecount, 'frame count', 0, InputError)
-    assert_inrange(machine.frame_skipcount, 'frame skip-count',
-                   0, machine.framecount, InputError)
-    assert_greater(machine.framelength, 'frame length', 0, InputError)
-    assert_inrange(machine.preskip_length, 'pre-skip length',
-                   0, machine.framelength, InputError)
-    assert_inrange(machine.postskip_length, 'post-skip length',
-                   0, machine.framelength, InputError)
+    # assert_greater(machine.framecount, 'frame count', 0, InputError)
+    # assert_inrange(machine.frame_skipcount, 'frame skip-count',
+    #                0, machine.framecount, InputError)
+    # assert_greater(machine.framelength, 'frame length', 0, InputError)
+    # assert_inrange(machine.preskip_length, 'pre-skip length',
+    #                0, machine.framelength, InputError)
+    # assert_inrange(machine.postskip_length, 'post-skip length',
+    #                0, machine.framelength, InputError)
 
     # Bin assertions
     assert_greater(machine.dtbin, 'dtbin', 0, InputError,
@@ -177,12 +176,12 @@ def assert_machine_input(machine):
     assert_greater(machine.dturns, 'dturns', 0, InputError,
                    'NB: dturns is the number of machine turns'
                    'between each measurement')
-    assert_inrange(machine.imin_skip, 'imin skip',
-                   0, machine.framelength, InputError)
-    assert_inrange(machine.imax_skip, 'imax skip',
-                   0, machine.framelength, InputError)
-    assert_greater_or_equal(machine.rebin, 're-binning factor',
-                            1, InputError)
+    # assert_inrange(machine.imin_skip, 'imin skip',
+    #                0, machine.framelength, InputError)
+    # assert_inrange(machine.imax_skip, 'imax skip',
+    #                0, machine.framelength, InputError)
+    # assert_greater_or_equal(machine.rebin, 're-binning factor',
+    #                         1, InputError)
 
     # Assertions: profile to be reconstructed
     assert_greater_or_equal(machine.filmstart, 'film start', 0, InputError)

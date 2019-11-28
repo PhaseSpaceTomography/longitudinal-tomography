@@ -4,18 +4,20 @@ from utils.exceptions import InputError
 
 # Convert from one-dimentional list of raw data to waterfall.
 # Works on a copy of the raw data
-def raw_data_to_waterfall(machine, raw_data):
-    waterfall = np.copy(raw_data)
-    waterfall = raw_data.reshape((machine.nprofiles, machine.framelength))
-
-    if machine.postskip_length > 0:
-        waterfall = waterfall[:, machine.preskip_length:
-                                -machine.postskip_length]
+def raw_data_to_waterfall(frame):
+    if frame.raw_data is not None:
+        waterfall = frame.raw_data
     else:
-        waterfall = waterfall[:, machine.preskip_length:]
+        raise InputError('Frame object contains no raw data.')
+
+    waterfall = waterfall.reshape((frame.nprofs(), frame.nbins_frame))
+    if frame.skip_bins_end > 0:
+        waterfall = waterfall[:, frame.skip_bins_start:
+                                -frame.skip_bins_end]
+    else:
+        waterfall = waterfall[:, frame.skip_bins_start:]
 
     return waterfall
-
 
 # Original function for subtracting baseline of raw data input profiles.
 # Finds the baseline from the first 5% (by default)
@@ -31,7 +33,7 @@ def calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
     return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
 
 
-def rebin(waterfall, rbn):
+def rebin(waterfall, rbn, machine):
     data = np.copy(waterfall)
 
     # Check that there is enough data to for the given rebin factor.
@@ -40,14 +42,17 @@ def rebin(waterfall, rbn):
     else:
         rebinned = _rebin_individable(data, rbn)
 
+    machine.dtbin *= rbn
+    machine.xat0 /= float(rbn)
+
     return rebinned
 
 # Rebins an 2d array given a rebin factor (rbn).
 # The given array MUST have a length equal to an even number.
 def _rebin_dividable(data, rbn):
     if data.shape[1] % rbn != 0:
-        raise AssertionError('Input array must be dividable on rebin factor.')
-
+        raise AssertionError('Input array must be '
+                             'dividable on the rebin factor.')
     ans = np.copy(data)
     
     nprofs = data.shape[0]

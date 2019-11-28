@@ -68,7 +68,13 @@ class RebinningError(Exception):
     pass
 
 
-class ProfileReducedToZero(Exception):
+class ProfilesReducedToZero(Exception):
+    pass
+
+class FilteredProfilesError(Exception):
+    pass
+
+class WaterfallError(Exception):
     pass
 
 # ============================

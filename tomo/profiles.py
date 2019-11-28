@@ -3,8 +3,8 @@ import numpy as np
 from scipy import signal
 from physics import e_UNIT, calc_self_field_coeffs
 from utils.assertions import assert_equal, assert_inrange, assert_greater
-from utils.exceptions import (RawDataImportError, InputError,
-                               RebinningError)
+from utils.exceptions import (RawDataImportError, InputError, RebinningError,
+                              FilteredProfilesError, ProfilesReducedToZero)
 # ================
 # About TimeSpace:   <- fix!
 # ================
@@ -43,8 +43,9 @@ from utils.exceptions import (RawDataImportError, InputError,
 
 class Profiles:
 
-    def __init__(self, machine, waterfall=None):
+    def __init__(self, machine, sampling_time, waterfall=None):
         self.machine = machine
+        self.sampling_time = sampling_time
         if waterfall is not None:
             self.waterfall = waterfall
 
@@ -58,6 +59,8 @@ class Profiles:
             raise InputError('waterfall should be an iterable.')
         log.info('Loading waterfall...')
         self._waterfall = new_waterfall.clip(0.0)
+        if np.sum(np.abs(self.waterfall)) == 0.0:
+            raise ProfilesReducedToZero()
         self.profile_charge = self.calc_profilecharge(
                                 self._waterfall[self.machine.beam_ref_frame])
         self._waterfall = (self._waterfall
@@ -68,9 +71,8 @@ class Profiles:
 
     # Calculate the total charge of profile
     def calc_profilecharge(self, ref_prof):
-        return (np.sum(ref_prof) * self.machine.dtbin
-                / (self.machine.rebin * e_UNIT
-                   * self.machine.pickup_sensitivity))
+        return (np.sum(ref_prof) * self.sampling_time
+                / (e_UNIT * self.machine.pickup_sensitivity))
 
     # Calculate self-fields based on filtered profiles.
     # If filtered profiles are not provided by the user,
@@ -81,14 +83,28 @@ class Profiles:
                                 x=self._waterfall, window_length=7,
                                 polyorder=4, deriv=1)
         else:
-            # Insert assertions.
-            # Create spescialized exceptions.
-            self.dsprofiles = filtered_profiles
+            self.dsprofiles = self._check_manual_filtered_profs(
+                                                    filtered_profiles)
 
         (self.phiwrap,
          self.wrap_length) = self._find_wrap_length()
 
         self.vself = self._calculate_self()
+        log.info('Self fields were calculated.')
+
+    def _check_manual_filtered_profs(self, fprofs):
+        if not hasattr(fprofs, '__iter__'):
+            err_msg = 'Filtered profiles should be iterable.'
+            raise FilteredProfilesError(err_msg)
+        fprofs = np.array(fprofs)
+        if fprofs.shape == self.waterfall.shape:
+            return fprofs
+        else:
+            err_msg = f'Filtered profiles should have the same shape'\
+                      f'as the waterfall.\n'\
+                      f'Shape profiles: {fprofs.shape}\n'\
+                      f'Shape waterfall: {self.waterfall.shape}\n'
+            raise FilteredProfilesError(err_msg)
 
     # Calculate the number of bins in the first
     # integer number of rf periods, larger than the image width.
