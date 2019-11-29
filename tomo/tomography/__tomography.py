@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit # To be removed
-from utils.exceptions import (PhaseSpaceReducedToZeroes,
+from utils.exceptions import (WaterfallReducedToZero,
                               XPOutOfImageWidthError)
 
 class Tomography:
@@ -38,8 +38,7 @@ class Tomography:
     def _suppress_zeros_normalize(self, waterfall):
         waterfall = waterfall.clip(0.0)
         if not waterfall.any():
-            raise PhaseSpaceReducedToZeroes(
-                    'All of phase space got reduced to zeroes')
+            raise WaterfallReducedToZero()
         waterfall /= np.sum(waterfall, axis=1)[:, None]
         return waterfall
 
