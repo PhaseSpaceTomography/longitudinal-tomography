@@ -149,12 +149,13 @@ def assert_only_valid_particles(xp, n_bins, msg=''):
 # =========================================================
 
 
-def assert_machine(machine, needed_parameters):
-    for par in needed_parameters:
-        if not hasattr(machine, par):
-            err_msg = (f'Missing machine parameter: {par}.\n'
-                       f'Have you remebered to use machine.fill()?')
-            raise MachineParameterError(err_msg)
+def assert_fields(obj, obj_name, needed_fields, error_class, msg=''):
+    for field in needed_fields:
+        if not hasattr(obj, field):
+            err_msg = f'Missing parameter "{field}" in {obj_name}.'
+            if len(msg) > 0:
+                error_msg += f'\n{msg}' 
+            raise error_class(err_msg)
 
 
 # Asserting that the input parameters from user are valid
