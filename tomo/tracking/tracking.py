@@ -1,12 +1,13 @@
 import numpy as np
 from numba import njit
 import logging as log
-from utils.tomo_output import print_tracking_status_ftn 
-from .particle_tracker import ParticleTracker
-from cpp_routines.tomolib_wrappers import kick, drift
+
+from ..utils import tomo_output as tomoout 
+from . import particle_tracker as ptracker
+from ..cpp_routines import tomolib_wrappers as tlw
 
 
-class Tracking(ParticleTracker):
+class Tracking(ptracker.ParticleTracker):
 
     # Input should be thee coordinates of the particles given in
     #  phase and energy.
@@ -75,19 +76,19 @@ class Tracking(ParticleTracker):
         # Tracking 'upwards'
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dphi = drift(denergy, dphi, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
                          nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
-                           nparts, turn)
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                               nparts, turn)
 
             if turn % self.machine.dturns == 0:
                 profile += 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
                 if self._ftn_flag:
-                    print_tracking_status_ftn(rec_prof, profile)
+                    tomoout.print_tracking_status_ftn(rec_prof, profile)
 
         # Starting again from homogeous distribution
         dphi = np.copy(out_dphi[rec_prof])
@@ -98,12 +99,12 @@ class Tracking(ParticleTracker):
         # Tracking 'downwards'
         while turn > 0:
             # Calculating change in energy for each particle at a turn
-            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
-                           nparts, turn, up=False)
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                               nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
-            dphi = drift(denergy, dphi, self.machine.dphase,
-                         nparts, turn, up=False)
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+                             nparts, turn, up=False)
 
 
             if turn % self.machine.dturns == 0:
@@ -111,7 +112,7 @@ class Tracking(ParticleTracker):
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
                 if self._ftn_flag:
-                    print_tracking_status_ftn(rec_prof, profile)
+                    tomoout.print_tracking_status_ftn(rec_prof, profile)
 
         return out_dphi, out_denergy
 
@@ -141,8 +142,8 @@ class Tracking(ParticleTracker):
 
         print(iprof)
         while turn < self.nturns:
-            dphi = drift(denergy, dphi, self.machine.dphase,
-                         nparts, turn)      
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+                             nparts, turn)      
 
             turn += 1
 
@@ -154,8 +155,8 @@ class Tracking(ParticleTracker):
                                        self._phiwrap)
             selfvolt = self._vself[iprof, temp_xp.astype(int) - 1]
 
-            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
-                           nparts, turn)
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                               nparts, turn)
             denergy += selfvolt * self.machine.q
 
             if turn % self.machine.dturns == 0:
@@ -175,15 +176,15 @@ class Tracking(ParticleTracker):
         while turn > 0:
             selfvolt = self._vself[iprof, temp_xp.astype(int)]
 
-            denergy = kick(self.machine, denergy, dphi, rf1v, rf2v,
-                           nparts, turn, up=False)
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                               nparts, turn, up=False)
 
             denergy += selfvolt * self.machine.q
 
             turn -= 1
 
-            dphi = drift(denergy, dphi, self.machine.dphase,
-                         nparts, turn, up=False) 
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+                             nparts, turn, up=False) 
 
             temp_xp = self._calc_xp_sf(
                         dphi, self.machine.phi0[turn], self.machine.xorigin,

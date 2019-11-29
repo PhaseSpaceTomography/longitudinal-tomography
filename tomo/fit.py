@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import optimize
-from physics import phase_low, dphase_low 
+
+from . import physics
 
 # Original function for finding xat0
 # Finds xat0 based on a linear fit on a refence profile.  
@@ -17,7 +18,9 @@ def fit_xat0(profiles):
 
     x0 = profiles.machine.phi0[ref_turn] - bunch_phaselength / 2.0
     phil = optimize.newton(
-            func=phase_low, x0=x0, fprime=dphase_low, tol=0.0001, maxiter=100,
+            func=physics.phase_low, x0=x0,
+            fprime=physics.dphase_low,
+            tol=0.0001, maxiter=100,
             args=(profiles.machine, bunch_phaselength, ref_turn))
     
     fitted_xat0 = (tfoot_low + (profiles.machine.phi0[ref_turn] - phil)

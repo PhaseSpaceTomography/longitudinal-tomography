@@ -1,12 +1,11 @@
 import logging as log
 import numpy as np
-from scipy import signal
-from physics import e_UNIT, calc_self_field_coeffs
-from utils.assertions import assert_equal, assert_inrange, assert_greater
-from utils.exceptions import (RawDataImportError, WaterfallError,
-                              RebinningError, FilteredProfilesError,
-                              WaterfallReducedToZero,
-                              ProfileChargeNotCalculated)
+import scipy.signal as sig
+import scipy
+
+from . import physics
+from .utils import exceptions as expt
+
 # ================
 # About TimeSpace:   <- fix!
 # ================
@@ -64,18 +63,18 @@ class Profiles:
         log.info('Loading waterfall...')
         
         if not hasattr(new_waterfall, '__iter__'):
-            raise WaterfallError('waterfall should be an iterable.')
+            raise expt.WaterfallError('waterfall should be an iterable.')
 
         if not new_waterfall.shape[0] == self.machine.nprofiles:
-            raise WaterfallError(f'Waterfall does not correspond to given '
-                                 f'machine object.\nExpected nr of profiles: '
-                                 f'{self.machine.nprofiles}, nr of profiles '
-                                 f'in waterfall: {new_waterfall.shape[0]}')
+            err_msg = f'Waterfall does not correspond to machine object.\n'\
+                      f'Expected nr of profiles: {self.machine.nprofiles}, '\
+                      f'nr of profiles in waterfall: {new_waterfall.shape[0]}'
+            raise expt.WaterfallError(err_msg)
 
         new_waterfall = np.array(new_waterfall)
         self._waterfall = new_waterfall.clip(0.0)
         if np.sum(np.abs(self.waterfall)) == 0.0:
-            raise WaterfallReducedToZero()
+            raise expt.WaterfallReducedToZero()
         
         self.machine.nbins = self._waterfall.shape[1]
         log.info(f'Waterfall loaded with shape: {self.waterfall.shape})')
@@ -85,7 +84,7 @@ class Profiles:
     def calc_profilecharge(self,):
         ref_prof = self.waterfall[self.machine.beam_ref_frame]
         self.profile_charge = (np.sum(ref_prof) * self.sampling_time
-                               / (e_UNIT * self.machine.pickup_sensitivity)) 
+                               / (scipy.e * self.machine.pickup_sensitivity))
 
     # Calculate self-fields based on filtered profiles.
     # If filtered profiles are not provided by the user,
@@ -94,10 +93,10 @@ class Profiles:
         if self.profile_charge is None:
             err_msg = 'Profile charge must be calculated before '\
                       'calculating the self-fields'
-            raise ProfileChargeNotCalculated(err_msg)
+            raise expt.ProfileChargeNotCalculated(err_msg)
 
         if filtered_profiles is None:
-            self.dsprofiles = signal.savgol_filter(
+            self.dsprofiles = sig.savgol_filter(
                                 x=self._waterfall, window_length=7,
                                 polyorder=4, deriv=1)
         else:
@@ -113,7 +112,7 @@ class Profiles:
     def _check_manual_filtered_profs(self, fprofs):
         if not hasattr(fprofs, '__iter__'):
             err_msg = 'Filtered profiles should be iterable.'
-            raise FilteredProfilesError(err_msg)
+            raise expt.FilteredProfilesError(err_msg)
         fprofs = np.array(fprofs)
         if fprofs.shape == self.waterfall.shape:
             return fprofs
@@ -122,7 +121,7 @@ class Profiles:
                       f'as the waterfall.\n'\
                       f'Shape profiles: {fprofs.shape}\n'\
                       f'Shape waterfall: {self.waterfall.shape}\n'
-            raise FilteredProfilesError(err_msg)
+            raise expt.FilteredProfilesError(err_msg)
 
     # Calculate the number of bins in the first
     # integer number of rf periods, larger than the image width.
@@ -149,7 +148,7 @@ class Profiles:
 
     # Calculate self-field voltages
     def _calculate_self(self):
-        sfc = calc_self_field_coeffs(self.machine)
+        sfc = physics.calc_self_field_coeffs(self.machine)
         vself = np.zeros((self.machine.nprofiles - 1,
                           self.wrap_length + 1),
                          dtype=float)

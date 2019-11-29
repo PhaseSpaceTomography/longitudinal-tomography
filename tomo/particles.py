@@ -1,7 +1,9 @@
 import numpy as np
-from phase_space_info import PhaseSpaceInfo
-from utils.assertions import assert_fields
-from utils.exceptions import MachineParameterError
+
+from . import phase_space_info as psi
+from .utils import assertions as asrt
+from .utils import exceptions as expt
+
 
 # This class sets up the inital particle distribution of the test particles.
 # The class is NOT NEEDED for the tracking of the particles, but is meant as
@@ -44,7 +46,7 @@ class Particles(object):
     # fractions of bins. 
     def __init__(self, machine):
         self._machine = machine
-        self._psinfo = PhaseSpaceInfo(self._machine)
+        self._psinfo = psi.PhaseSpaceInfo(self._machine)
         self._psinfo.find_ijlimits()
         self.dEbin = self._psinfo.dEbin
 
@@ -168,6 +170,6 @@ class Particles(object):
         needed_fieds = ['snpt', 'xorigin', 'h_num', 
                         'omga_rev0', 'dtbin', 'phi0',
                         'yat0', 'dturns', 'nbins']
-        assert_fields(machine, 'machine', needed_fieds,
-                      MachineParameterError,
-                      'Did you remember to use machine.fill()?')
+        asrt.assert_fields(machine, 'machine', needed_fieds,
+                           expt.MachineParameterError,
+                           'Did you remember to use machine.fill()?')

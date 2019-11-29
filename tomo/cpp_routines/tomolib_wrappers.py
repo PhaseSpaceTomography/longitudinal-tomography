@@ -1,8 +1,9 @@
 import ctypes as ct
 import numpy as np
 import os
-from utils.exceptions import LibraryNotFound
 import logging as log
+
+from ..utils import exceptions as expt
 
 log.basicConfig(level=log.INFO)
 
@@ -14,7 +15,7 @@ if os.path.exists(_tomolib_pth):
 else:
     error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
                 f'\n- Try to run compile.py in the tomo directory\n'
-    raise LibraryNotFound(error_msg)
+    raise expt.LibraryNotFound(error_msg)
 
 _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 

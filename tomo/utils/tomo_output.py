@@ -1,10 +1,7 @@
-import os
-import sys
 import numpy as np
 import logging as log
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 # --------------------------------------------------------------- #

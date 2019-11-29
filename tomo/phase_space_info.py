@@ -1,19 +1,11 @@
 import numpy as np
 import sys
 import logging
-from physics import vrft, short_rf_voltage_formula
-from utils.assertions import (assert_greater,
-                              assert_not_equal,
-                              assert_equal,
-                              assert_inrange,
-                              assert_less_or_equal,
-                              assert_array_in_range,
-                              assert_array_less_eq)
-from utils.exceptions import (EnergyBinningError,
-                              EnergyLimitsError,
-                              PhaseLimitsError,
-                              MapCreationError,
-                              ArrayLengthError)
+
+from . import physics
+from .utils import assertions as asrt
+from .utils import exceptions as expt
+
 # ===============
 # About the class
 # ===============
@@ -87,7 +79,7 @@ class PhaseSpaceInfo:
         self.dEbin = self.find_dEbin()
 
         # If dEbin is less than 0, an error is raised.  
-        assert_greater(self.dEbin, 'dEbin', 0.0, EnergyBinningError)
+        asrt.assert_greater(self.dEbin, 'dEbin', 0.0, expt.EnergyBinningError)
 
         # Is this still a valid choise with the new method?
         if self.machine.full_pp_flag == True:
@@ -124,12 +116,13 @@ class PhaseSpaceInfo:
     # This will be the height of each pixel in the physical coordinate system
     def _calc_energy_pxl(self, phases, turn):
         delta_e_known = 0.0
-        assert_not_equal(self.machine.demax, 'dEmax',
-                         0.0, EnergyBinningError,
-                         'The specified maximum energy of '
-                         'reconstructed phase space is invalid.')
+        asrt.assert_not_equal(self.machine.demax, 'dEmax',
+                              0.0, expt.EnergyBinningError,
+                              'The specified maximum energy of '
+                              'reconstructed phase space is invalid.')
         if self.machine.demax < 0.0:
-            if vrft(self.machine.vrf2, self.machine.vrf2dot, turn) != 0.0:
+            if physics.vrft(self.machine.vrf2,
+                            self.machine.vrf2dot, turn) != 0.0:
                 energies_low = self._trajectoryheight(
                 				phases, phases[0], delta_e_known, turn)
 
@@ -143,8 +136,8 @@ class PhaseSpaceInfo:
                 return (self.machine.beta0[turn]
                         * np.sqrt(self.machine.e0[turn]
                                   * self.machine.q
-                                  * vrft(self.machine.vrf1,
-                                         self.machine.vrf1dot, turn)
+                                  * physics.vrft(self.machine.vrf1,
+                                                 self.machine.vrf1dot, turn)
                                   * np.cos(self.machine.phi0[turn])
                                   / (2 * np.pi * self.machine.h_num
                                      * self.machine.eta0[turn]))
@@ -267,12 +260,11 @@ class PhaseSpaceInfo:
     # Returns an array of phases for a given turn
     def _calculate_phases(self, turn):
         indarr = np.arange(self.machine.nbins + 1)
-        assert_equal(len(indarr),
-                     'index array length',
-                     self.machine.nbins + 1,
-                     MapCreationError,
-                     'The index array should have length '
-                     'nbins + 1')
+        asrt.assert_equal(len(indarr),
+                          'index array length',
+                          self.machine.nbins + 1,
+                          expt.MapCreationError,
+                          'The index array should have length nbins + 1')
         phases = ((self.machine.xorigin + indarr)
                   * self.machine.dtbin
                   * self.machine.h_num
@@ -285,40 +277,42 @@ class PhaseSpaceInfo:
                           self.machine.filmstep):
 
             # Testing imin and imax
-            assert_inrange(self.imin, 'imin', 0, self.imax,
-                           PhaseLimitsError,
-                           f'imin and imax out of bounds')
-            assert_less_or_equal(self.imax, 'imax', self.jmax.size,
-                                 PhaseLimitsError,
-                                 f'imin and imax out of bounds')
+            asrt.assert_inrange(self.imin, 'imin', 0, self.imax,
+                                expt.PhaseLimitsError,
+                                f'imin and imax out of bounds')
+            asrt.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
+                                     expt.PhaseLimitsError,
+                                     f'imin and imax out of bounds')
 
             # Testing jmin and jmax
-            assert_array_in_range(self.jmin[self.imin:self.imax], 0,
-                                  self.jmax[self.imin:self.imax],
-                                  EnergyLimitsError,
-                                  msg=f'jmin and jmax out of bounds ',
-                                  index_offset=self.imin)
-            assert_array_less_eq(self.jmax[self.imin:self.imax],
-                                 self.machine.nbins,
-                                 EnergyLimitsError,
-                                 f'jmin and jmax out of bounds ')
-            assert_equal(self.jmin.shape, 'jmin',
-                         self.jmax.shape, ArrayLengthError,
-                         'jmin and jmax should have the same shape')
+            asrt.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
+                                       self.jmax[self.imin:self.imax],
+                                       expt.EnergyLimitsError,
+                                       msg=f'jmin and jmax out of bounds ',
+                                       index_offset=self.imin)
+            asrt.assert_array_less_eq(self.jmax[self.imin:self.imax],
+                                      self.machine.nbins,
+                                      expt.EnergyLimitsError,
+                                      f'jmin and jmax out of bounds ')
+            asrt.assert_equal(self.jmin.shape, 'jmin',
+                              self.jmax.shape, expt.ArrayLengthError,
+                              'jmin and jmax should have the same shape')
 
     # Trajectory height calculator
     def _trajectoryheight(self, phi, phi_known, delta_e_known, turn):
         cplx_height = 2.0 * self.machine.q / float(self.machine.dphase[turn])
-        cplx_height *= (vrft(self.machine.vrf1, self.machine.vrf1dot, turn)
+        cplx_height *= (physics.vrft(self.machine.vrf1,
+                                     self.machine.vrf1dot, turn)
                         * (np.cos(phi) - np.cos(phi_known))
-                        + vrft(self.machine.vrf2, self.machine.vrf2dot, turn)
+                        + physics.vrft(self.machine.vrf2,
+                                       self.machine.vrf2dot, turn)
                         * (np.cos(self.machine.h_ratio
                                   * (phi - self.machine.phi12))
                         - np.cos(self.machine.h_ratio
                                  * (phi_known - self.machine.phi12)))
                         / self.machine.h_ratio
                         + (phi - phi_known)
-                        * short_rf_voltage_formula(
+                        * physics.short_rf_voltage_formula(
                             self.machine.phi0[turn], self.machine.vrf1,
                             self.machine.vrf1dot, self.machine.vrf2,
                             self.machine.vrf2dot, self.machine.h_ratio,

@@ -1,10 +1,6 @@
 import numpy as np
-from .exceptions import (MachineParameterError,
-                         UnequalArrayShapes,
-                         InvalidParticleError,
-                         MachineParameterError,
-                         InputError,
-                         SpaceChargeParameterError)
+
+from . import exceptions as expt
 
 # =========================================================
 #                      SCALAR ASSERTIONS
@@ -93,7 +89,7 @@ def assert_array_shape_equal(arrays, array_names,
                          f'of {demanded_shape} found in array(s):\n'
                          f'{array_error_str}'
                          f'{extra_text}')
-        raise UnequalArrayShapes(error_message)
+        raise expt.UnequalArrayShapes(error_message)
 
 
 def assert_array_in_range(array, low_lim, up_lim, error_class,
@@ -141,7 +137,7 @@ def _assert_log_arr(log_array_ok, error_class, index_offset, msg):
 def assert_only_valid_particles(xp, n_bins, msg=''):
     if np.any(np.logical_or(xp >= n_bins, xp < 0)):
         err_msg = f'Invalid (lost) particle(s) was found in xp\n'
-        raise InvalidParticleError(err_msg + msg)
+        raise expt.InvalidParticleError(err_msg + msg)
 
 
 # =========================================================
@@ -172,9 +168,9 @@ def assert_machine_input(machine):
     #                0, machine.framelength, InputError)
 
     # Bin assertions
-    assert_greater(machine.dtbin, 'dtbin', 0, InputError,
+    assert_greater(machine.dtbin, 'dtbin', 0, expt.InputError,
                    'NB: dtbin is the difference of time in bin')
-    assert_greater(machine.dturns, 'dturns', 0, InputError,
+    assert_greater(machine.dturns, 'dturns', 0, expt.InputError,
                    'NB: dturns is the number of machine turns'
                    'between each measurement')
     # assert_inrange(machine.imin_skip, 'imin skip',
@@ -185,56 +181,57 @@ def assert_machine_input(machine):
     #                         1, InputError)
 
     # Assertions: profile to be reconstructed
-    assert_greater_or_equal(machine.filmstart, 'film start', 0, InputError)
+    assert_greater_or_equal(machine.filmstart, 'film start',
+                            0, expt.InputError)
     assert_greater_or_equal(machine.filmstop, 'film stop',
-                            machine.filmstart, InputError)
+                            machine.filmstart, expt.InputError)
     assert_less_or_equal(abs(machine.filmstep), 'film step',
                          abs(machine.filmstop - machine.filmstart + 1),
-                         InputError)
-    assert_not_equal(machine.filmstep, 'film step', 0, InputError)
+                         expt.InputError)
+    assert_not_equal(machine.filmstep, 'film step', 0, expt.InputError)
 
     # Reconstruction parameter assertions
-    assert_greater(machine.niter, 'niter', 0, InputError,
+    assert_greater(machine.niter, 'niter', 0, expt.InputError,
                    'NB: niter is the number of iterations of the '
                    'reconstruction process')
-    assert_greater(machine.snpt, 'snpt', 0, InputError,
+    assert_greater(machine.snpt, 'snpt', 0, expt.InputError,
                    'NB: snpt is the square root '
                    'of #tracked particles.')
 
     # Reference frame assertions
     assert_greater_or_equal(machine.machine_ref_frame,
                             'machine ref. frame',
-                            0, InputError)
+                            0, expt.InputError)
     assert_greater_or_equal(machine.beam_ref_frame, 'beam ref. frame',
-                            0, InputError)
+                            0, expt.InputError)
 
     # Machine parameter assertion
     assert_greater_or_equal(machine.h_num, 'harmonic number',
-                            1, MachineParameterError)
+                            1, expt.MachineParameterError)
     assert_greater_or_equal(machine.h_ratio, 'harmonic ratio',
-                            1, MachineParameterError)
+                            1, expt.MachineParameterError)
     assert_greater(machine.b0, 'B field (B0)',
-                   0, MachineParameterError)
+                   0, expt.MachineParameterError)
     assert_greater(machine.mean_orbit_rad, "mean orbit radius",
-                   0, MachineParameterError)
+                   0, expt.MachineParameterError)
     assert_greater(machine.bending_rad, "Bending radius",
-                   0, MachineParameterError)
+                   0, expt.MachineParameterError)
     assert_greater(machine.e_rest, 'rest energy',
-                   0, MachineParameterError)
+                   0, expt.MachineParameterError)
 
     # Space charge parameter assertion
     assert_greater_or_equal(machine.pickup_sensitivity,
                             'pick-up sensitivity',
-                            0, SpaceChargeParameterError)
+                            0, expt.SpaceChargeParameterError)
     assert_greater_or_equal(machine.g_coupling, 'g_coupling',
-                            0, SpaceChargeParameterError,
+                            0, expt.SpaceChargeParameterError,
                             'NB: g_coupling:'
                             'geometrical coupling coefficient')
 
 # Asserting that some of the parameters calculated are valid
 def assert_parameter_arrays(machine):
     assert_greater_or_equal(machine._nbins, 'profile length', 0,
-                            InputError,
+                            expt.InputError,
                             f'Make sure that the sum of post- and'
                             f'pre-skip length is less'
                             f'than the frame length\n'

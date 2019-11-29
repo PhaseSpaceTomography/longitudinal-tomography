@@ -1,31 +1,15 @@
 import numpy as np
-from utils.assertions import assert_inrange
-from utils.exceptions import InputError
+from .utils import assertions as asrt
+from .utils import exceptions as expt
 
-# Convert from one-dimentional list of raw data to waterfall.
-# Works on a copy of the raw data
-def raw_data_to_waterfall(frame):
-    if frame.raw_data is not None:
-        waterfall = frame.raw_data
-    else:
-        raise InputError('Frame object contains no raw data.')
-
-    waterfall = waterfall.reshape((frame.nprofs(), frame.nbins_frame))
-    if frame.skip_bins_end > 0:
-        waterfall = waterfall[:, frame.skip_bins_start:
-                                -frame.skip_bins_end]
-    else:
-        waterfall = waterfall[:, frame.skip_bins_start:]
-
-    return waterfall
 
 # Original function for subtracting baseline of raw data input profiles.
 # Finds the baseline from the first 5% (by default)
 #  of the beam reference profile.
 def calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
-    assert_inrange(percent, 'percent', 0.0, 1.0, InputError,
-                   'The chosen percent of raw_data '
-                   'to create baseline from is not valid')
+    asrt.assert_inrange(percent, 'percent', 0.0, 1.0, expt.InputError,
+                        'The chosen percent of raw_data '
+                        'to create baseline from is not valid')
 
     nbins = len(waterfall[ref_prof])
     iend = int(percent * nbins) 

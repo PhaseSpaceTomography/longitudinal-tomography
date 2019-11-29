@@ -1,7 +1,8 @@
 import numpy as np
 from numba import njit # To be removed
-from utils.exceptions import (WaterfallReducedToZero,
-                              XPOutOfImageWidthError)
+
+from ..utils import exceptions as expt
+
 
 class Tomography:
 
@@ -38,7 +39,7 @@ class Tomography:
     def _suppress_zeros_normalize(self, waterfall):
         waterfall = waterfall.clip(0.0)
         if not waterfall.any():
-            raise WaterfallReducedToZero()
+            raise expt.WaterfallReducedToZero()
         waterfall /= np.sum(waterfall, axis=1)[:, None]
         return waterfall
 
@@ -70,7 +71,7 @@ class Tomography:
     # Check that no particles are outside of image width
     def assert_xp(self):
         if np.any(self.xp < 0) or np.any(self.xp >= self.nbins):
-            raise XPOutOfImageWidthError(
+            raise expt.XPOutOfImageWidthError(
                 'X coordinate of particles outside of image width')
 
     @staticmethod

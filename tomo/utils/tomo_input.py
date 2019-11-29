@@ -1,12 +1,12 @@
 import numpy as np
 import os
 import sys
-from profiles import Profiles
-# from machine import Machine
-from new_machine import Machine
-from data_treatment import raw_data_to_waterfall, calc_baseline_ftn, rebin
-from .exceptions import InputError, RawDataImportError, WaterfallError
-from .assertions import assert_inrange
+
+from .. import profiles as profs
+from .. import new_machine as mach
+from .. import data_treatment as threat
+from . import exceptions as expt
+
 # Some constants for the input file containing machine parameters
 PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12
@@ -36,14 +36,14 @@ class Frames:
     @raw_data.setter
     def raw_data(self, in_raw_data):
         if not hasattr(in_raw_data, '__iter__'):
-            raise RawDataImportError('Raw data should be iterable')
+            raise expt.RawDataImportError('Raw data should be iterable')
 
         ndata = self.nframes * self.nbins_frame
         if len(in_raw_data) == ndata:
             self._raw_data = np.array(in_raw_data)
         else:
-            RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
-                               f'expected length: {ndata}')
+            expt.RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
+                                    f'expected length: {ndata}')
 
     def nprofs(self):
         return self.nframes - self.skip_frames
@@ -68,12 +68,13 @@ class Frames:
 
     def _assert_raw_data(self, raw_data):
         if not hasattr(raw_data, '__iter__'):
-            raise RawDataImportError('Raw data should be iterable')
+            raise expt.RawDataImportError('Raw data should be iterable')
 
         ndata = self.nframes * self.nbins_frame
         if not len(raw_data) == ndata:
-            raise RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
-                                     f'expected length: {ndata}')
+            raise expt.RawDataImportError(
+                    f'Raw data has length {len(raw_data)}.\n'
+                    f'expected length: {ndata}')
         
         return np.array(raw_data)
             
@@ -95,8 +96,8 @@ def _get_input_args():
     input_file_pth = sys.argv[1]
     
     if not os.path.isfile(input_file_pth):
-        raise InputError(f'The input file: "{input_file_pth}" '
-                         f'does not exist!')
+        raise expt.InputError(f'The input file: "{input_file_pth}" '
+                              f'does not exist!')
     
     with open(input_file_pth, 'r') as f:
         read = f.readlines()
@@ -106,8 +107,8 @@ def _get_input_args():
         if os.path.isdir(output_dir):
             read[OUTPUT_DIR_IDX] = output_dir
         else:
-            raise InputError(f'The chosen output directory: '
-                             f'"{output_dir}" does not exist!')
+            raise expt.InputError(f'The chosen output directory: '
+                                  f'"{output_dir}" does not exist!')
     return np.array(read)
 
 
@@ -157,14 +158,14 @@ def _split_input(read_input):
             read_parameters[i] = read_parameters[i].strip('\r\n')
     except:
         err_msg = 'Something went wrong while accessing machine parameters.'
-        raise InputError(err_msg)
+        raise expt.InputError(err_msg)
 
     if read_parameters[RAW_DATA_FILE_IDX] == 'pipe':
         try:
             read_data = np.array(read_input[PARAMETER_LENGTH:], dtype=float)
         except:
             err_msg = 'Pipelined raw-data could not be casted to float.'
-            raise InputError(err_msg)
+            raise expt.InputError(err_msg)
     else:
         try:
             read_data = np.genfromtxt(read_parameters[RAW_DATA_FILE_IDX],
@@ -180,9 +181,9 @@ def _split_input(read_input):
             
 
     if not len(read_data) == ndata:
-        raise InputError(f'Wrong amount of datapoints loaded.\n'
-                         f'Expected: {ndata}\n'
-                         f'Loaded:   {len(read_data)}')
+        raise expt.InputError(f'Wrong amount of datapoints loaded.\n'
+                              f'Expected: {ndata}\n'
+                              f'Loaded:   {len(read_data)}')
 
 
     return read_parameters, read_data
@@ -201,7 +202,7 @@ def txt_input_to_machine(input_array):
     for i in range(len(input_array)):
             input_array[i] = input_array[i].strip('\r\n')
 
-    machine = Machine()
+    machine = mach.Machine()
     machine.output_dir          = input_array[14]
     machine._dtbin               = float(input_array[22])
     machine.dturns              = int(input_array[24])
@@ -270,10 +271,11 @@ def _min_max_dt(nbins, input_array):
 
 def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
     if not hasattr(waterfall, '__iter__'):
-        raise WaterfallError('Waterfall should be an iterable')
+        raise expt.WaterfallError('Waterfall should be an iterable')
     waterfall = np.array(waterfall)
-    waterfall[:] -= calc_baseline_ftn(waterfall, machine.beam_ref_frame)
-    waterfall = rebin(waterfall, rbn, machine)
-    return Profiles(machine, sampling_time, waterfall)
+    waterfall[:] -= threat.calc_baseline_ftn(
+                        waterfall, machine.beam_ref_frame)
+    waterfall = threat.rebin(waterfall, rbn, machine)
+    return profs.Profiles(machine, sampling_time, waterfall)
     
     

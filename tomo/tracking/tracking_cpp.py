@@ -1,8 +1,8 @@
 import numpy as np
 import logging as log
 from numba import njit
-from tracking.particle_tracker import ParticleTracker
-from cpp_routines.tomolib_wrappers import kick, drift, kick_and_drift
+from . import particle_tracker as ptracker
+from ..cpp_routines import tomolib_wrappers as tlw
 
 # =================================================================================
 # ======================== NB! Needs to be rewritten. =============================
@@ -11,7 +11,7 @@ from cpp_routines.tomolib_wrappers import kick, drift, kick_and_drift
 # This is an experimental class, using a full c++ version
 #   of the kick and drift routine.
 # Not as thoroughly tested as the tracking.py version.
-class TrackingCpp(ParticleTracker):
+class TrackingCpp(ptracker.ParticleTracker):
 
     def __init__(self, ts, mi):
         super().__init__(ts, mi)
@@ -56,7 +56,7 @@ class TrackingCpp(ParticleTracker):
             xp, yp = self.kick_and_drift_self(
                     xp, yp, denergy, dphi, rf1v, rf2v, nturns, nparts)
         else:
-            xp, yp = kick_and_drift(
+            xp, yp = tlw.kick_and_drift(
                     xp, yp, denergy, dphi, rf1v, rf2v, self.timespace.par.phi0,
                     self.timespace.par.deltaE0, self.timespace.par.omega_rev0,
                     self.timespace.par.dphase, self.timespace.par.phi12,
@@ -92,7 +92,7 @@ class TrackingCpp(ParticleTracker):
         turn = 0
         print(f'Tracking to profile {profile + 1}')
         while turn < n_turns:
-            dphi = drift(denergy, dphi, tpar.dphase, n_part, turn)
+            dphi = tlw.drift(denergy, dphi, tpar.dphase, n_part, turn)
             
             turn += 1
             
@@ -104,8 +104,8 @@ class TrackingCpp(ParticleTracker):
             selfvolt = self.timespace.vself[
                         profile,np.floor(temp_xp).astype(int)]
 
-            denergy = kick(self.timespace.par, denergy, dphi,
-                           rf1v, rf2v, n_part, turn)
+            denergy = tlw.kick(self.timespace.par, denergy, dphi,
+                               rf1v, rf2v, n_part, turn)
             denergy += selfvolt * tpar.q
 
             if turn % tpar.dturns == 0:

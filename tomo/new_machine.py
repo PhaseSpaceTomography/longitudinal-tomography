@@ -1,13 +1,10 @@
-import physics
 import logging as log
 import numpy as np
 from scipy import optimize
-from utils.assertions import (assert_machine_input,
-                              assert_parameter_arrays,
-                              assert_greater)
-from utils.exceptions import (InputError,
-                              MachineParameterError,
-                              SpaceChargeParameterError)
+
+from . import physics
+from .utils import assertions as asrt
+from .utils import exceptions as expt
 
 class Machine:
 
@@ -209,7 +206,7 @@ class Machine:
     # Calculating total number of machine turns
     def _calc_number_of_turns(self):
         all_turns = (self.nprofiles - 1) * self.dturns
-        assert_greater(all_turns, 'all_turns', 0, InputError,
-                       'Make sure that frame skip-count'
-                       'do not exceed number of frames')
+        asrt.assert_greater(all_turns, 'all_turns', 0, expt.InputError,
+                            'Make sure that frame skip-count'
+                            'do not exceed number of frames')
         return all_turns

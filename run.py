@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Tomo modules
-import tracking.tracking as tracking
-import tomography.tomography_cpp as tomography
-import fit
-import utils.tomo_input as tomoin
-import utils.tomo_output as tomoout
+import tomo.tracking.tracking as tracking
+import tomo.tomography.tomography_cpp as tomography
+import tomo.fit as fit
+import tomo.utils.tomo_input as tomoin
+import tomo.utils.tomo_output as tomoout
 
 # =========================
 #        Program 

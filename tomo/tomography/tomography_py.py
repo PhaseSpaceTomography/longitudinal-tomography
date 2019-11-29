@@ -1,9 +1,10 @@
 import numpy as np
 from numba import njit, prange
-from .__tomography import Tomography
+
+from . import __tomography as stmo
 
 # This class is using python only, speed up with numba. 
-class TomographyPy(Tomography):
+class TomographyPy(stmo.Tomography):
 
     def __init__(self, waterfall, x_coords):
         super().__init__(waterfall, x_coords)
