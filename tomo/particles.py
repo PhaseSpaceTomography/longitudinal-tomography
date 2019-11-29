@@ -1,6 +1,7 @@
 import numpy as np
 from phase_space_info import PhaseSpaceInfo
-from utils.assertions import assert_machine
+from utils.assertions import assert_fields
+from utils.exceptions import MachineParameterError
 
 # This class sets up the inital particle distribution of the test particles.
 # The class is NOT NEEDED for the tracking of the particles, but is meant as
@@ -164,7 +165,9 @@ class Particles(object):
         return xp, yp, nr_lost_pts
 
     def _assert_machine(self, machine):
-        needed_parameters = ['snpt', 'xorigin', 'h_num', 
-                             'omga_rev0', 'dtbin', 'phi0',
-                             'yat0', 'dturns', 'nbins']
-        assert_machine(machine, needed_parameters)
+        needed_fieds = ['snpt', 'xorigin', 'h_num', 
+                        'omga_rev0', 'dtbin', 'phi0',
+                        'yat0', 'dturns', 'nbins']
+        assert_fields(machine, 'machine', needed_fieds,
+                      MachineParameterError,
+                      'Did you remember to use machine.fill()?')
