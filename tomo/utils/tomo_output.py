@@ -155,7 +155,11 @@ def print_tracking_status_ftn(ref_prof, to_profile):
 # Image: recreated phase-space image
 # Diff: array conatining discrepancies for each iteration of reconstruction.
 # Profile: The measured profile to be reconstructed
-def show(image, diff, profile):
+def show(image, diff, rec_profile):
+
+    # Normalizing rec_profile:
+    rec_profile[:] /= np.sum(rec_profile) 
+
     gs = gridspec.GridSpec(4, 4)
 
     fig = plt.figure()
@@ -166,9 +170,9 @@ def show(image, diff, profile):
     convg = fig.add_subplot(gs[0, 3])
 
     cimg = img.imshow(image.T, origin='lower',
-                          interpolation='nearest', cmap='hot')
+                      interpolation='nearest', cmap='hot')
 
-    profs1.plot(profile, label='measured')
+    profs1.plot(rec_profile, label='measured')
     profs1.plot(np.sum(image, axis=1),
                 label='reconstructed')
     profs1.legend()
