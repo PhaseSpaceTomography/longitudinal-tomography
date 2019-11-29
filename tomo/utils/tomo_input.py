@@ -12,6 +12,73 @@ PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12
 OUTPUT_DIR_IDX = 14
 
+# Class for storing raw data and information on 
+# how to threat them, based on a Fortran style input file.
+class Frames:
+
+    def __init__(self, framecount, framelength, skip_frames, skip_bins_start,
+                 skip_bins_end, rebin, dtbin, raw_data_path=None):
+        self.nframes = framecount
+        self.nbins_frame = framelength
+        self.skip_frames = skip_frames
+        self.skip_bins_start = skip_bins_start
+        self.skip_bins_end = skip_bins_end
+        self.rebin = rebin
+        self.sampling_time = dtbin
+
+    @property
+    def raw_data(self):
+        if self._raw_data is not None:
+            return np.copy(self._raw_data)
+        else:
+            return None
+    
+    @raw_data.setter
+    def raw_data(self, in_raw_data):
+        if not hasattr(in_raw_data, '__iter__'):
+            raise RawDataImportError('Raw data should be iterable')
+
+        ndata = self.nframes * self.nbins_frame
+        if len(in_raw_data) == ndata:
+            self._raw_data = np.array(in_raw_data)
+        else:
+            RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
+                               f'expected length: {ndata}')
+
+    def nprofs(self):
+        return self.nframes - self.skip_frames
+
+    def nbins(self):
+        return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
+
+    # Convert from one-dimentional list of raw data to waterfall.
+    # Works on a copy of the raw data
+    def to_waterfall(self, raw_data):
+        waterfall = self._assert_raw_data(raw_data)
+
+        waterfall = waterfall.reshape((self.nframes, self.nbins_frame))
+        waterfall = waterfall[self.skip_frames:]
+        
+        if self.skip_bins_end > 0:
+            waterfall = waterfall[:, self.skip_bins_start:
+                                    -self.skip_bins_end]
+        else:
+            waterfall = waterfall[:, self.skip_bins_start:]
+        return waterfall
+
+    def _assert_raw_data(self, raw_data):
+        if not hasattr(raw_data, '__iter__'):
+            raise RawDataImportError('Raw data should be iterable')
+
+        ndata = self.nframes * self.nbins_frame
+        if not len(raw_data) == ndata:
+            raise RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
+                                     f'expected length: {ndata}')
+        
+        return np.array(raw_data)
+            
+
+
 # Function to be called from main.
 # Lets the user give input using stdin or via args
 def get_user_input():
@@ -120,66 +187,6 @@ def _split_input(read_input):
 
     return read_parameters, read_data
 
-# Class for storing raw data and information on 
-# how to threat them, based on a Fortran style input file.
-class Frames:
-
-    def __init__(self, framecount, framelength, skip_frames, skip_bins_start,
-                 skip_bins_end, rebin, dtbin, raw_data=None, raw_data_path=None):
-        self.raw_data_path = raw_data_path
-        self.nframes = framecount
-        self.nbins_frame = framelength
-        self.skip_frames = skip_frames
-        self.skip_bins_start = skip_bins_start
-        self.skip_bins_end = skip_bins_end
-        self.rebin = rebin
-        self.sampling_time = dtbin
-        if raw_data is not None:
-            self.raw_data = raw_data
-
-    @property
-    def raw_data(self):
-        if self._raw_data is not None:
-            return np.copy(self._raw_data)
-        else:
-            return None
-    
-    @raw_data.setter
-    def raw_data(self, in_raw_data):
-        if not hasattr(in_raw_data, '__iter__'):
-            raise RawDataImportError('Raw data should be iterable')
-
-        ndata = self.nframes * self.nbins_frame
-        if len(in_raw_data) == ndata:
-            self._raw_data = np.array(in_raw_data)
-        else:
-            RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
-                               f'expected length: {ndata}')
-
-    def nprofs(self):
-        return self.nframes - self.skip_frames
-
-    def nbins(self):
-        return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
-
-    # Convert from one-dimentional list of raw data to waterfall.
-    # Works on a copy of the raw data
-    def to_waterfall(self):
-        if self.raw_data is None:
-            raise WaterfallError('Frame object contains no raw data.')
-
-        waterfall = np.copy(self.raw_data)
-        waterfall = waterfall.reshape((self.nframes, self.nbins_frame))
-
-        waterfall = waterfall[self.skip_frames:]
-        
-        if self.skip_bins_end > 0:
-            waterfall = waterfall[:, self.skip_bins_start:
-                                    -self.skip_bins_end]
-        else:
-            waterfall = waterfall[:, self.skip_bins_start:]
-        return waterfall
-
 
 # Function to convert from array containing the lines in an input file
 #  to a partially filled machine object.
@@ -195,18 +202,9 @@ def txt_input_to_machine(input_array):
             input_array[i] = input_array[i].strip('\r\n')
 
     machine = Machine()
-    # machine.rawdata_file        = input_array[12]
     machine.output_dir          = input_array[14]
-    # machine.framecount          = int(input_array[16]) <- To be removed?
-    # machine.frame_skipcount     = int(input_array[18]) <- To be removed?
-    # machine.framelength         = int(input_array[20]) <- To be removed?
     machine._dtbin               = float(input_array[22])
     machine.dturns              = int(input_array[24])
-    # machine.preskip_length      = int(input_array[26]) <- To be removed?
-    # machine.postskip_length     = int(input_array[28]) <- To be removed?
-    # machine.imin_skip           = int(input_array[31]) <- To be removed?
-    # machine.imax_skip           = int(input_array[34]) <- To be removed?
-    # machine.rebin               = int(input_array[36]) <- To be removed?
     machine._xat0               = float(input_array[39])
     machine.demax               = float(input_array[41])
     machine.filmstart           = int(input_array[43]) -1
@@ -236,7 +234,6 @@ def txt_input_to_machine(input_array):
     machine.zwall_over_n        = float(input_array[95])
     machine.pickup_sensitivity  = float(input_array[97])
 
-    # New...
     frame = _input_to_frame(input_array)
     machine.nprofiles = frame.nprofs()
     machine.nbins = frame.nbins()
@@ -244,7 +241,6 @@ def txt_input_to_machine(input_array):
     min_dt, max_dt = _min_max_dt(machine.nbins, input_array)
     machine.min_dt = min_dt
     machine.max_dt = max_dt
-    # ...
 
     return machine, frame
 
@@ -273,12 +269,11 @@ def _min_max_dt(nbins, input_array):
 
 
 def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
-    # <Insert some assertions here>
-    # waterfall = raw_data_to_waterfall(frames)
+    if not hasattr(waterfall, '__iter__'):
+        raise WaterfallError('Waterfall should be an iterable')
+    waterfall = np.array(waterfall)
     waterfall[:] -= calc_baseline_ftn(waterfall, machine.beam_ref_frame)
     waterfall = rebin(waterfall, rbn, machine)
-    # waterfall = rebin(waterfall, 5, machine) # <- Hurra!
-    prof = Profiles(machine, sampling_time, waterfall)
-
-    return prof
+    return Profiles(machine, sampling_time, waterfall)
+    
     
