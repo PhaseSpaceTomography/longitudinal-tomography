@@ -30,7 +30,7 @@ waterfall = frames.to_waterfall(raw_data)
 # Creating profiles object
 profiles = tomoin.raw_data_to_profiles(
                 waterfall, machine, frames.rebin, frames.sampling_time)
-# profiles.calc_profilecharge()
+profiles.calc_profilecharge()
 # profiles.calc_self_fields()
 
 if profiles.machine.xat0 < 0:
@@ -40,7 +40,7 @@ reconstr_idx = machine.filmstart
 
 # Tracking...
 tracker = tracking.Tracking(machine)
-# tracker.enable_fortran_output(profiles.profile_charge)
+tracker.enable_fortran_output(profiles.profile_charge)
 # tracker.enable_self_fields(profiles)
 
 xp, yp = tracker.track(rec_prof=reconstr_idx)

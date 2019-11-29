@@ -2,48 +2,65 @@ import logging as log
 import numpy as np
 from scipy import optimize
 
-from . import physics
 from .utils import assertions as asrt
 from .utils import exceptions as expt
+from . import physics
 
 class Machine:
 
-    def __init__(self):
+    def __init__(self, xat0, nprofiles, min_dt, max_dt, zwall_over_n,
+                 g_coupling, charge, rest_energy, transitional_gamma,
+                 h_num, h_ratio, phi12, b0, bdot, bending_radius,
+                 mean_orbit_radius, vrf1, vrf1dot, vrf2, vrf2dot,
+                 dturns, pickup_sensitivity, dtbin, demax, nbins, 
+                 snpt=1, niter=20, machine_ref_frame=0, beam_ref_frame=0,
+                 filmstart=0, filmstop=1, filmstep=1, output_dir=None,
+                 self_field_flag=False, full_pp_flag=False):
 
-        self.output_dir = None
-        self._xat0 = None
-        self._dtbin = None
-        self.demax = None
-        self.dturns = None
-        self.snpt = None
-        self.niter = None
-        self.machine_ref_frame = None
-        self.beam_ref_frame = None
-        self.filmstart = None
-        self.filmstop = None
-        self.filmstep = None
-        self.full_pp_flag = None
-        self.vrf1 = None
-        self.vrf2 = None
-        self.vrf1dot = None
-        self.vrf2dot = None
-        self.mean_orbit_rad = None
-        self.bending_rad = None
-        self.b0 = None
-        self.bdot = None
-        self.phi12 = None
-        self.h_ratio = None
-        self.h_num = None
-        self.trans_gamma = None
-        self.e_rest = None
-        self.q = None
-        self.self_field_flag = None
-        self.g_coupling = None
-        self.zwall_over_n = None
-        self.pickup_sensitivity = None
-        self.max_dt = None
-        self.min_dt = None
-        self.nprofiles = None
+        # TODO: Take rfv info as a single input
+        # TODO: Take b-field info as a single input
+
+        # MAchine parameters
+        self.demax = demax
+        self.dturns = dturns
+        self.vrf1 = vrf1
+        self.vrf2 = vrf2
+        self.vrf1dot = vrf1dot
+        self.vrf2dot = vrf2dot
+        self.mean_orbit_rad = mean_orbit_radius
+        self.bending_rad = bending_radius
+        self.b0 = b0
+        self.bdot = bdot
+        self.phi12 = phi12
+        self.h_ratio = h_ratio
+        self.h_num = h_num
+        self.trans_gamma = transitional_gamma
+        self.e_rest = rest_energy
+        self.q = charge
+        self.g_coupling = g_coupling
+        self.zwall_over_n = zwall_over_n
+        self.min_dt = min_dt
+        self.max_dt = max_dt
+        self.nprofiles = nprofiles
+        self.pickup_sensitivity = pickup_sensitivity
+        self._xat0 = xat0
+        self._dtbin = dtbin
+        self.nbins = nbins
+
+        # Flags
+        self.self_field_flag = self_field_flag
+        self.full_pp_flag = full_pp_flag
+
+        # Reconstruction parameters
+        self.machine_ref_frame = machine_ref_frame
+        self.beam_ref_frame = beam_ref_frame
+        self.snpt = snpt
+        self.niter = niter
+        self.filmstart = filmstart
+        self.filmstop = filmstop
+        self.filmstep = filmstep
+        self.output_dir = output_dir
+
 
     @property
     def xat0(self):
@@ -157,6 +174,8 @@ class Machine:
 
         # Calculate RF-voltages at each turn
         self.vrf1_at_turn, self.vrf2_at_turn = self.rfv_at_turns()
+
+        self._calc_xorigin()
 
     # Initiating arrays in order to store information about parameters
     # that has a different value every turn.

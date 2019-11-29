@@ -202,62 +202,65 @@ def txt_input_to_machine(input_array):
     for i in range(len(input_array)):
             input_array[i] = input_array[i].strip('\r\n')
 
-    machine = mach.Machine()
-    machine.output_dir          = input_array[14]
-    machine._dtbin               = float(input_array[22])
-    machine.dturns              = int(input_array[24])
-    machine._xat0               = float(input_array[39])
-    machine.demax               = float(input_array[41])
-    machine.filmstart           = int(input_array[43]) -1
-    machine.filmstop            = int(input_array[45])
-    machine.filmstep            = int(input_array[47])
-    machine.niter               = int(input_array[49])
-    machine.snpt                = int(input_array[51])
-    machine.full_pp_flag        = bool(int(input_array[53]))
-    machine.beam_ref_frame      = int(input_array[55]) - 1
-    machine.machine_ref_frame   = int(input_array[57]) - 1
-    machine.vrf1                = float(input_array[61])
-    machine.vrf1dot             = float(input_array[63])
-    machine.vrf2                = float(input_array[65])
-    machine.vrf2dot             = float(input_array[67])
-    machine.h_num               = float(input_array[69])
-    machine.h_ratio             = float(input_array[71])
-    machine.phi12               = float(input_array[73])
-    machine.b0                  = float(input_array[75])
-    machine.bdot                = float(input_array[77])
-    machine.mean_orbit_rad      = float(input_array[79])
-    machine.bending_rad         = float(input_array[81])
-    machine.trans_gamma         = float(input_array[83])
-    machine.e_rest              = float(input_array[85])
-    machine.q                   = float(input_array[87])
-    machine.self_field_flag     = bool(int(input_array[91]))
-    machine.g_coupling          = float(input_array[93])
-    machine.zwall_over_n        = float(input_array[95])
-    machine.pickup_sensitivity  = float(input_array[97])
 
-    frame = _input_to_frame(input_array)
-    machine.nprofiles = frame.nprofs()
-    machine.nbins = frame.nbins()
+    fargs = {
+             'raw_data_path':       input_array[12],
+             'framecount':          int(input_array[16]),
+             'skip_frames':         int(input_array[18]),
+             'framelength':         int(input_array[20]),
+             'dtbin':               float(input_array[22]),
+             'skip_bins_start':     int(input_array[26]),
+             'skip_bins_end':       int(input_array[28]),
+             'rebin':               int(input_array[36])
+            }
+
+    frame = Frames(**fargs)
+    nprofiles = frame.nprofs()
+    nbins = frame.nbins()
+
+    min_dt, max_dt = _min_max_dt(nbins, input_array)
+
+    margs = {
+             'output_dir':          input_array[14],
+             'dtbin':               float(input_array[22]),
+             'dturns':              int(input_array[24]),
+             'xat0':                float(input_array[39]),
+             'demax':               float(input_array[41]),
+             'filmstart':           int(input_array[43]) - 1,
+             'filmstop':            int(input_array[45]),
+             'filmstep':            int(input_array[47]),
+             'niter':               int(input_array[49]),
+             'snpt':                int(input_array[51]),
+             'full_pp_flag':        bool(int(input_array[53])),
+             'beam_ref_frame':      int(input_array[55]) - 1,
+             'machine_ref_frame':   int(input_array[57]) - 1,
+             'vrf1':                float(input_array[61]),
+             'vrf1dot':             float(input_array[63]),
+             'vrf2':                float(input_array[65]),
+             'vrf2dot':             float(input_array[67]),
+             'h_num':               float(input_array[69]),
+             'h_ratio':             float(input_array[71]),
+             'phi12':               float(input_array[73]),
+             'b0':                  float(input_array[75]),
+             'bdot':                float(input_array[77]),
+             'mean_orbit_radius':   float(input_array[79]),
+             'bending_radius':      float(input_array[81]),
+             'transitional_gamma':  float(input_array[83]),
+             'rest_energy':         float(input_array[85]),
+             'charge':              float(input_array[87]),
+             'self_field_flag':     bool(int(input_array[91])),
+             'g_coupling':          float(input_array[93]),
+             'zwall_over_n':        float(input_array[95]),
+             'pickup_sensitivity':  float(input_array[97]),
+             'nprofiles':           nprofiles,
+             'nbins':               nbins,
+             'min_dt':              min_dt,
+             'max_dt':              max_dt
+            }
+
+    machine = mach.Machine(**margs)
     
-    min_dt, max_dt = _min_max_dt(machine.nbins, input_array)
-    machine.min_dt = min_dt
-    machine.max_dt = max_dt
-
     return machine, frame
-
-def _input_to_frame(input_array):
-    raw_data_path = input_array[12]
-    framecount = int(input_array[16])
-    skip_frames = int(input_array[18])
-    framelength = int(input_array[20])
-    skip_bins_start = int(input_array[26])
-    skip_bins_end = int(input_array[28])
-    rebin = int(input_array[36])
-    sampling_time = float(input_array[22])
-    
-    return Frames(framecount, framelength, skip_frames, skip_bins_start,
-                  skip_bins_end, rebin, sampling_time,
-                  raw_data_path=raw_data_path)
 
 def _min_max_dt(nbins, input_array):
     dtbin = float(input_array[22])
