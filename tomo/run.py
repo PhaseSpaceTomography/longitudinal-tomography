@@ -17,18 +17,23 @@ from utils.tomo_output import (show, adjust_outpath,
 #        Program 
 # =========================
 
+# --------------------- FORTRAN SPESCIFIC ------------------------
+
 # Loading input
 raw_param, raw_data = get_user_input()
 
 # Generating machine object
-machine, frames = txt_input_to_machine(raw_param)  # <- fortran style read
+machine, frames = txt_input_to_machine(raw_param)
 machine.values_at_turns()
-frames.raw_data = raw_data
+waterfall = frames.to_waterfall(raw_data)
+
+# ------------------- END FORTRAN SPESCIFIC -----------------------
 
 # Creating profiles object
-profiles = raw_data_to_profiles(frames.to_waterfall(), machine,
-                                frames.rebin, frames.sampling_time)
-# profiles.calc_self_fields()
+profiles = raw_data_to_profiles(waterfall, machine, frames.rebin,
+                                frames.sampling_time)
+profiles.calc_profilecharge()
+profiles.calc_self_fields()
 
 if profiles.machine.xat0 < 0:
     fit_info = fit_xat0(profiles)
@@ -39,7 +44,7 @@ reconstr_idx = machine.filmstart
 # Tracking...
 tracker = Tracking(machine)
 tracker.enable_fortran_output(profiles.profile_charge)
-# tracker.enable_self_fields(profiles)
+tracker.enable_self_fields(profiles)
 
 xp, yp = tracker.track(rec_prof=reconstr_idx)
 
@@ -50,4 +55,5 @@ weight = tomo.run()
 # Creating and presenting phase-space image
 nbins = profiles.machine.nbins
 image = create_phase_space_image(xp, yp, weight, nbins, reconstr_idx)
+
 show(image, tomo.diff, profiles.waterfall[reconstr_idx])
