@@ -68,13 +68,16 @@ class RebinningError(Exception):
     pass
 
 
-class ProfilesReducedToZero(Exception):
+class WaterfallReducedToZero(Exception):
     pass
 
 class FilteredProfilesError(Exception):
     pass
 
 class WaterfallError(Exception):
+    pass
+
+class ProfileChargeNotCalculated(Exception):
     pass
 
 # ============================
@@ -102,6 +105,12 @@ class MapCreationError(Exception):
 # ============================
 
 class InvalidParticleError(Exception):
+    pass
+
+class TrackingError(Exception):
+    pass
+
+class SelfFieldTrackingError(Exception):
     pass
 
 # ============================
