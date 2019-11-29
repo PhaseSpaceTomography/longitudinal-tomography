@@ -3,7 +3,7 @@ import os
 import sys
 
 from .. import profiles as profs
-from .. import new_machine as mach
+from .. import machine as mach
 from .. import data_treatment as threat
 from . import exceptions as expt
 

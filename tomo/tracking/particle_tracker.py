@@ -1,8 +1,8 @@
 import numpy as np
 import logging as log
 
-from ..new_machine import Machine
-from ..particles import Particles
+from .. import machine as mach
+from .. import particles as pts 
 from ..utils import assertions as asrt
 from ..utils import exceptions as expt
 from ..utils import tomo_output as tomoout
@@ -13,14 +13,14 @@ class ParticleTracker:
     # The tracking routine works on a copy of the input coordinates.
     def __init__(self, machine):
 
-        if not isinstance(machine, Machine):
+        if not isinstance(machine, mach.Machine):
             err_msg = 'Input argument must be Machine.'
             raise expt.MachineParameterError(err_msg)
 
         self._assert_machine(machine)
         self.machine = machine
 
-        self.particles = Particles(self.machine)
+        self.particles = pts.Particles(self.machine)
 
         self.nturns = machine.dturns * (machine.nprofiles - 1)
         self._ftn_flag = False

@@ -1,136 +1,28 @@
-import logging
-import physics
+import logging as log
 import numpy as np
 from scipy import optimize
-from utils.assertions import (assert_machine_input,
-                              assert_parameter_arrays,
-                              assert_greater)
-from utils.exceptions import (InputError,
-                              MachineParameterError,
-                              SpaceChargeParameterError)
 
-# ================
-# About the class:
-# ================
-# The machine class receives input parameters and machine settings for the reconstruction.
-# These parameters creates the basis of the interpretation of the measured profiles in the time_space class,
-# and the particle tracking in the reconstruction class. The machine class also stores
-# information created in time space calculations.
-#
-# ========================
-# Parameters to be loaded:
-# ========================
-# Settings for reconstruction:
-# ----------------------------
-# xat0              Synchronous phase in bins in beam_ref_frame
-#                    read form file as time (in frame bins) from the lower profile bound to the synchronous phase
-#                    (if < 0, a fit is performed) in the "bunch reference" frame
-# rebin             Re-binning factor - Number of frame bins to re-bin into one profile bin
-# rawdata_file      Input data file
-# output_dir        Directory in which to write all output
-# framecount        Number of frames in input data
-# framelength       Length of each trace in the 'raw' input file - number of bins in each frame
-# dtbin             Pixel width (in seconds)
-# demax             maximum energy of reconstructed phase space
-# dturns            Number of machine turns between each measurement
-# preskip_length    Subtract this number of bins from the beginning of the 'raw' input traces
-# postskip_length   Subtract this number of bins from the end of the 'raw' input traces
-# imin_skip         Number of frame bins after the lower profile bound to treat as empty during reconstruction
-# imax_skip         Number of frame bins after the upper profile bound to treat as empty during reconstruction
-# framecount        Number of frames in input data
-# frame_skipcount   Ignore this number of frames/traces from the beginning of the 'raw' input file
-# snpt              Square root of number of test particles tracked from each pixel of reconstructed phase space
-# niter             Number of iterations in the reconstruction process
-# machine_ref_frame Frame to which machine parameters are referenced (b0,VRF1,VRF2...)
-# beam_ref_frame    Frame to which beam parameters are referenced
-# filmstart         First profile to be reconstructed
-# filmstop          Last profile to be reconstructed
-# filmstep          Step between consecutive reconstructions for the profiles from filmstart to filmstop
-# full_pp_flag      If set, all pixels in reconstructed phase space will be tracked
-#
-# Machine and Particle Parameters:
-# --------------------------------
-# vrf1, vrf2        Peak voltage of first and second RF system at machine_ref_frame
-# vrfXdot           Time derivatives of the RF voltages (considered constant)
-# mean_orbit_rad    Machine mean orbit radius (in m)
-# bending_rad       Machine bending radius    (in m)
-# b0                B-field at machine_ref_frame
-# bdot              Time derivative of B-field (considered constant)
-# phi12             Phase difference between the two RF systems (considered constant)
-# h_ratio           Ratio of harmonics between the two RF systems
-# h_num             Principle harmonic number
-# trans_gamma       Transitional gamma
-# e_rest            Rest energy of accelerated particle
-# q                 Charge state of accelerated particle
-#
-# Space charge parameters:
-# ------------------------
-# self_field_flag       Flag to include self-fields in the tracking
-# g_coupling            Space charge coupling coefficient (geometrical coupling coefficient)
-# zwall_over_n          Magnitude of Zwall/n, reactive impedance (in Ohms per mode number) over a machine turn
-# pickup_sensitivity    Effective pick-up sensitivity (in digitizer units per instantaneous Amp)
-#
-# ======================
-# calculated parameters:
-# ======================
-# Arrays with information for each machine turn:
-# ----------------------------------------------
-# time_at_turn      Time at each turn, relative to machine_ref_frame at the end of each turn
-# omega_rev0        Revolution frequency at each turn
-# phi0              Synchronous phase angle at the end of each turn
-# dphase            Coefficient used for calculating difference from phase n to phase n + 1.
-#                    needed in trajectory height calculator and longtrack.
-# sfc               Self-field_coefficient
-# beta0             Lorenz beta factor (v/c) at the end of each turn
-# eta0              Phase slip factor at each turn
-# e0                Total energy of synchronous particle at the end of each turn
-# deltaE0           Difference between total energy at the end of the turns n and n-1
-#
-# calculated variables:
-# ---------------------
-# nprofiles         Number of profiles
-# nbins             Length of profile (in number of bins)
-# profile_mini      Index of first and last "active" index in profile
-# profile_maxi
-# all_data          Total number of data points in the 'raw' input file
-# xorigin           absolute difference in bins between phase=0
-#                    and origin of the reconstructed phase-space coordinate system.
-# yat0              Synchronous energy (0 in relative terms)
-#                    in reconstructed phase space coordinate system
+from . import physics
+from .utils import assertions as asrt
+from .utils import exceptions as expt
 
 class Machine:
 
     def __init__(self):
 
-        # ========================
-        # Parameters to be loaded:
-        # ========================
-        self._xat0 = None
-
-        # self.rebin = None
-        # self.rawdata_file = None
         self.output_dir = None
-        # self.framecount = None
-        # self.framelength = None
+        self._xat0 = None
         self._dtbin = None
         self.demax = None
         self.dturns = None
-        # self.preskip_length = None
-        # self.postskip_length = None
-
-        # self.imin_skip = None
-        # self.imax_skip = None
-        # self.frame_skipcount = None
         self.snpt = None
         self.niter = None
         self.machine_ref_frame = None
         self.beam_ref_frame = None
-        self.filmstep = None
         self.filmstart = None
         self.filmstop = None
+        self.filmstep = None
         self.full_pp_flag = None
-
-        # Machine and Particle Parameters:
         self.vrf1 = None
         self.vrf2 = None
         self.vrf1dot = None
@@ -145,39 +37,13 @@ class Machine:
         self.trans_gamma = None
         self.e_rest = None
         self.q = None
-
-        # Space charge parameters:
         self.self_field_flag = None
         self.g_coupling = None
         self.zwall_over_n = None
         self.pickup_sensitivity = None
-
-        # New
-        # To substitute for self.profile_maxi and self.profile_mini 
-        self.max_dt = None              # If imin and max_skip is given
-        self.min_dt = None              # as phase, these can be give here one time.
-
-        # calculated parameters:
-        # ======================
-        # xorigin
-        # time_at_turn
-        # omega_rev0
-        # phi0
-        # dphase
-        # deltaE0
-        # sfc
-        # beta0
-        # eta0
-        # e0
-        # vrf1_at_turn
-        # vrf2_at_turn
-        # nprofiles
-        # _nbins
-        # yat0
-        # xorigin
-        # profile_mini
-        # profile_maxi
-        # all_data
+        self.max_dt = None
+        self.min_dt = None
+        self.nprofiles = None
 
     @property
     def xat0(self):
@@ -187,9 +53,9 @@ class Machine:
     def xat0(self, in_xat0):
         self._xat0 = in_xat0
         self._calc_xorigin()
-        logging.info(f'xorigin was updated when '\
-                     f'the value of xat0 was changed.\nNew values - '
-                     f'xat0: {self.xat0}, xorigin: {self.xorigin}')
+        log.info(f'xorigin was updated when '\
+                 f'the value of xat0 was changed.\nNew values - '
+                 f'xat0: {self.xat0}, xorigin: {self.xorigin}')
 
     @property
     def nbins(self):
@@ -199,9 +65,9 @@ class Machine:
     def nbins(self, in_nbins):
         self._nbins = in_nbins
         self._find_yat0()
-        logging.info(f'yat0 was updated when the '
-                     f'number of profile bins changed.\nNew values - '
-                     f'nbins: {self.nbins}, yat0: {self.yat0}')
+        log.info(f'yat0 was updated when the '
+                 f'number of profile bins changed.\nNew values - '
+                 f'nbins: {self.nbins}, yat0: {self.yat0}')
 
     @property
     def dtbin(self):
@@ -211,18 +77,9 @@ class Machine:
     def dtbin(self, value):
         self._dtbin = value
         self._calc_xorigin()
-        logging.info(f'xorigin was updated when '\
-                     f'the value of dtbin was changed.\nNew values - '
-                     f'dtbin: {self.dtbin}, xorigin: {self.xorigin}')
-    
-    # Fills up parameters object complete based
-    #  on partly filled object.
-    #  partly filled based on input from 
-    #  e.g. input file. 
-    def fill(self):
-        assert_machine_input(self)
-        self._init_parameters()
-        assert_parameter_arrays(self)
+        log.info(f'xorigin was updated when '\
+                 f'the value of dtbin was changed.\nNew values - '
+                 f'dtbin: {self.dtbin}, xorigin: {self.xorigin}')
 
     # Function for setting the xat0 if a fit has been performed.
     # Saves parameters gathered from fit, needed by the 'print_plotinfo'
@@ -230,75 +87,18 @@ class Machine:
     # Fit info should be a tuple of the following format:
     # (fitted_xat0, lower foot tangent, upper foot tangent)  
     def load_fitted_xat0_ftn(self, fit_info):
-        logging.info('Saving fitted xat0 to machine object.')
+        log.info('Saving fitted xat0 to machine object.')
         self.fitted_xat0 = fit_info[0]
         self.tangentfoot_low = fit_info[1]
         self.tangentfoot_up = fit_info[2]
         self.xat0 = self.fitted_xat0
 
-    # Subroutine for setting up parameters based on given input file.
-    # Values are calculated immediately after the 'single' cavity of the ring
-    def _init_parameters(self):
-        # Fills up arrays with values for each turn.
-        self._turn_values()
-
-        # Changes due to re-bin factor > 1
-        # self.dtbin = self.dtbin * self.rebin
-        # self.xat0 = self.xat0 / float(self.rebin)
-
-        # All of these can be moved out! (I think)...
-        # self.nprofiles = self.framecount - self.frame_skipcount
-        # self.nbins = (self.framelength - self.preskip_length
-        #               - self.postskip_length)
-        # ...
-
-        # To be removed..
-        # self.profile_mini, self.profile_maxi = self._find_imin_imax()
-        # ...
-
-        # Then these ones can also be calculated outside.
-        # Gives max reconstuction area in phase, not bin.
-        # self.find_min_max_dt()
-        # In this case, the parameters to be stored are fewer.
-
-        # calculating total number of data points in the input file
-        # self.all_data = self.framecount * self.framelength
-
-        # Find self field coefficient for each profile
-        # self.sfc = physics.calc_self_field_coeffs(self)
-
-    # Initiating arrays in order to store information about parameters
-    # that has a different value every turn.
-    def _init_arrays(self, all_turns):
-        array_length = all_turns + 1
-        self.time_at_turn = np.zeros(array_length)
-        self.omega_rev0 = np.zeros(array_length)
-        self.phi0 = np.zeros(array_length)
-        self.dphase = np.zeros(array_length)
-        self.deltaE0 = np.zeros(array_length)
-        self.beta0 = np.zeros(array_length)
-        self.eta0 = np.zeros(array_length)
-        self.e0 = np.zeros(array_length)
-
-    # Calculating start-values for the parameters that changes for each turn.
-    # The reference frame where the start-values are calculated is the machine reference frame.
-    # (machine ref. frame -1 to adjust for fortran input files)
-    def _array_initial_values(self):
-        i0 = self.machine_ref_frame * self.dturns
-        self.time_at_turn[i0] = 0
-        self.e0[i0] = physics.b_to_e(self)
-        self.beta0[i0] = physics.lorenz_beta(self, i0)
-        phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
-        # Synchronous phase of a particle on the nominal orbit
-        self.phi0[i0] = physics.find_synch_phase(self, i0, phi_lower,
-                                                 phi_upper)
-        return i0
-
     # Calculating values that changes for each m. turn.
     # First is the arrays inited at index of machine ref. frame (i0).
     # Based on this value are the rest of the values calculated;
     # first, upwards from i0 to total number of turns + 1, then downwards from i0 to 0 (first turn).
-    def _turn_values(self):
+    def values_at_turns(self):
+        # Add input assertions.
         all_turns = self._calc_number_of_turns()
         self._init_arrays(all_turns)
         i0 = self._array_initial_values()
@@ -356,22 +156,34 @@ class Machine:
         self.omega_rev0 = physics.revolution_freq(self)
 
         # Calculate RF-voltages at each turn
-        (self.vrf1_at_turn,
-         self.vrf2_at_turn) = self.rfv_at_turns()
+        self.vrf1_at_turn, self.vrf2_at_turn = self.rfv_at_turns()
 
-    # Finding min and max index in profiles.
-    # The indexes outside of these are treated as 0
-    # def _find_imin_imax(self):
-    #     profile_mini = self.imin_skip / self.rebin
-    #     if (self._nbins - self.imax_skip) % self.rebin == 0:
-    #         profile_maxi = ((self._nbins - self.imax_skip) / self.rebin)
-    #     else:
-    #         profile_maxi = ((self._nbins - self.imax_skip) / self.rebin + 1)
-    #     return int(profile_mini), int(profile_maxi)
+    # Initiating arrays in order to store information about parameters
+    # that has a different value every turn.
+    def _init_arrays(self, all_turns):
+        array_length = all_turns + 1
+        self.time_at_turn = np.zeros(array_length)
+        self.omega_rev0 = np.zeros(array_length)
+        self.phi0 = np.zeros(array_length)
+        self.dphase = np.zeros(array_length)
+        self.deltaE0 = np.zeros(array_length)
+        self.beta0 = np.zeros(array_length)
+        self.eta0 = np.zeros(array_length)
+        self.e0 = np.zeros(array_length)
 
-    def find_min_max_dt(self):
-        self.min_dt = self.imin_skip * self.dtbin
-        self.max_dt = (self.nbins - self.imax_skip) * self.dtbin
+    # Calculating start-values for the parameters that changes for each turn.
+    # The reference frame where the start-values are calculated is the machine reference frame.
+    # (machine ref. frame -1 to adjust for fortran input files)
+    def _array_initial_values(self):
+        i0 = self.machine_ref_frame * self.dturns
+        self.time_at_turn[i0] = 0
+        self.e0[i0] = physics.b_to_e(self)
+        self.beta0[i0] = physics.lorenz_beta(self, i0)
+        phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
+        # Synchronous phase of a particle on the nominal orbit
+        self.phi0[i0] = physics.find_synch_phase(self, i0, phi_lower,
+                                                 phi_upper)
+        return i0
 
     # Calculate the absolute difference (in bins) between phase=0 and
     # origin of the reconstructed phase space coordinate system.
@@ -382,13 +194,10 @@ class Machine:
                            * self.omega_rev0[reference_turn]
                            * self.dtbin)
                         - self.xat0)
-        logging.debug(f'xat0: {self.xat0}, xorigin: {self.xorigin}')
 
     def _find_yat0(self):
         self.yat0 = self.nbins / 2.0
 
-    # Calculates rf voltage for each turn based on a linear approximation.
-    # Result is multiplied by particle charge.
     def rfv_at_turns(self):
         rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn
         rf2v = self.vrf2 + self.vrf2dot * self.time_at_turn
@@ -396,8 +205,8 @@ class Machine:
 
     # Calculating total number of machine turns
     def _calc_number_of_turns(self):
-        all_turns = (self.framecount - self.frame_skipcount - 1) * self.dturns
-        assert_greater(all_turns, 'all_turns', 0, InputError,
-                       'Make sure that frame skip-count'
-                       'do not exceed number of frames')
+        all_turns = (self.nprofiles - 1) * self.dturns
+        asrt.assert_greater(all_turns, 'all_turns', 0, expt.InputError,
+                            'Make sure that frame skip-count'
+                            'do not exceed number of frames')
         return all_turns
