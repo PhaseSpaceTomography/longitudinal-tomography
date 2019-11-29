@@ -3,8 +3,10 @@ import numpy as np
 from scipy import signal
 from physics import e_UNIT, calc_self_field_coeffs
 from utils.assertions import assert_equal, assert_inrange, assert_greater
-from utils.exceptions import (RawDataImportError, InputError, RebinningError,
-                              FilteredProfilesError, ProfilesReducedToZero)
+from utils.exceptions import (RawDataImportError, WaterfallError,
+                              RebinningError, FilteredProfilesError,
+                              WaterfallReducedToZero,
+                              ProfileChargeNotCalculated)
 # ================
 # About TimeSpace:   <- fix!
 # ================
@@ -43,11 +45,15 @@ from utils.exceptions import (RawDataImportError, InputError, RebinningError,
 
 class Profiles:
 
-    def __init__(self, machine, sampling_time, waterfall=None):
+    def __init__(self, machine, sampling_time, waterfall,
+                 profile_charge=None):
         self.machine = machine
         self.sampling_time = sampling_time
-        if waterfall is not None:
-            self.waterfall = waterfall
+        
+        self.waterfall = waterfall
+
+        self.profile_charge = profile_charge
+
 
     @property
     def waterfall(self):
@@ -55,29 +61,41 @@ class Profiles:
 
     @waterfall.setter
     def waterfall(self, new_waterfall):
-        if not hasattr(new_waterfall, '__iter__'):
-            raise InputError('waterfall should be an iterable.')
         log.info('Loading waterfall...')
+        
+        if not hasattr(new_waterfall, '__iter__'):
+            raise WaterfallError('waterfall should be an iterable.')
+
+        if not new_waterfall.shape[0] == self.machine.nprofiles:
+            raise WaterfallError(f'Waterfall does not correspond to given '
+                                 f'machine object.\nExpected nr of profiles: '
+                                 f'{self.machine.nprofiles}, nr of profiles '
+                                 f'in waterfall: {new_waterfall.shape[0]}')
+
+        new_waterfall = np.array(new_waterfall)
         self._waterfall = new_waterfall.clip(0.0)
         if np.sum(np.abs(self.waterfall)) == 0.0:
-            raise ProfilesReducedToZero()
-        self.profile_charge = self.calc_profilecharge(
-                                self._waterfall[self.machine.beam_ref_frame])
-        self._waterfall = (self._waterfall
-                            / np.vstack(np.sum(self._waterfall, axis=1)))
+            raise WaterfallReducedToZero()
+        
         self.machine.nbins = self._waterfall.shape[1]
-        log.info(f'Waterfall loaded. (profile charge: '
-                 f'{self.profile_charge:.3E}, nbins: {self.machine.nbins})')
+        log.info(f'Waterfall loaded with shape: {self.waterfall.shape})')
 
-    # Calculate the total charge of profile
-    def calc_profilecharge(self, ref_prof):
-        return (np.sum(ref_prof) * self.sampling_time
-                / (e_UNIT * self.machine.pickup_sensitivity))
+    # Calculate the total charge of profile.
+    # Uses the beam reference profile for the calculation
+    def calc_profilecharge(self,):
+        ref_prof = self.waterfall[self.machine.beam_ref_frame]
+        self.profile_charge = (np.sum(ref_prof) * self.sampling_time
+                               / (e_UNIT * self.machine.pickup_sensitivity)) 
 
     # Calculate self-fields based on filtered profiles.
     # If filtered profiles are not provided by the user,
     # standard filter (savitzky-golay smoothing filter) is used.
     def calc_self_fields(self, filtered_profiles=None):
+        if self.profile_charge is None:
+            err_msg = 'Profile charge must be calculated before '\
+                      'calculating the self-fields'
+            raise ProfileChargeNotCalculated(err_msg)
+
         if filtered_profiles is None:
             self.dsprofiles = signal.savgol_filter(
                                 x=self._waterfall, window_length=7,
