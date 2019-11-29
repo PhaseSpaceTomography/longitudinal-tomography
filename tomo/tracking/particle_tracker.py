@@ -2,8 +2,10 @@ import numpy as np
 import logging as log
 from new_machine import Machine
 from particles import Particles
-from utils.assertions import assert_machine, assert_greater_or_equal
-from utils.exceptions import MachineParameterError
+from utils.assertions import assert_fields, assert_greater_or_equal
+from utils.exceptions import (MachineParameterError, InputError,
+                              SelfFieldTrackingError,
+                              ProfileChargeNotCalculated)
 from utils.tomo_output import write_plotinfo_ftn
 
 
@@ -29,21 +31,31 @@ class ParticleTracker:
     # variables to perform the tracking.
     # Does not check parameters for calculating using self-fields.
     def _assert_machine(self, machine):
-        needed_parameters = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
-                             'nprofiles', 'dphase', 'dturns', 'phi0',
-                             'phi12', 'h_ratio', 'deltaE0', 'xat0']
-        assert_machine(machine, needed_parameters)
+        needed_fieds = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
+                        'nprofiles', 'dphase', 'dturns', 'phi0',
+                        'phi12', 'h_ratio', 'deltaE0', 'xat0']
+        assert_fields(machine, 'machine', needed_fieds,
+                      MachineParameterError,
+                      'Did you remember to use machine.fill()?')
         assert_greater_or_equal(machine.xat0, 'xat0', 0,
                                 MachineParameterError,
                                 'particle tracking needs a valid xat0 value.')
 
+    # Only for Fortran output
     def enable_fortran_output(self, profile_charge):
+        if profile_charge is None:
+            err_msg = 'profile_charge is needed for fortran-style output'
+            raise ProfileChargeNotCalculated(err_msg)
+
         self._ftn_flag = True
         log.info('Fortran style output for particle tracking enabled!')
         print(write_plotinfo_ftn(self.particles._psinfo, profile_charge))
 
     def enable_self_fields(self, profiles):
-        # Check that all necessarry variables are present.
+        needed_fieds = ['phiwrap', 'vself']
+        assert_fields(profiles, 'profiles', needed_fieds,
+                      SelfFieldTrackingError)
+
         self._phiwrap = profiles.phiwrap
         self._vself = profiles.vself
         self._self_field_flag = True
