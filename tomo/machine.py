@@ -116,7 +116,7 @@ class Machine:
     # first, upwards from i0 to total number of turns + 1, then downwards from i0 to 0 (first turn).
     def values_at_turns(self):
         # Add input assertions.
-        all_turns = self._calc_number_of_turns()
+        all_turns = (self.nprofiles - 1) * self.dturns
         self._init_arrays(all_turns)
         i0 = self._array_initial_values()
 
@@ -205,12 +205,12 @@ class Machine:
         return i0
 
     # Calculate the absolute difference (in bins) between phase=0 and
-    # origin of the reconstructed phase space coordinate system.
+    # origin of the reconstructed phase-space coordinate system.
     def _calc_xorigin(self):
-        reference_turn = self.beam_ref_frame * self.dturns
-        self.xorigin = (self.phi0[reference_turn]
+        beam_ref_turn = self.beam_ref_frame * self.dturns
+        self.xorigin = (self.phi0[beam_ref_turn]
                         / (self.h_num
-                           * self.omega_rev0[reference_turn]
+                           * self.omega_rev0[beam_ref_turn]
                            * self.dtbin)
                         - self.xat0)
 
@@ -221,11 +221,3 @@ class Machine:
         rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn
         rf2v = self.vrf2 + self.vrf2dot * self.time_at_turn
         return rf1v, rf2v
-
-    # Calculating total number of machine turns
-    def _calc_number_of_turns(self):
-        all_turns = (self.nprofiles - 1) * self.dturns
-        asrt.assert_greater(all_turns, 'all_turns', 0, expt.InputError,
-                            'Make sure that frame skip-count'
-                            'do not exceed number of frames')
-        return all_turns
