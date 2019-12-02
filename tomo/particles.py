@@ -49,6 +49,7 @@ class Particles(object):
         self._psinfo = psi.PhaseSpaceInfo(self._machine)
         self._psinfo.find_binned_phase_energy_limits()
         self.dEbin = self._psinfo.dEbin
+        self.xorigin = self._psinfo.xorigin
 
         self.x_coords = None
         self.y_coords = None
@@ -111,7 +112,7 @@ class Particles(object):
     # and energy (y-axis).
     # This format is needed for the particle tracking routine.  
     def init_coords_to_physical(self, turn):
-        dphi = ((self.x_coords + self._machine.xorigin)
+        dphi = ((self.x_coords + self.xorigin)
                 * self._machine.h_num
                 * self._machine.omega_rev0[turn]
                 * self._machine.dtbin
@@ -141,9 +142,9 @@ class Particles(object):
                            * np.vstack(
                                 self._machine.omega_rev0[turns])
                            * self._machine.dtbin)
-                        - self._machine.xorigin)
+                        - self.xorigin)
 
-        yp[profiles] = (tracked_denergy[profiles] / float(self._psinfo.dEbin)
+        yp[profiles] = (tracked_denergy[profiles] / float(self.dEbin)
                         + self._machine.yat0)
         return xp, yp
 

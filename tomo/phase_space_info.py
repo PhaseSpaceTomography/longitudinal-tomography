@@ -65,8 +65,7 @@ class PhaseSpaceInfo:
         self.imin = None
         self.imax = None
         self.dEbin = None
-        self.allbin_min = None
-        self.allbin_max = None
+        self.xorigin = None
 
 
     # Main function for the class. finds limits in i (phase) and j (energy) axis.
@@ -75,6 +74,7 @@ class PhaseSpaceInfo:
     #   - phases: phase at the edge of each bin along the i-axis
     def find_binned_phase_energy_limits(self):
 
+        self.xorigin = self.calc_xorigin()
         self.dEbin = self.find_dEbin()
 
         # If dEbin is less than 0, an error is raised.  
@@ -140,6 +140,17 @@ class PhaseSpaceInfo:
         else:
             return (float(self.machine.demax)
                     / (self.machine.nbins - self.machine.yat0))
+
+
+    # Calculate the absolute difference (in bins) between phase=0 and
+    # origin of the reconstructed phase-space coordinate system.
+    def calc_xorigin(self):
+        beam_ref_turn = self.machine.beam_ref_frame * self.machine.dturns
+        return (self.machine.phi0[beam_ref_turn]
+                / (self.machine.h_num
+                   * self.machine.omega_rev0[beam_ref_turn]
+                   * self.machine.dtbin)
+                - self.machine.xat0)
 
     # Finding limits for tracking all pixels in reconstructed phase space.
     def _limits_track_full_image(self):
@@ -247,7 +258,7 @@ class PhaseSpaceInfo:
     # Returns an array of phases for a given turn
     def _calculate_phases(self, turn):
         indarr = np.arange(self.machine.nbins + 1)
-        phases = ((self.machine.xorigin + indarr)
+        phases = ((self.xorigin + indarr)
                   * self.machine.dtbin
                   * self.machine.h_num
                   * self.machine.omega_rev0[turn])

@@ -134,7 +134,7 @@ class Tracking(ptracker.ParticleTracker):
 
         xp[rec_prof] = self._calc_xp_sf(
                             dphi, self.machine.phi0[rec_turn],
-                            self.machine.xorigin,self.machine.h_num,
+                            self.particles.xorigin,self.machine.h_num,
                             self.machine.omega_rev0[rec_turn],
                             self.machine.dtbin, self._phiwrap)
 
@@ -148,7 +148,7 @@ class Tracking(ptracker.ParticleTracker):
             turn += 1
 
             temp_xp = self._calc_xp_sf(dphi, self.machine.phi0[turn],
-                                       self.machine.xorigin,
+                                       self.particles.xorigin,
                                        self.machine.h_num,
                                        self.machine.omega_rev0[turn],
                                        self.machine.dtbin,
@@ -187,7 +187,7 @@ class Tracking(ptracker.ParticleTracker):
                              nparts, turn, up=False) 
 
             temp_xp = self._calc_xp_sf(
-                        dphi, self.machine.phi0[turn], self.machine.xorigin,
+                        dphi, self.machine.phi0[turn], self.particles.xorigin,
                         self.machine.h_num, self.machine.omega_rev0[turn],
                         self.machine.dtbin, self._phiwrap)
 

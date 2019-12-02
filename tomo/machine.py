@@ -20,7 +20,7 @@ class Machine:
         # TODO: Take rfv info as a single input
         # TODO: Take b-field info as a single input
 
-        # MAchine parameters
+        # Machine parameters
         self.demax = demax
         self.dturns = dturns
         self.vrf1 = vrf1
@@ -43,8 +43,8 @@ class Machine:
         self.max_dt = max_dt
         self.nprofiles = nprofiles
         self.pickup_sensitivity = pickup_sensitivity
-        self._xat0 = xat0
-        self._dtbin = dtbin
+        self.xat0 = xat0
+        self.dtbin = dtbin
         self.nbins = nbins
 
         # Flags
@@ -61,19 +61,6 @@ class Machine:
         self.filmstep = filmstep
         self.output_dir = output_dir
 
-
-    @property
-    def xat0(self):
-        return self._xat0
-
-    @xat0.setter
-    def xat0(self, in_xat0):
-        self._xat0 = in_xat0
-        self._calc_xorigin()
-        log.info(f'xorigin was updated when '\
-                 f'the value of xat0 was changed.\nNew values - '
-                 f'xat0: {self.xat0}, xorigin: {self.xorigin}')
-
     @property
     def nbins(self):
         return self._nbins
@@ -85,18 +72,6 @@ class Machine:
         log.info(f'yat0 was updated when the '
                  f'number of profile bins changed.\nNew values - '
                  f'nbins: {self.nbins}, yat0: {self.yat0}')
-
-    @property
-    def dtbin(self):
-        return self._dtbin
-
-    @dtbin.setter
-    def dtbin(self, value):
-        self._dtbin = value
-        self._calc_xorigin()
-        log.info(f'xorigin was updated when '\
-                 f'the value of dtbin was changed.\nNew values - '
-                 f'dtbin: {self.dtbin}, xorigin: {self.xorigin}')
 
     # Function for setting the xat0 if a fit has been performed.
     # Saves parameters gathered from fit, needed by the 'print_plotinfo'
@@ -175,8 +150,6 @@ class Machine:
         # Calculate RF-voltages at each turn
         self.vrf1_at_turn, self.vrf2_at_turn = self.rfv_at_turns()
 
-        self._calc_xorigin()
-
     # Initiating arrays in order to store information about parameters
     # that has a different value every turn.
     def _init_arrays(self, all_turns):
@@ -203,16 +176,6 @@ class Machine:
         self.phi0[i0] = physics.find_synch_phase(self, i0, phi_lower,
                                                  phi_upper)
         return i0
-
-    # Calculate the absolute difference (in bins) between phase=0 and
-    # origin of the reconstructed phase-space coordinate system.
-    def _calc_xorigin(self):
-        beam_ref_turn = self.beam_ref_frame * self.dturns
-        self.xorigin = (self.phi0[beam_ref_turn]
-                        / (self.h_num
-                           * self.omega_rev0[beam_ref_turn]
-                           * self.dtbin)
-                        - self.xat0)
 
     def _find_yat0(self):
         self.yat0 = self.nbins / 2.0
