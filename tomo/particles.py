@@ -47,7 +47,7 @@ class Particles(object):
     def __init__(self, machine):
         self._machine = machine
         self._psinfo = psi.PhaseSpaceInfo(self._machine)
-        self._psinfo.find_ijlimits()
+        self._psinfo.find_binned_phase_energy_limits()
         self.dEbin = self._psinfo.dEbin
 
         self.x_coords = None
