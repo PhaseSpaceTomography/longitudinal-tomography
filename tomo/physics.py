@@ -99,7 +99,7 @@ def find_synch_phase(machine, rf_turn, phi_lower, phi_upper):
                                   tol=0.0001,
                                   maxiter=100,
                                   args=(machine, rf_turn))
-    return synch_phase.item()
+    return synch_phase
 
 
 def find_phi_lower_upper(machine, rf_turn):

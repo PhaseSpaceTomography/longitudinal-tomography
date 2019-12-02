@@ -35,7 +35,7 @@ class ParticleTracker:
                         'phi12', 'h_ratio', 'deltaE0', 'xat0']
         asrt.assert_fields(
             machine, 'machine', needed_fieds, expt.MachineParameterError,
-            'Did you remember to use machine.fill()?')
+            'Did you remember to use machine.values_at_turns()?')
         asrt.assert_greater_or_equal(
             machine.xat0, 'xat0', 0, expt.MachineParameterError,
             'particle tracking needs a valid xat0 value.')

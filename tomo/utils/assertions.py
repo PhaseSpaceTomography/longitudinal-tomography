@@ -150,7 +150,7 @@ def assert_fields(obj, obj_name, needed_fields, error_class, msg=''):
         if not hasattr(obj, field):
             err_msg = f'Missing parameter "{field}" in {obj_name}.'
             if len(msg) > 0:
-                error_msg += f'\n{msg}' 
+                err_msg += f'\n{msg}' 
             raise error_class(err_msg)
 
 
