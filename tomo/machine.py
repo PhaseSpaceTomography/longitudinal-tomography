@@ -70,7 +70,7 @@
 
 import logging as log
 import numpy as np
-from scipy import optimize
+from scipy import optimize, constants
 
 from .utils import assertions as asrt
 from .utils import exceptions as expt
@@ -171,7 +171,7 @@ class Machine:
         for i in range(i0 + 1, all_turns + 1):
             self.time_at_turn[i] = (self.time_at_turn[i - 1]
                                     + 2 * np.pi * self.mean_orbit_rad
-                                    / (self.beta0[i - 1] * physics.C))
+                                    / (self.beta0[i - 1] * constants.c))
          
             self.phi0[i] = optimize.newton(func=physics.rf_voltage,
                                            x0=self.phi0[i - 1],
@@ -202,7 +202,7 @@ class Machine:
 
             self.time_at_turn[i] = (self.time_at_turn[i + 1]
                                     - 2 * np.pi * self.mean_orbit_rad
-                                    / (self.beta0[i] * physics.C))
+                                    / (self.beta0[i] * constants.c))
             
             self.phi0[i] = optimize.newton(func=physics.rf_voltage,
                                            x0=self.phi0[i + 1],
