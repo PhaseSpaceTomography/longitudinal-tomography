@@ -76,18 +76,18 @@ def write_plotinfo_ftn(ps_info, profile_charge):
 
     # Check if a Fortran styled fit has been performed.
     fit_performed = True
-    fit_info_vars = ['fitted_xat0', 'tangentfoot_low', 'tangentfoot_up']
+    fit_info_vars = ['fitted_xat0', 'bunchlimit_low', 'bunchlimit_up']
     for var in fit_info_vars:
         if not hasattr(ps_info.machine, var):
             fit_performed = False
             break
     if fit_performed:
-        tangentfoot_low = ps_info.machine.tangentfoot_low
-        tangentfoot_up = ps_info.machine.tangentfoot_up
+        bunchlimit_low = ps_info.machine.bunchlimit_low
+        bunchlimit_up = ps_info.machine.bunchlimit_up
         fitted_xat0 = ps_info.machine.fitted_xat0
     else:
-        tangentfoot_low = 0.0
-        tangentfoot_up = 0.0
+        bunchlimit_low = 0.0
+        bunchlimit_up = 0.0
         fitted_xat0 = 0.0
 
     out_s = f' plotinfo.data\n'\
@@ -107,8 +107,8 @@ def write_plotinfo_ftn(ps_info, profile_charge):
             f' xat0 =  {ps_info.machine.xat0:.3f}\n'\
             f' yat0 =  {ps_info.machine.yat0:.3f}\n'\
             f'Foot tangent fit results (in bins):\n'\
-            f' tangentfootl =    {tangentfoot_low:.3f}\n'\
-            f' tangentfootu =    {tangentfoot_up:.3f}\n'\
+            f' tangentfootl =    {bunchlimit_low:.3f}\n'\
+            f' tangentfootu =    {bunchlimit_up:.3f}\n'\
             f' fit xat0 =   {fitted_xat0:.3f}\n'\
             f'Synchronous phase (in radians):\n'\
             f' phi0( {rec_prof+1}) = {ps_info.machine.phi0[rec_turn]:.4f}\n'\

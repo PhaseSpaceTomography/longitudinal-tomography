@@ -147,12 +147,13 @@ class Machine:
     # Saves parameters gathered from fit, needed by the 'print_plotinfo'
     #  function.
     # Fit info should be a tuple of the following format:
-    # (fitted_xat0, lower foot tangent, upper foot tangent)  
+    # (fitted_xat0, lower fbunch limit, upper bunch limit)
+    # fitted_xat0 must be saved for fortran output: 'print_plotinfo'  
     def load_fitted_xat0_ftn(self, fit_info):
         log.info('Saving fitted xat0 to machine object.')
         self.fitted_xat0 = fit_info[0]
-        self.tangentfoot_low = fit_info[1]
-        self.tangentfoot_up = fit_info[2]
+        self.bunchlimit_low = fit_info[1]
+        self.bunchlimit_up = fit_info[2]
         self.xat0 = self.fitted_xat0
 
     # Calculating values that changes for each m. turn.
