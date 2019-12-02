@@ -1,3 +1,73 @@
+# Settings for reconstruction:
+# ----------------------------------------------------------------------------
+# xat0              Synchronous phase in bins in beam_ref_frame
+#                   read form file as time (in frame bins) from the lower
+#                   profile bound to the synchronous phase
+#                   (if < 0, a fit is performed) in the bunch ref. frame
+# yat0              Synchronous energy (0 in relative terms)
+#                   in reconstructed phase space coordinate system
+# dtbin             bin with [s] 
+# demax             maximum energy of reconstructed phase space
+# max_dt            Minimum phase of reconstructed phase space,
+#                   smaler phases are threated as empty.
+# max_dt            Maximum phase of reconstructed phase space,
+#                   larger phases are threated as empty. 
+# snpt              Square root of number of test particles tracked from each
+#                   pixel of reconstructed phase space
+# niter             Number of iterations in the reconstruction process
+# machine_ref_frame Frame to which machine parameters are referenced
+# beam_ref_frame    Frame to which beam parameters are referenced
+# filmstart         First profile to be reconstructed
+# filmstop          Last profile to be reconstructed
+# filmstep          Step between consecutive reconstructions
+#                   for the profiles from filmstart to filmstop
+# full_pp_flag      If set, all pixels in reconstructed
+#                   phase space will be tracked
+#
+# Machine and Particle Parameters:
+# ----------------------------------------------------------------------------
+# vrf1, vrf2        Peak voltage of first and second RF
+#                   system at machine_ref_frame
+# vrfXdot           Time derivatives of the RF voltages (considered constant)
+# mean_orbit_rad    Machine mean orbit radius       [m]
+# bending_rad       Machine bending radius          [m]
+# b0                B-field at machine_ref_frame    [T]
+# bdot              Time derivative of B-field (considered constant) [T/s]
+# phi12             Phase difference between the two RF systems
+#                   (considered constant)
+# h_ratio           Ratio of harmonics between the two RF systems
+# h_num             Principle harmonic number
+# trans_gamma       Transitional gamma
+# e_rest            Rest energy of accelerated particle     [eV/C^2]
+# q                 Charge state of accelerated particle
+#
+# Space charge parameters:
+# ----------------------------------------------------------------------------
+# self_field_flag       Flag to include self-fields in the tracking.
+# g_coupling            Space charge coupling coefficient
+#                       (geometrical coupling coefficient)
+# zwall_over_n          Magnitude of Zwall/n, reactive impedance
+#                       (in Ohms per mode number) over a machine turn
+# pickup_sensitivity    Effective pick-up sensitivity
+#                       (in digitizer units per instantaneous Amp)
+#
+# Calculated arrays:
+#-----------------------------------------------------------------------------
+# time_at_turn      Time at each turn,
+#                   relative to machine_ref_frame at the end of each turn.
+# omega_rev0        Revolution frequency at each turn.
+# phi0              Synchronous phase angle at the end of each turn.
+# dphase            Coefficient used for calculating difference,
+#                   from phase n to phase n + 1.
+#                   Needed in trajectory height calculator and longtrack. <- Check
+# beta0             Lorenz beta factor (v/c) at the end of each turn
+# eta0              Phase slip factor at each turn
+# e0                Total energy of synchronous particle
+#                   at the end of each turn.
+# deltaE0           Difference between e0(n) and e0(n-1) for each turn.
+#
+
+
 import logging as log
 import numpy as np
 from scipy import optimize
@@ -88,7 +158,8 @@ class Machine:
     # Calculating values that changes for each m. turn.
     # First is the arrays inited at index of machine ref. frame (i0).
     # Based on this value are the rest of the values calculated;
-    # first, upwards from i0 to total number of turns + 1, then downwards from i0 to 0 (first turn).
+    # first, upwards from i0 to total number of turns + 1,
+    # then downwards from i0 to 0 (first turn).
     def values_at_turns(self):
         # Add input assertions.
         asrt.assert_machine_input(self)
@@ -165,7 +236,8 @@ class Machine:
         self.e0 = np.zeros(array_length)
 
     # Calculating start-values for the parameters that changes for each turn.
-    # The reference frame where the start-values are calculated is the machine reference frame.
+    # The reference frame where the start-values
+    # are calculated is the machine reference frame.
     # (machine ref. frame -1 to adjust for fortran input files)
     def _array_initial_values(self):
         i0 = self.machine_ref_frame * self.dturns
