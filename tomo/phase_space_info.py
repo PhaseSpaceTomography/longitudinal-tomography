@@ -60,21 +60,20 @@ class PhaseSpaceInfo:
 
     def __init__(self, machine):
         self.machine = machine
-        self.jmin = []
-        self.jmax = []
-        self.imin = -1
-        self.imax = -1
-        self.dEbin = -1.0
-        self.allbin_min = -1 
-        self.allbin_max = -1
+        self.jmin = None
+        self.jmax = None
+        self.imin = None
+        self.imax = None
+        self.dEbin = None
+        self.allbin_min = None
+        self.allbin_max = None
 
 
-    # Main function for the class. finds limits in i and j axis.
-    # Local variables:
+    # Main function for the class. finds limits in i (phase) and j (energy) axis.
+    # variables:
     #   - turn_now: machine turn (=0 at profile = 0)
-    #   - indarr: array holding numbers from 0 to (profile length + 1)
     #   - phases: phase at the edge of each bin along the i-axis
-    def find_ijlimits(self):
+    def find_binned_phase_energy_limits(self):
 
         self.dEbin = self.find_dEbin()
 
@@ -83,22 +82,20 @@ class PhaseSpaceInfo:
 
         # Is this still a valid choise with the new method?
         if self.machine.full_pp_flag == True:
-            (jmin,jmax,
-             allbin_min,
-             allbin_max) = self._limits_track_all_pxl()
+            (jmin, jmax,
+             imin, imax) = self._limits_track_full_image()
         else:
             (jmin, jmax,
-             allbin_min,
-             allbin_max) = self._limits_track_active_pxl(self.dEbin)
+             imin, imax) = self._limits_track_rec_area(self.dEbin)
         
-        self.allbin_min = allbin_min
-        self.allbin_max = allbin_max
+        # self.allbin_min = allbin_min
+        # self.allbin_max = allbin_max
 
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
         (jmin, jmax,
          self.imin,
-         self.imax) = self._adjust_limits(jmax, jmin, allbin_min, allbin_max)
+         self.imax) = self._adjust_limits(jmax, jmin, imin, imax)
 
         self.jmin = jmin.astype(np.int32)
         self.jmax = jmax.astype(np.int32)
@@ -106,15 +103,11 @@ class PhaseSpaceInfo:
         # Ensuring that the output is valid
         self._assert_correct_arrays()
 
+    # Calculate the size of bins in energy axis
+    # Turn is at beam reference profile
     def find_dEbin(self):
-        # Calculating turn and phases at the beam reference point
         turn = self.machine.beam_ref_frame * self.machine.dturns    
         phases = self._calculate_phases(turn)
-        return self._calc_energy_pxl(phases, turn)
-
-    # Calculating the difference of energy of one pixel.
-    # This will be the height of each pixel in the physical coordinate system
-    def _calc_energy_pxl(self, phases, turn):
         delta_e_known = 0.0
         asrt.assert_not_equal(self.machine.demax, 'dEmax',
                               0.0, expt.EnergyBinningError,
@@ -124,10 +117,10 @@ class PhaseSpaceInfo:
             if physics.vrft(self.machine.vrf2,
                             self.machine.vrf2dot, turn) != 0.0:
                 energies_low = self._trajectoryheight(
-                				phases, phases[0], delta_e_known, turn)
+                                phases, phases[0], delta_e_known, turn)
 
                 energies_up = self._trajectoryheight(
-                				phases, phases[self.machine.nbins],
+                                phases, phases[self.machine.nbins],
                                 delta_e_known, turn)
 
                 return (min(np.amax(energies_low), np.amax(energies_up))
@@ -149,19 +142,19 @@ class PhaseSpaceInfo:
                     / (self.machine.nbins - self.machine.yat0))
 
     # Finding limits for tracking all pixels in reconstructed phase space.
-    def _limits_track_all_pxl(self):
+    def _limits_track_full_image(self):
         jmax = np.zeros(self.machine.nbins)
         jmin = np.copy(jmax)
 
         jmax[:] = self.machine.nbins
         jmin[:] = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
 
-        allbin_min = np.int32(0)
-        allbin_max = np.int32(self.machine.nbins)
-        return jmin, jmax, allbin_min, allbin_max
+        imin = np.int32(0)
+        imax = np.int32(self.machine.nbins)
+        return jmin, jmax, imin, imax
 
-    # Finding limits for tracking active pixels (stated in parameters)
-    def _limits_track_active_pxl(self, dEbin):
+    # Finding limits for tracking active pixels
+    def _limits_track_rec_area(self, dEbin):
         jmax = np.zeros(self.machine.nbins)
         jmin = np.copy(jmax)
 
@@ -170,18 +163,16 @@ class PhaseSpaceInfo:
         phases = self._calculate_phases(turn)
 
         # Jmax to int already here? 
-        jmax = self._find_jmax(phases, turn, dEbin)
+        jmax = self._find_max_binned_energy(phases, turn, dEbin)
+        jmin = self._find_min_binned_energy(jmax)
 
-        jmin = self._find_jmin(jmax)
+        imin = self._find_min_binned_phase(jmin, jmax)
+        imax = self._find_max_binned_phase(jmin, jmax)
 
-        allbin_min = self._find_allbin_min(jmin, jmax)
-
-        allbin_max = self._find_allbin_max(jmin, jmax)
-
-        return jmin, jmax, allbin_min, allbin_max
+        return jmin, jmax, imin, imax
 
     # Function for finding maximum energy (j max) for each bin in the profile
-    def _find_jmax(self, phases, turn, dEbin):
+    def _find_max_binned_energy(self, phases, turn, dEbin):
 
         energy = 0.0
         jmax_low = np.zeros(self.machine.nbins + 1)
@@ -215,18 +206,18 @@ class PhaseSpaceInfo:
     # Function for finding minimum energy (j min) for each bin in profile
     # Checking each element if less than threshold,
     # in such cases will threshold be used.
-    def _find_jmin(self, jmax, threshold=1):
+    def _find_min_binned_energy(self, jmax, threshold=1):
         jmin = np.ceil(2.0 * self.machine.yat0 - jmax[:] - 0.5)
         return np.where(jmin[:] >= threshold, jmin[:], threshold)
 
     # Finding index for minimum phase for profile
-    def _find_allbin_min(self, jmin, jmax):
+    def _find_min_binned_phase(self, jmin, jmax):
         for i in range(0, self.machine.nbins):
             if jmax[i] - jmin[i] >= 0:
                 return i
 
     # Finding index for maximum phase for profile
-    def _find_allbin_max(self, jmin, jmax):
+    def _find_max_binned_phase(self, jmin, jmax):
         for i in range(self.machine.nbins - 1, 0, -1):
             if jmax[i] - jmin[i] >= 0:
                 return i
@@ -235,68 +226,32 @@ class PhaseSpaceInfo:
     # 	specified input min/max index and found min/max in profile.
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates limits in i axis.
-    def _adjust_limits(self, jmax, jmin, allbin_min, allbin_max):
+    def _adjust_limits(self, jmax, jmin, imin, imax):
 
         # Maximum and minimum bin, as spescified by user.
         max_dtbin = int(np.ceil(self.machine.max_dt / self.machine.dtbin))
         min_dtbin = int(self.machine.min_dt / self.machine.dtbin)
 
-        if (min_dtbin > allbin_min or self.machine.full_pp_flag):
+        if (min_dtbin > imin or self.machine.full_pp_flag):
             imin = min_dtbin
             jmax[:min_dtbin] = np.floor(self.machine.yat0)
             jmin = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
-        else:
-            imin = allbin_min
 
-        if max_dtbin < allbin_max or self.machine.full_pp_flag:
+        if max_dtbin < imax or self.machine.full_pp_flag:
             imax = max_dtbin - 1 # -1 in order to count from idx 0
             jmax[max_dtbin: self.machine.nbins] = np.floor(self.machine.yat0)
             jmin = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
-        else:
-            imax = allbin_max
 
         return jmin, jmax, imin, imax
 
     # Returns an array of phases for a given turn
     def _calculate_phases(self, turn):
         indarr = np.arange(self.machine.nbins + 1)
-        asrt.assert_equal(len(indarr),
-                          'index array length',
-                          self.machine.nbins + 1,
-                          expt.MapCreationError,
-                          'The index array should have length nbins + 1')
         phases = ((self.machine.xorigin + indarr)
                   * self.machine.dtbin
                   * self.machine.h_num
                   * self.machine.omega_rev0[turn])
         return phases
-
-    def _assert_correct_arrays(self):
-        for film in range(self.machine.filmstart,
-                          self.machine.filmstop,
-                          self.machine.filmstep):
-
-            # Testing imin and imax
-            asrt.assert_inrange(self.imin, 'imin', 0, self.imax,
-                                expt.PhaseLimitsError,
-                                f'imin and imax out of bounds')
-            asrt.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
-                                     expt.PhaseLimitsError,
-                                     f'imin and imax out of bounds')
-
-            # Testing jmin and jmax
-            asrt.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
-                                       self.jmax[self.imin:self.imax],
-                                       expt.EnergyLimitsError,
-                                       msg=f'jmin and jmax out of bounds ',
-                                       index_offset=self.imin)
-            asrt.assert_array_less_eq(self.jmax[self.imin:self.imax],
-                                      self.machine.nbins,
-                                      expt.EnergyLimitsError,
-                                      f'jmin and jmax out of bounds ')
-            asrt.assert_equal(self.jmin.shape, 'jmin',
-                              self.jmax.shape, expt.ArrayLengthError,
-                              'jmin and jmax should have the same shape')
 
     # Trajectory height calculator
     def _trajectoryheight(self, phi, phi_known, delta_e_known, turn):
@@ -329,3 +284,30 @@ class PhaseSpaceInfo:
             cplx_height = np.sqrt(complex(cplx_height))
 
         return cplx_height.real
+
+    def _assert_correct_arrays(self):
+        for film in range(self.machine.filmstart,
+                          self.machine.filmstop,
+                          self.machine.filmstep):
+
+            # Testing imin and imax
+            asrt.assert_inrange(self.imin, 'imin', 0, self.imax,
+                                expt.PhaseLimitsError,
+                                f'imin and imax out of bounds')
+            asrt.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
+                                     expt.PhaseLimitsError,
+                                     f'imin and imax out of bounds')
+
+            # Testing jmin and jmax
+            asrt.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
+                                       self.jmax[self.imin:self.imax],
+                                       expt.EnergyLimitsError,
+                                       msg=f'jmin and jmax out of bounds ',
+                                       index_offset=self.imin)
+            asrt.assert_array_less_eq(self.jmax[self.imin:self.imax],
+                                      self.machine.nbins,
+                                      expt.EnergyLimitsError,
+                                      f'jmin and jmax out of bounds ')
+            asrt.assert_equal(self.jmin.shape, 'jmin',
+                              self.jmax.shape, expt.ArrayLengthError,
+                              'jmin and jmax should have the same shape')
