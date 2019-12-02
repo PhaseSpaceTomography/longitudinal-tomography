@@ -91,6 +91,7 @@ class Machine:
     # first, upwards from i0 to total number of turns + 1, then downwards from i0 to 0 (first turn).
     def values_at_turns(self):
         # Add input assertions.
+        asrt.assert_machine_input(self)
         all_turns = (self.nprofiles - 1) * self.dturns
         self._init_arrays(all_turns)
         i0 = self._array_initial_values()

@@ -6,6 +6,7 @@ from .. import profiles as profs
 from .. import machine as mach
 from .. import data_treatment as threat
 from . import exceptions as expt
+from . import assertions as asrt
 
 # Some constants for the input file containing machine parameters
 PARAMETER_LENGTH = 98
@@ -55,6 +56,7 @@ class Frames:
     # Works on a copy of the raw data
     def to_waterfall(self, raw_data):
         waterfall = self._assert_raw_data(raw_data)
+        asrt.assert_frame_inputs(self)
 
         waterfall = waterfall.reshape((self.nframes, self.nbins_frame))
         waterfall = waterfall[self.skip_frames:]
