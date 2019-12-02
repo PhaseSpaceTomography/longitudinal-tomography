@@ -18,7 +18,7 @@ class Tracking(ptracker.ParticleTracker):
 
     # Initial coordinates must be given as phase-space coordinates.
     # The function also returns phase and energies as phase-space coordinates.
-    # Phase is given as difference in time (dt)
+    # Phase is given as angle relative to the synchronous phase.
     def track(self, initial_coordinates=None, rec_prof=0):
 
         if initial_coordinates is None:
@@ -30,9 +30,9 @@ class Tracking(ptracker.ParticleTracker):
                     initial_coordinates[0], initial_coordinates[1])
 
         rectrn = rec_prof * self.machine.dturns
-        dt0, denergy0 = self.particles.init_coords_to_physical(turn=rectrn)
+        dphi0, denergy0 = self.particles.init_coords_to_physical(turn=rectrn)
 
-        dt = np.ascontiguousarray(dt0)
+        dphi = np.ascontiguousarray(dphi0)
         denergy = np.ascontiguousarray(denergy0)
 
         rfv1 = self.machine.vrf1_at_turn * self.machine.q
@@ -42,10 +42,10 @@ class Tracking(ptracker.ParticleTracker):
         if self._self_field_flag:
             log.info('Tracking particles... (Self-fields enabled)')
             xp, yp = self.kick_and_drift_self(
-                        denergy, dt, rfv1, rfv2, rec_prof)
+                        denergy, dphi, rfv1, rfv2, rec_prof)
         else:
             log.info('Tracking particles... (Self-fields disabled)')
-            xp, yp = self.kick_and_drift(denergy, dt, rfv1, rfv2, rec_prof)
+            xp, yp = self.kick_and_drift(denergy, dphi, rfv1, rfv2, rec_prof)
             xp, yp = self.particles.physical_to_coords(xp, yp)
         
         log.info('Tracking completed!')
@@ -60,26 +60,26 @@ class Tracking(ptracker.ParticleTracker):
 
     # Input:
     #   - denergy: particle energy relative to synchronous particle [eV]
-    #   - dt: particle phase relative to synchronous particle [s]
+    #   - dphi: particle phase relative to synchronous particle [s]
     #   - rf1v: Radio frequency voltages 2, multiplied by particle charge
     #   - rf2v: Radio frequency voltages 2, multiplied by particle charge
     #   - rec_prof: Time slice to be reconstructed (scalar:int)
     # Output:
     #   - Energy for each particle at each measured time slice [eV]  
     #     Relative to synch. particle.
-    #   - Phase (dt) for each particle at each measured time slice [s]
+    #   - Phase (dphi) for each particle at each measured time slice [s]
     #     Relative to synch. particle.
     #   - Homogeneous distribution of particles is placed at rec_prof
     #     time-slice.
-    def kick_and_drift(self, denergy, dt, rf1v, rf2v, rec_prof):
+    def kick_and_drift(self, denergy, dphi, rf1v, rf2v, rec_prof):
         nparts = len(denergy)
         
         # Creating arrays for all tracked particles
-        out_dt = np.zeros((self.machine.nprofiles, nparts))
-        out_denergy = np.copy(out_dt)
+        out_dphi = np.zeros((self.machine.nprofiles, nparts))
+        out_denergy = np.copy(out_dphi)
 
         # Setting homogeneous coordinates to profile to be reconstructed.
-        out_dt[rec_prof] = np.copy(dt)
+        out_dphi[rec_prof] = np.copy(dphi)
         out_denergy[rec_prof] = np.copy(denergy)
         
         rec_turn = rec_prof * self.machine.dturns
@@ -89,22 +89,22 @@ class Tracking(ptracker.ParticleTracker):
         # Tracking 'upwards'
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dt = tlw.drift(denergy, dt, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
                          nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = tlw.kick(self.machine, denergy, dt, rf1v, rf2v,
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn)
 
             if turn % self.machine.dturns == 0:
                 profile += 1
-                out_dt[profile] = np.copy(dt)
+                out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
                 if self._ftn_flag:
                     tomoout.print_tracking_status_ftn(rec_prof, profile)
 
         # Starting again from homogeous distribution
-        dt = np.copy(out_dt[rec_prof])
+        dphi = np.copy(out_dphi[rec_prof])
         denergy = np.copy(out_denergy[rec_prof])
         turn = rec_turn
         profile = rec_prof
@@ -112,38 +112,38 @@ class Tracking(ptracker.ParticleTracker):
         # Tracking 'downwards'
         while turn > 0:
             # Calculating change in energy for each particle at a turn
-            denergy = tlw.kick(self.machine, denergy, dt, rf1v, rf2v,
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
-            dt = tlw.drift(denergy, dt, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
                              nparts, turn, up=False)
 
 
             if turn % self.machine.dturns == 0:
                 profile -= 1
-                out_dt[profile] = np.copy(dt)
+                out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
                 if self._ftn_flag:
                     tomoout.print_tracking_status_ftn(rec_prof, profile)
 
-        return out_dt, out_denergy
+        return out_dphi, out_denergy
 
 
     # Input:
     #   - denergy: particle energy relative to synchronous particle [eV]
-    #   - dt: particle phase relative to synchronous particle [s]
+    #   - dphi: particle phase relative to synchronous phase [rad]
     #   - rf1v: Radio frequency voltages 2, multiplied by particle charge
     #   - rf2v: Radio frequency voltages 2, multiplied by particle charge
     #   - rec_prof: Time slice to be reconstructed (scalar:int)
     # Output:
     #   - Energy for each particle at each measured time slice  
     #     Relative to synch. particle, given as bins in ps coordinate system.
-    #   - Phase (dt) for each particle at each measured time slice [s]
+    #   - Phase for each particle at each measured time slice [s]
     #     Relative to synch. particle, given as bins in ps coordinate system.
     #   - Homogeneous distribution of particles is placed at rec_prof
     #     time-slice.
-    def kick_and_drift_self(self, denergy, dt, rf1v, rf2v,
+    def kick_and_drift_self(self, denergy, dphi, rf1v, rf2v,
                             rec_prof):
         nparts = len(denergy)
 
@@ -156,11 +156,11 @@ class Tracking(ptracker.ParticleTracker):
         iprof = rec_prof
         
         # To be saved for downwards tracking
-        dt0 = np.copy(dt)
+        dphi0 = np.copy(dphi)
         denergy0 = np.copy(denergy)
 
         xp[rec_prof] = self._calc_xp_sf(
-                            dt, self.machine.phi0[rec_turn],
+                            dphi, self.machine.phi0[rec_turn],
                             self.particles.xorigin,self.machine.h_num,
                             self.machine.omega_rev0[rec_turn],
                             self.machine.dtbin, self._phiwrap)
@@ -169,12 +169,12 @@ class Tracking(ptracker.ParticleTracker):
 
         print(iprof)
         while turn < self.nturns:
-            dt = tlw.drift(denergy, dt, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
                              nparts, turn)      
 
             turn += 1
 
-            temp_xp = self._calc_xp_sf(dt, self.machine.phi0[turn],
+            temp_xp = self._calc_xp_sf(dphi, self.machine.phi0[turn],
                                        self.particles.xorigin,
                                        self.machine.h_num,
                                        self.machine.omega_rev0[turn],
@@ -182,7 +182,7 @@ class Tracking(ptracker.ParticleTracker):
                                        self._phiwrap)
             selfvolt = self._vself[iprof, temp_xp.astype(int) - 1]
 
-            denergy = tlw.kick(self.machine, denergy, dt, rf1v, rf2v,
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn)
             denergy += selfvolt * self.machine.q
 
@@ -194,7 +194,7 @@ class Tracking(ptracker.ParticleTracker):
                 print(iprof)
 
 
-        dt = dt0
+        dphi = dphi0
         denergy = denergy0
         turn = rec_turn
         iprof = rec_prof - 1
@@ -203,18 +203,18 @@ class Tracking(ptracker.ParticleTracker):
         while turn > 0:
             selfvolt = self._vself[iprof, temp_xp.astype(int)]
 
-            denergy = tlw.kick(self.machine, denergy, dt, rf1v, rf2v,
+            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn, up=False)
 
             denergy += selfvolt * self.machine.q
 
             turn -= 1
 
-            dt = tlw.drift(denergy, dt, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
                              nparts, turn, up=False) 
 
             temp_xp = self._calc_xp_sf(
-                        dt, self.machine.phi0[turn], self.particles.xorigin,
+                        dphi, self.machine.phi0[turn], self.particles.xorigin,
                         self.machine.h_num, self.machine.omega_rev0[turn],
                         self.machine.dtbin, self._phiwrap)
 
@@ -233,8 +233,8 @@ class Tracking(ptracker.ParticleTracker):
     # Will be converted to C++ befor you know it! 
     @staticmethod
     @njit
-    def _calc_xp_sf(dt, phi0, xorigin, h_num, omega_rev0, dtbin, phiwrap):
-        temp_xp = (dt + phi0 - xorigin * h_num * omega_rev0 * dtbin)
+    def _calc_xp_sf(dphi, phi0, xorigin, h_num, omega_rev0, dtbin, phiwrap):
+        temp_xp = (dphi + phi0 - xorigin * h_num * omega_rev0 * dtbin)
         temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
                     / (h_num * omega_rev0 * dtbin))
         return temp_xp
