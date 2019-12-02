@@ -78,17 +78,23 @@ from . import physics
 
 class Machine:
 
-    def __init__(self, xat0, nprofiles, min_dt, max_dt, zwall_over_n,
-                 g_coupling, charge, rest_energy, transitional_gamma,
+    def __init__(self, xat0, nprofiles, zwall_over_n, g_coupling,
+                 charge, rest_energy, transitional_gamma,
                  h_num, h_ratio, phi12, b0, bdot, bending_radius,
                  mean_orbit_radius, vrf1, vrf1dot, vrf2, vrf2dot,
-                 dturns, pickup_sensitivity, dtbin, demax, nbins, 
-                 snpt=1, niter=20, machine_ref_frame=0, beam_ref_frame=0,
+                 dturns, pickup_sensitivity, dtbin, demax, nbins,
+                 min_dt=None, max_dt=None, snpt=1, niter=20,
+                 machine_ref_frame=0, beam_ref_frame=0,
                  filmstart=0, filmstop=1, filmstep=1, output_dir=None,
                  self_field_flag=False, full_pp_flag=False):
 
         # TODO: Take rfv info as a single input
         # TODO: Take b-field info as a single input
+
+        if min_dt == None:
+            min_dt = 0.0
+        if max_dt == None:
+            max_dt = nbins * dtbin
 
         # Machine parameters
         self.demax = demax
