@@ -139,8 +139,7 @@ class Particles(object):
         xp[profiles] = ((tracked_dphi[profiles] 
                          + np.vstack(self._machine.phi0[turns]))
                         / (float(self._machine.h_num)
-                           * np.vstack(
-                                self._machine.omega_rev0[turns])
+                           * np.vstack(self._machine.omega_rev0[turns])
                            * self._machine.dtbin)
                         - self.xorigin)
 
@@ -168,7 +167,7 @@ class Particles(object):
         return xp, yp, nr_lost_pts
 
     def _assert_machine(self, machine):
-        needed_fieds = ['snpt', 'xorigin', 'h_num', 
+        needed_fieds = ['snpt', 'h_num', 
                         'omga_rev0', 'dtbin', 'phi0',
                         'yat0', 'dturns', 'nbins']
         asrt.assert_fields(machine, 'machine', needed_fieds,
