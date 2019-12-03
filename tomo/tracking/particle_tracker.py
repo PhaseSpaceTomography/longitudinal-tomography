@@ -26,6 +26,14 @@ class ParticleTracker:
         self._ftn_flag = False
         self._self_field_flag = False
 
+    @property
+    def self_field_flag(self):
+        return self._self_field_flag
+    
+    @property
+    def fortran_flag(self):
+        return self._ftn_flag
+
     # Checks that the given machine object includes the nesscessary
     # variables to perform the tracking.
     # Does not check parameters for calculating using self-fields.
@@ -45,11 +53,10 @@ class ParticleTracker:
         if profile_charge is None:
             err_msg = 'profile_charge is needed for fortran-style output'
             raise expt.ProfileChargeNotCalculated(err_msg)
-
         self._ftn_flag = True
+        # self._prof.charge only needed for print plotinfo.
+        self._profile_charge = profile_charge
         log.info('Fortran style output for particle tracking enabled!')
-        print(tomoout.write_plotinfo_ftn(
-                self.particles._psinfo, profile_charge))
 
     def enable_self_fields(self, profiles):
         needed_fieds = ['phiwrap', 'vself']
