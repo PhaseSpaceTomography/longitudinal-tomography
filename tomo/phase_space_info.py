@@ -87,9 +87,6 @@ class PhaseSpaceInfo:
         else:
             (jmin, jmax,
              imin, imax) = self._limits_track_rec_area(self.dEbin)
-        
-        # self.allbin_min = allbin_min
-        # self.allbin_max = allbin_max
 
         # Calculate limits (index of bins) in i-axis (phase axis),
         # 	adjust j-axis (energy axis)
