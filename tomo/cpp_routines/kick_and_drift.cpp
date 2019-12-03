@@ -68,24 +68,24 @@ extern "C" void kick_down(const double * __restrict__ dphi,
 //  Used in hybrid python/C++ class.
 extern "C" void drift_up(double * __restrict__ dphi,
                          const double * __restrict__ denergy,
-                         const double dphase,
+                         const double drift_coef,
                          const int nr_particles){
 
     #pragma acc parallel loop device_type(nvidia) vector_length(32)
     #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
-        dphi[i] -= dphase * denergy[i];
+        dphi[i] -= drift_coef * denergy[i];
 }
 
 extern "C" void drift_down(double * __restrict__ dphi,
                            const double * __restrict__ denergy,
-                           const double dphase,
+                           const double drift_coef,
                            const int nr_particles){
 
     #pragma acc parallel loop device_type(nvidia) vector_length(32)
     #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
-        dphi[i] += dphase * denergy[i];
+        dphi[i] += drift_coef * denergy[i];
 }
 
 
@@ -132,7 +132,7 @@ extern "C" void kick_and_drift_gpu(
                          const double * __restrict__ phi0,      // inn
                          const double * __restrict__ deltaE0,   // inn
                          const double * __restrict__ omega_rev0,// inn
-                         const double * __restrict__ dphase,    // inn
+                         const double * __restrict__ drift_coef,    // inn
                          const double phi12,
                          const double hratio,
                          const double hnum,
@@ -155,14 +155,14 @@ extern "C" void kick_and_drift_gpu(
     int turn_arr_len = nturns + 1; 
 
     cout << "Tracking..." << endl;
- #pragma acc data copyin(dphase[:turn_arr_len], rf1v[:turn_arr_len],\
+ #pragma acc data copyin(drift_coef[:turn_arr_len], rf1v[:turn_arr_len],\
                          rf2v[:turn_arr_len],phi0[:turn_arr_len],\
                          omega_rev0[:turn_arr_len], deltaE0[:turn_arr_len])\
                   copyin(denergy[:nparts], dphi[:nparts])\
                   copyout(xp[:nprofs][:nparts], yp[:nprofs][:nparts])
     {
     while(turn < nturns){
-        drift_up(dphi, denergy, dphase[turn], nparts);
+        drift_up(dphi, denergy, drift_coef[turn], nparts);
         
         turn++;
         
@@ -197,7 +197,7 @@ extern "C" void kick_and_drift(
                          const double * __restrict__ phi0,      // inn
                          const double * __restrict__ deltaE0,   // inn
                          const double * __restrict__ omega_rev0,// inn
-                         const double * __restrict__ dphase,    // inn
+                         const double * __restrict__ drift_coef,    // inn
                          const double phi12,
                          const double hratio,
                          const double hnum,
@@ -218,7 +218,7 @@ extern "C" void kick_and_drift(
     cout << "Tracking to profile " << profile + 1 << endl;
 
     while(turn < nturns){
-        drift_up(dphi, denergy, dphase[turn], nparts);
+        drift_up(dphi, denergy, drift_coef[turn], nparts);
         
         turn++;
         

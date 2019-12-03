@@ -57,9 +57,9 @@
 #                   relative to machine_ref_frame at the end of each turn.
 # omega_rev0        Revolution frequency at each turn.
 # phi0              Synchronous phase angle at the end of each turn.
-# dphase            Coefficient used for calculating difference,
+# drift_coef        Coefficient used for calculating difference,
 #                   from phase n to phase n + 1.
-#                   Needed in trajectory height calculator and longtrack. <- Check
+#                   Needed in trajectory height calculator and tracking.
 # beta0             Lorenz beta factor (v/c) at the end of each turn
 # eta0              Phase slip factor at each turn
 # e0                Total energy of synchronous particle
@@ -221,7 +221,7 @@ class Machine:
         self.eta0 = physics.phase_slip_factor(self)
 
         # Calculates dphase for each turn
-        self.dphase = physics.find_dphase(self)
+        self.drift_coef = physics.find_dphase(self)
 
         # Calculate revolution frequency at each turn
         self.omega_rev0 = physics.revolution_freq(self)
@@ -236,7 +236,7 @@ class Machine:
         self.time_at_turn = np.zeros(array_length)
         self.omega_rev0 = np.zeros(array_length)
         self.phi0 = np.zeros(array_length)
-        self.dphase = np.zeros(array_length)
+        self.drift_coef = np.zeros(array_length)
         self.deltaE0 = np.zeros(array_length)
         self.beta0 = np.zeros(array_length)
         self.eta0 = np.zeros(array_length)

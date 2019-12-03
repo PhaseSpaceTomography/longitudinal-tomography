@@ -89,7 +89,7 @@ class Tracking(ptracker.ParticleTracker):
         # Tracking 'upwards'
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
                          nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
@@ -116,7 +116,7 @@ class Tracking(ptracker.ParticleTracker):
                                nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
-            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
                              nparts, turn, up=False)
 
 
@@ -169,7 +169,7 @@ class Tracking(ptracker.ParticleTracker):
 
         print(iprof)
         while turn < self.nturns:
-            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
                              nparts, turn)      
 
             turn += 1
@@ -210,7 +210,7 @@ class Tracking(ptracker.ParticleTracker):
 
             turn -= 1
 
-            dphi = tlw.drift(denergy, dphi, self.machine.dphase,
+            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
                              nparts, turn, up=False) 
 
             temp_xp = self._calc_xp_sf(

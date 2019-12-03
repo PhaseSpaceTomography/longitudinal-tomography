@@ -31,7 +31,7 @@ class ParticleTracker:
     # Does not check parameters for calculating using self-fields.
     def _assert_machine(self, machine):
         needed_fieds = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
-                        'nprofiles', 'dphase', 'dturns', 'phi0',
+                        'nprofiles', 'drift_coef', 'dturns', 'phi0',
                         'phi12', 'h_ratio', 'deltaE0', 'xat0']
         asrt.assert_fields(
             machine, 'machine', needed_fieds, expt.MachineParameterError,

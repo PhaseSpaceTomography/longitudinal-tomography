@@ -266,7 +266,7 @@ class PhaseSpaceInfo:
 
     # Trajectory height calculator
     def _trajectoryheight(self, phi, phi_known, delta_e_known, turn):
-        cplx_height = 2.0 * self.machine.q / float(self.machine.dphase[turn])
+        cplx_height = 2.0 * self.machine.q / self.machine.drift_coef[turn]
         cplx_height *= (physics.vrft(self.machine.vrf1,
                                      self.machine.vrf1dot, turn)
                         * (np.cos(phi) - np.cos(phi_known))
