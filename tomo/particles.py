@@ -1,4 +1,5 @@
 import numpy as np
+import logging as log
 
 from . import phase_space_info as psi
 from .utils import assertions as asrt
@@ -47,9 +48,9 @@ class Particles(object):
     def __init__(self, machine):
         self._machine = machine
         self._psinfo = psi.PhaseSpaceInfo(self._machine)
-        self._psinfo.find_binned_phase_energy_limits()
-        self.dEbin = self._psinfo.dEbin
-        self.xorigin = self._psinfo.xorigin
+        
+        self.dEbin = None
+        self.xorigin = None
 
         self.x_coords = None
         self.y_coords = None
@@ -64,6 +65,10 @@ class Particles(object):
     # The particles coordinates will be saved as fractions of bins in
     # the x (phase) and y (energy) axis.
     def homogeneous_distribution(self):
+        self._psinfo.find_binned_phase_energy_limits()
+        self.dEbin = self._psinfo.dEbin
+        self.xorigin = self._psinfo.xorigin
+
         nbins_y = np.sum(self._psinfo.jmax[self._psinfo.imin:
                                             self._psinfo.imax + 1]
                         - self._psinfo.jmin[self._psinfo.imin:
@@ -98,15 +103,6 @@ class Particles(object):
         self.x_coords = coords[0]
         self.y_coords = coords[1]
 
-    # Manually set the particles to be tracked.
-    # The particles coordinates should be given in fractions of bins.
-    def set_coordinates(self, in_x, in_y):
-        if len(in_x) != len(in_y):
-            raise AssertionError('Different shape of arrays containing '
-                                 'x and y coordinates for particles')
-        self.x_coords = in_x
-        self.y_coords = in_y
-
     # Convert particle coordinates from coordinates as fractions of bins,
     # to physical units. The physical units are phase (x-axis),
     # and energy (y-axis).
@@ -120,52 +116,6 @@ class Particles(object):
         denergy = (self.y_coords - self._machine.yat0) * self.dEbin
         return dphi, denergy
 
-    # Convert from physical units to coordinates in bins.
-    # Input is a two-dimensional array containing the tracked points.
-    # The output is a two-dimensional aray containing the tracked
-    # points given as nr of bins in phase and energy.
-    def physical_to_coords(self, tracked_dphi, tracked_denergy):
-        if tracked_dphi.shape != tracked_denergy.shape:
-            raise AssertionError('Different shape of arrays containing '
-                                 'phase and energies')
-        nprof = tracked_denergy.shape[0]
-
-        profiles = np.arange(nprof)
-        turns = profiles * self._machine.dturns
-
-        xp = np.zeros(tracked_dphi.shape)
-        yp = np.zeros(tracked_dphi.shape)
-
-        xp[profiles] = ((tracked_dphi[profiles] 
-                         + np.vstack(self._machine.phi0[turns]))
-                        / (float(self._machine.h_num)
-                           * np.vstack(self._machine.omega_rev0[turns])
-                           * self._machine.dtbin)
-                        - self.xorigin)
-
-        yp[profiles] = (tracked_denergy[profiles] / float(self.dEbin)
-                        + self._machine.yat0)
-        return xp, yp
-
-
-    def filter_lost_paricles(self, xp, yp):
-        nr_lost_pts = 0
-
-        # Find all invalid particle values
-        invalid_pts = np.argwhere(
-                        np.logical_or(
-                            xp >= self._machine.nbins, xp < 0))
-            
-        if np.size(invalid_pts) > 0:
-            # Find all invalid particles
-            invalid_pts = np.unique(invalid_pts.T[1])
-            nr_lost_pts = len(invalid_pts)
-            # Removing invalid particles
-            xp = np.delete(xp, invalid_pts, axis=1)
-            yp = np.delete(yp, invalid_pts, axis=1)
-
-        return xp, yp, nr_lost_pts
-
     def _assert_machine(self, machine):
         needed_fieds = ['snpt', 'h_num', 
                         'omga_rev0', 'dtbin', 'phi0',
@@ -173,3 +123,58 @@ class Particles(object):
         asrt.assert_fields(machine, 'machine', needed_fieds,
                            expt.MachineParameterError,
                            'Did you remember to use machine.fill()?')
+
+# Takes particles in phase space coordinates.
+# Remove particles which left image width.
+# Returns filtered x- and y-coordinates,
+# and number of particles that were lost
+def filter_lost(xp, yp, img_width):
+    nr_lost_pts = 0
+
+    # Find all invalid particle values
+    invalid_pts = np.argwhere(np.logical_or(xp >= img_width, xp < 0))
+            
+    if np.size(invalid_pts) > 0:
+        # Find all invalid particles
+        invalid_pts = np.unique(invalid_pts.T[1])
+        nr_lost_pts = len(invalid_pts)
+        # Removing invalid particles
+        xp = np.delete(xp, invalid_pts, axis=1)
+        yp = np.delete(yp, invalid_pts, axis=1)
+
+    return xp, yp, nr_lost_pts
+
+
+# Convert from physical units to coordinates in bins.
+# Input is a two-dimensional array containing the tracked points.
+# The output is a two-dimensional aray containing the tracked
+# points given as nr of bins in phase and energy.
+def physical_to_coords(tracked_dphi, tracked_denergy,
+                       machine, xorigin, dEbin):
+    if tracked_dphi.shape != tracked_denergy.shape:
+        raise AssertionError('Different shape of arrays containing '
+                             'phase and energies')
+    nprof = tracked_denergy.shape[0]
+
+    profiles = np.arange(nprof)
+    turns = profiles * machine.dturns
+
+    xp = np.zeros(tracked_dphi.shape)
+    yp = np.zeros(tracked_dphi.shape)
+
+    xp[profiles] = ((tracked_dphi[profiles] 
+                     + np.vstack(machine.phi0[turns]))
+                    / (float(machine.h_num)
+                       * np.vstack(machine.omega_rev0[turns])
+                       * machine.dtbin) - xorigin)
+
+    yp[profiles] = (tracked_denergy[profiles] / float(dEbin) + machine.yat0)
+    return xp, yp
+
+def ready_for_tomography(xp, yp, nbins):
+    xp, yp, lost = filter_lost(xp, yp, nbins)
+    log.info(f'number of lost particles: {lost}')
+    xp = xp.astype(np.int32).T
+    yp = yp.astype(np.int32).T
+
+    return xp, yp
