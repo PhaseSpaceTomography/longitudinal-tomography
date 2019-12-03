@@ -89,10 +89,10 @@ def kick(parameters, denergy, dphi, rfv1, rfv2, nr_part, turn, up=True):
     return denergy
 
 
-def drift(denergy, dphi, dphase, nr_part, turn, up=True):
+def drift(denergy, dphi, drift_coef, nr_part, turn, up=True):
     args = (_get_pointer(dphi),
             _get_pointer(denergy),
-            ct.c_double(dphase[turn]),
+            ct.c_double(drift_coef[turn]),
             ct.c_int(nr_part))
     if up:
         _tomolib.drift_up(*args)
@@ -101,11 +101,11 @@ def drift(denergy, dphi, dphase, nr_part, turn, up=True):
     return dphi
 
 def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
-                   deltaE0, omega_rev0, dphase, phi12, hratio,
+                   deltaE0, omega_rev0, drift_coef, phi12, hratio,
                    hnum, dtbin, xorigin, dEbin, yat0, dturns,
                    nturns, npts, gpu_flag=False):
     args = (_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
-             rfv1, rfv2, phi0, deltaE0, omega_rev0, dphase, phi12, hratio,
+             rfv1, rfv2, phi0, deltaE0, omega_rev0, drift_coef, phi12, hratio,
              hnum, dtbin, xorigin, dEbin, yat0, dturns, nturns, npts)
     
     if gpu_flag:
