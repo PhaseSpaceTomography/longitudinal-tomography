@@ -10,6 +10,7 @@ import tomo.tomography.tomography_cpp as tomography
 import tomo.fit as fit
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
+import tomo.particles as pts
 
 # =========================
 #        Program 
@@ -44,6 +45,16 @@ tracker.enable_fortran_output(profiles.profile_charge)
 # tracker.enable_self_fields(profiles)
 
 xp, yp = tracker.track(rec_prof=reconstr_idx)
+
+# Converting from physical coordinates ([rad], [eV])
+# to phase space coordinates.
+if not tracker.self_field_flag:
+    xp, yp = pts.physical_to_coords(
+                xp, yp, machine, tracker.particles.xorigin,
+                tracker.particles.dEbin)
+
+# Filters out lost particles, transposes particle matrix, casts to np.int32.
+xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
 # Tomography!
 tomo = tomography.TomographyCpp(profiles.waterfall, xp)
