@@ -20,42 +20,40 @@ class Tracking(ptracker.ParticleTracker):
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as angle relative to the synchronous phase.
     def track(self, initial_coordinates=None, rec_prof=0):
+        rectrn = rec_prof * self.machine.dturns        
 
         if initial_coordinates is None:
             log.info('Creating homogeneous distribution of particles.')
             self.particles.homogeneous_distribution()
+            coords = self.particles.init_coords_to_physical(turn=rectrn)
+
+            # Print fortran style plot info. Needed for tomograph.
+            # Limits in I (phase), and dEbin must have been calculated.
+            if self.fortran_flag:
+                print(tomoout.write_plotinfo_ftn(self.particles._psinfo,
+                                                 self._profile_charge))
+        
         else:
             log.info('Using initial particle coordinates set by user.')
-            self.particles.set_coordinates(
-                    initial_coordinates[0], initial_coordinates[1])
+            raise NotImplementedError('Manual distribution not implemented!')
 
-        rectrn = rec_prof * self.machine.dturns
-        dphi0, denergy0 = self.particles.init_coords_to_physical(turn=rectrn)
-
-        dphi = np.ascontiguousarray(dphi0)
-        denergy = np.ascontiguousarray(denergy0)
+        dphi = np.ascontiguousarray(coords[0])
+        denergy = np.ascontiguousarray(coords[1])
 
         rfv1 = self.machine.vrf1_at_turn * self.machine.q
         rfv2 = self.machine.vrf2_at_turn * self.machine.q 
 
+
         # Tracking particles
-        if self._self_field_flag:
+        if self.self_field_flag:
             log.info('Tracking particles... (Self-fields enabled)')
             xp, yp = self.kick_and_drift_self(
                         denergy, dphi, rfv1, rfv2, rec_prof)
         else:
             log.info('Tracking particles... (Self-fields disabled)')
             xp, yp = self.kick_and_drift(denergy, dphi, rfv1, rfv2, rec_prof)
-            xp, yp = self.particles.physical_to_coords(xp, yp)
         
         log.info('Tracking completed!')
-
-        xp, yp, lost = self.particles.filter_lost_paricles(xp, yp)
-        log.info(f'number of lost particles: {lost}')
-
-        xp = xp.astype(np.int32).T
-        yp = yp.astype(np.int32).T
-
         return xp, yp
 
     # Input:
@@ -100,7 +98,7 @@ class Tracking(ptracker.ParticleTracker):
                 profile += 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                if self._ftn_flag:
+                if self.fortran_flag:
                     tomoout.print_tracking_status_ftn(rec_prof, profile)
 
         # Starting again from homogeous distribution
@@ -124,7 +122,7 @@ class Tracking(ptracker.ParticleTracker):
                 profile -= 1
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
-                if self._ftn_flag:
+                if self.fortran_flag:
                     tomoout.print_tracking_status_ftn(rec_prof, profile)
 
         return out_dphi, out_denergy
