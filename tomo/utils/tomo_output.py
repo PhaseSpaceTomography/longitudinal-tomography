@@ -81,6 +81,7 @@ def write_plotinfo_ftn(ps_info, profile_charge):
         if not hasattr(ps_info.machine, var):
             fit_performed = False
             break
+    
     if fit_performed:
         bunchlimit_low = ps_info.machine.bunchlimit_low
         bunchlimit_up = ps_info.machine.bunchlimit_up
@@ -89,6 +90,16 @@ def write_plotinfo_ftn(ps_info, profile_charge):
         bunchlimit_low = 0.0
         bunchlimit_up = 0.0
         fitted_xat0 = 0.0
+
+
+    if ps_info.dEbin is None:
+        raise AssertionError('dEbin has not been calculated for this '
+                             'phase space info object.\n'
+                             'Cannot print plot info.')
+    if ps_info.imin is None or ps_info.imax is None:
+        raise AssertionError('The limits in phase (I) has not been found '
+                             'for this phase space info object.\n'
+                             'Cannot print plot info.')  
 
     out_s = f' plotinfo.data\n'\
             f'Number of profiles used in each reconstruction,\n'\
