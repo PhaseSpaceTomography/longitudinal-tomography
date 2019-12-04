@@ -19,19 +19,19 @@ class Tracking(ptracker.ParticleTracker):
     # Initial coordinates must be given as phase-space coordinates.
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as angle relative to the synchronous phase.
-    def track(self, initial_coordinates=None, rec_prof=0):
-        recturn = rec_prof * self.machine.dturns        
+    def track(self, recprof, initial_coordinates=None):
+        recturn = recprof * self.machine.dturns        
 
         if initial_coordinates is None:
             log.info('Creating homogeneous distribution of particles.')
-            self.particles.homogeneous_distribution(self.machine)
-            coords = self.particles.init_coords_to_physical(
-                                                self.machine, recturn)
+            self.particles.homogeneous_distribution(self.machine, recprof)
+            coords = self.particles.physical_coordinates
+
             # Print fortran style plot info. Needed for tomograph.
             # Limits in I (phase), and dEbin must have been calculated.
             if self.fortran_flag:
                 print(tomoout.write_plotinfo_ftn(
-                        self.machine, self.particles, self._profile_charge))
+                      self.machine, self.particles, self._profile_charge))
         
         else:
             log.info('Using initial particle coordinates set by user.')
@@ -47,10 +47,10 @@ class Tracking(ptracker.ParticleTracker):
         if self.self_field_flag:
             log.info('Tracking particles... (Self-fields enabled)')
             xp, yp = self.kick_and_drift_self(
-                        denergy, dphi, rfv1, rfv2, rec_prof)
+                        denergy, dphi, rfv1, rfv2, recprof)
         else:
             log.info('Tracking particles... (Self-fields disabled)')
-            xp, yp = self.kick_and_drift(denergy, dphi, rfv1, rfv2, rec_prof)
+            xp, yp = self.kick_and_drift(denergy, dphi, rfv1, rfv2, recprof)
         
         log.info('Tracking completed!')
         return xp, yp

@@ -56,8 +56,17 @@ class Particles(object):
         self.jmin = None
         self.jmax = None
 
-        self.x_coords = None
-        self.y_coords = None
+        self._dphi = None
+        self._denergy = None
+
+    @property
+    def physical_coordinates(self):
+        return (self._dphi, self._denergy)
+
+    @physical_coordinates.setter
+    def physical_coordinates(self, coordinates):
+        self._dphi = coordinates[0]
+        self._denergy = coordinates[1]
 
     # The function wil create a homogeneous distribution of particles within
     # an area defined by the user. The area is given by the i and jlimits
@@ -68,7 +77,7 @@ class Particles(object):
     # version.
     # The particles coordinates will be saved as fractions of bins in
     # the x (phase) and y (energy) axis.
-    def homogeneous_distribution(self, machine):
+    def homogeneous_distribution(self, machine, recprof):
         self._assert_machine(machine)
         psinfo = psi.PhaseSpaceInfo(machine)
         psinfo.find_binned_phase_energy_limits()
@@ -106,19 +115,19 @@ class Particles(object):
         self.jmin = psinfo.jmin
         self.jmax = psinfo.jmax
 
-        self.x_coords = coords[0]
-        self.y_coords = coords[1]
+        coords = self._aut_distr_to_physical(coords, machine, recprof)
+        self.physical_coordinates = coords
 
     # Convert particle coordinates from coordinates as fractions of bins,
     # to physical units. The physical units are phase (x-axis),
     # and energy (y-axis).
     # This format is needed for the particle tracking routine.  
-    def init_coords_to_physical(self, machine, turn):
-        self._assert_machine(machine)
-        dphi = ((self.x_coords + self.xorigin)
+    def _aut_distr_to_physical(self, coordinates, machine, recprof):
+        turn = recprof * machine.dturns
+        dphi = ((coordinates[0] + self.xorigin)
                 * machine.h_num * machine.omega_rev0[turn] * machine.dtbin
                 - machine.phi0[turn])
-        denergy = (self.y_coords - machine.yat0) * self.dEbin
+        denergy = (coordinates[1] - machine.yat0) * self.dEbin
         return dphi, denergy
 
     def _assert_machine(self, machine):
