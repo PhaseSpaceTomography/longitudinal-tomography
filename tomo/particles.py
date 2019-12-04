@@ -114,14 +114,14 @@ class Particles(object):
         self.jmin = psinfo.jmin
         self.jmax = psinfo.jmax
 
-        coords = self._aut_distr_to_physical(coords, machine, recprof)
+        coords = self._bin_nr_to_physical_coords(coords, machine, recprof)
         self.coordinates_dphi_denergy = coords
 
     # Convert particle coordinates from coordinates as fractions of bins,
     # to physical units. The physical units are phase (x-axis),
     # and energy (y-axis).
     # This format is needed for the particle tracking routine.  
-    def _aut_distr_to_physical(self, coordinates, machine, recprof):
+    def _bin_nr_to_physical_coords(self, coordinates, machine, recprof):
         turn = recprof * machine.dturns
         dphi = ((coordinates[0] + self.xorigin)
                 * machine.h_num * machine.omega_rev0[turn] * machine.dtbin
