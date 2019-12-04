@@ -44,7 +44,7 @@ tracker = tracking.Tracking(machine)
 tracker.enable_fortran_output(profiles.profile_charge)
 # tracker.enable_self_fields(profiles)
 
-xp, yp = tracker.track(rec_prof=reconstr_idx)
+xp, yp = tracker.track(reconstr_idx)
 
 # Converting from physical coordinates ([rad], [eV])
 # to phase space coordinates.
