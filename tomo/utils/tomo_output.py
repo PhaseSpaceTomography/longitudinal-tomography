@@ -70,63 +70,63 @@ def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
 
 # Returns string containing plot info for tomoscope application
 # '+ 1': Converting from Python to Fortran indexing
-def write_plotinfo_ftn(ps_info, profile_charge):
-    rec_prof = ps_info.machine.filmstart
-    rec_turn = rec_prof * ps_info.machine.dturns
+def write_plotinfo_ftn(machine, particles, profile_charge):
+    rec_prof = machine.filmstart
+    rec_turn = rec_prof * machine.dturns
 
     # Check if a Fortran styled fit has been performed.
     fit_performed = True
     fit_info_vars = ['fitted_xat0', 'bunchlimit_low', 'bunchlimit_up']
     for var in fit_info_vars:
-        if not hasattr(ps_info.machine, var):
+        if not hasattr(machine, var):
             fit_performed = False
             break
     
     if fit_performed:
-        bunchlimit_low = ps_info.machine.bunchlimit_low
-        bunchlimit_up = ps_info.machine.bunchlimit_up
-        fitted_xat0 = ps_info.machine.fitted_xat0
+        bunchlimit_low = machine.bunchlimit_low
+        bunchlimit_up = machine.bunchlimit_up
+        fitted_xat0 = machine.fitted_xat0
     else:
         bunchlimit_low = 0.0
         bunchlimit_up = 0.0
         fitted_xat0 = 0.0
 
 
-    if ps_info.dEbin is None:
+    if particles.dEbin is None:
         raise AssertionError('dEbin has not been calculated for this '
                              'phase space info object.\n'
                              'Cannot print plot info.')
-    if ps_info.imin is None or ps_info.imax is None:
+    if particles.imin is None or particles.imax is None:
         raise AssertionError('The limits in phase (I) has not been found '
                              'for this phase space info object.\n'
                              'Cannot print plot info.')  
 
     out_s = f' plotinfo.data\n'\
             f'Number of profiles used in each reconstruction,\n'\
-              f' profilecount = {ps_info.machine.nprofiles}\n'\
+              f' profilecount = {machine.nprofiles}\n'\
             f'Width (in pixels) of each image = '\
               f'length (in bins) of each profile,\n'\
-            f' profilelength = {ps_info.machine.nbins}\n'\
+            f' profilelength = {machine.nbins}\n'\
             f'Width (in s) of each pixel = width of each profile bin,\n'\
-            f' dtbin = {ps_info.machine.dtbin:0.4E}\n'\
+            f' dtbin = {machine.dtbin:0.4E}\n'\
             f'Height (in eV) of each pixel,\n'\
-            f' dEbin = {ps_info.dEbin:0.4E}\n'\
+            f' dEbin = {particles.dEbin:0.4E}\n'\
             f'Number of elementary charges in each image,\n'\
               f' eperimage = '\
               f'{profile_charge:0.3E}\n'\
             f'Position (in pixels) of the reference synchronous point:\n'\
-            f' xat0 =  {ps_info.machine.xat0:.3f}\n'\
-            f' yat0 =  {ps_info.machine.yat0:.3f}\n'\
+            f' xat0 =  {machine.xat0:.3f}\n'\
+            f' yat0 =  {machine.yat0:.3f}\n'\
             f'Foot tangent fit results (in bins):\n'\
             f' tangentfootl =    {bunchlimit_low:.3f}\n'\
             f' tangentfootu =    {bunchlimit_up:.3f}\n'\
             f' fit xat0 =   {fitted_xat0:.3f}\n'\
             f'Synchronous phase (in radians):\n'\
-            f' phi0( {rec_prof+1}) = {ps_info.machine.phi0[rec_turn]:.4f}\n'\
+            f' phi0( {rec_prof+1}) = {machine.phi0[rec_turn]:.4f}\n'\
             f'Horizontal range (in pixels) of the region in '\
               f'phase space of map elements:\n'\
-            f' imin( {rec_prof+1}) =   {ps_info.imin} and '\
-            f'imax( {rec_prof+1}) =  {ps_info.imax}'
+            f' imin( {rec_prof+1}) =   {particles.imin} and '\
+            f'imax( {rec_prof+1}) =  {particles.imax}'
     return out_s
 
 # --------------------------------------------------------------- #
