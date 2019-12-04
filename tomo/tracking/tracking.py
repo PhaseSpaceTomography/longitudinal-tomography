@@ -19,13 +19,12 @@ class Tracking(ptracker.ParticleTracker):
     # Initial coordinates must be given as phase-space coordinates.
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as angle relative to the synchronous phase.
-    def track(self, recprof, initial_coordinates=None):
-        recturn = recprof * self.machine.dturns        
-
-        if initial_coordinates is None:
+    def track(self, recprof, init_distr=None):
+        
+        if init_distr is None:
             log.info('Creating homogeneous distribution of particles.')
             self.particles.homogeneous_distribution(self.machine, recprof)
-            coords = self.particles.physical_coordinates
+            coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
             # Limits in I (phase), and dEbin must have been calculated.
@@ -35,7 +34,8 @@ class Tracking(ptracker.ParticleTracker):
         
         else:
             log.info('Using initial particle coordinates set by user.')
-            raise NotImplementedError('Manual distribution not implemented!')
+            self.particles.coordinates_dphi_denergy = init_distr
+            coords = self.particles.coordinates_dphi_denergy
 
         dphi = np.ascontiguousarray(coords[0])
         denergy = np.ascontiguousarray(coords[1])

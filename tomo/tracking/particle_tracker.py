@@ -19,7 +19,6 @@ class ParticleTracker:
 
         self._assert_machine(machine)
         self.machine = machine
-
         self.particles = pts.Particles()
 
         self.nturns = machine.dturns * (machine.nprofiles - 1)
@@ -67,6 +66,3 @@ class ParticleTracker:
         self._vself = profiles.vself
         self._self_field_flag = True
         log.info('Tracking using self fields enabled!')
-
-
-
