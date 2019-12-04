@@ -60,13 +60,12 @@ class Particles(object):
         self._denergy = None
 
     @property
-    def physical_coordinates(self):
+    def coordinates_dphi_denergy(self):
         return (self._dphi, self._denergy)
 
-    @physical_coordinates.setter
-    def physical_coordinates(self, coordinates):
-        self._dphi = coordinates[0]
-        self._denergy = coordinates[1]
+    @coordinates_dphi_denergy.setter
+    def coordinates_dphi_denergy(self, coordinates):
+        self._dphi, self._denergy = _assert_coordinates(coordinates)
 
     # The function wil create a homogeneous distribution of particles within
     # an area defined by the user. The area is given by the i and jlimits
@@ -116,7 +115,7 @@ class Particles(object):
         self.jmax = psinfo.jmax
 
         coords = self._aut_distr_to_physical(coords, machine, recprof)
-        self.physical_coordinates = coords
+        self.coordinates_dphi_denergy = coords
 
     # Convert particle coordinates from coordinates as fractions of bins,
     # to physical units. The physical units are phase (x-axis),
@@ -194,3 +193,18 @@ def ready_for_tomography(xp, yp, nbins):
     yp = yp.astype(np.int32).T
 
     return xp, yp
+
+def _assert_coordinates(coordinates):
+    if not hasattr(coordinates, '__iter__'): 
+        raise InvalidParticleError('coordinates should be itearble')
+    if not len(coordinates) == 2:
+        raise InvalidParticleError('Two arrays of coordinates should be'
+                                   'provided')
+    for coord in coordinates:
+        if not hasattr(coord, '__iter__'):
+            raise InvalidParticleError('coordinates should be itearble')
+    if not len(coordinates[0]) == len(coordinates[1]):
+         raise InvalidParticleError(
+                'arrays holding coordinates of x and y axis '
+                'should have the same length')
+    return coordinates[0], coordinates[1]
