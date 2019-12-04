@@ -45,12 +45,16 @@ class Particles(object):
 
     # x- and y-coords are the coordinates of each particle, given in
     # fractions of bins. 
-    def __init__(self, machine):
-        self._machine = machine
-        self._psinfo = psi.PhaseSpaceInfo(self._machine)
-        
+    def __init__(self):       
         self.dEbin = None
         self.xorigin = None
+
+        # Area where particles have been automaticaly populated.
+        # I - bin in phase axis, J - bin in energy axis 
+        self.imin = None
+        self.imax = None
+        self.jmin = None
+        self.jmax = None
 
         self.x_coords = None
         self.y_coords = None
@@ -64,41 +68,43 @@ class Particles(object):
     # version.
     # The particles coordinates will be saved as fractions of bins in
     # the x (phase) and y (energy) axis.
-    def homogeneous_distribution(self):
-        self._psinfo.find_binned_phase_energy_limits()
-        self.dEbin = self._psinfo.dEbin
-        self.xorigin = self._psinfo.xorigin
+    def homogeneous_distribution(self, machine):
+        self._assert_machine(machine)
+        psinfo = psi.PhaseSpaceInfo(machine)
+        psinfo.find_binned_phase_energy_limits()
+        self.dEbin = psinfo.dEbin
+        self.xorigin = psinfo.xorigin
 
-        nbins_y = np.sum(self._psinfo.jmax[self._psinfo.imin:
-                                            self._psinfo.imax + 1]
-                        - self._psinfo.jmin[self._psinfo.imin:
-                                             self._psinfo.imax + 1])
+        nbins_y = np.sum(psinfo.jmax[psinfo.imin: psinfo.imax + 1]
+                        - psinfo.jmin[psinfo.imin: psinfo.imax + 1])
 
         # creating the distribution of particles within one cell.
-        bin_pts = ((2.0 * np.arange(1, self._machine.snpt + 1) - 1)
-                        / (2.0 * self._machine.snpt))
+        bin_pts = ((2.0 * np.arange(1, machine.snpt + 1) - 1)
+                    / (2.0 * machine.snpt))
 
         # Creating x coordinates
-        x = np.arange(self._psinfo.imin, self._psinfo.imax + 1, dtype=float)
+        x = np.arange(psinfo.imin, psinfo.imax + 1, dtype=float)
         nbins_x = len(x)
-        x = np.repeat(x, self._machine.snpt)
+        x = np.repeat(x, machine.snpt)
         x += np.tile(bin_pts, nbins_x)
         
         # Creating y coordinates.
-        nbins_y = np.max(self._psinfo.jmax) - np.min(self._psinfo.jmin)
-        y = np.arange(np.min(self._psinfo.jmin),
-                      np.max(self._psinfo.jmax), dtype=float)
-        y = np.repeat(y, self._machine.snpt)        
+        nbins_y = np.max(psinfo.jmax) - np.min(psinfo.jmin)
+        y = np.arange(np.min(psinfo.jmin), np.max(psinfo.jmax), dtype=float)
+        y = np.repeat(y, machine.snpt)        
         y += np.tile(bin_pts, nbins_y)
 
         coords = np.meshgrid(x, y)
         coords = np.array([coords[0].flatten(), coords[1].flatten()])
 
         # Remove particles outside of the ijlimits.
-        coords = coords[:,coords[1]
-                          < self._psinfo.jmax[coords[0].astype(int)]]
-        coords = coords[:, coords[1]
-                          > self._psinfo.jmin[coords[0].astype(int)]]
+        coords = coords[:,coords[1] < psinfo.jmax[coords[0].astype(int)]]
+        coords = coords[:, coords[1] > psinfo.jmin[coords[0].astype(int)]]
+
+        self.imin = psinfo.imin
+        self.imax = psinfo.imax
+        self.jmin = psinfo.jmin
+        self.jmax = psinfo.jmax
 
         self.x_coords = coords[0]
         self.y_coords = coords[1]
@@ -107,22 +113,23 @@ class Particles(object):
     # to physical units. The physical units are phase (x-axis),
     # and energy (y-axis).
     # This format is needed for the particle tracking routine.  
-    def init_coords_to_physical(self, turn):
+    def init_coords_to_physical(self, machine, turn):
+        self._assert_machine(machine)
         dphi = ((self.x_coords + self.xorigin)
-                * self._machine.h_num
-                * self._machine.omega_rev0[turn]
-                * self._machine.dtbin
-                - self._machine.phi0[turn])
-        denergy = (self.y_coords - self._machine.yat0) * self.dEbin
+                * machine.h_num * machine.omega_rev0[turn] * machine.dtbin
+                - machine.phi0[turn])
+        denergy = (self.y_coords - machine.yat0) * self.dEbin
         return dphi, denergy
 
     def _assert_machine(self, machine):
-        needed_fieds = ['snpt', 'h_num', 
-                        'omga_rev0', 'dtbin', 'phi0',
-                        'yat0', 'dturns', 'nbins']
-        asrt.assert_fields(machine, 'machine', needed_fieds,
-                           expt.MachineParameterError,
-                           'Did you remember to use machine.fill()?')
+        needed_fieds = ['snpt', 'h_num', 'omega_rev0', 'eta0',
+                        'dtbin', 'phi0', 'yat0', 'dturns', 'phi12',
+                        'nbins', 'beam_ref_frame', 'full_pp_flag',
+                        'demax', 'vrf2', 'vrf2dot', 'e0', 'vrf1',
+                        'vrf1dot', 'min_dt', 'max_dt', 'time_at_turn']
+        asrt.assert_fields(
+            machine, 'machine', needed_fieds, expt.MachineParameterError,
+            'Did you remember to use machine.values_at_turns()?')
 
 # Takes particles in phase space coordinates.
 # Remove particles which left image width.

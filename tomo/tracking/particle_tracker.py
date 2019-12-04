@@ -20,7 +20,7 @@ class ParticleTracker:
         self._assert_machine(machine)
         self.machine = machine
 
-        self.particles = pts.Particles(self.machine)
+        self.particles = pts.Particles()
 
         self.nturns = machine.dturns * (machine.nprofiles - 1)
         self._ftn_flag = False

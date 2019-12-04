@@ -20,18 +20,18 @@ class Tracking(ptracker.ParticleTracker):
     # The function also returns phase and energies as phase-space coordinates.
     # Phase is given as angle relative to the synchronous phase.
     def track(self, initial_coordinates=None, rec_prof=0):
-        rectrn = rec_prof * self.machine.dturns        
+        recturn = rec_prof * self.machine.dturns        
 
         if initial_coordinates is None:
             log.info('Creating homogeneous distribution of particles.')
-            self.particles.homogeneous_distribution()
-            coords = self.particles.init_coords_to_physical(turn=rectrn)
-
+            self.particles.homogeneous_distribution(self.machine)
+            coords = self.particles.init_coords_to_physical(
+                                                self.machine, recturn)
             # Print fortran style plot info. Needed for tomograph.
             # Limits in I (phase), and dEbin must have been calculated.
             if self.fortran_flag:
-                print(tomoout.write_plotinfo_ftn(self.particles._psinfo,
-                                                 self._profile_charge))
+                print(tomoout.write_plotinfo_ftn(
+                        self.machine, self.particles, self._profile_charge))
         
         else:
             log.info('Using initial particle coordinates set by user.')
@@ -42,7 +42,6 @@ class Tracking(ptracker.ParticleTracker):
 
         rfv1 = self.machine.vrf1_at_turn * self.machine.q
         rfv2 = self.machine.vrf2_at_turn * self.machine.q 
-
 
         # Tracking particles
         if self.self_field_flag:
