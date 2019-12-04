@@ -196,15 +196,15 @@ def ready_for_tomography(xp, yp, nbins):
 
 def _assert_coordinates(coordinates):
     if not hasattr(coordinates, '__iter__'): 
-        raise InvalidParticleError('coordinates should be itearble')
+        raise expt.InvalidParticleError('coordinates should be itearble')
     if not len(coordinates) == 2:
-        raise InvalidParticleError('Two arrays of coordinates should be'
-                                   'provided')
+        raise expt.InvalidParticleError('Two arrays of coordinates should be'
+                                        'provided')
     for coord in coordinates:
         if not hasattr(coord, '__iter__'):
-            raise InvalidParticleError('coordinates should be itearble')
+            raise expt.InvalidParticleError('coordinates should be itearble')
     if not len(coordinates[0]) == len(coordinates[1]):
-         raise InvalidParticleError(
+         raise expt.InvalidParticleError(
                 'arrays holding coordinates of x and y axis '
                 'should have the same length')
     return coordinates[0], coordinates[1]
