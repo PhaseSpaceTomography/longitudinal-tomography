@@ -294,28 +294,23 @@ class PhaseSpaceInfo:
         return cplx_height.real
 
     def _assert_correct_arrays(self):
-        for film in range(self.machine.filmstart,
-                          self.machine.filmstop,
-                          self.machine.filmstep):
-
-            # Testing imin and imax
-            asrt.assert_inrange(self.imin, 'imin', 0, self.imax,
-                                expt.PhaseLimitsError,
-                                f'imin and imax out of bounds')
-            asrt.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
-                                     expt.PhaseLimitsError,
-                                     f'imin and imax out of bounds')
-
-            # Testing jmin and jmax
-            asrt.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
-                                       self.jmax[self.imin:self.imax],
-                                       expt.EnergyLimitsError,
-                                       msg=f'jmin and jmax out of bounds ',
-                                       index_offset=self.imin)
-            asrt.assert_array_less_eq(self.jmax[self.imin:self.imax],
-                                      self.machine.nbins,
-                                      expt.EnergyLimitsError,
-                                      f'jmin and jmax out of bounds ')
-            asrt.assert_equal(self.jmin.shape, 'jmin',
-                              self.jmax.shape, expt.ArrayLengthError,
-                              'jmin and jmax should have the same shape')
+        # Testing imin and imax
+        asrt.assert_inrange(self.imin, 'imin', 0, self.imax,
+                            expt.PhaseLimitsError,
+                            f'imin and imax out of bounds')
+        asrt.assert_less_or_equal(self.imax, 'imax', self.jmax.size,
+                                 expt.PhaseLimitsError,
+                                 f'imin and imax out of bounds')
+        # Testing jmin and jmax
+        asrt.assert_array_in_range(self.jmin[self.imin:self.imax], 0,
+                                   self.jmax[self.imin:self.imax],
+                                   expt.EnergyLimitsError,
+                                   msg=f'jmin and jmax out of bounds ',
+                                   index_offset=self.imin)
+        asrt.assert_array_less_eq(self.jmax[self.imin:self.imax],
+                                  self.machine.nbins,
+                                  expt.EnergyLimitsError,
+                                  f'jmin and jmax out of bounds ')
+        asrt.assert_equal(self.jmin.shape, 'jmin',
+                          self.jmax.shape, expt.ArrayLengthError,
+                          'jmin and jmax should have the same shape')
