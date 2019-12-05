@@ -97,8 +97,11 @@ class Profiles:
             raise expt.ProfileChargeNotCalculated(err_msg)
 
         if filtered_profiles is None:
+            # Working on normalized version of waterfall
+            self.dsprofiles = np.copy(self.waterfall)
+            self.dsprofiles /= np.sum(self.dsprofiles, axis=1)[:, None]
             self.dsprofiles = sig.savgol_filter(
-                                x=self._waterfall, window_length=7,
+                                x=self.dsprofiles, window_length=7,
                                 polyorder=4, deriv=1)
         else:
             self.dsprofiles = self._check_manual_filtered_profs(
