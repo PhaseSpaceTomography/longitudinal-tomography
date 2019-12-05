@@ -18,7 +18,8 @@ OUTPUT_DIR_IDX = 14
 class Frames:
 
     def __init__(self, framecount, framelength, skip_frames, skip_bins_start,
-                 skip_bins_end, rebin, dtbin, raw_data_path=None):
+                 skip_bins_end, rebin, dtbin, raw_data_path=''):
+        self.raw_data_path = raw_data_path
         self.nframes = framecount
         self.nbins_frame = framelength
         self.skip_frames = skip_frames
