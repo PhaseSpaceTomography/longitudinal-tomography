@@ -199,11 +199,11 @@ def _split_input(read_input):
 #  Fortran counts (by defalut) from 1.
 def txt_input_to_machine(input_array):
     if not hasattr(input_array , '__iter__'):
-        raise InputError('Input should be iterable') 
+        raise expt.InputError('Input should be iterable') 
     if len(input_array) != PARAMETER_LENGTH:
-        raise InputError(f'Input array be of length {PARAMETER_LENGTH}, '
-                         f'containin every line of input file '
-                         f'(not including raw-data).')
+        raise expt.InputError(f'Input array be of length {PARAMETER_LENGTH}, '
+                              f'containin every line of input file '
+                              f'(not including raw-data).')
 
     for i in range(len(input_array)):
             input_array[i] = input_array[i].strip('\r\n')
