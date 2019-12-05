@@ -1,7 +1,7 @@
 import logging as log
 import numpy as np
 import scipy.signal as sig
-import scipy
+from scipy import constants
 
 from . import physics
 from .utils import exceptions as expt
@@ -81,10 +81,11 @@ class Profiles:
 
     # Calculate the total charge of profile.
     # Uses the beam reference profile for the calculation
-    def calc_profilecharge(self,):
+    def calc_profilecharge(self):
         ref_prof = self.waterfall[self.machine.beam_ref_frame]
         self.profile_charge = (np.sum(ref_prof) * self.sampling_time
-                               / (scipy.e * self.machine.pickup_sensitivity))
+                               / (constants.e
+                                 * self.machine.pickup_sensitivity))
 
     # Calculate self-fields based on filtered profiles.
     # If filtered profiles are not provided by the user,
