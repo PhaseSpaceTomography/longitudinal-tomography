@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit
 from scipy import optimize, constants
 
 
@@ -74,7 +73,6 @@ def short_rf_voltage_formula(phi, vrf1, vrf1dot, vrf2, vrf2dot,
     return temp
 
 
-@njit
 # Calculates the RF peak voltage at turn rf_turn
 # assuming a linear voltage function
 # time=0 at machine_ref_frame.
