@@ -143,7 +143,7 @@ def reconstruct(weights, xp, flat_profiles, discr,
                 niter, nbins, npart, nprof):
     _reconstruct(weights, _get_2d_pointer(xp), flat_profiles,
                  discr, niter, nbins, npart, nprof)
-    return weights
+    return weights, discr
 
 
 # =============================================================

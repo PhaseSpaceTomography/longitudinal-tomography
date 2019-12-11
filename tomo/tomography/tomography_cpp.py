@@ -76,7 +76,8 @@ class TomographyCpp(stmo.Tomography):
         diff_waterfall = np.ascontiguousarray(
                         self.waterfall.flatten().astype(np.float64))
 
-        weight = tlw.reconstruct(weight, self.xp, diff_waterfall, self.diff,
-                                 niter, self.nbins, self.nparts, self.nprofs)
+        weight, self.diff = tlw.reconstruct(weight, self.xp, diff_waterfall,
+                                            self.diff, niter, self.nbins,
+                                            self.nparts, self.nprofs)
 
         return weight
