@@ -44,7 +44,7 @@ for rfv in rfv_inputs:
     xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 
     tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-    weight = tomo.run_cpp(niter=machine.niter)
+    weight = tomo.run(niter=machine.niter)
 
     diffs.append(tomo.diff[-1])
 

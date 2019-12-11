@@ -51,7 +51,7 @@ for snpt in snpts:
         xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 
         tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-        weight = tomo.run_cpp(niter=machine.niter)
+        weight = tomo.run(niter=machine.niter)
 
         t1 = tm.perf_counter()
     except Exception as e:

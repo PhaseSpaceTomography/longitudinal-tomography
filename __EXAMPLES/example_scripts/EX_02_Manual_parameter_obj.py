@@ -100,7 +100,7 @@ xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 
 # Reconstructing phase space
 tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-weight = tomo.run_cpp(niter=machine.niter)
+weight = tomo.run(niter=machine.niter)
 
 # Creating image for fortran style presentation of phase space. 
 image = tomoout.create_phase_space_image(
