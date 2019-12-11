@@ -13,7 +13,7 @@ class TomographyCpp(stmo.Tomography):
     # Hybrid Python/C++ coutine.
     # Back project and project routines are written in C++
     #  and are reached via the tomolib_wrappers module.
-    def run(self, niter=20):
+    def run_hybrid(self, niter=20):
         self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles()
         flat_points = self._create_flat_points()
@@ -63,8 +63,8 @@ class TomographyCpp(stmo.Tomography):
 
 
     # Running the full tomography routine in c++.
-    # Not as mature as run()
-    def run_cpp(self, niter=20):
+    # Not as mature as run_hybrid()
+    def run(self, niter=20):
         weight = np.ascontiguousarray(
                     np.zeros(self.nparts, dtype=ctypes.c_double))
         self.diff = np.zeros(niter + 1, dtype=ctypes.c_double)
