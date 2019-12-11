@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit # <- to be removed soon!
 import logging as log
 
 from ..utils import tomo_output as tomoout 

@@ -1,6 +1,6 @@
 import numpy as np
 import logging as log
-from numba import njit
+from numba import njit # <- To be removed soon! 
 from . import particle_tracker as ptracker
 from ..cpp_routines import tomolib_wrappers as tlw
 
