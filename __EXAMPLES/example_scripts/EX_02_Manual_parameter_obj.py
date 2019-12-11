@@ -72,14 +72,15 @@ machine = mch.Machine(**machine_input_args)
 raw_data = np.genfromtxt(frames.raw_data_path, skip_header=98,
                          dtype=np.float32)
 machine.values_at_turns()
-waterfall = frames.to_waterfall(raw_data)
+measured_waterfall = frames.to_waterfall(raw_data)
 
 if machine.xat0 < 0 or machine.self_field_flag:
     msg = 'This example does not include fitting or self field tracking.'
     raise NotImplementedError(msg)
 
 profiles = tomoin.raw_data_to_profiles(
-                waterfall, machine, frames.rebin, frames.sampling_time)
+                measured_waterfall, machine,
+                frames.rebin, frames.sampling_time)
 
 tracker = tracking.Tracking(machine)
 reconstruct_idx = machine.filmstart

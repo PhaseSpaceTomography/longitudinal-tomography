@@ -21,11 +21,13 @@ raw_data = np.genfromtxt(input_file_pth, skip_header=98, dtype=np.float32)
 # Generating machine object
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
 machine.values_at_turns()
-waterfall = frames.to_waterfall(raw_data)
+measured_waterfall = frames.to_waterfall(raw_data)
 
 # Creating profiles object
 profiles = tomoin.raw_data_to_profiles(
-                waterfall, machine, frames.rebin, frames.sampling_time)
+                measured_waterfall, machine,
+                frames.rebin, frames.sampling_time)
+
 profiles.calc_profilecharge()
 
 if profiles.machine.xat0 < 0:

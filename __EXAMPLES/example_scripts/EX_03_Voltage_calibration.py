@@ -18,7 +18,7 @@ with open(input_file_pth, 'r') as line:
 raw_data = np.genfromtxt(input_file_pth, skip_header=98)
 
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
-waterfall = frames.to_waterfall(raw_data)
+measured_waterfall = frames.to_waterfall(raw_data)
 
 ntest_points = 20
 vary_rfv = 1000  # in volts
@@ -27,8 +27,8 @@ rfv_end = machine.vrf1 + vary_rfv
 rfv_inputs = np.linspace(rfv_start, rfv_end, ntest_points)
 
 profiles = tomoin.raw_data_to_profiles(
-                waterfall, machine, frames.rebin,
-                frames.sampling_time)
+                measured_waterfall, machine,
+                frames.rebin, frames.sampling_time)
 
 diffs = []
 for rfv in rfv_inputs:
