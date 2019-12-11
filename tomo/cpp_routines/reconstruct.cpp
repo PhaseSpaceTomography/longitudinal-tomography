@@ -195,8 +195,9 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
 
     back_project(weights, flat_points, flat_profiles, npart, nprof);
     
+    std::cout << " Iterating..." << std::endl;
     for(int iteration = 0; iteration < niter; iteration++){
-        std::cout << "Iteration: " << iteration + 1 << " of " << niter << std::endl;
+        std::cout << std::setw(3) << iteration + 1 << std::endl;
 
         project(flat_rec, flat_points, weights, npart, nprof);
         suppress_zeros_norm(flat_rec, nprof, nbins);
@@ -225,4 +226,6 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
         delete[] flat_points[i];
     }
     delete[] rparts, flat_points, flat_rec, diff_prof;
+
+    std::cout << " Done!" << std::endl;
 }
