@@ -7,7 +7,7 @@ from . import exceptions as expt
 # =========================================================
 def assert_greater(var, var_name, limit, error_class, extra_text=''):
     if var <= limit:
-        msg = _write_std_err_msg(var_name, var, limit, '>', extra_text)
+        msg = _write_std_err_msg(var_name, var, limit, '<', extra_text)
         raise error_class(msg)
 
 
