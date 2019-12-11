@@ -61,9 +61,9 @@ def assert_inrange(var, var_name, low_lim, up_lim,
 
 def assert_array_not_equal(array, array_name, limit,
                            error_class, extra_text=''):
-    if np.all(array == 0):
+    if np.all(array == limit):
         error_message = (f'\nAll elements of the array "{array_name}" '
-                         f'has the unexpected value: {array}.\n'
+                         f'has the unexpected value: {array[0]}.\n'
                          f'Expected value: {array_name} != {limit}.')
         error_message += f'\n{extra_text}'
         raise error_class(error_message)
