@@ -1,5 +1,5 @@
 import numpy as np
-import ctypes
+import logging as log
 
 from ..cpp_routines import tomolib_wrappers as tlw
 from . import __tomography as stmo
@@ -14,11 +14,13 @@ class TomographyCpp(stmo.Tomography):
     # Back project and project routines are written in C++
     #  and are reached via the tomolib_wrappers module.
     def run_hybrid(self, niter=20):
+        log.warning('TomographyCpp.run_hybrid() '
+                    'may be removed in future updates!')
         self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles()
         flat_points = self._create_flat_points()
         flat_profs = np.ascontiguousarray(
-                        self.waterfall.flatten()).astype(ctypes.c_double)
+                        self.waterfall.flatten()).astype(np.float64)
         weight = np.zeros(self.nparts)
         weight = tlw.back_project(weight, flat_points, flat_profs,
                               self.nparts, self.nprofs)
@@ -35,8 +37,9 @@ class TomographyCpp(stmo.Tomography):
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts.T
          
-            weight = tlw.back_project(weight, flat_points, diff_waterfall,
-                                  self.nparts, self.nprofs)
+            weight = tlw.back_project(
+                        weight, flat_points, diff_waterfall.flatten(),
+                        self.nparts, self.nprofs)
 
         self.recreated = self.project(flat_points, weight)
 
@@ -59,19 +62,19 @@ class TomographyCpp(stmo.Tomography):
 
     def _create_flat_points(self):
         return np.ascontiguousarray(
-                super()._create_flat_points()).astype(ctypes.c_int)
+                super()._create_flat_points()).astype(np.int32)
 
 
     # Running the full tomography routine in c++.
     # Not as mature as run_hybrid()
     def run(self, niter=20):
         weight = np.ascontiguousarray(
-                    np.zeros(self.nparts, dtype=ctypes.c_double))
-        self.diff = np.zeros(niter + 1, dtype=ctypes.c_double)
-        self.xp = np.ascontiguousarray(self.xp).astype(ctypes.c_int)
+                    np.zeros(self.nparts, dtype=np.float64))
+        self.diff = np.zeros(niter + 1, dtype=np.float64)
+        self.xp = np.ascontiguousarray(self.xp).astype(np.int32)
 
         diff_waterfall = np.ascontiguousarray(
-                        self.waterfall.flatten().astype(ctypes.c_double))
+                        self.waterfall.flatten().astype(np.float64))
 
         weight = tlw.reconstruct(weight, self.xp, diff_waterfall, self.diff,
                                  niter, self.nbins, self.nparts, self.nprofs)
