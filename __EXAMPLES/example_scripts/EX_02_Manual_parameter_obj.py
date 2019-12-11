@@ -1,6 +1,5 @@
 import numpy as np
 
-import tomo.fit as fit
 import tomo.machine as mch
 import tomo.particles as parts
 import tomo.tomography.tomography_cpp as tomography

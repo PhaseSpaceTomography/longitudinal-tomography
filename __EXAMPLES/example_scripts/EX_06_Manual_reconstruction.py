@@ -1,11 +1,7 @@
 import numpy as np
 import sys
 
-# import tomo.machine as mch
-# import tomo.particles as parts
 import tomo.cpp_routines.tomolib_wrappers as tlw
-# import tomo.tracking.tracking as tracking
-# import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
 
