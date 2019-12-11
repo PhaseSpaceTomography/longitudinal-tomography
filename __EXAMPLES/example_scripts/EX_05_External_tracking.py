@@ -44,12 +44,11 @@ def generateBunch(bunch_position, bunch_length,
 
     return particle_phase, particle_energy
 
-def kick(dphi, dE, charge, voltage, E0):
-    return dE + charge * voltage * np.sin(dphi) - E0
-
-
 def drift(dphi, dE, hnum, beta, E0, eta):
     return dphi - 2 * np.pi * hnum * eta * dE / (beta**2 * E0)
+
+def kick(dphi, dE, charge, voltage, E0):
+    return dE + charge * voltage * np.sin(dphi) - E0
 
 # Loading measured data
 input_file_path = '../input_files/C500MidPhaseNoise.dat'
@@ -67,22 +66,24 @@ waterfall = waterfall.reshape(nframes, nbins)
 # plt.imshow(waterfall, cmap='terrain', origin='lower') # <- terrain var fin
 # plt.show()
 
-bunch_position = 0.0
-bunch_length = np.pi
-bunch_energy = 0.0
-energy_spread = 4E6
+bunch_position = 0.25591559666284924    # [rad]
+bunch_length = 1.7210323875576607       # [rad]
+bunch_energy = 0.0                      # [eV]
+energy_spread = 1969365.9337549524      # [eV]
 nparts = int(1E5)
 
 dphi, denergy = generateBunch(bunch_position, bunch_length,
                               bunch_energy, energy_spread, nparts)
 
-energy = 10E6
-beta=0.9
+energy = 1.33501286E09      # [eV]
+beta=0.7113687870661543     
 charge=1
-voltage=7945.403672852664
+voltage=7945.403672852664   # [V]
 harmonic=1
-eta=0.01
+eta=0.4344660490259821
 
+plt.scatter(dphi, denergy)
+plt.show()
 for i in range(nturns):
     dphi = drift(dphi, denergy, harmonic, beta, energy, eta)
     denergy = kick(dphi, denergy, charge, voltage, energy)
@@ -90,3 +91,8 @@ for i in range(nturns):
         plt.scatter(dphi, denergy)
         plt.show()
 
+# Save particles for each time frame
+# Convert to phase space coordinates
+# tomography(xp, waterfall)
+# tomo.run()
+# show image
