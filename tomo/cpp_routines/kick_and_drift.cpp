@@ -238,3 +238,54 @@ extern "C" void kick_and_drift(
         } //if
     } //while
 }//func
+
+
+extern "C" void new_kick_and_drift(
+                         double ** __restrict__ xp,             // inn/out
+                         double ** __restrict__ yp,             // inn/out
+                         double * __restrict__ denergy,         // inn
+                         double * __restrict__ dphi,            // inn
+                         const double * __restrict__ rf1v,      // inn
+                         const double * __restrict__ rf2v,      // inn
+                         const double * __restrict__ phi0,      // inn
+                         const double * __restrict__ deltaE0,   // inn
+                         const double * __restrict__ omega_rev0,// inn
+                         const double * __restrict__ drift_coef,// inn
+                         const double phi12,
+                         const double hratio,
+                         const int rec_prof,
+                         const int dturns,
+                         const int nturns,
+                         const int nparts){
+    int profile = 0; //rec_prof;
+    int turn = 0;    // <- fix
+
+    for(int i=0; i < nparts; i++){
+        xp[profile][i] = dphi[i];
+        yp[profile][i] = denergy[i];
+    }
+
+    // std::cout << "Hallo." << std::endl;
+    // abort();
+
+    while(turn < nturns){
+        drift_up(dphi, denergy, drift_coef[turn], nparts);
+        
+        turn++;
+        
+        kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
+                hratio, nparts, deltaE0[turn]);
+
+        // std::cout << "Hallo." << std::endl;
+        // abort();
+        
+        if (turn % dturns == 0){
+            profile++;
+            for(int i=0; i < nparts; i++){
+                xp[profile][i] = dphi[i];
+                yp[profile][i] = denergy[i];
+            }
+            std::cout << profile << std::endl;
+        } //if
+    } //while
+}

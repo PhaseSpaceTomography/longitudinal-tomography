@@ -46,6 +46,27 @@ _k_and_d.argtypes = [_double_ptr,
 _k_and_d_gpu = _tomolib.kick_and_drift_gpu
 _k_and_d_gpu.argtypes = _k_and_d.argtypes
 
+# New kick and drift
+# ---------------------------------------------
+_k_and_d_new = _tomolib.new_kick_and_drift
+_k_and_d_new.argtypes = [_double_ptr,
+                         _double_ptr,
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
+                         ct.c_double,
+                         ct.c_double,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int]
+# ---------------------------------------------
+
 # Reconstruction routine (flat version)
 _reconstruct = _tomolib.reconstruct
 _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
@@ -120,6 +141,14 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
 
     return xp, yp
 
+def new_kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
+                       deltaE0, omega_rev0, drift_coef, phi12,
+                       hratio, rec_prof, dturns, nturns, npts):
+    args = (_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
+            rfv1, rfv2, phi0, deltaE0, omega_rev0, drift_coef, phi12,
+            hratio, rec_prof, dturns, nturns, npts)
+    _k_and_d_new(*args)
+    return xp, yp
 
 # =============================================================
 # Functions for phase space reconstruction
