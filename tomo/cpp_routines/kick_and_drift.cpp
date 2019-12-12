@@ -257,17 +257,15 @@ extern "C" void new_kick_and_drift(
                          const int dturns,
                          const int nturns,
                          const int nparts){
-    int profile = 0; //rec_prof;
-    int turn = 0;    // <- fix
+    int profile = rec_prof;
+    int turn = rec_prof * dturns;
 
     for(int i=0; i < nparts; i++){
         xp[profile][i] = dphi[i];
         yp[profile][i] = denergy[i];
     }
 
-    // std::cout << "Hallo." << std::endl;
-    // abort();
-
+    // Upwards 
     while(turn < nturns){
         drift_up(dphi, denergy, drift_coef[turn], nparts);
         
@@ -275,9 +273,6 @@ extern "C" void new_kick_and_drift(
         
         kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
                 hratio, nparts, deltaE0[turn]);
-
-        // std::cout << "Hallo." << std::endl;
-        // abort();
         
         if (turn % dturns == 0){
             profile++;
@@ -288,4 +283,36 @@ extern "C" void new_kick_and_drift(
             std::cout << profile << std::endl;
         } //if
     } //while
-}
+
+    profile = rec_prof;
+    turn = rec_prof * dturns;
+
+    if (profile > 0){
+
+        // Going back to initial coordinates
+        for(int i=0; i < nparts; i++){
+            dphi[i] = xp[rec_prof][i];
+            denergy[i] = yp[rec_prof][i];
+        }
+
+        // Downwards
+        while(turn > 0){
+            kick_down(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
+                      phi12, hratio, nparts, deltaE0[turn]);
+            turn--;
+            
+            drift_down(dphi, denergy, drift_coef[turn], nparts);
+            
+            if (turn % dturns == 0){
+                profile--;
+                for(int i=0; i < nparts; i++){
+                    xp[profile][i] = dphi[i];
+                    yp[profile][i] = denergy[i];
+                }
+                std::cout << profile << std::endl;
+            }
+        
+        }//while
+    }
+
+}//end func
