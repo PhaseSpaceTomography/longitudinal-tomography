@@ -100,14 +100,17 @@ def drift(denergy, dphi, drift_coef, nr_part, turn, up=True):
 
 
 def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
-                       nturns, nparts, *args, machine=None):
+                   nturns, nparts, *args, machine=None):
     
     xp = np.ascontiguousarray(xp.astype(np.float64))
     yp = np.ascontiguousarray(yp.astype(np.float64))
-    
+
+    denergy = np.ascontiguousarray(denergy.astype(np.float64))
+    dphi = np.ascontiguousarray(dphi.astype(np.float64))
+
     track_args = [_get_2d_pointer(xp), _get_2d_pointer(yp),
-                  denergy.astype(np.float64), dphi.astype(np.float64),
-                  rfv1.astype(np.float64), rfv2.astype(np.float64)]
+                  denergy, dphi, rfv1.astype(np.float64),
+                  rfv2.astype(np.float64)]
 
     if machine is not None:
         track_args += [machine.phi0, machine.deltaE0, machine.omega_rev0,
