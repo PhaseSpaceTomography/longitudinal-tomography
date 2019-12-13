@@ -85,14 +85,20 @@ voltage=7945.403672852664           # [V]
 harmonic=1
 eta=0.4344660490259821
 
-plt.scatter(dphi, denergy)
-plt.show()
+# plt.scatter(dphi, denergy)
+# plt.show()
+all_dphi = np.zeros((nframes, nparts))
+all_denergy = np.zeros((nframes, nparts))
+
+print('Tracking...')
 for i in range(nturns):
     dphi = drift(dphi, denergy, harmonic, beta, energy, eta)
     denergy = kick(dphi, denergy, charge, voltage, energy_kick)
-    if i % 24 == 0:
-        plt.scatter(dphi, denergy)
-        plt.show()
+    if i % dturns == 0:
+        all_dphi[int(i / dturns)] = np.copy(dphi)
+        all_denergy[int(i / dturns)] = np.copy(denergy)
+print('Tracking complete!')
+
 
 
 
