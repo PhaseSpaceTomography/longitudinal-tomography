@@ -125,3 +125,9 @@ class PhaseSpaceReducedToZeroes(Exception):
 class XPOutOfImageWidthError(Exception):
     pass
 
+
+class CoordinateImportError(Exception):
+    pass
+
+class CoordinateError(Exception):
+    pass
