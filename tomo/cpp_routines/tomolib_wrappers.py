@@ -19,7 +19,12 @@ else:
 
 _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 
-# Kick and drift (cpu version)
+# Kick and drift (gpu version)
+# _k_and_d_gpu = _tomolib.kick_and_drift_gpu
+# _k_and_d_gpu.argtypes = _k_and_d.argtypes
+
+# New kick and drift
+# ---------------------------------------------
 _k_and_d = _tomolib.kick_and_drift
 _k_and_d.argtypes = [_double_ptr,
                      _double_ptr,
@@ -33,38 +38,10 @@ _k_and_d.argtypes = [_double_ptr,
                      np.ctypeslib.ndpointer(ct.c_double),
                      ct.c_double,
                      ct.c_double,
-                     ct.c_double,
-                     ct.c_double,
-                     ct.c_double,
-                     ct.c_double,
-                     ct.c_double,
+                     ct.c_int,
                      ct.c_int,
                      ct.c_int,
                      ct.c_int]
-
-# Kick and drift (gpu version)
-_k_and_d_gpu = _tomolib.kick_and_drift_gpu
-_k_and_d_gpu.argtypes = _k_and_d.argtypes
-
-# New kick and drift
-# ---------------------------------------------
-_k_and_d_new = _tomolib.new_kick_and_drift
-_k_and_d_new.argtypes = [_double_ptr,
-                         _double_ptr,
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         ct.c_double,
-                         ct.c_double,
-                         ct.c_int,
-                         ct.c_int,
-                         ct.c_int,
-                         ct.c_int]
 # ---------------------------------------------
 
 # Reconstruction routine (flat version)
@@ -121,27 +98,8 @@ def drift(denergy, dphi, drift_coef, nr_part, turn, up=True):
         _tomolib.drift_down(*args)
     return dphi
 
-def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
-                   deltaE0, omega_rev0, drift_coef, phi12, hratio,
-                   hnum, dtbin, xorigin, dEbin, yat0, dturns,
-                   nturns, npts, gpu_flag=False):
-    args = (_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
-             rfv1, rfv2, phi0, deltaE0, omega_rev0, drift_coef, phi12, hratio,
-             hnum, dtbin, xorigin, dEbin, yat0, dturns, nturns, npts)
-    
-    if gpu_flag:
-        # Info here might not be true.
-        # Find a way to choose from either CPU or GPU version.
-        #  - Makefile?
-        log.info('Tracking particles using GPU.')
-        _k_and_d_gpu(*args)
-    else:
-        log.info('Tracking particles using CPU.')
-        _k_and_d(*args)
 
-    return xp, yp
-
-def new_kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
+def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
                        nturns, nparts, *args, machine=None):
     
     xp = np.ascontiguousarray(xp.astype(np.float64))
@@ -162,7 +120,7 @@ def new_kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     
     track_args += [rec_prof, nturns, nparts]
 
-    _k_and_d_new(*track_args)
+    _k_and_d(*track_args)
     return xp, yp
 
 # =============================================================
