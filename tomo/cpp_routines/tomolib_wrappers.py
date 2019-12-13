@@ -141,13 +141,28 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
 
     return xp, yp
 
-def new_kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
-                       deltaE0, omega_rev0, drift_coef, phi12,
-                       hratio, rec_prof, dturns, nturns, npts):
-    args = (_get_2d_pointer(xp), _get_2d_pointer(yp), denergy, dphi,
-            rfv1, rfv2, phi0, deltaE0, omega_rev0, drift_coef, phi12,
-            hratio, rec_prof, dturns, nturns, npts)
-    _k_and_d_new(*args)
+def new_kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
+                       nturns, nparts, *args, machine=None):
+    
+    xp = np.ascontiguousarray(xp.astype(np.float64))
+    yp = np.ascontiguousarray(yp.astype(np.float64))
+    
+    track_args = [_get_2d_pointer(xp), _get_2d_pointer(yp),
+                  denergy.astype(np.float64), dphi.astype(np.float64),
+                  rfv1.astype(np.float64), rfv2.astype(np.float64)]
+
+    if machine is not None:
+        track_args += [machine.phi0, machine.deltaE0, machine.omega_rev0,
+                       machine.drift_coef, machine.phi12, machine.h_ratio,
+                       machine.dturns]
+    elif len(args) == 7:
+        track_args += args
+    else:
+        raise expt.InputError('Missing arguments.')
+    
+    track_args += [rec_prof, nturns, nparts]
+
+    _k_and_d_new(*track_args)
     return xp, yp
 
 # =============================================================

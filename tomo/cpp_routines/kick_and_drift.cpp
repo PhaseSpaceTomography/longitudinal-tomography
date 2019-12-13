@@ -253,8 +253,8 @@ extern "C" void new_kick_and_drift(
                          const double * __restrict__ drift_coef,// inn
                          const double phi12,
                          const double hratio,
-                         const int rec_prof,
                          const int dturns,
+                         const int rec_prof,
                          const int nturns,
                          const int nparts){
     int profile = rec_prof;
