@@ -260,6 +260,7 @@ extern "C" void new_kick_and_drift(
     int profile = rec_prof;
     int turn = rec_prof * dturns;
 
+    #pragma ompr parallel for
     for(int i=0; i < nparts; i++){
         xp[profile][i] = dphi[i];
         yp[profile][i] = denergy[i];
@@ -276,6 +277,7 @@ extern "C" void new_kick_and_drift(
         
         if (turn % dturns == 0){
             profile++;
+            #pragma ompr parallel for
             for(int i=0; i < nparts; i++){
                 xp[profile][i] = dphi[i];
                 yp[profile][i] = denergy[i];
@@ -290,6 +292,7 @@ extern "C" void new_kick_and_drift(
     if (profile > 0){
 
         // Going back to initial coordinates
+        #pragma ompr parallel for
         for(int i=0; i < nparts; i++){
             dphi[i] = xp[rec_prof][i];
             denergy[i] = yp[rec_prof][i];
@@ -305,6 +308,8 @@ extern "C" void new_kick_and_drift(
             
             if (turn % dturns == 0){
                 profile--;
+                
+                #pragma ompr parallel for
                 for(int i=0; i < nparts; i++){
                     xp[profile][i] = dphi[i];
                     yp[profile][i] = denergy[i];
