@@ -7,7 +7,7 @@ from . import __tomography as stmo
 
 class TomographyCpp(stmo.Tomography):
 
-    def __init__(self, waterfall, x_coords):
+    def __init__(self, waterfall, x_coords=None):
         super().__init__(waterfall, x_coords)
 
     # Hybrid Python/C++ coutine.
@@ -16,6 +16,9 @@ class TomographyCpp(stmo.Tomography):
     def run_hybrid(self, niter=20):
         log.warning('TomographyCpp.run_hybrid() '
                     'may be removed in future updates!')
+        if self.xp is None:
+            raise CoordinateError('No found x-coordinates.')
+        
         self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles()
         flat_points = self._create_flat_points()
@@ -68,10 +71,12 @@ class TomographyCpp(stmo.Tomography):
     # Running the full tomography routine in c++.
     # Not as mature as run_hybrid()
     def run(self, niter=20):
+        if self.xp is None:
+            raise CoordinateError('No found x-coordinates.')
+        
         weight = np.ascontiguousarray(
                     np.zeros(self.nparts, dtype=np.float64))
         self.diff = np.zeros(niter + 1, dtype=np.float64)
-        self.xp = np.ascontiguousarray(self.xp).astype(np.int32)
 
         diff_waterfall = np.ascontiguousarray(
                         self.waterfall.flatten().astype(np.float64))
@@ -79,5 +84,4 @@ class TomographyCpp(stmo.Tomography):
         weight, self.diff = tlw.reconstruct(weight, self.xp, diff_waterfall,
                                             self.diff, niter, self.nbins,
                                             self.nparts, self.nprofs)
-
         return weight

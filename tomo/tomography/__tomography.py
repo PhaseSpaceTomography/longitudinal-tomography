@@ -1,5 +1,6 @@
+import logging as log
+from numba import njit
 import numpy as np
-from numba import njit # To be removed
 
 from ..utils import exceptions as expt
 
@@ -21,21 +22,62 @@ class Tomography:
     # recreated - Recreated waterfall from phase-space back-projections
     # diff      - Array containing discrepancy for each iteration of
     #             recontruction.
-    def __init__(self, waterfall, x_coords):
+    def __init__(self, waterfall, x_coords=None):
         self.waterfall = waterfall
         self.waterfall = self._suppress_zeros_normalize(self.waterfall)
         
-        self.nprofs = self.waterfall.shape[0]
-        self.nbins = self.waterfall.shape[1]
+        self._nprofs = self.waterfall.shape[0]
+        self._nbins = self.waterfall.shape[1]
 
         self.xp = x_coords
-        self.assert_xp()
-
-        self.nparts = self.xp.shape[0]
 
         self.recreated = np.zeros(self.waterfall.shape)
         self.diff = None
 
+    @property
+    def xp(self):
+        return self._xp
+
+    @xp.setter    
+    def xp(self, value):
+        if hasattr(value, '__iter__'):
+            value = np.array(value)
+            if not value.ndim == 2:
+                msg = 'X coordinates have two dimensions '\
+                      '(nparticles, nprofiles)'
+                raise expt.CoordinateImportError(msg)
+            if not value.shape[1] == self.nprofs:
+                msg = f'Imported particles should be '\
+                      f'tracked trough {self.nprofs} profiles. '\
+                      f'Given particles seems so have been tracked trough '\
+                      f'{value.shape[1]} profiles.'
+                raise expt.CoordinateImportError(msg)
+            if np.any(value < 0) or np.any(value >= self.nbins):
+                msg = 'X coordinate of particles outside of image width'
+                raise expt.XPOutOfImageWidthError(msg)
+            self._xp = np.ascontiguousarray(value).astype(np.int32)
+            self._nparts = self._xp.shape[0]
+            log.info(f'X coordinates of shape {self.xp.shape} loaded.')
+        elif value is None:
+            self._xp = None
+            self._nparts = None
+            log.info('X coordinates set to None')
+        else:
+            msg = 'X coordinates should be iterable, or None.'
+            raise expt.CoordinateImportError(msg)
+
+    @property
+    def nparts(self):
+        return self._nparts
+
+    @property
+    def nbins(self):
+        return self._nbins
+    
+    @property
+    def nprofs(self):
+        return self._nprofs
+    
     def _suppress_zeros_normalize(self, waterfall):
         waterfall = waterfall.clip(0.0)
         if not waterfall.any():
@@ -67,12 +109,6 @@ class Tomography:
         # Setting zeros to one to avoid division by zero
         ppb[ppb==0] = 1
         return np.max(ppb) / ppb
-
-    # Check that no particles are outside of image width
-    def assert_xp(self):
-        if np.any(self.xp < 0) or np.any(self.xp >= self.nbins):
-            raise expt.XPOutOfImageWidthError(
-                'X coordinate of particles outside of image width')
 
     @staticmethod
     @njit
