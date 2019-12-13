@@ -1,23 +1,25 @@
+import logging as log
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import time as tm
-import logging as log
 
 import tomo.particles as parts
 import tomo.tomography.tomography_cpp as tomography
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 
+ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
+file_name = 'C550MidPhaseNoise.dat'
+in_file_pth = '/'.join(ex_dir + [f'/input_files/{file_name}'])
 
-input_file_pth = '../input_files/C550MidPhaseNoise.dat'
 parameter_lines = 98
-
 input_parameters = []
-with open(input_file_pth, 'r') as line:
+with open(in_file_pth, 'r') as line:
     for i in range(parameter_lines):
         input_parameters.append(line.readline().strip())
 
-raw_data = np.genfromtxt(input_file_pth, skip_header=98)
+raw_data = np.genfromtxt(in_file_pth, skip_header=98)
 
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
 machine.values_at_turns()
@@ -27,6 +29,8 @@ measured_waterfall = frames.to_waterfall(raw_data)
 profiles = tomoin.raw_data_to_profiles(
                 measured_waterfall, machine,
                 frames.rebin, frames.sampling_time)
+
+tomo = tomography.TomographyCpp(profiles.waterfall)
 
 snpt0 = 1
 snpt1 = 6
@@ -50,12 +54,13 @@ for snpt in snpts:
                     tracker.particles.dEbin)
         xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 
-        tomo = tomography.TomographyCpp(profiles.waterfall, xp)
+        tomo.xp = xp        
         weight = tomo.run(niter=machine.niter)
+        tomo.xp = None
 
         t1 = tm.perf_counter()
     except Exception as e:
-        log.warning(f' {input_file_pth} could not be run with '
+        log.warning(f' {file_name} could not be run with '
                     f'input parameter snpt = {snpt}.\n'
                     f'Error message: {e}')
     else:
