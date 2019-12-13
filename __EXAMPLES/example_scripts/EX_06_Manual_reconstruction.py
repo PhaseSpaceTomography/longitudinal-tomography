@@ -1,5 +1,5 @@
 import numpy as np
-import sys
+import os
 
 import tomo.cpp_routines.tomolib_wrappers as tlw
 import tomo.utils.tomo_output as tomoout
@@ -8,9 +8,12 @@ import tomo.utils.tomo_output as tomoout
 def discrepancy(nbins, nprofs, dwaterfall):
     return np.sqrt(np.sum(dwaterfall**2)/(nbins * nprofs))
 
-xp = np.load('resources/INDIVShavingC325_xcoords.npy')
-yp = np.load('resources/INDIVShavingC325_ycoords.npy')
-waterfall = np.load('resources/INDIVShavingC325_waterfall.npy')
+this_dir = os.path.realpath(os.path.dirname(__file__)).split('/')
+rsc_dir = '/'.join(this_dir + ['/resources'])
+
+xp = np.load(f'{rsc_dir}/INDIVShavingC325_xcoords.npy')
+yp = np.load(f'{rsc_dir}/INDIVShavingC325_ycoords.npy')
+waterfall = np.load(f'{rsc_dir}/INDIVShavingC325_waterfall.npy')
 
 
 niterations = 20

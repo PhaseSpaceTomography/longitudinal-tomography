@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 import tomo.fit as fit
 import tomo.particles as parts
@@ -7,16 +8,16 @@ import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
+ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
+in_file_pth = '/'.join(ex_dir + ['/input_files/C500MidPhaseNoise.dat'])
 
-input_file_pth = '../input_files/C500MidPhaseNoise.dat'
 parameter_lines = 98
-
 input_parameters = []
-with open(input_file_pth, 'r') as line:
+with open(in_file_pth, 'r') as line:
     for i in range(parameter_lines):
         input_parameters.append(line.readline().strip())
 
-raw_data = np.genfromtxt(input_file_pth, skip_header=98, dtype=np.float32)
+raw_data = np.genfromtxt(in_file_pth, skip_header=98, dtype=np.float32)
 
 # Generating machine object
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
