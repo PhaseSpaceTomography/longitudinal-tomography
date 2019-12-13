@@ -1,6 +1,7 @@
 import numpy as np
-from scipy import constants
 import matplotlib.pyplot as plt
+import os
+from scipy import constants
 import sys
 
 
@@ -51,9 +52,10 @@ def kick(dphi, dE, charge, voltage, E0):
     return dE + charge * voltage * np.sin(dphi) - E0
 
 # Loading measured data
-input_file_path = '../input_files/C500MidPhaseNoise.dat'
-waterfall = np.genfromtxt('../input_files/C500MidPhaseNoise.dat',
-                          skip_header=98)
+ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
+in_file_pth = '/'.join(ex_dir + ['/input_files/C500MidPhaseNoise.dat'])
+
+waterfall = np.genfromtxt(in_file_pth, skip_header=98)
 
 sampling_time = 4.999999999999999E-10
 nframes = 100
@@ -75,10 +77,11 @@ nparts = int(1E5)
 dphi, denergy = generateBunch(bunch_position, bunch_length,
                               bunch_energy, energy_spread, nparts)
 
-energy = 1.33501286E09      # [eV]
+energy = 1.33501286E09              # [eV]
+energy_kick = 2.4362921438217163E03 # [eV]
 beta=0.7113687870661543     
 charge=1
-voltage=7945.403672852664   # [V]
+voltage=7945.403672852664           # [V]
 harmonic=1
 eta=0.4344660490259821
 
@@ -86,10 +89,12 @@ plt.scatter(dphi, denergy)
 plt.show()
 for i in range(nturns):
     dphi = drift(dphi, denergy, harmonic, beta, energy, eta)
-    denergy = kick(dphi, denergy, charge, voltage, energy)
+    denergy = kick(dphi, denergy, charge, voltage, energy_kick)
     if i % 24 == 0:
         plt.scatter(dphi, denergy)
         plt.show()
+
+
 
 # Save particles for each time frame
 # Convert to phase space coordinates
