@@ -23,7 +23,7 @@ _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 # _k_and_d_gpu = _tomolib.kick_and_drift_gpu
 # _k_and_d_gpu.argtypes = _k_and_d.argtypes
 
-# New kick and drift
+# kick and drift
 # ---------------------------------------------
 _k_and_d = _tomolib.kick_and_drift
 _k_and_d.argtypes = [_double_ptr,
@@ -41,7 +41,8 @@ _k_and_d.argtypes = [_double_ptr,
                      ct.c_int,
                      ct.c_int,
                      ct.c_int,
-                     ct.c_int]
+                     ct.c_int,
+                     ct.c_bool]
 # ---------------------------------------------
 
 # Reconstruction routine (flat version)
@@ -100,7 +101,7 @@ def drift(denergy, dphi, drift_coef, nr_part, turn, up=True):
 
 
 def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
-                   nturns, nparts, *args, machine=None):
+                   nturns, nparts, *args, machine=None, ftn_out=False):
     
     xp = np.ascontiguousarray(xp.astype(np.float64))
     yp = np.ascontiguousarray(yp.astype(np.float64))
@@ -121,7 +122,7 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     else:
         raise expt.InputError('Missing arguments.')
     
-    track_args += [rec_prof, nturns, nparts]
+    track_args += [rec_prof, nturns, nparts, ftn_out]
 
     _k_and_d(*track_args)
     return xp, yp

@@ -198,7 +198,8 @@ extern "C" void kick_and_drift(
                          const int dturns,
                          const int rec_prof,
                          const int nturns,
-                         const int nparts){
+                         const int nparts,
+                         const bool ftn_out){
     int profile = rec_prof;
     int turn = rec_prof * dturns;
 
@@ -224,7 +225,11 @@ extern "C" void kick_and_drift(
                 xp[profile][i] = dphi[i];
                 yp[profile][i] = denergy[i];
             }
-            std::cout << profile << std::endl;
+            if (ftn_out)
+                std::cout << " Tracking from time slice  "
+                          << rec_prof + 1 << " to  " << profile + 1
+                          << ",   0.000% went outside the image width."
+                          << std::endl;
         } //if
     } //while
 
@@ -256,7 +261,11 @@ extern "C" void kick_and_drift(
                     xp[profile][i] = dphi[i];
                     yp[profile][i] = denergy[i];
                 }
-                std::cout << profile << std::endl;
+                if (ftn_out)
+                    std::cout << " Tracking from time slice  "
+                              << rec_prof + 1 << " to  " << profile + 1
+                              << ",   0.000% went outside the image width."
+                              << std::endl;
             }
         
         }//while

@@ -57,7 +57,8 @@ class Tracking(ptracker.ParticleTracker):
     
             xp, yp = tlw.kick_and_drift(
                         xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                        nturns, nparts, machine=self.machine)
+                        nturns, nparts, machine=self.machine,
+                        ftn_out=self.fortran_flag)
             
         log.info('Tracking completed!')
         return xp, yp
