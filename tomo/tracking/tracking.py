@@ -6,7 +6,6 @@ from ..utils import tomo_output as tomoout
 from . import particle_tracker as ptracker
 from ..cpp_routines import tomolib_wrappers as tlw
 
-
 class Tracking(ptracker.ParticleTracker):
 
     # Input should be thee coordinates of the particles given in
@@ -37,21 +36,29 @@ class Tracking(ptracker.ParticleTracker):
             self.particles.coordinates_dphi_denergy = init_distr
             coords = self.particles.coordinates_dphi_denergy
 
-        dphi = np.ascontiguousarray(coords[0])
-        denergy = np.ascontiguousarray(coords[1])
+        dphi = coords[0]
+        denergy = coords[1]
 
         rfv1 = self.machine.vrf1_at_turn * self.machine.q
-        rfv2 = self.machine.vrf2_at_turn * self.machine.q 
+        rfv2 = self.machine.vrf2_at_turn * self.machine.q
 
         # Tracking particles
         if self.self_field_flag:
             log.info('Tracking particles... (Self-fields enabled)')
+            denergy = np.ascontiguousarray(denergy)
+            dphi = np.ascontiguousarray(dphi)
             xp, yp = self.kick_and_drift_self(
                         denergy, dphi, rfv1, rfv2, recprof)
         else:
-            log.info('Tracking particles... (Self-fields disabled)')
-            xp, yp = self.kick_and_drift(denergy, dphi, rfv1, rfv2, recprof)
-        
+            nparts = len(dphi)
+            nturns = self.machine.dturns * (self.machine.nprofiles - 1)
+            xp = np.zeros((self.machine.nprofiles, nparts))
+            yp = np.zeros((self.machine.nprofiles, nparts))
+    
+            xp, yp = tlw.kick_and_drift(
+                        xp, yp, denergy, dphi, rfv1, rfv2, recprof,
+                        nturns, nparts, machine=self.machine)
+            
         log.info('Tracking completed!')
         return xp, yp
 
