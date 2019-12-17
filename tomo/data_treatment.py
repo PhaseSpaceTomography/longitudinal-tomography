@@ -17,7 +17,7 @@ def calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
     return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
 
 
-def rebin(waterfall, rbn, machine):
+def rebin(waterfall, rbn, machine=None):
     data = np.copy(waterfall)
 
     # Check that there is enough data to for the given rebin factor.
@@ -26,8 +26,9 @@ def rebin(waterfall, rbn, machine):
     else:
         rebinned = _rebin_individable(data, rbn)
 
-    machine.dtbin *= rbn
-    machine.xat0 /= float(rbn)
+    if machine is not None:
+        machine.dtbin *= rbn
+        machine.xat0 /= float(rbn)
 
     return rebinned
 
