@@ -83,7 +83,6 @@ def _get_parser():
 def _add_to_pyhtonpath(tomo_path):
     usr_py_path = os.environ['PYTHONPATH'].split(os.pathsep)
     if tomo_path not in usr_py_path:
-        print(usr_py_path)
         print(f'Please add {tomo_path} to your PYTHONPATH.')
 
 
