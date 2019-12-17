@@ -58,7 +58,7 @@ xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
 # Tomography!
 tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-weight = tomo.run()
+weight = tomo.run(verbose=True)
 
 # Creating and presenting phase-space image
 nbins = profiles.machine.nbins
