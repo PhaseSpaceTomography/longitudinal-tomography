@@ -36,33 +36,33 @@ if profiles.machine.xat0 < 0:
     machine.load_fitted_xat0_ftn(fit_info)
 
 tracker = tracking.Tracking(machine)
+# tracker.enable_fortran_output(profiles.profile_charge)
 
 # For including self fields during tracking 
 if machine.self_field_flag:
     profiles.calc_self_fields()
     tracker.enable_self_fields(profiles)
 
-# Profile to be reconstructed
-reconstruct_idx = machine.filmstart
 
-tracker.enable_fortran_output(profiles.profile_charge)
-xp, yp = tracker.track(reconstruct_idx)
+for film in range(machine.filmstart, machine.filmstop, machine.filmstep):
 
-# Converting from physical coordinates ([rad], [eV])
-# to phase space coordinates.
-if not tracker.self_field_flag:
-    xp, yp = parts.physical_to_coords(
-                xp, yp, machine, tracker.particles.xorigin,
-                tracker.particles.dEbin)
+    xp, yp = tracker.track(film)
 
-# Filters out lost particles, transposes particle matrix, casts to np.int32.
-xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
+    # Converting from physical coordinates ([rad], [eV])
+    # to phase space coordinates.
+    if not tracker.self_field_flag:
+        xp, yp = parts.physical_to_coords(
+                    xp, yp, machine, tracker.particles.xorigin,
+                    tracker.particles.dEbin)
 
-# Reconstructing phase space
-tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-weight = tomo.run(niter=machine.niter)
+    # Filters out lost particles, transposes particle matrix, casts to np.int32.
+    xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 
-# Creating image for fortran style presentation of phase space. 
-image = tomoout.create_phase_space_image(
-            xp, yp, weight, machine.nbins, reconstruct_idx)
-tomoout.show(image, tomo.diff, profiles.waterfall[reconstruct_idx])
+    # Reconstructing phase space
+    tomo = tomography.TomographyCpp(profiles.waterfall, xp)
+    weight = tomo.run(niter=machine.niter)
+
+    # Creating image for fortran style presentation of phase space. 
+    image = tomoout.create_phase_space_image(
+                xp, yp, weight, machine.nbins, film)
+    tomoout.show(image, tomo.diff, profiles.waterfall[film])
