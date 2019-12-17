@@ -90,22 +90,30 @@ class Profiles:
     # Calculate self-fields based on filtered profiles.
     # If filtered profiles are not provided by the user,
     # standard filter (savitzky-golay smoothing filter) is used.
-    def calc_self_fields(self, filtered_profiles=None):
+    def calc_self_fields(self, filtered_profiles=None, in_filter=None):
         if self.profile_charge is None:
             err_msg = 'Profile charge must be calculated before '\
                       'calculating the self-fields'
             raise expt.ProfileChargeNotCalculated(err_msg)
 
-        if filtered_profiles is None:
+        if not filtered_profiles is None:
+            self.dsprofiles = self._check_manual_filtered_profs(
+                                                    filtered_profiles)
+        elif not in_filter is None:
+            err_msg = 'Filter as argument not yet implemented.'
+            raise NotImplementedError()
+            self.dsprofiles = np.copy(self.waterfall)
+            self.dsprofiles = in_filter(self.dsprofiles)
+            self.dsprofiles = self._check_manual_filtered_profs(
+                                                    self.dsprofiles)
+        else:
             # Working on normalized version of waterfall
             self.dsprofiles = np.copy(self.waterfall)
             self.dsprofiles /= np.sum(self.dsprofiles, axis=1)[:, None]
             self.dsprofiles = sig.savgol_filter(
                                 x=self.dsprofiles, window_length=7,
                                 polyorder=4, deriv=1)
-        else:
-            self.dsprofiles = self._check_manual_filtered_profs(
-                                                    filtered_profiles)
+
 
         (self.phiwrap,
          self.wrap_length) = self._find_wrap_length()
