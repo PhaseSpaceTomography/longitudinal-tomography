@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 import tomo.machine as mch
 import tomo.particles as parts
@@ -7,6 +8,8 @@ import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
+ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
+in_file_pth = '/'.join(ex_dir + ['/input_files/INDIVShavingC325.dat'])
 
 # Values retrieved from INDIVShavingC325.dat
 dtbin = 9.999999999999999E-10
@@ -15,7 +18,7 @@ dtbin = 9.999999999999999E-10
 #  collection and format of measured raw data.
 # This can be omitted by shaping the waterfall yourself.
 frame_input_args = {
-    'raw_data_path':       '../input_files/INDIVShavingC325.dat',
+    'raw_data_path':       in_file_pth,
     'framecount':          150,
     'skip_frames':         0,
     'framelength':         1000,
@@ -87,7 +90,6 @@ reconstruct_idx = machine.filmstart
 
 # profile charge needed for fortran style output during tracking.
 profiles.calc_profilecharge()
-tracker.enable_fortran_output(profiles.profile_charge)
 xp, yp = tracker.track(reconstruct_idx)
 
 # Converts from physical units to phase space coordinates as bin numbers.
