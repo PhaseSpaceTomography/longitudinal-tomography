@@ -173,7 +173,8 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
                             const int niter,
                             const int nbins,
                             const int npart,
-                            const int nprof){
+                            const int nprof,
+                            const bool verbose){
     int i;
 
     // Creating arrays...
@@ -202,9 +203,12 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     back_project(weights, flat_points, flat_profiles, npart, nprof);
     clip(weights, npart, 0.0);
     
-    std::cout << " Iterating..." << std::endl;
+    if (verbose)
+        std::cout << " Iterating..." << std::endl;
+    
     for(int iteration = 0; iteration < niter; iteration++){
-        std::cout << std::setw(3) << iteration + 1 << std::endl;
+        if (verbose)
+            std::cout << std::setw(3) << iteration + 1 << std::endl;
 
         project(flat_rec, flat_points, weights, npart, nprof);
         normalize(flat_rec, nprof, nbins);
@@ -235,5 +239,6 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     }
     delete[] rparts, flat_points, flat_rec, diff_prof;
 
-    std::cout << " Done!" << std::endl;
+    if (verbose)
+        std::cout << " Done!" << std::endl;
 }

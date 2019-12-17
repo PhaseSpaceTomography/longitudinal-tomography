@@ -13,7 +13,7 @@ class TomographyCpp(stmo.Tomography):
     # Hybrid Python/C++ coutine.
     # Back project and project routines are written in C++
     #  and are reached via the tomolib_wrappers module.
-    def run_hybrid(self, niter=20):
+    def run_hybrid(self, niter=20, verbose=False):
         log.warning('TomographyCpp.run_hybrid() '
                     'may be removed in future updates!')
         if self.xp is None:
@@ -30,9 +30,12 @@ class TomographyCpp(stmo.Tomography):
                               self.nparts, self.nprofs)
         weight = weight.clip(0.0)
 
-        print(' Iterating...')
+        if verbose:
+            print(' Iterating...')
+        
         for i in range(niter):
-            print(f'{i + 1:3d}')
+            if verbose:
+                print(f'{i + 1:3d}')
 
             self.recreated = self.project(flat_points, weight)
 
@@ -53,7 +56,8 @@ class TomographyCpp(stmo.Tomography):
         diff_waterfall = self.waterfall - self.recreated
         self.diff[-1] = self._discrepancy(diff_waterfall)
 
-        print(' Done!')
+        if verbose:
+            print(' Done!')
 
         return weight
 
@@ -72,7 +76,7 @@ class TomographyCpp(stmo.Tomography):
 
     # Running the full tomography routine in c++.
     # Not as mature as run_hybrid()
-    def run(self, niter=20):
+    def run(self, niter=20, verbose=False):
         if self.xp is None:
             raise CoordinateError('No found x-coordinates.')
         
@@ -85,5 +89,5 @@ class TomographyCpp(stmo.Tomography):
 
         weight, self.diff = tlw.reconstruct(weight, self.xp, diff_waterfall,
                                             self.diff, niter, self.nbins,
-                                            self.nparts, self.nprofs)
+                                            self.nparts, self.nprofs, verbose)
         return weight
