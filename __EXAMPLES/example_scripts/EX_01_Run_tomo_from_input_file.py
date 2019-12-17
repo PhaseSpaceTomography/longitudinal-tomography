@@ -36,7 +36,7 @@ if profiles.machine.xat0 < 0:
     machine.load_fitted_xat0_ftn(fit_info)
 
 tracker = tracking.Tracking(machine)
-# tracker.enable_fortran_output(profiles.profile_charge)
+tracker.enable_fortran_output(profiles.profile_charge)
 
 # For including self fields during tracking 
 if machine.self_field_flag:
@@ -60,7 +60,7 @@ for film in range(machine.filmstart, machine.filmstop, machine.filmstep):
 
     # Reconstructing phase space
     tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-    weight = tomo.run(niter=machine.niter)
+    weight = tomo.run(niter=machine.niter, verbose=True)
 
     # Creating image for fortran style presentation of phase space. 
     image = tomoout.create_phase_space_image(
