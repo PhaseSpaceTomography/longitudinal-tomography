@@ -22,7 +22,7 @@ nbins = waterfall.shape[1]
 nparts = xp.shape[0]
 rec_tframe = 0
 
-# Uncomment to track using tomo rountine:
+# Remove comment to track using tomo rountine:
 # ------------------------------------------------------
 # import tomo.tomography.tomography_cpp as tomography
 # import sys
@@ -58,6 +58,7 @@ rec_wf = np.zeros(waterfall.shape)
 # Initial estimation of weight factors using (flattended) measured profiles. 
 weight = tlw.back_project(weight, flat_points, flat_profs,
                           nparts, nprofs)
+weight = weight.clip(0.0)
 
 diff = []
 for i in range(niterations):
@@ -67,7 +68,6 @@ for i in range(niterations):
                          nprofs, nbins)
     
     # Normalizing reconstructed waterfall
-    rec_wf.clip(0.0)
     rec_wf /= np.sum(rec_wf, axis=1)[:, None]
 
     # Finding difference between measured and reconstructed waterfall
@@ -82,9 +82,16 @@ for i in range(niterations):
     # Back projecting using the difference between measured and rec. waterfall 
     weight = tlw.back_project(weight, flat_points, dwaterfall.flatten(),
                               nparts, nprofs)
+    weight = weight.clip(0.0)
 
-    print(f'Iteration: {i+1:3d}, discrepancy: {diff[-1]:3E}')
+    print(f'Iteration: {i:3d}, discrepancy: {diff[-1]:3E}')
 
+# Finding last discrepancy...
+rec_wf = tlw.project(rec_wf, flat_points, weight, nparts, nprofs, nbins)
+rec_wf /= np.sum(rec_wf, axis=1)[:, None]
+dwaterfall = waterfall - rec_wf
+diff.append(np.sqrt(np.sum(dwaterfall**2)/(nbins * nprofs)))
+print(f'Iteration: {i+1:3d}, discrepancy: {diff[-1]:3E}')
 
 # Creating image for fortran style presentation of phase space
 image = tomoout.create_phase_space_image(
