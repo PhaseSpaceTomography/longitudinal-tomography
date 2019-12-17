@@ -25,8 +25,10 @@ class TomographyCpp(stmo.Tomography):
         flat_profs = np.ascontiguousarray(
                         self.waterfall.flatten()).astype(np.float64)
         weight = np.zeros(self.nparts)
+        
         weight = tlw.back_project(weight, flat_points, flat_profs,
                               self.nparts, self.nprofs)
+        weight = weight.clip(0.0)
 
         print(' Iterating...')
         for i in range(niter):
@@ -43,6 +45,7 @@ class TomographyCpp(stmo.Tomography):
             weight = tlw.back_project(
                         weight, flat_points, diff_waterfall.flatten(),
                         self.nparts, self.nprofs)
+            weight = weight.clip(0.0)
 
         self.recreated = self.project(flat_points, weight)
 
@@ -55,12 +58,11 @@ class TomographyCpp(stmo.Tomography):
         return weight
 
     # Project using c++ routine from tomolib_wrappers.
-    # Normalizes and supresses zeroes.
+    # Normalizes recreated profiles before returning them.
     def project(self, flat_points, weight):
         rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
                           weight, self.nparts, self.nprofs, self.nbins)
-        
-        rec = self._suppress_zeros_normalize(rec)
+        rec = self._normalize_profiles(rec)
         return rec
 
     def _create_flat_points(self):

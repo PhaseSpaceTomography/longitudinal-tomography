@@ -25,22 +25,10 @@ extern "C" void project(double *  flat_rec,                     // inn/out
             flat_rec[flat_points[i][j]] += weights[i];
 }
 
-void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
-                        const int nprof,
-                        const int nbins){
+void normalize(double * __restrict__ flat_rec, // inn/out
+               const int nprof,
+               const int nbins){
     int i, j;
-    bool positive_flag = false;
-    
-    // surpressing zeros
-#pragma omp parallel for
-    for(i=0; i < nprof * nbins; i++)
-        if(flat_rec[i] < 0.0)
-            flat_rec[i] = 0.0;
-        else if(!positive_flag)
-            positive_flag = true;
-
-    if(!positive_flag)
-        throw std::runtime_error("All of phase space got reduced to zeroes");
 
 #pragma omp parallel for
     for(i=0; i < nprof; i++){
@@ -51,6 +39,24 @@ void suppress_zeros_norm(double * __restrict__ flat_rec, // inn/out
             flat_rec[i * nbins + j] /= sum_profile;
     }
 }
+
+void clip(double * __restrict__ array, // inn/out
+          const int length,
+          const double clip_val){
+    bool positive_flag = false;
+    int i;
+
+#pragma omp parallel for
+    for(i=0; i < length; i++)
+        if(array[i] < clip_val)
+            array[i] = clip_val;
+        else if(!positive_flag)
+            positive_flag = true;
+
+    if(!positive_flag)
+        throw std::runtime_error("All of phase space got reduced to zeroes");
+} 
+
 
 void find_difference_profile(double * __restrict__ diff_prof,           // out
                              const double * __restrict__ flat_rec,      // inn
@@ -194,13 +200,14 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
     create_flat_points(xp, flat_points, npart, nprof, nbins);
 
     back_project(weights, flat_points, flat_profiles, npart, nprof);
+    clip(weights, npart, 0.0);
     
     std::cout << " Iterating..." << std::endl;
     for(int iteration = 0; iteration < niter; iteration++){
         std::cout << std::setw(3) << iteration + 1 << std::endl;
 
         project(flat_rec, flat_points, weights, npart, nprof);
-        suppress_zeros_norm(flat_rec, nprof, nbins);
+        normalize(flat_rec, nprof, nbins);
 
         find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
 
@@ -209,11 +216,12 @@ extern "C" void reconstruct(double * __restrict__ weights,              // out
         compensate_particle_amount(diff_prof, rparts, nprof, nbins);
 
         back_project(weights, flat_points, diff_prof, npart, nprof);
+        clip(weights, npart, 0.0);
     } //end for
 
     // Calculating final discrepancy
     project(flat_rec, flat_points, weights, npart, nprof);
-    suppress_zeros_norm(flat_rec, nprof, nbins);
+    normalize(flat_rec, nprof, nbins);
     
     find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
     discr[niter] = discrepancy(diff_prof, nprof, nbins);

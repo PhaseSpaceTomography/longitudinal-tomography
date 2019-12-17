@@ -23,8 +23,8 @@ class Tomography:
     # diff      - Array containing discrepancy for each iteration of
     #             recontruction.
     def __init__(self, waterfall, x_coords=None):
-        self._waterfall = waterfall
-        self._waterfall = self._suppress_zeros_normalize(self.waterfall)
+        self._waterfall = waterfall.clip(0.0)
+        self._waterfall = self._normalize_profiles(self.waterfall)
         
         self._nprofs = self.waterfall.shape[0]
         self._nbins = self.waterfall.shape[1]
@@ -82,8 +82,7 @@ class Tomography:
     def nprofs(self):
         return self._nprofs
     
-    def _suppress_zeros_normalize(self, waterfall):
-        waterfall = waterfall.clip(0.0)
+    def _normalize_profiles(self, waterfall):
         if not waterfall.any():
             raise expt.WaterfallReducedToZero()
         waterfall /= np.sum(waterfall, axis=1)[:, None]
