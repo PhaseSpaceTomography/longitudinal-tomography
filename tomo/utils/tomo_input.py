@@ -231,7 +231,7 @@ def txt_input_to_machine(input_array):
              'output_dir':          input_array[14],
              'dtbin':               float(input_array[22]),
              'dturns':              int(input_array[24]),
-             'xat0':                float(input_array[39]),
+             'synch_part_x':        float(input_array[39]),
              'demax':               float(input_array[41]),
              'filmstart':           int(input_array[43]) - 1,
              'filmstop':            int(input_array[45]),

@@ -28,7 +28,7 @@ def rebin(waterfall, rbn, machine=None):
 
     if machine is not None:
         machine.dtbin *= rbn
-        machine.xat0 /= float(rbn)
+        machine.synch_part_x /= float(rbn)
 
     return rebinned
 

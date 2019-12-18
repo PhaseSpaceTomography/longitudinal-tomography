@@ -1,6 +1,6 @@
 # Settings for reconstruction:
 # ----------------------------------------------------------------------------
-# xat0              Synchronous phase in bins in beam_ref_frame
+# synch_part_x      Synchronous phase in bins in beam_ref_frame
 #                   read form file as time (in frame bins) from the lower
 #                   profile bound to the synchronous phase
 #                   (if < 0, a fit is performed) in the bunch ref. frame
@@ -78,7 +78,7 @@ from . import physics
 
 class Machine:
 
-    def __init__(self, xat0, nprofiles, zwall_over_n, g_coupling,
+    def __init__(self, synch_part_x, nprofiles, zwall_over_n, g_coupling,
                  charge, rest_energy, transitional_gamma,
                  h_num, h_ratio, phi12, b0, bdot, bending_radius,
                  mean_orbit_radius, vrf1, vrf1dot, vrf2, vrf2dot,
@@ -119,7 +119,7 @@ class Machine:
         self.max_dt = max_dt
         self.nprofiles = nprofiles
         self.pickup_sensitivity = pickup_sensitivity
-        self.xat0 = xat0
+        self.synch_part_x = synch_part_x
         self.dtbin = dtbin
         self.nbins = nbins
 
@@ -149,18 +149,18 @@ class Machine:
                  f'number of profile bins changed.\nNew values - '
                  f'nbins: {self.nbins}, yat0: {self.yat0}')
 
-    # Function for setting the xat0 if a fit has been performed.
+    # Function for setting the synch_part_x if a fit has been performed.
     # Saves parameters gathered from fit, needed by the 'print_plotinfo'
     #  function.
     # Fit info should be a tuple of the following format:
-    # (fitted_xat0, lower fbunch limit, upper bunch limit)
-    # fitted_xat0 must be saved for fortran output: 'print_plotinfo'  
-    def load_fitted_xat0_ftn(self, fit_info):
-        log.info('Saving fitted xat0 to machine object.')
-        self.fitted_xat0 = fit_info[0]
+    # (fitted_synch_part_x, lower fbunch limit, upper bunch limit)
+    # fitted_synch_part_x must be saved for fortran output: 'print_plotinfo'  
+    def load_fitted_synch_part_x_ftn(self, fit_info):
+        log.info('Saving fitted synch_part_x to machine object.')
+        self.fitted_synch_part_x = fit_info[0]
         self.bunchlimit_low = fit_info[1]
         self.bunchlimit_up = fit_info[2]
-        self.xat0 = self.fitted_xat0
+        self.synch_part_x = self.fitted_synch_part_x
 
     # Calculating values that changes for each m. turn.
     # First is the arrays inited at index of machine ref. frame (i0).

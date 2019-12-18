@@ -37,7 +37,7 @@ machine_input_args = {
     'output_dir':          '/tmp/',
     'dtbin':               dtbin,
     'dturns':              5,
-    'xat0':                334.00000000000006,
+    'synch_part_x':        334.00000000000006,
     'demax':               -1.E6,
     'filmstart':           0,
     'filmstop':            1,
@@ -77,7 +77,7 @@ raw_data = np.genfromtxt(frames.raw_data_path, skip_header=98,
 machine.values_at_turns()
 measured_waterfall = frames.to_waterfall(raw_data)
 
-if machine.xat0 < 0 or machine.self_field_flag:
+if machine.synch_part_x < 0 or machine.self_field_flag:
     msg = 'This example does not include fitting or self field tracking.'
     raise NotImplementedError(msg)
 

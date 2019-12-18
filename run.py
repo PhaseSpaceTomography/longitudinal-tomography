@@ -34,9 +34,9 @@ profiles = tomoin.raw_data_to_profiles(
 profiles.calc_profilecharge()
 # profiles.calc_self_fields()
 
-if profiles.machine.xat0 < 0:
-    fit_info = fit.fit_xat0(profiles)
-    machine.load_fitted_xat0_ftn(fit_info)
+if profiles.machine.synch_part_x < 0:
+    fit_info = fit.fit_synch_part_x(profiles)
+    machine.load_fitted_synch_part_x_ftn(fit_info)
 reconstr_idx = machine.filmstart
 
 # Tracking...

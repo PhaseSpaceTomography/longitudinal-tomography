@@ -3,9 +3,9 @@ from scipy import optimize
 
 from . import physics
 
-# Original function for finding xat0
-# Finds xat0 based on a linear fit on a refence profile.  
-def fit_xat0(profiles):
+# Original function for finding synch_part_x
+# Finds synch_part_x based on a linear fit on a refence profile.  
+def fit_synch_part_x(profiles):
     ref_idx = profiles.machine.beam_ref_frame
     ref_prof = profiles.waterfall[ref_idx] 
     ref_turn = ref_idx * profiles.machine.dturns
@@ -23,16 +23,16 @@ def fit_xat0(profiles):
             tol=0.0001, maxiter=100,
             args=(profiles.machine, bunch_phaselength, ref_turn))
     
-    fitted_xat0 = (tfoot_low + (profiles.machine.phi0[ref_turn] - phil)
-                   / (profiles.machine.h_num
-                      * profiles.machine.omega_rev0[ref_turn]
-                      * profiles.machine.dtbin))
+    fitted_synch_part_x = (tfoot_low + (profiles.machine.phi0[ref_turn] - phil)
+                           / (profiles.machine.h_num
+                           * profiles.machine.omega_rev0[ref_turn]
+                           * profiles.machine.dtbin))
 
-    return (fitted_xat0, tfoot_low, tfoot_up)
+    return (fitted_synch_part_x, tfoot_low, tfoot_up)
 
 
 # Find foot tangents of profile. Needed to estimate bunch duration
-# when performing a fit to find xat0
+# when performing a fit to find synch_part_x
 def _calc_tangentfeet(ref_prof):       
     nbins = len(ref_prof)
     index_array = np.arange(nbins) + 0.5

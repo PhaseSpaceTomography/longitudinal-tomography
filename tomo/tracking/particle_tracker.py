@@ -39,13 +39,14 @@ class ParticleTracker:
     def _assert_machine(self, machine):
         needed_fieds = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
                         'nprofiles', 'drift_coef', 'dturns', 'phi0',
-                        'phi12', 'h_ratio', 'deltaE0', 'xat0']
+                        'phi12', 'h_ratio', 'deltaE0', 'synch_part_x']
         asrt.assert_fields(
             machine, 'machine', needed_fieds, expt.MachineParameterError,
             'Did you remember to use machine.values_at_turns()?')
         asrt.assert_greater_or_equal(
-            machine.xat0, 'xat0', 0, expt.MachineParameterError,
-            'particle tracking needs a valid xat0 value.')
+            machine.synch_part_x, 'synch_part_x',
+            0, expt.MachineParameterError,
+            'particle tracking needs a valid synch_part_x value.')
 
     # Only for Fortran output
     def enable_fortran_output(self, profile_charge):

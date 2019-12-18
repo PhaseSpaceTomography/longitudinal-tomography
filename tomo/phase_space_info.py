@@ -147,7 +147,7 @@ class PhaseSpaceInfo:
                 / (self.machine.h_num
                    * self.machine.omega_rev0[beam_ref_turn]
                    * self.machine.dtbin)
-                - self.machine.xat0)
+                - self.machine.synch_part_x)
 
     # Finding limits for tracking all pixels in reconstructed phase space.
     def _limits_track_full_image(self):

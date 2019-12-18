@@ -76,7 +76,7 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
 
     # Check if a Fortran styled fit has been performed.
     fit_performed = True
-    fit_info_vars = ['fitted_xat0', 'bunchlimit_low', 'bunchlimit_up']
+    fit_info_vars = ['fitted_synch_part_x', 'bunchlimit_low', 'bunchlimit_up']
     for var in fit_info_vars:
         if not hasattr(machine, var):
             fit_performed = False
@@ -85,11 +85,11 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
     if fit_performed:
         bunchlimit_low = machine.bunchlimit_low
         bunchlimit_up = machine.bunchlimit_up
-        fitted_xat0 = machine.fitted_xat0
+        fitted_synch_part_x = machine.fitted_synch_part_x
     else:
         bunchlimit_low = 0.0
         bunchlimit_up = 0.0
-        fitted_xat0 = 0.0
+        fitted_synch_part_x = 0.0
 
 
     if particles.dEbin is None:
@@ -115,12 +115,12 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
               f' eperimage = '\
               f'{profile_charge:0.3E}\n'\
             f'Position (in pixels) of the reference synchronous point:\n'\
-            f' xat0 =  {machine.xat0:.3f}\n'\
+            f' xat0 =  {machine.synch_part_x:.3f}\n'\
             f' yat0 =  {machine.yat0:.3f}\n'\
             f'Foot tangent fit results (in bins):\n'\
             f' tangentfootl =    {bunchlimit_low:.3f}\n'\
             f' tangentfootu =    {bunchlimit_up:.3f}\n'\
-            f' fit xat0 =   {fitted_xat0:.3f}\n'\
+            f' fit xat0 =   {fitted_synch_part_x:.3f}\n'\
             f'Synchronous phase (in radians):\n'\
             f' phi0( {rec_prof+1}) = {machine.phi0[rec_turn]:.4f}\n'\
             f'Horizontal range (in pixels) of the region in '\
