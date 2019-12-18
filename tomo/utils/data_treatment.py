@@ -1,6 +1,6 @@
 import numpy as np
-from .utils import assertions as asrt
-from .utils import exceptions as expt
+from . import assertions as asrt
+from . import exceptions as expt
 
 
 # Original function for subtracting baseline of raw data input profiles.
