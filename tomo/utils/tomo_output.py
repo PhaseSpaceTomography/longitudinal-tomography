@@ -116,7 +116,7 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
               f'{profile_charge:0.3E}\n'\
             f'Position (in pixels) of the reference synchronous point:\n'\
             f' xat0 =  {machine.synch_part_x:.3f}\n'\
-            f' yat0 =  {machine.yat0:.3f}\n'\
+            f' yat0 =  {machine.synch_part_y:.3f}\n'\
             f'Foot tangent fit results (in bins):\n'\
             f' tangentfootl =    {bunchlimit_low:.3f}\n'\
             f' tangentfootu =    {bunchlimit_up:.3f}\n'\

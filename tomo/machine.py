@@ -4,7 +4,7 @@
 #                   read form file as time (in frame bins) from the lower
 #                   profile bound to the synchronous phase
 #                   (if < 0, a fit is performed) in the bunch ref. frame
-# yat0              Synchronous energy (0 in relative terms)
+# synch_part_y      Synchronous energy (0 in relative terms)
 #                   in reconstructed phase space coordinate system
 # dtbin             bin with [s] 
 # demax             maximum energy of reconstructed phase space
@@ -144,10 +144,10 @@ class Machine:
     @nbins.setter
     def nbins(self, in_nbins):
         self._nbins = in_nbins
-        self._find_yat0()
-        log.info(f'yat0 was updated when the '
+        self._find_synch_part_y()
+        log.info(f'synch_part_y was updated when the '
                  f'number of profile bins changed.\nNew values - '
-                 f'nbins: {self.nbins}, yat0: {self.yat0}')
+                 f'nbins: {self.nbins}, synch_part_y: {self.synch_part_y}')
 
     # Function for setting the synch_part_x if a fit has been performed.
     # Saves parameters gathered from fit, needed by the 'print_plotinfo'
@@ -257,8 +257,8 @@ class Machine:
                                                  phi_upper)
         return i0
 
-    def _find_yat0(self):
-        self.yat0 = self.nbins / 2.0
+    def _find_synch_part_y(self):
+        self.synch_part_y = self.nbins / 2.0
 
     def rfv_at_turns(self):
         rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn

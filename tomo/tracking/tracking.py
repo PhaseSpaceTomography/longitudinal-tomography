@@ -170,7 +170,8 @@ class Tracking(ptracker.ParticleTracker):
                             self.machine.omega_rev0[rec_turn],
                             self.machine.dtbin, self._phiwrap)
 
-        yp[rec_prof] = denergy / self.particles.dEbin + self.machine.yat0
+        yp[rec_prof] = (denergy / self.particles.dEbin
+                        + self.machine.synch_part_y)
 
         print(iprof)
         while turn < self.nturns:
@@ -195,7 +196,7 @@ class Tracking(ptracker.ParticleTracker):
                 iprof += 1
                 xp[iprof] = temp_xp
                 yp[iprof] = (denergy / self.particles.dEbin
-                               + self.machine.yat0)
+                               + self.machine.synch_part_y)
                 print(iprof)
 
 
@@ -227,7 +228,7 @@ class Tracking(ptracker.ParticleTracker):
                 print(iprof)
                 xp[iprof] = temp_xp
                 yp[iprof] = (denergy / self.particles.dEbin
-                               + self.machine.yat0)
+                               + self.machine.synch_part_y)
                 iprof -= 1
 
         return xp, yp

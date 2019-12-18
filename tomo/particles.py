@@ -126,12 +126,12 @@ class Particles(object):
         dphi = ((coordinates[0] + self.xorigin)
                 * machine.h_num * machine.omega_rev0[turn] * machine.dtbin
                 - machine.phi0[turn])
-        denergy = (coordinates[1] - machine.yat0) * self.dEbin
+        denergy = (coordinates[1] - machine.synch_part_y) * self.dEbin
         return dphi, denergy
 
     def _assert_machine(self, machine):
         needed_fieds = ['snpt', 'h_num', 'omega_rev0', 'eta0',
-                        'dtbin', 'phi0', 'yat0', 'dturns', 'phi12',
+                        'dtbin', 'phi0', 'synch_part_y', 'dturns', 'phi12',
                         'nbins', 'beam_ref_frame', 'full_pp_flag',
                         'demax', 'vrf2', 'vrf2dot', 'e0', 'vrf1',
                         'vrf1dot', 'min_dt', 'max_dt', 'time_at_turn']
@@ -183,7 +183,8 @@ def physical_to_coords(tracked_dphi, tracked_denergy,
                        * np.vstack(machine.omega_rev0[turns])
                        * machine.dtbin) - xorigin)
 
-    yp[profiles] = (tracked_denergy[profiles] / float(dEbin) + machine.yat0)
+    yp[profiles] = (tracked_denergy[profiles]
+                    / float(dEbin) + machine.synch_part_y)
     return xp, yp
 
 def ready_for_tomography(xp, yp, nbins):

@@ -121,7 +121,7 @@ class PhaseSpaceInfo:
                                 delta_e_known, turn)
 
                 return (min(np.amax(energies_low), np.amax(energies_up))
-                        / (self.machine.nbins - self.machine.yat0))
+                        / (self.machine.nbins - self.machine.synch_part_y))
             else:
                 return (self.machine.beta0[turn]
                         * np.sqrt(self.machine.e0[turn]
@@ -136,7 +136,7 @@ class PhaseSpaceInfo:
                         * self.machine.omega_rev0[turn])
         else:
             return (float(self.machine.demax)
-                    / (self.machine.nbins - self.machine.yat0))
+                    / (self.machine.nbins - self.machine.synch_part_y))
 
 
     # Calculate the absolute difference (in bins) between phase=0 and
@@ -155,7 +155,7 @@ class PhaseSpaceInfo:
         jmin = np.copy(jmax)
 
         jmax[:] = self.machine.nbins
-        jmin[:] = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
+        jmin[:] = np.ceil(2.0 * self.machine.synch_part_y - jmax + 0.5)
 
         imin = np.int32(0)
         imax = np.int32(self.machine.nbins)
@@ -188,14 +188,14 @@ class PhaseSpaceInfo:
 
         # finding max energy at edges of profiles
         for i in range(self.machine.nbins + 1):
-            temp_energy = np.floor(self.machine.yat0
+            temp_energy = np.floor(self.machine.synch_part_y
                                    + self._trajectoryheight(
                                         phases[i], phases[0], energy, turn)
                                    / dEbin)
             
             jmax_low[i] = int(temp_energy)
 
-            temp_energy = np.floor(self.machine.yat0
+            temp_energy = np.floor(self.machine.synch_part_y
                                    + self._trajectoryheight(
                                         phases[i],
                                         phases[self.machine.nbins],
@@ -215,7 +215,7 @@ class PhaseSpaceInfo:
     # Checking each element if less than threshold,
     # in such cases will threshold be used.
     def _find_min_binned_energy(self, jmax, threshold=1):
-        jmin = np.ceil(2.0 * self.machine.yat0 - jmax[:] - 0.5)
+        jmin = np.ceil(2.0 * self.machine.synch_part_y - jmax[:] - 0.5)
         return np.where(jmin[:] >= threshold, jmin[:], threshold)
 
     # Finding index for minimum phase for profile
@@ -242,13 +242,14 @@ class PhaseSpaceInfo:
 
         if (min_dtbin > imin or self.machine.full_pp_flag):
             imin = min_dtbin
-            jmax[:min_dtbin] = np.floor(self.machine.yat0)
-            jmin = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
+            jmax[:min_dtbin] = np.floor(self.machine.synch_part_y)
+            jmin = np.ceil(2.0 * self.machine.synch_part_y - jmax + 0.5)
 
         if max_dtbin < imax or self.machine.full_pp_flag:
             imax = max_dtbin - 1 # -1 in order to count from idx 0
-            jmax[max_dtbin: self.machine.nbins] = np.floor(self.machine.yat0)
-            jmin = np.ceil(2.0 * self.machine.yat0 - jmax + 0.5)
+            jmax[max_dtbin:
+                 self.machine.nbins] = np.floor(self.machine.synch_part_y)
+            jmin = np.ceil(2.0 * self.machine.synch_part_y - jmax + 0.5)
 
         return jmin, jmax, imin, imax
 
