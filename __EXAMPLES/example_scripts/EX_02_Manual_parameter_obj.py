@@ -11,7 +11,7 @@ import tomo.utils.tomo_output as tomoout
 ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
 in_file_pth = '/'.join(ex_dir + ['/input_files/INDIVShavingC325.dat'])
 
-# Values retrieved from INDIVShavingC325.dat
+# All values retrieved from INDIVShavingC325.dat
 dtbin = 9.999999999999999E-10
 
 # This class is here to help shaping your waterfall from a fortran style
@@ -33,7 +33,7 @@ nprofiles = frames.nprofs()
 nbins = frames.nbins()
 
 # Machine and reconstruction parameters
-machine_input_args = {
+machine_args = {
     'output_dir':          '/tmp/',
     'dtbin':               dtbin,
     'dturns':              5,
@@ -56,9 +56,9 @@ machine_input_args = {
     'phi12':               0.4007821253666541,
     'b0':                  0.15722,
     'bdot':                0.7949999999999925,
-    'mean_orbit_radius':   25.0,
-    'bending_radius':      8.239,
-    'transitional_gamma':  4.1,
+    'mean_orbit_rad':      25.0,
+    'bending_rad':         8.239,
+    'trans_gamma':         4.1,
     'rest_energy':         0.93827231E9,
     'charge':              1,
     'self_field_flag':     False,
@@ -70,7 +70,7 @@ machine_input_args = {
     'min_dt':              0.0,
     'max_dt':              dtbin * nbins}
 
-machine = mch.Machine(**machine_input_args)
+machine = mch.Machine(**machine_args)
 
 raw_data = np.genfromtxt(frames.raw_data_path, skip_header=98,
                          dtype=np.float32)

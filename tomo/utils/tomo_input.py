@@ -227,7 +227,7 @@ def txt_input_to_machine(input_array):
 
     min_dt, max_dt = _min_max_dt(nbins, input_array)
 
-    margs = {
+    machine_kwargs = {
              'output_dir':          input_array[14],
              'dtbin':               float(input_array[22]),
              'dturns':              int(input_array[24]),
@@ -250,9 +250,9 @@ def txt_input_to_machine(input_array):
              'phi12':               float(input_array[73]),
              'b0':                  float(input_array[75]),
              'bdot':                float(input_array[77]),
-             'mean_orbit_radius':   float(input_array[79]),
-             'bending_radius':      float(input_array[81]),
-             'transitional_gamma':  float(input_array[83]),
+             'mean_orbit_rad':      float(input_array[79]),
+             'bending_rad':         float(input_array[81]),
+             'trans_gamma':         float(input_array[83]),
              'rest_energy':         float(input_array[85]),
              'charge':              float(input_array[87]),
              'self_field_flag':     bool(int(input_array[91])),
@@ -265,7 +265,7 @@ def txt_input_to_machine(input_array):
              'max_dt':              max_dt
             }
 
-    machine = mach.Machine(**margs)
+    machine = mach.Machine(**machine_kwargs)
     
     return machine, frame
 

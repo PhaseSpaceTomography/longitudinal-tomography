@@ -76,66 +76,116 @@ from .utils import assertions as asrt
 from .utils import exceptions as expt
 from . import physics
 
+_machine_opts_def = {}
+_machine_opts_def['demax'] = -1.E6
+_machine_opts_def['vrf1dot'] = 0.0 
+_machine_opts_def['vrf2'] = 0.0 
+_machine_opts_def['vrf2dot'] = 0.0 
+_machine_opts_def['b0'] = 0.0 
+_machine_opts_def['bdot'] = 0.0
+_machine_opts_def['phi12'] = 0.0
+_machine_opts_def['h_ratio'] = 1.0
+_machine_opts_def['h_num'] = 1 
+_machine_opts_def['charge'] = 1
+_machine_opts_def['g_coupling'] = None
+_machine_opts_def['zwall_over_n'] = None
+_machine_opts_def['min_dt'] = None 
+_machine_opts_def['max_dt'] = None
+_machine_opts_def['self_field_flag'] = False 
+_machine_opts_def['full_pp_flag'] = False
+_machine_opts_def['pickup_sensitivity'] = None 
+_machine_opts_def['machine_ref_frame'] = 0 
+_machine_opts_def['beam_ref_frame'] = 0 
+_machine_opts_def['snpt'] = 4
+_machine_opts_def['niter'] = 20
+_machine_opts_def['filmstart'] = 0
+_machine_opts_def['filmstop'] = 1
+_machine_opts_def['filmstep'] = 1
+_machine_opts_def['output_dir'] = None
+
+default_opts = {}
+def _reset_defaults():
+    default_opts.update({key: _machine_opts_def[key]
+                        for key in _machine_opts_def})
+    for item in tuple(default_opts.keys()):
+        if item not in _machine_opts_def:
+            default_opts.pop(item)
+_reset_defaults()
+
+def _assert_machine_kwargs(**kwargs):
+    use_params = {}
+
+    for item in default_opts:
+        use_params[item] = default_opts[item]
+
+    for item in kwargs:
+        if item not in default_opts:
+            raise KeyError(f'{item} is not a machine parameter')
+        else:
+            use_params[item] = kwargs[item]
+    return use_params
+
 class Machine:
 
-    def __init__(self, synch_part_x, nprofiles, zwall_over_n, g_coupling,
-                 charge, rest_energy, transitional_gamma,
-                 h_num, h_ratio, phi12, b0, bdot, bending_radius,
-                 mean_orbit_radius, vrf1, vrf1dot, vrf2, vrf2dot,
-                 dturns, pickup_sensitivity, dtbin, demax, nbins,
-                 min_dt=None, max_dt=None, snpt=1, niter=20,
-                 machine_ref_frame=0, beam_ref_frame=0,
-                 filmstart=0, filmstop=1, filmstep=1, output_dir=None,
-                 self_field_flag=False, full_pp_flag=False):
+    def __init__(self, dturns, vrf1, mean_orbit_rad, bending_rad,
+                 trans_gamma, rest_energy, nprofiles, nbins,
+                 synch_part_x, dtbin, **kwargs):
+
+        kwargs = _assert_machine_kwargs(**kwargs)
 
         # TODO: Take rfv info as a single input
         # TODO: Take b-field info as a single input
 
-        if min_dt == None:
+        if kwargs['min_dt'] == None:
             min_dt = 0.0
-        if max_dt == None:
+        else:
+            min_dt = kwargs['min_dt']
+
+        if kwargs['max_dt'] == None:
             max_dt = nbins * dtbin
+        else:
+            max_dt = kwargs['max_dt']
 
         # Machine parameters
-        self.demax = demax
+        self.demax = kwargs['demax']
         self.dturns = dturns
         self.vrf1 = vrf1
-        self.vrf2 = vrf2
-        self.vrf1dot = vrf1dot
-        self.vrf2dot = vrf2dot
-        self.mean_orbit_rad = mean_orbit_radius
-        self.bending_rad = bending_radius
-        self.b0 = b0
-        self.bdot = bdot
-        self.phi12 = phi12
-        self.h_ratio = h_ratio
-        self.h_num = h_num
-        self.trans_gamma = transitional_gamma
+        self.vrf1dot = kwargs['vrf1dot']
+        self.vrf2 = kwargs['vrf2']
+        self.vrf2dot = kwargs['vrf2dot']
+        self.mean_orbit_rad = mean_orbit_rad
+        self.bending_rad = bending_rad
+        self.b0 = kwargs['b0']
+        self.bdot = kwargs['bdot']
+        self.phi12 = kwargs['phi12']
+        self.h_ratio = kwargs['h_ratio']
+        self.h_num = kwargs['h_num']
+        self.trans_gamma = trans_gamma
         self.e_rest = rest_energy
-        self.q = charge
-        self.g_coupling = g_coupling
-        self.zwall_over_n = zwall_over_n
+        self.q = kwargs['charge']
+        self.g_coupling = kwargs['g_coupling']
+        self.zwall_over_n = kwargs['zwall_over_n']
         self.min_dt = min_dt
         self.max_dt = max_dt
         self.nprofiles = nprofiles
-        self.pickup_sensitivity = pickup_sensitivity
+        self.pickup_sensitivity = kwargs['pickup_sensitivity']
+        self.nbins = nbins
         self.synch_part_x = synch_part_x
         self.dtbin = dtbin
-        self.nbins = nbins
 
         # Flags
-        self.self_field_flag = self_field_flag
-        self.full_pp_flag = full_pp_flag
+        self.self_field_flag = kwargs['self_field_flag']
+        self.full_pp_flag = kwargs['full_pp_flag']
 
         # Reconstruction parameters
-        self.machine_ref_frame = machine_ref_frame
-        self.beam_ref_frame = beam_ref_frame
-        self.snpt = snpt
-        self.niter = niter
-        self.filmstart = filmstart
-        self.filmstop = filmstop
-        self.filmstep = filmstep
-        self.output_dir = output_dir
+        self.machine_ref_frame = kwargs['machine_ref_frame']
+        self.beam_ref_frame = kwargs['beam_ref_frame']
+        self.snpt = kwargs['snpt']
+        self.niter = kwargs['niter']
+        self.filmstart = kwargs['filmstart']
+        self.filmstop = kwargs['filmstop']
+        self.filmstep = kwargs['filmstep']
+        self.output_dir = kwargs['output_dir']
 
     @property
     def nbins(self):
