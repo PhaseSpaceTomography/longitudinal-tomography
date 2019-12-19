@@ -10,7 +10,7 @@ import tomo.tomography.tomography_cpp as tomography
 import tomo.utils.data_treatment as dtreat
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
-import tomo.particles as pts
+import tomo.tracking.particles as pts
 
 # =========================
 #        Program 

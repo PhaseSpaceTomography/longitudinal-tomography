@@ -96,12 +96,10 @@ class Profiles:
                       'calculating the self-fields'
             raise expt.ProfileChargeNotCalculated(err_msg)
 
-        if not filtered_profiles is None:
+        if filtered_profiles is not None:
             self.dsprofiles = self._check_manual_filtered_profs(
                                                     filtered_profiles)
-        elif not in_filter is None:
-            err_msg = 'Filter as argument not yet implemented.'
-            raise NotImplementedError()
+        elif in_filter is not None:
             self.dsprofiles = np.copy(self.waterfall)
             self.dsprofiles = in_filter(self.dsprofiles)
             self.dsprofiles = self._check_manual_filtered_profs(
