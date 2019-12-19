@@ -3,6 +3,7 @@ import time as tm
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+import logging as log
 
 # Tomo modules
 import tomo.tracking.tracking as tracking
@@ -12,6 +13,8 @@ import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 import tomo.tracking.particles as pts
 
+logger = log.getLogger()
+logger.disabled = True
 # =========================
 #        Program 
 # =========================
