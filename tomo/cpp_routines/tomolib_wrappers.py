@@ -5,12 +5,10 @@ import logging as log
 
 from ..utils import exceptions as expt
 
-log.basicConfig(level=log.INFO)
-
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__)) + '/tomolib.so'
 
 if os.path.exists(_tomolib_pth):
-    log.info(f'Loading C++ library: {_tomolib_pth}')
+    log.debug(f'Loading C++ library: {_tomolib_pth}')
     _tomolib = ct.CDLL(_tomolib_pth)
 else:
     error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
