@@ -2,9 +2,9 @@ import numpy as np
 import sys
 import logging
 
-from .utils import physics
-from .utils import assertions as asrt
-from .utils import exceptions as expt
+from ..utils import physics
+from ..utils import assertions as asrt
+from ..utils import exceptions as expt
 
 # ===============
 # About the class
