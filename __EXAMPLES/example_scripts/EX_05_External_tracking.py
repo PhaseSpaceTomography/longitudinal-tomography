@@ -6,6 +6,7 @@ import sys
 
 import tomo.tomography.tomography_cpp as tomography
 import tomo.utils.tomo_output as tomoout
+import tomo.utils.data_treatment as dtreat
 
 def generateBunch(bunch_position, bunch_length,
                   bunch_energy, energy_spread,
@@ -68,15 +69,13 @@ nturns = nframes * dturns
 nbins = int(len(waterfall) / nframes)
 
 waterfall = waterfall.reshape(nframes, nbins)
-
-# plt.imshow(waterfall, cmap='terrain', origin='lower') # <- terrain var fin
-# plt.show()
+waterfall -= dtreat.calc_baseline_ftn(waterfall, 0)
 
 bunch_position = 0.25591559666284924    # [rad]
 bunch_length = 1.7210323875576607       # [rad]
 bunch_energy = 0.0                      # [eV]
 energy_spread = 1969365.9337549524      # [eV]
-nparts = int(1E5)
+nparts = int(1E6)
 
 dphi, denergy = generateBunch(bunch_position, bunch_length,
                               bunch_energy, energy_spread, nparts)
@@ -121,6 +120,7 @@ for i in range(nturns):
     dphi = drift(dphi, denergy, harmonic, beta, energy, eta)
     denergy = kick(dphi, denergy, charge, voltage, energy_kick)
     if i % dturns == 0:
+        print(f'Time frame: {int(i / dturns)}')
         all_dphi[int(i / dturns)] = np.copy(dphi)
         all_denergy[int(i / dturns)] = np.copy(denergy)
 print('Tracking complete!')
@@ -151,7 +151,7 @@ all_dphi = np.ascontiguousarray(all_dphi.T.astype(int))
 all_denergy = np.ascontiguousarray(all_denergy.T.astype(int))
 
 tomo = tomography.TomographyCpp(waterfall, all_dphi)
-weight = tomo.run(1)
+weight = tomo.run(20, verbose=True)
 
 for rec_idx in range(1):
     image = tomoout.create_phase_space_image(
