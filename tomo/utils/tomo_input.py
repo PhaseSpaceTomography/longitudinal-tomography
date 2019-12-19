@@ -3,7 +3,7 @@ import os
 import sys
 
 from .. import profiles as profs
-from .. import machine as mach
+from ..tracking import machine as mach
 from . import data_treatment as threat
 from . import exceptions as expt
 from . import assertions as asrt

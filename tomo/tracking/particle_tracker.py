@@ -1,7 +1,7 @@
 import numpy as np
 import logging as log
 
-from .. import machine as mach
+from . import machine as mach
 from .. import particles as pts 
 from ..utils import assertions as asrt
 from ..utils import exceptions as expt
