@@ -1,9 +1,9 @@
 import numpy as np
 import logging as log
 
-from . import phase_space_info as psi
-from .utils import assertions as asrt
-from .utils import exceptions as expt
+from .. import phase_space_info as psi
+from ..utils import assertions as asrt
+from ..utils import exceptions as expt
 
 
 # This class sets up the inital particle distribution of the test particles.
