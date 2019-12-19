@@ -74,7 +74,7 @@ from scipy import optimize, constants
 
 from .utils import assertions as asrt
 from .utils import exceptions as expt
-from . import physics
+from .utils import physics
 
 _machine_opts_def = {}
 _machine_opts_def['demax'] = -1.E6

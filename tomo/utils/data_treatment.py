@@ -3,7 +3,7 @@ from scipy import optimize
 
 from . import assertions as asrt
 from . import exceptions as expt
-from .. import physics
+from . import physics
 
 # Original function for subtracting baseline of raw data input profiles.
 # Finds the baseline from the first 5% (by default)

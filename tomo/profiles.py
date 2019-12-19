@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal as sig
 from scipy import constants
 
-from . import physics
+from .utils import physics
 from .utils import exceptions as expt
 
 # ================

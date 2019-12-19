@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import logging
 
-from . import physics
+from .utils import physics
 from .utils import assertions as asrt
 from .utils import exceptions as expt
 
