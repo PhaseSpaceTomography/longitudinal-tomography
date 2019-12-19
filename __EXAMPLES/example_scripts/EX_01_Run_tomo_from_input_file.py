@@ -2,6 +2,7 @@ import numpy as np
 import os
 
 import tomo.fit as fit
+import tomo.utils.data_treatment as dtreat
 import tomo.particles as parts
 import tomo.tomography.tomography_cpp as tomography
 import tomo.tracking.tracking as tracking
@@ -32,7 +33,7 @@ profiles = tomoin.raw_data_to_profiles(
 profiles.calc_profilecharge()
 
 if profiles.machine.synch_part_x < 0:
-    fit_info = fit.fit_synch_part_x(profiles)
+    fit_info = dtreat.fit_synch_part_x(profiles)
     machine.load_fitted_synch_part_x_ftn(fit_info)
 
 tracker = tracking.Tracking(machine)
