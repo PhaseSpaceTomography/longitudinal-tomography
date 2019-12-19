@@ -2,7 +2,7 @@ import numpy as np
 import os
 import sys
 
-from .. import profiles as profs
+from ..data import profiles as profs
 from ..tracking import machine as mach
 from . import data_treatment as threat
 from . import exceptions as expt
