@@ -41,6 +41,7 @@ diffs = []
 dtimes = []
 succsesfull_inputs = []
 for snpt in snpts:
+    print(f'Running tomo using {snpt**2} particles per cell of phase space.')
     machine.snpt = snpt
     
     try:

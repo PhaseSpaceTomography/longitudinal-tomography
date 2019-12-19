@@ -36,6 +36,7 @@ tomo = tomography.TomographyCpp(profiles.waterfall)
 
 diffs = []
 for rfv in rfv_inputs:
+    print(f'Reconstructing using rf-voltage of {rfv:.3f} volt')
     machine.vrf1 = rfv
     machine.values_at_turns()
 
