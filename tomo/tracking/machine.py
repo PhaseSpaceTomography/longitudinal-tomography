@@ -81,8 +81,6 @@ _machine_opts_def['demax'] = -1.E6
 _machine_opts_def['vrf1dot'] = 0.0 
 _machine_opts_def['vrf2'] = 0.0 
 _machine_opts_def['vrf2dot'] = 0.0 
-_machine_opts_def['b0'] = 0.0 
-_machine_opts_def['bdot'] = 0.0
 _machine_opts_def['phi12'] = 0.0
 _machine_opts_def['h_ratio'] = 1.0
 _machine_opts_def['h_num'] = 1 
@@ -128,7 +126,7 @@ def _assert_machine_kwargs(**kwargs):
 class Machine:
 
     def __init__(self, dturns, vrf1, mean_orbit_rad, bending_rad,
-                 trans_gamma, rest_energy, nprofiles, nbins,
+                 b0, bdot, trans_gamma, rest_energy, nprofiles, nbins,
                  synch_part_x, dtbin, **kwargs):
 
         kwargs = _assert_machine_kwargs(**kwargs)
@@ -155,8 +153,8 @@ class Machine:
         self.vrf2dot = kwargs['vrf2dot']
         self.mean_orbit_rad = mean_orbit_rad
         self.bending_rad = bending_rad
-        self.b0 = kwargs['b0']
-        self.bdot = kwargs['bdot']
+        self.b0 = b0
+        self.bdot = bdot
         self.phi12 = kwargs['phi12']
         self.h_ratio = kwargs['h_ratio']
         self.h_num = kwargs['h_num']
