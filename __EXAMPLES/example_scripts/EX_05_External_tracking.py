@@ -53,6 +53,8 @@ def drift(dphi, dE, hnum, beta, E0, eta):
 def kick(dphi, dE, charge, voltage, E0):
     return dE + charge * voltage * np.sin(dphi) - E0
 
+raise RuntimeError('Example not finished :-( ')
+
 # Loading measured data
 ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
 in_file_pth = '/'.join(ex_dir + ['/input_files/C500MidPhaseNoise.dat'])
