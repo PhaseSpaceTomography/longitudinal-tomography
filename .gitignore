@@ -3,6 +3,7 @@ tomo/cpp_routines/.vscode
 example_input
 tomo/.idea
 .pytest_cache
+__doc/build
 
 # Filetypes
 *.pyc
