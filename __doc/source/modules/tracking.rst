@@ -1,7 +1,7 @@
 tracking Package
 ================
 
-:mod:'machine' Module
+:mod:`machine` Module
 ---------------------
 
 .. automodule:: tomo.tracking.machine
@@ -9,7 +9,7 @@ tracking Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'particle_tracker' Module
+:mod:`particle_tracker` Module
 ------------------------------
 
 .. automodule:: tomo.tracking.particle_tracker
@@ -17,7 +17,7 @@ tracking Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'particles' Module
+:mod:`particles` Module
 -----------------------
 
 .. automodule:: tomo.tracking.particles
@@ -25,7 +25,7 @@ tracking Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'phase_space_info' Module
+:mod:`phase_space_info` Module
 ------------------------------
 
 .. automodule:: tomo.tracking.phase_space_info
@@ -33,7 +33,7 @@ tracking Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'tracking' Module
+:mod:`tracking` Module
 ----------------------
 
 .. automodule:: tomo.tracking.tracking

@@ -1,7 +1,7 @@
 tomography Package
 ==================
 
-:mod:'__tomography' Module
+:mod:`__tomography` Module
 --------------------------
 
 .. automodule:: tomo.tomography.__tomography
@@ -9,7 +9,7 @@ tomography Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'tomography_cpp' Module
+:mod:`tomography_cpp` Module
 ----------------------------
 
 .. automodule:: tomo.tomography.tomography_cpp

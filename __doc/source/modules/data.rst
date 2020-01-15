@@ -1,8 +1,8 @@
 data Package
 ============
 
-:mod:'profiles' Module
----------------------
+:mod:`profiles` Module
+----------------------
 
 .. automodule:: tomo.data.profiles
     :members:

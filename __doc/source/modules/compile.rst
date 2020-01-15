@@ -2,7 +2,7 @@ compile Module
 ==============
 
 
-:mod:'compile' Module
+:mod:`compile` Module
 ---------------------
 
 .. automodule:: tomo.compile

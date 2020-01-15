@@ -1,7 +1,7 @@
 utils Package
 ==============
 
-:mod:'physics' Module
+:mod:`physics` Module
 ---------------------
 
 .. automodule:: tomo.utils.physics
@@ -9,7 +9,7 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'data_treatment' Module
+:mod:`data_treatment` Module
 ----------------------------
 
 .. automodule:: tomo.utils.data_treatment
@@ -17,7 +17,7 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'assertions' Module
+:mod:`assertions` Module
 ------------------------
 
 .. automodule:: tomo.utils.assertions
@@ -25,7 +25,7 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'exceptions' Module
+:mod:`exceptions` Module
 ------------------------
 
 .. automodule:: tomo.utils.exceptions
@@ -33,7 +33,7 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'tomo_input' Module
+:mod:`tomo_input` Module
 ------------------------
 
 .. automodule:: tomo.utils.tomo_input
@@ -41,7 +41,7 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
-:mod:'tomo_output' Module
+:mod:`tomo_output` Module
 -------------------------
 
 .. automodule:: tomo.utils.tomo_output
