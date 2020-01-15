@@ -152,10 +152,10 @@ class Machine:
         Magnitude of Zwall/n, reactive impedance.\n
         Default value: None
     min_dt: float
-        Minimum time in reconstruction area. <- fix\n
+        Minimum phase of reconstruction area measured in seconds.\n
         Default value: None
     max_dt: float
-        Maximum time in reconstruction area. <- fix\n
+        Maximum phase of reconstruction area measured in seconds.\n
         Default value: None
     nprofiles: int
         Number of measured profiles.
