@@ -1,3 +1,8 @@
+"""Module containing the Profiles class for storing measurements
+
+:Author(s): **Christoffer Hjertø Grindheim**
+"""
+
 import logging as log
 import numpy as np
 import scipy.signal as sig
@@ -6,44 +11,53 @@ from scipy import constants
 from ..utils import physics
 from ..utils import exceptions as expt
 
-# ================
-# About TimeSpace:   <- fix!
-# ================
-# The TimeSpace class handles import and processing of data in time domain.
-#  - importing raw data, and converting it to profiles, specified by input parameters.
-#  - calculation of total charge in profile
-#  - if xat0, from input parameters, is less than 0 wil a fit be performed to find xat0
-#  - calculations of yat0, phi wrap, xorigin
-#  - if self field flag is true will self fields be included in the reconstruction.
-#       in the time space class will a savitzky-golay smoothing filter be applied to the profiles
-#       and the self field voltage will be calculated.
-#
-# Variables used in this class are retrieved from a parameter object,
-#   which stores the input parameters for the reconstruction.
-#   A description of all the input and time space variables can be found in the parameters module.
-#
-# ====================
-# TimeSpace variables:
-# ====================
-# par               parameter object (for more info, see parameters module)
-# profiles          a (profile-count, profile-length) shaped matrix containing profile data, ready for tomography.
-# profile_charge    Total charge in the reference profile
-#
-# Self field variables:
-# ---------------------
-# vself             Self-field voltage
-# dsprofiles        Smoothed derivative of profiles
-#
-# bunch_phaselength Bunch phase length in beam reference profile
-# tangentfoot_low   Used for estimation of bunch duration
-# tangentfoot_up
-# phiwrap           Phase covering the an integer of rf periods
-# wrap_length       Maximum number of bins to cover an integer number of rf periods
-# fitted_xat0          Value of (if) fitted xat0
+class Profiles(object):
+    '''Class holding measured data.
 
+    This class holds the measured data (waterfall) and their properties.
 
-class Profiles:
+    The waterfall is a nprofiles x nbins shaped array, waterfall[0] is the
+    first measurement. Each bin is `machine.dtbin` long,
+    and holds the intensity of the beam at this time of the measurement.
 
+    The profile charge can be provided, or calculated using
+    the `calc_profilecharge` function which is based
+    on the machines pickup sensitivity.
+
+    The class can also be used to calculate the self-fields of the bunch.
+
+    Parameters
+    ----------
+    machine: Machine
+        Used to import different quantities like turns between measurements.
+    sampling_time: float
+        Original measurement sampling time.
+    waterfall: ndarray, float
+        2D-array containing all profile measurements.
+    profile_charge: float
+        Total charge of a reference profile.
+
+    Attributes
+    ----------
+    machine: Machine
+        The machine and its settings when measurements was taken.
+    sampling_time: float
+        Original sampling time of measurements.
+        Needed for calculation of profile charge.
+    waterfall: ndarray, float
+        2D-array containing all profile measurements.
+    profile_charge: float
+        Total charge of a reference profile.
+    vself: ndarray, float
+        2D array of self-fields at each bin of each profile.
+    dsprofiles: ndarray, float
+        Filtered profiles.
+    phiwrap: float
+        Phase covering an integer of rf periods.
+    wrap_length: float
+        Maximum number of bins to cover an integer number of rf periods.
+
+    '''
     def __init__(self, machine, sampling_time, waterfall,
                  profile_charge=None):
         self.machine = machine
@@ -53,9 +67,34 @@ class Profiles:
 
         self.profile_charge = profile_charge
 
-
     @property
     def waterfall(self):
+        '''Waterfall defined as @property.
+
+        * Asserts that input waterfall is iterable and has the correct\
+        amount of profiles, as stated by the Machine object.
+        * Removes negative values from waterfall (set to zero).
+        * Updates machine.nbins.
+
+
+        Parameters
+        ----------
+        waterfall: ndarray, float
+            Measured profiles as a 2D array.
+        
+        Returns
+        -------
+        waterfall: ndarray, float
+            Measured profiles as a 2D array.
+
+        Raises
+        ------
+        WaterfallError: Exception
+            If not iterable or wrong amount of profiles.
+        WaterfallReducedToZero: Exception
+            If all of profile is redduced to zero after removing
+            negaitve values.
+        '''
         return self._waterfall
 
     @waterfall.setter
@@ -79,18 +118,49 @@ class Profiles:
         self.machine.nbins = self._waterfall.shape[1]
         log.info(f'Waterfall loaded with shape: {self.waterfall.shape})')
 
-    # Calculate the total charge of profile.
-    # Uses the beam reference profile for the calculation
     def calc_profilecharge(self):
+        '''Calculate the total charge of profile.
+        Uses the beam reference profile for the calculation.
+        Sets the `profile_charge` field.
+        '''
         ref_prof = self.waterfall[self.machine.beam_ref_frame]
         self.profile_charge = (np.sum(ref_prof) * self.sampling_time
                                / (constants.e
                                  * self.machine.pickup_sensitivity))
 
-    # Calculate self-fields based on filtered profiles.
-    # If filtered profiles are not provided by the user,
-    # standard filter (savitzky-golay smoothing filter) is used.
     def calc_self_fields(self, filtered_profiles=None, in_filter=None):
+        '''Calculate self-fields based on filtered profiles.
+        If filtered profiles are not provided by the user,
+        standard filter (savitzky-golay smoothing filter) is used.
+
+        The function sets the following fields:
+        
+        * vself - 2D array of self-fields at each bin of each profile.
+        * dsprofiles - Filtered profiles.
+        * phiwrap - Phase covering an integer of rf periods.
+        * wrap_length - Maximum number of bins to cover\
+                        an integer number of rf periods.
+
+        A description of these attributes can be found in the documentation\
+        for the `Profiles` class.
+
+        Parameters
+        ----------
+        filtered_profiles: ndarray, float
+            If filtered profiles are provided, they will be used in the\
+            calculation of the self fields. If not, the original profiles\
+            will be filtered using a standard or user spescified filter.
+        in_filter: function
+            The measured profiles will be filtered using the provided filter\
+            in stead of the savitzky-golay smoothing filter.
+
+        Raises
+        ------
+        ProfileChargeNotCalculated: Exception
+            No profile charge has been provided or calculated.
+        FilteredProfilesError: Exception
+            Filtered profiles has the wrong shape or are not iterable.
+        '''
         if self.profile_charge is None:
             err_msg = 'Profile charge must be calculated before '\
                       'calculating the self-fields'
@@ -105,8 +175,8 @@ class Profiles:
             self.dsprofiles = self._check_manual_filtered_profs(
                                                     self.dsprofiles)
         else:
-            # Working on normalized version of waterfall
             self.dsprofiles = np.copy(self.waterfall)
+            # Makes normalized version of waterfall
             self.dsprofiles /= np.sum(self.dsprofiles, axis=1)[:, None]
             self.dsprofiles = sig.savgol_filter(
                                 x=self.dsprofiles, window_length=7,
@@ -119,6 +189,7 @@ class Profiles:
         self.vself = self._calculate_self()
         log.info('Self fields were calculated.')
 
+    # Checks the filtered profiles
     def _check_manual_filtered_profs(self, fprofs):
         if not hasattr(fprofs, '__iter__'):
             err_msg = 'Filtered profiles should be iterable.'
