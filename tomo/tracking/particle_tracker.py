@@ -14,22 +14,22 @@ from ..utils import tomo_output as tomoout
 
 
 class ParticleTracker:
-    '''Super class for tracking classes
+    '''Super class for tracking classes.
     
-    The particle class holds some general utilities por particle tracking.\
+    The particle class holds some general utilities por particle tracking.
     These includes asserions of parameters and properties for flags.
 
     Parameters
     ----------
     machine: Machine
-        Holds all information needed for particle tracking and gneration of\
-        particle distribution.
+        Holds all information needed for particle tracking and generation of
+        the particle distribution.
 
     Attributes
     ----------
     machine: Machine
-        Holds all information needed for particle tracking and gneration of\
-        particle distribution.
+        Holds all information needed for particle tracking and generation of
+        the particle distribution.
     particles: Particles
         Creates and/or holds initial distribution of particles.
     nturns: int
@@ -37,7 +37,7 @@ class ParticleTracker:
     self_field_flag: property, boolean
         Flag to indicate that self-fields should be included during tracking.
     fortran_flag: property, boolean
-        Flag to indicate that the particle tracking should print fortran-style\
+        Flag to indicate that the particle tracking should print fortran-style
         output strings to stdout during tracking.
 
     Raises

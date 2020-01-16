@@ -1,5 +1,10 @@
+"""Module containing the Profiles class for storing measurements
+
+:Author(s): **Christoffer Hjertø Grindheim**
+"""
+
+from numba import njit
 import numpy as np
-from numba import njit # <- to be removed soon!
 import logging as log
 
 from ..utils import tomo_output as tomoout 
@@ -7,26 +12,107 @@ from . import particle_tracker as ptracker
 from ..cpp_routines import tomolib_wrappers as tlw
 
 class Tracking(ptracker.ParticleTracker):
+    '''Class for particle tracking.
 
-    # Input should be thee coordinates of the particles given in
-    #  phase and energy.
-    # The output is the particles position in phase and energy for 
-    #  each of the turns where a profile measurment is performed.
+    This class is needed in order to perform the particle tracking based on the
+    algotithm from the original tomography program. Here, an initial
+    distribution of test particles are homogeneously distributed across the
+    reconstruction area. Later, these will be tracked trough all machine turns
+    and saved for every time frame.
+
+    Parameters
+    ----------
+    machine: Machine
+        Holds all information needed for particle tracking and generation of
+        the particle distribution.
+
+    Attributes
+    ----------
+    machine: Machine
+        Holds all information needed for particle tracking and generation of
+        the particle distribution.
+    particles: Particles
+        Creates and/or holds initial distribution of particles.
+    nturns: int
+        Number of machine turns particles should be tracked trough.
+    self_field_flag: property, boolean
+        Flag to indicate that self-fields should be included during tracking.
+    fortran_flag: property, boolean
+        Flag to indicate that the particle tracking should print fortran-style
+        output strings to stdout during tracking.
+    '''
     def __init__(self, machine):
         super().__init__(machine)
 
-    # Initial coordinates must be given as phase-space coordinates.
-    # The function also returns phase and energies as phase-space coordinates.
-    # Phase is given as angle relative to the synchronous phase.
     def track(self, recprof, init_distr=None):
+        '''Primary function for tracking particles.
+
+        The tracking routine starts at a given time frame with an initial
+        distribution. From here, the particles are tracked 'forward' towards
+        the last time frame and backwards towards the first time frame.
+        The initial distribution should be placed on the time frame
+        intended to be reconstructed.
+
+        By default, the initial particle distribution will be homogeneously
+        distributed over the reconstruction area. This is based on the 
+        original Fortran tomography algorithm.
+        An user spescified distribution can be given and override the 
+        automatic particle generation.
+
+        By calling the :py:meth:`~tomo.tracking.particle_tracker.
+        ParticleTracker.enable_self_fields` function, a flag indicating that
+        self-fields are to be included in the tracking is set. In this case,
+        the :py:meth:`~tomo.tracking.tracking.Tracking.kick_and_drift_self`
+        function will be used. Note that tracking including self fields
+        are much slower than without.
+
+        By calling the :py:meth:`~tomo.tracking.particle_tracker.
+        ParticleTracker.enable_fortran_output` function, output resembling
+        the original is written to stdout. Note that the values for the
+        number of lost particles are **not valid**. Note also, if 
+        the full Fortran output is to be printed, the automatic
+        generation of particles has to be performed.
         
+        Parameters
+        ----------
+        recprof: int
+            Time frame to set as start-profile.
+            Here the particle will have its initial distribution.
+        init_distr: tuple, (ndarray, ndarray)
+            An optional initial distributin. Must be given as a tuple of
+            coordinates (dphi, denergy). dphi is the phase difference
+            from the synchronous particle [rad]. denergy is the difference
+            in energy from the synchronous particle.
+
+        Returns
+        -------
+        xp: ndarray, float
+            2D array containing each particles x-coordinate at
+            each time frame. Array shape: (nprofiles, nparts).
+
+            * If self-fields are enabeled,
+              the coordinates will be given as phase-space coordinates.
+            * If not, the returned x-coordinates will be given as
+              phase [rad] relative to the synchronous particle.
+
+        yp: ndarray, float
+            2D array containing each particles y-coordinate at
+            each time frame. Array shape: (nprofiles, nparts).
+
+            * If self-fields are enabeled,
+              the coordinates will be given as phase-space coordinates.
+            * If not, the returned y-coordinates will be given as
+              energy [eV] relative to the synchronous particle.
+
+        '''
         if init_distr is None:
+            # Homogeneous distribution is created based on the
+            # original Fortran algorithm.
             log.info('Creating homogeneous distribution of particles.')
             self.particles.homogeneous_distribution(self.machine, recprof)
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
-            # Limits in I (phase), and dEbin must have been calculated.
             if self.fortran_flag:
                 print(tomoout.write_plotinfo_ftn(
                       self.machine, self.particles, self._profile_charge))
@@ -44,17 +130,20 @@ class Tracking(ptracker.ParticleTracker):
 
         # Tracking particles
         if self.self_field_flag:
+            # Tracking with self-fields
             log.info('Tracking particles... (Self-fields enabled)')
             denergy = np.ascontiguousarray(denergy)
             dphi = np.ascontiguousarray(dphi)
             xp, yp = self.kick_and_drift_self(
                         denergy, dphi, rfv1, rfv2, recprof)
         else:
+            # Tracking without self-fields
             nparts = len(dphi)
             nturns = self.machine.dturns * (self.machine.nprofiles - 1)
             xp = np.zeros((self.machine.nprofiles, nparts))
             yp = np.zeros((self.machine.nprofiles, nparts))
-    
+
+            # Calling C++ implementation of tracking routine.
             xp, yp = tlw.kick_and_drift(
                         xp, yp, denergy, dphi, rfv1, rfv2, recprof,
                         nturns, nparts, machine=self.machine,
@@ -63,20 +152,36 @@ class Tracking(ptracker.ParticleTracker):
         log.info('Tracking completed!')
         return xp, yp
 
-    # Input:
-    #   - denergy: particle energy relative to synchronous particle [eV]
-    #   - dphi: particle phase relative to synchronous particle [s]
-    #   - rf1v: Radio frequency voltages 2, multiplied by particle charge
-    #   - rf2v: Radio frequency voltages 2, multiplied by particle charge
-    #   - rec_prof: Time slice to be reconstructed (scalar:int)
-    # Output:
-    #   - Energy for each particle at each measured time slice [eV]  
-    #     Relative to synch. particle.
-    #   - Phase (dphi) for each particle at each measured time slice [s]
-    #     Relative to synch. particle.
-    #   - Homogeneous distribution of particles is placed at rec_prof
-    #     time-slice.
     def kick_and_drift(self, denergy, dphi, rf1v, rf2v, rec_prof):
+        '''Routine for tracking a given distribution of particles.
+        Implemented as hybrid between Python and C++. Kept for reference.
+    
+        Properties
+        ----------
+        denergy: ndarray, float
+            particle energy relative to synchronous particle [eV]
+        dphi: ndarray, float
+            particle phase relative to synchronous particle [s]
+        rf1v: ndarray, float
+            Radio frequency voltages (RF station 1),
+            multiplied by particle charge
+        rf2v: ndarray, float
+            Radio frequency voltages (RF station 2),
+            multiplied by particle charge
+        rec_prof: int
+            Time slice to initiate tracking.
+            Initial particle distribution is placed here.
+
+        Returns
+        -------
+        out_dphi:, ndarray, float
+            phase [rad] for each particle at each measured time slice [s]
+            Relative to the synchronous particle.
+        out_denergy: ndarray, float
+            Energy for each particle at each measured time slice [eV] 
+            Relative to the synchronous particle.
+
+        '''
         nparts = len(denergy)
         
         # Creating arrays for all tracked particles
@@ -134,22 +239,46 @@ class Tracking(ptracker.ParticleTracker):
 
         return out_dphi, out_denergy
 
+    def kick_and_drift_self(self, denergy, dphi, rf1v, rf2v, rec_prof):
+        '''Routine for tracking a given distribution of particles,\
+        including self-fields. Implemented as hybrid between Python and C++.
 
-    # Input:
-    #   - denergy: particle energy relative to synchronous particle [eV]
-    #   - dphi: particle phase relative to synchronous phase [rad]
-    #   - rf1v: Radio frequency voltages 2, multiplied by particle charge
-    #   - rf2v: Radio frequency voltages 2, multiplied by particle charge
-    #   - rec_prof: Time slice to be reconstructed (scalar:int)
-    # Output:
-    #   - Energy for each particle at each measured time slice  
-    #     Relative to synch. particle, given as bins in ps coordinate system.
-    #   - Phase for each particle at each measured time slice [s]
-    #     Relative to synch. particle, given as bins in ps coordinate system.
-    #   - Homogeneous distribution of particles is placed at rec_prof
-    #     time-slice.
-    def kick_and_drift_self(self, denergy, dphi, rf1v, rf2v,
-                            rec_prof):
+        Used by the function :py:meth:`~tomo.tracking.tracking.Tracking.track`
+        to track using self-fields.
+
+        Returns the coordinates of the particles as phase space coordinates
+        for efficiency reasons due to tracking algorithm based on the
+        Fortran tomography. large room for improvement.
+        
+        Fortran output not yet supported.
+        
+        Properties
+        ----------
+        denergy: ndarray, float
+            particle energy relative to synchronous particle [eV]
+        dphi: ndarray, float
+            particle phase relative to synchronous particle [s]
+        rf1v: ndarray, float
+            Radio frequency voltages (RF station 1),
+            multiplied by particle charge
+        rf2v: ndarray, float
+            Radio frequency voltages (RF station 2),
+            multiplied by particle charge
+        rec_prof: int
+            Time slice to initiate tracking.
+            Initial particle distribution is placed here.
+
+        Returns
+        -------
+        xp: ndarray, float
+            2D array holding the x-coordinates of each particles at
+            each time frame (nprofiles, nparts). 
+        yp: ndarray, float
+            2D array holding the x-coordinates of each particles at
+            each time frame (nprofiles, nparts).
+            
+
+        '''
         nparts = len(denergy)
 
         # Creating arrays for all tracked particles
@@ -236,7 +365,7 @@ class Tracking(ptracker.ParticleTracker):
 
     # Calculate from physical coordinates to x-coordinates.
     # Needed for tracking using self-fields.
-    # Will be converted to C++ befor you know it! 
+    # Will be converted to C++ before you know it! 
     @staticmethod
     @njit
     def _calc_xp_sf(dphi, phi0, xorigin, h_num, omega_rev0, dtbin, phiwrap):
