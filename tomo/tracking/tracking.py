@@ -1,7 +1,7 @@
-"""Module containing the Profiles class for storing measurements
+'''Module containing the Tracking class
 
 :Author(s): **Christoffer Hjertø Grindheim**
-"""
+'''
 
 from numba import njit
 import numpy as np
@@ -156,7 +156,7 @@ class Tracking(ptracker.ParticleTracker):
         '''Routine for tracking a given distribution of particles.
         Implemented as hybrid between Python and C++. Kept for reference.
     
-        Properties
+        Parameters
         ----------
         denergy: ndarray, float
             particle energy relative to synchronous particle [eV]
@@ -252,7 +252,7 @@ class Tracking(ptracker.ParticleTracker):
         
         Fortran output not yet supported.
         
-        Properties
+        Parameters
         ----------
         denergy: ndarray, float
             particle energy relative to synchronous particle [eV]

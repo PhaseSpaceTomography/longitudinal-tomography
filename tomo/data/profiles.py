@@ -1,7 +1,7 @@
-"""Module containing the Profiles class for storing measurements
+'''Module containing the Profiles class for storing measurements
 
-:Author(s): **Christoffer Hjertø Grindheim**
-"""
+:Author(s): **Christoffer Hjertø Grindheim**'''
+
 
 import logging as log
 import numpy as np

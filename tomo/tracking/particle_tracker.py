@@ -1,7 +1,7 @@
-"""Module containing ParticleTracker class
+'''Module containing ParticleTracker class
 
 :Author(s): **Christoffer Hjertø Grindheim**
-"""
+'''
 
 import numpy as np
 import logging as log
