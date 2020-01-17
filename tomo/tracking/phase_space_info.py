@@ -1,3 +1,8 @@
+'''Module containing the Tracking class
+
+:Author(s): **Christoffer Hjertø Grindheim**
+'''
+
 import numpy as np
 import sys
 import logging
@@ -6,58 +11,33 @@ from ..utils import physics
 from ..utils import assertions as asrt
 from ..utils import exceptions as expt
 
-# ===============
-# About the class
-# ===============
-# There are two reference systems in the tomography routine:
-#    i) The reconstructed phase space coordinate system which has its
-#        origin at some minimum phase,
-#        where the x-bins are dtbin wide and the y-bins are dEbin wide.
-#    ii) The physical coordinates expressed in energy energy
-#        and phase wrt. the sync. particle
-#
-#
-# This class produces and sets the limits in i (phase) and j (energy).
-# The i-j coordinate system is the one used locally for the reconstructed phase space.
-#
-# =======
-# Example
-# =======
-#
-#
-# ^ j (energy)
-# |xxxxxxxxxxxxxxxxxxxx
-# |xxxxxxxxxxxxxxxxxxxx
-# |xxxxxxxx...xxxxxxxxx
-# |xxxxxx.......xxxxxxx
-# |xxxxx.........xxxxxx
-# |xxxxxx.......xxxxxxx
-# |xxxxxxxx...xxxxxxxxx
-# |xxxxxxxxxxxxxxxxxxxx     i (phase)
-# -------------------------->
-#
-# x - not active pixel (unless full_pp_flag)
-# o - active pixel
-#
-# If full_pp_flag is true will all the pixels, marked both wit 'x' and '.' be tracked.
-# Else, will only the picels marked with '.' be tracked.
-# The tracked area is made by the out of the combination of the i and j limits.
-#
-# ================
-# Object variables
-# ================
-#
-# imin, imax        Lower and upper limit in 'i' (phase) of the i-j coordinate system.
-# jmin, jmax        Lower and upper limit in 'j' (energy) of the i-j coordinate system.
-# dEbin             Phase space pixel height (in j direction) [MeV]
-# allbin_min/max    imin and imax as calculated from jmax and jmin.
-#                     Used unless they fall outside the borders of
-#                     profile_mini or -_maxi stated in parameters,
-#                     or if full_pp_flag (track all pixels) is true.
-
 
 class PhaseSpaceInfo:
+    '''Class calculating and storing inforamtion about the reconstruction area.
+    
+    Parameters
+    ----------
+    machine: Machine
+        Object containing machine parameters and settings. 
 
+    Attributes
+    ----------
+    machine: Machine
+        Object containing machine parameters and settings.
+    jmin: ndarray, int
+        Minimum energy for each phase of the phase space coordinate system.
+    jmax: ndarray, int
+        Maximum energy for each phase of the phase space coordinate system.
+    imin: int
+        Minimum phase, in phase space coordinates, of reconstruction area.
+    imax: int
+        Maximum phase, in phase space coordinates, of reconstruction area.
+    dEbin: float
+        Energy size of bins in phase space coordinate system.
+    xorigin: float
+        The absolute difference (in bins) between phase=0 and the origin
+        of the reconstructed phase space coordinate system.
+    '''
     def __init__(self, machine):
         self.machine = machine
         self.jmin = None
@@ -67,12 +47,29 @@ class PhaseSpaceInfo:
         self.dEbin = None
         self.xorigin = None
 
-
-    # Main function for the class. finds limits in i (phase) and j (energy) axis.
-    # variables:
-    #   - turn_now: machine turn (=0 at profile = 0)
-    #   - phases: phase at the edge of each bin along the i-axis
     def find_binned_phase_energy_limits(self):
+        '''This function finds the limits in the i (phase)
+        and j (energy) axes of the reconstructed phase space coordinate system.
+
+        The area within the limits of i and j will be the reconstruction area.
+        This is where the particles will be populated.
+        By setting the `full_pp_flag` to True in the provided `Machine` object,
+        the reconstruction area will be set to the whole phase space image.
+
+        This function gives a value to all attributes of the class.  
+        
+        Raises
+        ------
+        EnergyBinningError: Exception
+            The energy size of the phase space coordinate
+            bins are less than zero. 
+        PhaseLimitsError: Exception
+            Error in setting the limits in i (phase).
+        EnergyLimitsError: Exception
+            Error in setting the limits in j (energy).
+        ArrayLengthError: Exception
+            Difference in array shape of jmin and jmax.
+        '''
 
         self.xorigin = self.calc_xorigin()
         self.dEbin = self.find_dEbin()
@@ -100,9 +97,25 @@ class PhaseSpaceInfo:
         # Ensuring that the output is valid
         self._assert_correct_arrays()
 
-    # Calculate the size of bins in energy axis
-    # Turn is at beam reference profile
     def find_dEbin(self):
+        '''Function to calculate the size of a energy bin in the
+        reconstructed phase space coordinate system.
+        
+        Needed by
+        :py:meth:`~tomo.tracking.phase_space_info.PhaseSpaceInfo\
+.find_binned_phase_energy_limits`
+        in order to calculate the reconstruction area.
+
+        Returns
+        -------
+        dEbin: float
+            Energy size of bins in phase space coordinate system.
+        
+        Raises
+        ------
+        EnergyBinningError: Exception
+            The provided value of machine.demax is invalid.
+        '''
         turn = self.machine.beam_ref_frame * self.machine.dturns    
         phases = self._calculate_phases(turn)
         delta_e_known = 0.0
@@ -138,10 +151,20 @@ class PhaseSpaceInfo:
             return (float(self.machine.demax)
                     / (self.machine.nbins - self.machine.synch_part_y))
 
-
-    # Calculate the absolute difference (in bins) between phase=0 and
-    # origin of the reconstructed phase-space coordinate system.
     def calc_xorigin(self):
+        '''Function for calculating xorigin.
+
+        Needed by
+        :py:meth:`~tomo.tracking.phase_space_info.PhaseSpaceInfo\
+.find_binned_phase_energy_limits`
+        in order to calculate the reconstruction area.
+
+        Returns
+        -------
+        xorigin: float
+        The absolute difference (in bins) between phase=0 and the origin
+        of the reconstructed phase space coordinate system.
+        '''
         beam_ref_turn = self.machine.beam_ref_frame * self.machine.dturns
         return (self.machine.phi0[beam_ref_turn]
                 / (self.machine.h_num
@@ -149,7 +172,8 @@ class PhaseSpaceInfo:
                    * self.machine.dtbin)
                 - self.machine.synch_part_x)
 
-    # Finding limits for tracking all pixels in reconstructed phase space.
+    # Finding limits for distibuting particle over the full image
+    # of the reconstructed phase space.
     def _limits_track_full_image(self):
         jmax = np.zeros(self.machine.nbins)
         jmin = np.copy(jmax)
@@ -161,25 +185,28 @@ class PhaseSpaceInfo:
         imax = np.int32(self.machine.nbins)
         return jmin, jmax, imin, imax
 
-    # Finding limits for tracking active pixels
+    # Finding limits for creating a smaller reconstruction area.
     def _limits_track_rec_area(self, dEbin):
         jmax = np.zeros(self.machine.nbins)
         jmin = np.copy(jmax)
 
-        # Calculating turn and phases at the filmstart reference point
+        # Calculating turn and phases at the filmstart reference point.
         turn = self.machine.filmstart * self.machine.dturns
         phases = self._calculate_phases(turn)
 
-        # Jmax to int already here? 
+        # Calculate the limits in energy at each phase 
         jmax = self._find_max_binned_energy(phases, turn, dEbin)
         jmin = self._find_min_binned_energy(jmax)
 
+        # Find area in phase where energy limits are valid
+        # (jmax - jmin >= 0).
         imin = self._find_min_binned_phase(jmin, jmax)
         imax = self._find_max_binned_phase(jmin, jmax)
 
         return jmin, jmax, imin, imax
 
-    # Function for finding maximum energy (j max) for each bin in the profile
+    # Function for finding maximum energy (j max) for each bin in the profile.
+    # The assumtion mad in the program is that jmin and jmax are mirrored.
     def _find_max_binned_energy(self, phases, turn, dEbin):
 
         energy = 0.0
@@ -233,7 +260,7 @@ class PhaseSpaceInfo:
     # Adjustment of limits in relation to
     # 	specified input min/max index and found min/max in profile.
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
-    # Calculates limits in i axis.
+    # Calculates final limits of i-axis.
     def _adjust_limits(self, jmax, jmin, imin, imax):
 
         # Maximum and minimum bin, as spescified by user.

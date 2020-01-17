@@ -295,7 +295,7 @@ def ready_for_tomography(xp, yp, nbins):
     Handy if particles are tracked using the tomo tracking functions.
 
     * Removes particles leaving the image width.
-    * Transposes the coordinate arrays from (nprofiles, nparts)
+    * Transposes the coordinate arrays from (nprofiles, nparts)\
     to (nparts, nprofiles).
     * Casts coordinates to integers.
 
