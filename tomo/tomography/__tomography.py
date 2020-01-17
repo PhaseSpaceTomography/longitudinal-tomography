@@ -1,4 +1,4 @@
-'''Module containing the Tomography class
+'''Module containing the Tomography base class
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
@@ -180,7 +180,7 @@ class Tomography:
     # relative to bins containing many particles.
     def _reciprocal_particles(self):
         ppb = np.zeros((self.nbins, self.nprofs))
-        ppb = self.count_particles_in_bins(
+        ppb = self._count_particles_in_bins(
                 ppb, self.nprofs, self.xp, self.nparts)
         
         # Setting bins with zero particles one to avoid division by zero.
@@ -192,7 +192,7 @@ class Tomography:
     # Static needed for use of njit.
     # Needed by reciprocal paricles function.
     # C++ version excists.
-    def count_particles_in_bins(ppb, profile_count, xp, nparts):
+    def _count_particles_in_bins(ppb, profile_count, xp, nparts):
         for i in range(profile_count):
             for j in range(nparts):
                 ppb[xp[j, i], i] += 1
