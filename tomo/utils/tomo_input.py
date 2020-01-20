@@ -1,3 +1,8 @@
+'''Module containing functions for handling input from text files.
+
+:Author(s): **Christoffer Hjertø Grindheim**
+'''
+
 import numpy as np
 import os
 import sys
@@ -8,14 +13,58 @@ from . import data_treatment as threat
 from . import exceptions as expt
 from . import assertions as asrt
 
-# Some constants for the input file containing machine parameters
+# Some constants for input files containing machine parameters.
 PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12
 OUTPUT_DIR_IDX = 14
 
-# Class for storing raw data and information on 
-# how to threat them, based on a Fortran style input file.
+
 class Frames:
+    '''Class for storing raw data and information on how to threat them,
+    based on a Fortran style input file.
+
+    Parameters
+    ----------
+    framecount: int
+        Number of time frames.
+    framelength: int
+        Number of bins in a time frame.
+    skip_frames: int
+        Number of time frames to ignore from the
+        beginning of the raw input file.
+    skip_bins_start: int
+        Subtract this number of bins from start of the raw input.
+    skip_bins_end: int
+        Subtract this number of bins from end of the raw input.
+    rebin: int
+        Rebinning factor - Number of frame bins to rebin into one profile bin. 
+    dtbin: float
+        Size of profile bins (sampling size) [s].
+    raw_data_path: string
+        (optional) Path to file holding raw data for programmers reference.
+    
+    Attributes
+    ----------
+    raw_data:
+        Measured raw data as read from text file. 
+    nframes: int
+        Number of measured time frames.
+    nbins_frame: int
+        Number of bins in a measured time frame.
+    skip_frames: int
+        Number of time frames to ignore from the
+        beginning of the raw input file.
+    skip_bins_start: int
+        Subtract this number of bins from start of the raw input.
+    skip_bins_end: int
+        Subtract this number of bins from end of the raw input.
+    rebin: int
+        Rebinning factor - Number of frame bins to rebin into one profile bin.
+    sampling_time: float
+        Size of profile bins [s].
+    raw_data_path: string
+        Path to file holding raw data for programmers reference.
+    '''
 
     def __init__(self, framecount, framelength, skip_frames, skip_bins_start,
                  skip_bins_end, rebin, dtbin, raw_data_path=''):
@@ -30,6 +79,27 @@ class Frames:
 
     @property
     def raw_data(self):
+        '''Raw data defined as a @property.
+
+        Holds assertions for validity of raw data.
+
+        Parameters
+        ----------
+        in_raw_data: ndarray
+            Array holding raw data as a direct read from text file.
+        
+        Returns
+        -------
+        raw_data: ndarray, none
+            Copy of array holding raw data as a direct read from text file.
+            None is returned if object holds no raw data.
+
+        Raises
+        ------
+        RawDataImportError: Exception
+            Raised if raw data is not iterable or has an unexpected length.
+
+        '''
         if self._raw_data is not None:
             return np.copy(self._raw_data)
         else:
@@ -48,20 +118,53 @@ class Frames:
                                     f'expected length: {ndata}')
 
     def nprofs(self):
+        '''Function to calculate number of profiles.
+        This number should be used when creating a machine object.
+        
+        Returns
+        -------
+        nprofiles: int
+            Number of profiles.
+        '''
         return self.nframes - self.skip_frames
 
     def nbins(self):
+        '''Function to calculate number of bins in profiles.
+        This number should be used when creating a machine object.
+        
+        Returns
+        -------
+        nbins: int
+            Number of bins in profiles.
+        '''
         return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
 
-    # Convert from one-dimentional list of raw data to waterfall.
-    # Works on a copy of the raw data
     def to_waterfall(self, raw_data):
+        '''Function to convert from raw data read from text file to waterfall
+        for use in reconstruction.
+
+        Shape of waterfall is generated based on
+        parameters of the Frame object. Created from copy of raw data.
+        
+        Returns
+        -------
+        waterfall: ndarray
+            Raw-data shaped as waterfall (nprofiles, nbins).
+
+        Raises
+        ------
+        RawDataImportError: Exception
+            Raised if something is wrong with the raw data.
+        '''
         waterfall = self._assert_raw_data(raw_data)
         asrt.assert_frame_inputs(self)
 
+        # Reshaping from raw data to waterfall
         waterfall = waterfall.reshape((self.nframes, self.nbins_frame))
+        # Skips frames
         waterfall = waterfall[self.skip_frames:]
         
+        # Skips bins at start and end of time frames.
         if self.skip_bins_end > 0:
             waterfall = waterfall[:, self.skip_bins_start:
                                     -self.skip_bins_end]
@@ -69,6 +172,7 @@ class Frames:
             waterfall = waterfall[:, self.skip_bins_start:]
         return waterfall
 
+    # Check that provided raw data is valid.
     def _assert_raw_data(self, raw_data):
         if not hasattr(raw_data, '__iter__'):
             raise expt.RawDataImportError('Raw data should be iterable')
@@ -80,12 +184,28 @@ class Frames:
                     f'expected length: {ndata}')
         
         return np.array(raw_data)
-            
 
 
-# Function to be called from main.
-# Lets the user give input using stdin or via args
 def get_user_input():
+    '''Function to let user provide input as a text file either as
+    file path or as stdin.
+
+    If filepath is given, the path to the output directory can be
+    given as the second argument. This will be as the new value
+    of the read input parameters.
+
+    If the input is provided via stdin, the measured data must be
+    pipelined in the same text file. If given trough the system
+    arguments, the location of the measurement data can be given in
+    the parameters.
+
+    Returns
+    -------
+    tomo_input: tuple (list, ndarray)
+        Tuple holding machine and reconstruction parameters as a list of
+        strings directly read from text file and ndarray containing
+        raw data (parameters, raw data).
+    '''
     if len(sys.argv) > 1:
         read = _get_input_args()
     else:
@@ -192,13 +312,30 @@ def _split_input(read_input):
     return read_parameters, read_data
 
 
-# Function to convert from array containing the lines in an input file
-#  to a partially filled machine object.
-# The array must contain a direct read from an input file.
-# Some variables are subtracted by one.
-#  This is in order to convert from Fortran to C style indexing.
-#  Fortran counts (by defalut) from 1.
 def txt_input_to_machine(input_array):
+    '''Function to convert from text to machine object.
+
+    Function takes the content of an input-file as a list holding a string for
+    each line of the file. From this a machine object is created.
+
+    Parameters
+    ----------
+    input_arrary: list
+        Array containing each line of an input file as an element of the array.
+        This should be a direct read from a tomography text file.
+
+    Returns
+    -------
+    machine: Machine
+        Machine object containing all parameters set in input file.
+
+    Raises
+    ------
+    InputError: Exception
+        Error in input array 
+    '''
+
+    # Checks if input is valid
     if not hasattr(input_array , '__iter__'):
         raise expt.InputError('Input should be iterable') 
     if len(input_array) != PARAMETER_LENGTH:
@@ -206,10 +343,11 @@ def txt_input_to_machine(input_array):
                               f'containin every line of input file '
                               f'(not including raw-data).')
 
+    # String formating 
     for i in range(len(input_array)):
             input_array[i] = input_array[i].strip('\r\n')
 
-
+    # Arguments for shaping waterfall from raw data
     fargs = {
              'raw_data_path':       input_array[12],
              'framecount':          int(input_array[16]),
@@ -221,12 +359,18 @@ def txt_input_to_machine(input_array):
              'rebin':               int(input_array[36])
             }
 
+    # Creating waterfall from raw data
     frame = Frames(**fargs)
     nprofiles = frame.nprofs()
     nbins = frame.nbins()
 
+    # Calculating limits in phase for reconstruction area
+    # Spescified by user.
     min_dt, max_dt = _min_max_dt(nbins, input_array)
 
+    # Machine arguments
+    # Some of the arguments are subtracted by one. This is 
+    # to convert from Fortran to C indexing. 
     machine_kwargs = {
              'output_dir':          input_array[14],
              'dtbin':               float(input_array[22]),
@@ -265,10 +409,13 @@ def txt_input_to_machine(input_array):
              'max_dt':              max_dt
             }
 
+    # Creating machine object
     machine = mach.Machine(**machine_kwargs)
     
     return machine, frame
 
+# Convert from setting min and max phase of reconstruction area
+# as phase space coordinates to physical units of phase [s].
 def _min_max_dt(nbins, input_array):
     dtbin = float(input_array[22])
     min_dt_bin = int(input_array[31])
@@ -280,12 +427,34 @@ def _min_max_dt(nbins, input_array):
 
 
 def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
+    '''Function to convert from waterfall of raw data to
+    threated waterfall saved in a Profiles object.
+
+    Contains all functionality used by the original Fortran
+    program. Works on copy of provided waterfall.
+
+    - Subtracts baseline
+    - Rebin profiles
+    - Creates Profiles object to store waterfall
+
+    Parameters
+    ----------
+    waterfall: ndarray
+        Raw-data shaped as waterfall (nprofiles, nbins).
+    machine: Machine
+        Machine object holding machine and reconstruction parameters.
+    rbn: int
+        Rebinning factor - Number of frame bins to rebin into one profile bin.
+    sampling_time: float
+        Size of profile bins [s].
+    '''
     if not hasattr(waterfall, '__iter__'):
         raise expt.WaterfallError('Waterfall should be an iterable')
     waterfall = np.array(waterfall)
+    # Subtracting baseline
     waterfall[:] -= threat.calc_baseline_ftn(
                         waterfall, machine.beam_ref_frame)
+    # Rebinning
     waterfall = threat.rebin(waterfall, rbn, machine)
+    # Returnin Profiles object.
     return profs.Profiles(machine, sampling_time, waterfall)
-    
-    
