@@ -1,3 +1,11 @@
+'''Module containing functions for handling output from tomography programs.
+
+Every function ending on 'ftn' creates an output equal to the one generated
+in the Fortran program.
+
+:Author(s): **Christoffer Hjertø Grindheim**
+'''
+
 import numpy as np
 import logging as log
 import matplotlib.pyplot as plt
@@ -8,8 +16,20 @@ import matplotlib.gridspec as gridspec
 #                           GENERAL                               #
 # --------------------------------------------------------------- #
 
-# Make sure that output path ends on a dash.
 def adjust_outpath(output_path):
+    '''Functions which assurs that the given uotput path ends
+    on a slash.
+    
+    Parameters
+    ----------
+    output_path: string
+        Path to output directory.
+    
+    Returns
+    -------
+    output_path: string
+        Path to output directory ending on a slash.
+    '''
     if output_path[-1] != '/':
         output_path += '/'
     return output_path
@@ -18,10 +38,18 @@ def adjust_outpath(output_path):
 #                           PROFILES                              #
 # --------------------------------------------------------------- #
 
-# Write phase-space image to text-file in tomoscope format.
-# Profiles: waterfall of profiles.
-# rec_prof: index of profile to be reconstructed.
 def save_profile_ftn(profiles, rec_prof, output_dir):
+    '''Write phase-space image to text-file in tomoscope format.
+    
+    Parameters
+    ----------
+    profiles: ndarray
+        Profile measurements as a 2D array with the shape: (nprofiles, nbins).
+    rec_prof: int
+        Index of profile to be saved.
+    output_dir: string
+        Path to output directory.
+    '''
     out_profile = profiles[rec_prof].flatten()
     file_path = f'{output_dir}profile{rec_prof + 1:03d}.data'
     with open(file_path, 'w') as f:
@@ -29,9 +57,16 @@ def save_profile_ftn(profiles, rec_prof, output_dir):
             f.write(f' {element:0.7E}\n')
 
 
-# Write self volts to text file in tomoscope format.
-# self_fields: calculated self field voltages.
 def save_self_volt_profile_ftn(self_fields, output_dir):
+    '''Write self volts to text file in tomoscope format.
+
+    Parameters
+    ----------
+    self_fields: ndarray
+        Calculated self-field voltages.
+    output_dir: string
+        Path to output directory.
+    '''
     out_profile = self_fields.flatten()
     file_path = f'{output_dir}vself.data'
     with open(file_path, 'w') as f:
@@ -42,10 +77,18 @@ def save_self_volt_profile_ftn(self_fields, output_dir):
 #                         PHASE-SPACE                             #
 # --------------------------------------------------------------- #
 
-# Save phase-space image in a tomoscope format
-# image: recreated phase-space
-# rec prof: index of profile to be reconstructed. 
 def save_phase_space_ftn(image, rec_prof, output_path):
+    '''Save phase-space image in a tomoscope format.
+
+    Parameters
+    ----------
+    image: ndarray
+        Recreated phase-space.
+    rec_prof: int
+        Index of reconstructed profile.
+    output_dir: string
+        Path to output directory.
+    '''
     log.info(f'Saving image{rec_prof} to {output_path}')
     image = image.flatten()
     with open(f'{output_path}image{rec_prof + 1:03d}.data', 'w') as f:
@@ -54,13 +97,43 @@ def save_phase_space_ftn(image, rec_prof, output_path):
 
 # Convert from weighted particles to phase-space image.
 def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
+    '''Convert from weighted particles to phase-space image.
+
+    Output is equal to the phase space image created by the Fortran version. 
+    
+    Parameters
+    ----------
+    xp: ndarray
+        Array containing the x coordinates of every
+        particle at every time frame. Must be given in coordinates
+        of the phase space coordinate system as integers. 
+    yp: ndarray
+        Array containing the y coordinates of every
+        particle at every time frame. Must be given in coordinates
+        of the phase space coordinate system as integers.
+    weight: ndarray
+        Array containing the weight of each particle.
+    n_bins: int
+        Number of bins in a profile measurment.
+    rec_prof: int
+        Index of reconstructed profile.
+    
+    Returns
+    -------
+    phase_space: ndarray
+        Phase space presented as nbins x nbins image. Has the same
+        format as the image produced by the Fortran version.
+
+    '''
     phase_space = np.zeros((n_bins, n_bins))
     
-    # Creating n_bins * n_bins phase-space image
+    # Creating n_bins x n_bins phase-space image
     for x, y, w in zip(xp[:, rec_prof], yp[:, rec_prof], weight):
         phase_space[x, y] += w
     
+    # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
+    # Normalizing phase space.
     phase_space /= np.sum(phase_space)
     return phase_space
 
@@ -68,9 +141,26 @@ def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
 #                          PLOT INFO                              #
 # --------------------------------------------------------------- #
 
-# Returns string containing plot info for tomoscope application
-# '+ 1': Converting from Python to Fortran indexing
 def write_plotinfo_ftn(machine, particles, profile_charge):
+    '''Creates string containing plot info needed for tomoscope application.
+    
+    Parameters
+    ----------
+    machine: Machine
+        Object containing machine parameters.
+    particles: Particles
+        Object containing particle distribution and information about
+        the phase space reconstruction.
+    profile_charge: float
+        Total charge of a reference profile.
+    
+    Returns
+    -------
+    plot_info: string
+        String containing information needed by the tomoscope application.
+        The returned string has the same format as in the Fortran version.
+
+    '''
     rec_prof = machine.filmstart
     rec_turn = rec_prof * machine.dturns
 
@@ -101,6 +191,7 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
                              'for this phase space info object.\n'
                              'Cannot print plot info.')  
 
+    # '+ 1': Converting from Python to Fortran indexing
     out_s = f' plotinfo.data\n'\
             f'Number of profiles used in each reconstruction,\n'\
               f' profilecount = {machine.nprofiles}\n'\
@@ -133,8 +224,20 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
 #                         DISCREPANCY                             #
 # --------------------------------------------------------------- #
 
-# Write difference to text file in tomoscope format
 def save_difference_ftn(diff, output_path, rec_prof):
+    '''Write reconstruction discrepancy to text file
+    with tomoscope format.
+
+    Parameters
+    ----------
+    diff: ndarray
+        Array containing the discrepancy for the reconstructed
+        phase space at each iteration.
+    output_dir: string
+        Path to output directory.
+    rec_prof: int
+        Index of profile to be saved.
+    '''
     log.info(f'Saving saving difference to {output_path}')
     with open(f'{output_path}d{rec_prof + 1:03d}.data', 'w') as f:
         for i, d in enumerate(diff):
@@ -144,14 +247,23 @@ def save_difference_ftn(diff, output_path, rec_prof):
 #                          TRACKING                               #
 # --------------------------------------------------------------- #
 
-# Write output for particle tracking in Fortran style.
-# The Fortran algorithm is a little different, so
-#  the output concerning lost particles is not valid.
-#  Meanwhile, it is needed for the tomoscope.
-# Profile numbers are added by one in order to compensate for
-#  differences in python and fortran arrays. Fortrans counts from
-#  one, python counts from 0.
 def print_tracking_status_ftn(ref_prof, to_profile):
+    '''Write output for particle tracking in Fortran style.
+    The Fortran algorithm is a little different, so
+    the **output concerning lost particles is not valid**.
+    Meanwhile, it is needed for the tomoscope.
+    Profile numbers are added by one in order to compensate for
+    differences in python and fortran arrays. Fortran counts from
+    one, python counts from 0.
+    This function is needed by the tomography tracking algorithm.
+
+    Parameters
+    ----------
+    rec_prof: int
+        Index of profile to be reconstructed.
+    to_profile: int
+        Profile the algorithm is currently tracking towards.
+    '''
     print(f' Tracking from time slice  {ref_prof + 1} to  '\
           f'{to_profile + 1},   0.000% went outside the image width.')
 
@@ -159,15 +271,23 @@ def print_tracking_status_ftn(ref_prof, to_profile):
 #                         END PRODUCT                             #
 # --------------------------------------------------------------- #
 
-# Nice plot of output.
-# Image: recreated phase-space image
-# Diff: array conatining discrepancies for each iteration of reconstruction.
-# Profile: The measured profile to be reconstructed
 def show(image, diff, rec_profile):
+    '''Nice presentation of reconstruction.
+    
+    Parameters
+    ----------
+    Image: ndarray
+        Recreated phase-space image.
+    Diff: ndarray
+        Array conatining discrepancies for each iteration of reconstruction.
+    Profile: ndarray
+        The measured profile to be reconstructed
+    '''
 
     # Normalizing rec_profile:
     rec_profile[:] /= np.sum(rec_profile) 
 
+    # Creating plot
     gs = gridspec.GridSpec(4, 4)
 
     fig = plt.figure()
