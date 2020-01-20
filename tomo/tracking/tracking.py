@@ -1,4 +1,4 @@
-'''Module containing the Tracking class
+'''Module containing the Tracking class.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''

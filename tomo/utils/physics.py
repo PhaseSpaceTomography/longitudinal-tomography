@@ -1,4 +1,4 @@
-"""Module containing fundamental physics formulas
+"""Module containing fundamental physics formulas.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
