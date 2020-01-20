@@ -95,7 +95,6 @@ def save_phase_space_ftn(image, rec_prof, output_path):
         for element in image:
             f.write(f'  {element:0.7E}\n')
 
-# Convert from weighted particles to phase-space image.
 def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
     '''Convert from weighted particles to phase-space image.
 

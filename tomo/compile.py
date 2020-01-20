@@ -1,10 +1,14 @@
+'''Module containing the Tracking class.
+
+:Author(s): **Christoffer Hjertø Grindheim**
+'''
+
 import os
 import sys
 import subprocess
 import ctypes
 import argparse
 
-# TODO: Add compilation for windows?
 
 def main(gpu_flag):
     path = os.path.realpath(__file__)
