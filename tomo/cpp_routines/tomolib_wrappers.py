@@ -11,7 +11,17 @@ import logging as log
 from ..utils import exceptions as expt
 
 # TODO: Check if windows.
-_tomolib_pth = os.path.dirname(os.path.realpath(__file__)) + '/tomolib.so'
+_tomolib_pth = os.path.dirname(os.path.realpath(__file__))
+
+# Setting system spescific parameters
+if 'posix' in os.name:
+    _tomolib_pth = os.path.join(_tomolib_pth, 'tomolib.so')
+elif 'win' in sys.platform:
+    _tomolib_pth = os.path.join(_tomolib_pth, 'tomolib.dll')
+else:
+    msg = 'YOU ARE NOT USING A WINDOWS'\
+          'OR LINUX OPERATING SYSTEM. ABORTING...'
+    raise SystemError(msg)
 
 # Attempting to load C++ library
 if os.path.exists(_tomolib_pth):
