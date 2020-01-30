@@ -116,6 +116,10 @@ class PhaseSpaceInfo:
         EnergyBinningError: Exception
             The provided value of machine.demax is invalid.
         '''
+        if self.xorigin is None:
+            raise expt.EnergyBinningError(
+                'xorigin must be calculated in order to find dEbin.')
+
         turn = self.machine.beam_ref_frame * self.machine.dturns    
         phases = self._calculate_phases(turn)
         delta_e_known = 0.0
