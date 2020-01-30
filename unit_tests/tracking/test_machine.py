@@ -1,13 +1,12 @@
+'''Unit-tests for the Machine class.
+
+Run as python test_machine.py in console or via coverage
+'''
+
 import unittest
 
 import tomo.tracking.machine as mch
 
-
-'''
-Unit-tests for the Beam class.
-
-Run as python testBeamObject.py in console or via coverage
-'''
 
 # Machine arguments mased on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
