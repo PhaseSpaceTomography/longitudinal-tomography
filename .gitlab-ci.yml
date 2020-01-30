@@ -12,7 +12,7 @@ tests:
     - echo "Installing coverage"
     - pip install coverage
     - pip install coverage-badge
-    - coverage run -m pytest -v unit_tests/test*.py
+    - coverage run -m pytest -v unit_tests/*/test*.py
     - coverage report -m
     - coverage html
     - coverage-badge -o coverage.svg
