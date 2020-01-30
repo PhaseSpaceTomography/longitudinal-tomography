@@ -4,6 +4,7 @@ example_input
 tomo/.idea
 .pytest_cache
 __doc/build
+unit_tests/old/
 
 # Filetypes
 *.pyc
