@@ -4,11 +4,13 @@
 '''
 
 import ctypes as ct
+import logging as log
 import numpy as np
 import os
-import logging as log
+import sys
 
 from ..utils import exceptions as expt
+
 
 # TODO: Check if windows.
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__))

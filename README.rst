@@ -19,6 +19,4 @@ Requirements
 
 2. An Anaconda distribution (Python 3 recommended).
 
-3. That's all!*
-
-*The program currently only runs on linux systems 
+3. That's all!
