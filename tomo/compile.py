@@ -69,8 +69,6 @@ def main(gpu_flag):
     except Exception as e:
         print('\nCompilation failed.')
 
-    _add_to_pyhtonpath(base_path)
-
 
 def _get_parser():
     parser = argparse.ArgumentParser(
@@ -83,11 +81,6 @@ def _get_parser():
                         const=True,
                         help='Compile for gpu')
     return parser
-
-def _add_to_pyhtonpath(tomo_path):
-    usr_py_path = os.environ['PYTHONPATH'].split(os.pathsep)
-    if tomo_path not in usr_py_path:
-        print(f'Please add {tomo_path} to your PYTHONPATH.')
 
 
 if __name__ == '__main__':
