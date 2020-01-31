@@ -231,6 +231,10 @@ def filter_lost(xp, yp, img_width):
         xp = np.delete(xp, invalid_pts, axis=1)
         yp = np.delete(yp, invalid_pts, axis=1)
 
+    if xp.size == 0:
+        raise expt.InvalidParticleError(
+            'All particles removed during filtering')
+
     return xp, yp, nr_lost_pts
 
 def physical_to_coords(tracked_dphi, tracked_denergy,
@@ -269,8 +273,8 @@ def physical_to_coords(tracked_dphi, tracked_denergy,
         Array shape: (nprofiles, nparticles)
     '''
     if tracked_dphi.shape != tracked_denergy.shape:
-        raise AssertionError('Different shape of arrays containing '
-                             'phase and energies')
+        raise expt.InvalidParticleError(
+            'Different shape of arrays containing phase and energies')
     nprof = tracked_denergy.shape[0]
 
     profiles = np.arange(nprof)
