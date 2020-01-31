@@ -139,7 +139,7 @@ class TestParticlesMethods(unittest.TestCase):
                 self.assertAlmostEqual(
                     y, cy, msg='Error in calculated yp coordinates ')
 
-    def test_physical_to_coords_correct(self):
+    def test_physical_to_coords_error(self):
         phases = [[-0.24180582, 0.04498875, 0.33178332, 0.61857789],
                   [-0.24180582, 0.04498875, 0.33178332, 0.61857789]]
         energies = [[-115567.32591061, -115567.32591061, -115567.32591061],
