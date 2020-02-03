@@ -52,31 +52,6 @@ MACHINE_ARGS = {
     }
 
 
-
-# To test:
-# 
-# creator()
-#  - bad_arg
-#
-# track()
-#  - Automatic particle generation + tracking [OK]
-#  - manual particles tracking                [OK]
-#   - self_field_tracking                     [OK]
-#   - regular tracking                        [OK]
-# 
-# Fortran_flag()
-#  - fail test: profile charge
-# 
-# Self_field_flag()
-#  - fail test: missing self_field_values
-# 
-# kick_and_drift()
-#  - track some particles in both directions
-# 
-# kick_and_drift_self()
-# - track some particles in both directions
-#
-
 class TestTracker(unittest.TestCase):
 
     def test_tracking_aut_distr(self):
@@ -220,5 +195,16 @@ class TestTracker(unittest.TestCase):
                 x, cx, msg='An error was found in the x-coordinates '
                            'tracked using self-fields.')
 
-    def test_ftn_flag_fails(self):
-        pass
+    def test_self_field_flag_fails(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.values_at_turns()
+
+        # Dummy profiles object, waterfall is array of ones.
+        profiles = prof.Profiles(machine, machine.dtbin, np.ones((150, 1)))
+
+        tracker = tck.Tracking(machine)
+
+        with self.assertRaises(expt.SelfFieldTrackingError,
+                               msg='Missing self field voltages '
+                                   'should raise an error'):
+            tracker.enable_self_fields(profiles)
