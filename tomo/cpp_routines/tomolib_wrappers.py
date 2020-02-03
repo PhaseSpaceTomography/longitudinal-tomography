@@ -392,7 +392,7 @@ def _get_pointer(x):
     return x.ctypes.data_as(ct.c_void_p)
 
 # Retrieve 2D pointer.
-# Needed por passing two-dimensional arrays to the C++ functions
+# Needed for passing two-dimensional arrays to the C++ functions
 # as pointers to pointers.
 def _get_2d_pointer(arr2d):
     return (arr2d.__array_interface__['data'][0]
