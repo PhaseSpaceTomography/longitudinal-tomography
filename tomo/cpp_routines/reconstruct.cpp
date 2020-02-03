@@ -30,14 +30,19 @@ void normalize(double * __restrict__ flat_rec, // inn/out
                const int nbins){
     int i, j;
 
-#pragma omp parallel for
+double sum_waterfall = 0.0;
+#pragma omp parallel for reduction(+ : sum_waterfall)
     for(i=0; i < nprof; i++){
         double sum_profile = 0;
         for(j=0; j < nbins; j++)
             sum_profile += flat_rec[i * nbins + j];
         for(j=0; j < nbins; j++)
             flat_rec[i * nbins + j] /= sum_profile;
+        sum_waterfall += sum_profile;
     }
+
+    if(sum_waterfall <= 0)
+        throw "Phase space reduced to zeroes!";
 }
 
 void clip(double * __restrict__ array, // inn/out
