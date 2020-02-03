@@ -140,7 +140,7 @@ class ParticleTracker:
         '''
         needed_fieds = ['phiwrap', 'vself']
         asrt.assert_fields(profiles, 'profiles', needed_fieds,
-                           expt.SelfFieldTrackingError())
+                           expt.SelfFieldTrackingError)
 
         self._phiwrap = profiles.phiwrap
         self._vself = profiles.vself
