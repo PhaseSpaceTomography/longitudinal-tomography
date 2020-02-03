@@ -95,7 +95,7 @@ class PhaseSpaceInfo:
         self.jmax = jmax.astype(np.int32)
         
         # Ensuring that the output is valid
-        self._assert_correct_arrays()
+        self._assert_correct_ijlimits()
 
     def find_dEbin(self):
         '''Function to calculate the size of a energy bin in the
@@ -201,6 +201,7 @@ class PhaseSpaceInfo:
         # Calculate the limits in energy at each phase 
         jmax = self._find_max_binned_energy(phases, turn, dEbin)
         jmin = self._find_min_binned_energy(jmax)
+        self._assert_jlimits_ok(jmin, jmax)
 
         # Find area in phase where energy limits are valid
         # (jmax - jmin >= 0).
@@ -325,7 +326,7 @@ class PhaseSpaceInfo:
 
         return cplx_height.real
 
-    def _assert_correct_arrays(self):
+    def _assert_correct_ijlimits(self):
         # Testing imin and imax
         asrt.assert_inrange(self.imin, 'imin', 0, self.imax,
                             expt.PhaseLimitsError,
@@ -346,3 +347,11 @@ class PhaseSpaceInfo:
         asrt.assert_equal(self.jmin.shape, 'jmin',
                           self.jmax.shape, expt.ArrayLengthError,
                           'jmin and jmax should have the same shape')
+        self._assert_jlimits_ok(self.jmin, self.jmax)
+
+    # Testing that there is a difference between jmin and jmax
+    def _assert_jlimits_ok(self, jmin, jmax):
+        if all(jmin >= jmax):
+            raise expt.EnergyLimitsError(
+                'All of jmin is larger than or equal to jmax; '
+                'the size of the reconstruction area is zero.')        
