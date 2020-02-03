@@ -3,12 +3,13 @@
 Run as python test_phase_space_info.py in console or via coverage
 '''
 
-
-import unittest
 import numpy as np
+import os
+import unittest
 
 import tomo.utils.exceptions as expt
 import tomo.tracking.machine as mch
+import tomo.data.profiles as prof
 import tomo.tracking.tracking as tck
 
 # Machine arguments mased on the input file INDIVShavingC325.dat
@@ -60,7 +61,7 @@ MACHINE_ARGS = {
 # track()
 #  - Automatic particle generation + tracking [OK]
 #  - manual particles tracking                [OK]
-#   - self_field_tracking
+#   - self_field_tracking                     [OK]
 #   - regular tracking                        [OK]
 # 
 # Fortran_flag()
@@ -161,3 +162,63 @@ class TestTracker(unittest.TestCase):
                 y, cy, msg='Error in tracking of particle '
                            'found in y-coordinate')
 
+
+    def test_self_field_tracking(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.zwall_over_n = 50.0
+        machine.g_coupling = 1.0
+        machine.values_at_turns()
+
+        base_dir = os.path.split(os.path.realpath(__file__))[0]
+        base_dir = os.path.split(base_dir)[0]
+        data_path = os.path.join(base_dir, 'resources')
+
+        waterfall = np.load(os.path.join(
+                        data_path, 'waterfall_INDIVShavingC325.npy'))
+        vself = np.load(os.path.join(
+                        data_path, 'vself_INDIVShavingC325.npy'))
+
+        profiles = prof.Profiles(machine, machine.dtbin, waterfall)
+
+        profiles.phiwrap = 6.283185307179586
+        profiles.vself = vself
+
+        rbn = 3
+        machine.dtbin *= rbn
+        machine.nbins = waterfall.shape[1]
+        machine.synch_part_x /= rbn
+
+        phase_0 = np.array([0.33178332])
+        energy_0 = np.array([-115567.32591061])
+
+        tracker = tck.Tracking(machine)
+        tracker.enable_self_fields(profiles)
+
+        tracker.particles.xorigin = -82.20164208806912
+        tracker.particles.dEbin = 3698.1544291396035
+        xp, yp = tracker.track(50, (phase_0, energy_0))
+
+        xp_0 = 73.58628603566842
+        xp_50 = 135.37116548104402
+        xp_149 = 73.43430438854142
+
+        yp_0 = 130.08894709334083
+        yp_50 = 95.75000000000071
+        yp_149 = 120.6218531014772
+
+        correct_y = (yp_0, yp_50, yp_149)
+        test_y = (yp[0], yp[50], yp[149])
+        for y, cy in zip(test_y, correct_y):
+            self.assertAlmostEqual(
+                y, cy, msg='An error was found in the y-coordinates '
+                           'tracked using self-fields.')
+
+        correct_x = (xp_0, xp_50, xp_149)
+        test_x = (xp[0], xp[50], xp[149])
+        for x, cx in zip(test_x, correct_x):
+            self.assertAlmostEqual(
+                x, cx, msg='An error was found in the x-coordinates '
+                           'tracked using self-fields.')
+
+    def test_ftn_flag_fails(self):
+        pass
