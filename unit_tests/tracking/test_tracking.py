@@ -181,15 +181,15 @@ class TestTracker(unittest.TestCase):
         yp_50 = 95.75000000000071
         yp_149 = 120.6218531014772
 
-        correct_y = (yp_0, yp_50, yp_149)
-        test_y = (yp[0], yp[50], yp[149])
+        correct_y = [yp_0, yp_50, yp_149]
+        test_y = [yp[0], yp[50], yp[149]]
         for y, cy in zip(test_y, correct_y):
             self.assertAlmostEqual(
                 y, cy, msg='An error was found in the y-coordinates '
                            'tracked using self-fields.')
 
-        correct_x = (xp_0, xp_50, xp_149)
-        test_x = (xp[0], xp[50], xp[149])
+        correct_x =[xp_0, xp_50, xp_149]
+        test_x = [xp[0], xp[50], xp[149]]
         for x, cx in zip(test_x, correct_x):
             self.assertAlmostEqual(
                 x, cx, msg='An error was found in the x-coordinates '
