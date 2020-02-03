@@ -3,6 +3,14 @@
 Run as python test_phase_space_info.py in console or via coverage
 '''
 
+
+import unittest
+import numpy as np
+
+import tomo.utils.exceptions as expt
+import tomo.tracking.machine as mch
+import tomo.tracking.tracking as tck
+
 # Machine arguments mased on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
@@ -42,13 +50,6 @@ MACHINE_ARGS = {
     'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
     }
 
-
-import unittest
-import numpy as np
-
-import tomo.utils.exceptions as expt
-import tomo.tracking.machine as mch
-import tomo.tracking.tracking as tck
 
 
 # To test:
@@ -148,9 +149,6 @@ class TestTracker(unittest.TestCase):
                 x, cx, msg='Error in tracking of particle '
                            'found in x-coordinate')
 
-
-        # print(yp)
-        # raise Exception
         correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
                      -136242.257239, -133976.14426166, -131466.51658527,
                      -128721.71792799, -125750.39872057, -122561.4633275,
