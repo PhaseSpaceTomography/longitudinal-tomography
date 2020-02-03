@@ -42,7 +42,7 @@ double sum_waterfall = 0.0;
     }
 
     if(sum_waterfall <= 0)
-        throw "Phase space reduced to zeroes!";
+        throw std::runtime_error("Phase space reduced to zeroes!");
 }
 
 void clip(double * __restrict__ array, // inn/out
