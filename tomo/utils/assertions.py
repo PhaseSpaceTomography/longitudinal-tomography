@@ -426,60 +426,91 @@ def assert_machine_input(machine):
         measurements.
     '''
     # Bin assertions
+    assert_var_not_none(machine.dtbin, 'dtbin', expt.MachineParameterError)
     assert_greater(machine.dtbin, 'dtbin', 0, expt.MachineParameterError,
                    'NB: dtbin is the difference of time in bin')
+    
+    assert_var_not_none(machine.dturns, 'dturns', expt.MachineParameterError)
     assert_greater(machine.dturns, 'dturns', 0, expt.MachineParameterError,
-                   'NB: dturns is the number of machine turns'
-                   'between each measurement')
-
+                       'NB: dturns is the number of machine turns'
+                       'between each measurement')
+    
     # Assertions: profile to be reconstructed
-    assert_greater_or_equal(machine.filmstart, 'film start',
-                            0, expt.MachineParameterError)
-    assert_greater_or_equal(machine.filmstop, 'film stop',
-                            machine.filmstart, expt.MachineParameterError)
-    assert_less_or_equal(abs(machine.filmstep), 'film step',
-                         abs(machine.filmstop - machine.filmstart + 1),
+    if (machine.filmstart is None or machine.filmstop is None or
+        machine.filmstep is None):
+        raise expt.MachineParameterError(
+            'film start, film stop and filmstep cannot be None, but '
+            'must be positive integers, within the number of profiles.')
+    else:
+        assert_greater_or_equal(machine.filmstart, 'film start',
+                                0, expt.MachineParameterError)
+        assert_greater_or_equal(machine.filmstop, 'film stop',
+                                machine.filmstart, expt.MachineParameterError)
+        assert_less_or_equal(abs(machine.filmstep), 'film step',
+                             abs(machine.filmstop - machine.filmstart + 1),
+                             expt.MachineParameterError)
+        assert_not_equal(machine.filmstep, 'film step', 0,
                          expt.MachineParameterError)
-    assert_not_equal(machine.filmstep, 'film step', 0,
-                     expt.MachineParameterError)
 
     # Reconstruction parameter assertions
+    assert_var_not_none(machine.niter, 'niter', expt.MachineParameterError)
     assert_greater(machine.niter, 'niter', 0, expt.MachineParameterError,
                    'NB: niter is the number of iterations of the '
                    'reconstruction process')
+
+    assert_var_not_none(machine.snpt, 'snpt', expt.MachineParameterError)
     assert_greater(machine.snpt, 'snpt', 0, expt.MachineParameterError,
                    'NB: snpt is the square root '
-                   'of #tracked particles.')
+                   'of number of tracked particles in each cell'
+                   'of the reconstructed phase space.')
 
     # Reference frame assertions
-    assert_greater_or_equal(machine.machine_ref_frame,
-                            'machine ref. frame',
+    assert_var_not_none(machine.machine_ref_frame, 'Machine ref. frame',
+                        expt.MachineParameterError)
+    assert_greater_or_equal(machine.machine_ref_frame, 'Machine ref. frame',
                             0, expt.MachineParameterError)
-    assert_greater_or_equal(machine.beam_ref_frame, 'beam ref. frame',
+    assert_var_not_none(machine.beam_ref_frame, 'Beam ref. frame',
+                        expt.MachineParameterError)
+    assert_greater_or_equal(machine.beam_ref_frame, 'Beam ref. frame',
                             0, expt.MachineParameterError)
 
     # Machine parameter assertion
-    assert_greater_or_equal(machine.h_num, 'harmonic number',
+    assert_var_not_none(
+        machine.h_num, 'Harmonic number', expt.MachineParameterError)
+    assert_greater_or_equal(
+        machine.h_num, 'Harmonic number', 1, expt.MachineParameterError)
+
+    assert_var_not_none(machine.h_ratio, 'Harmonic ratio',
+                        expt.MachineParameterError)
+    assert_greater_or_equal(machine.h_ratio, 'Harmonic ratio',
                             1, expt.MachineParameterError)
-    assert_greater_or_equal(machine.h_ratio, 'harmonic ratio',
-                            1, expt.MachineParameterError)
-    assert_greater(machine.b0, 'B field (B0)',
+
+    assert_var_not_none(machine.b0, 'B field (B0)', expt.MachineParameterError)
+    assert_greater(machine.b0, 'B field (B0)', 0, expt.MachineParameterError)
+    
+    assert_var_not_none(machine.mean_orbit_rad, 'mean orbit radius',
+                        expt.MachineParameterError)
+    assert_greater(machine.mean_orbit_rad, 'mean orbit radius',
                    0, expt.MachineParameterError)
-    assert_greater(machine.mean_orbit_rad, "mean orbit radius",
+    assert_var_not_none(machine.bending_rad, 'Bending radius',
+                        expt.MachineParameterError)
+    assert_greater(machine.bending_rad, 'Bending radius',
                    0, expt.MachineParameterError)
-    assert_greater(machine.bending_rad, "Bending radius",
-                   0, expt.MachineParameterError)
+    assert_var_not_none(machine.e_rest, 'rest energy',
+                        expt.MachineParameterError)
     assert_greater(machine.e_rest, 'rest energy',
                    0, expt.MachineParameterError)
 
     # Space charge parameter assertion
-    assert_greater_or_equal(machine.pickup_sensitivity,
-                            'pick-up sensitivity',
-                            0, expt.SpaceChargeParameterError)
-    assert_greater_or_equal(machine.g_coupling, 'g_coupling',
-                            0, expt.SpaceChargeParameterError,
-                            'NB: g_coupling:'
-                            'geometrical coupling coefficient')
+    if machine.pickup_sensitivity is not None:
+        assert_greater_or_equal(machine.pickup_sensitivity,
+                                'pick-up sensitivity',
+                                0, expt.SpaceChargeParameterError)
+    if machine.g_coupling is not None:
+        assert_greater_or_equal(machine.g_coupling, 'g_coupling',
+                                0, expt.SpaceChargeParameterError,
+                                'NB: g_coupling:'
+                                'geometrical coupling coefficient')
 
 def assert_frame_inputs(frame):
     '''Assert frame parameters are valid.
@@ -553,3 +584,7 @@ def _write_std_err_msg(var_name, var, limit, operator, extra):
                      f'Expected value: {var_name} {operator} {limit}.')
     error_message += f'\n{extra}'
     return error_message
+
+def assert_var_not_none(var_name, var, error_class):
+    if var is None:
+        raise error_class(f'{var_name} cannot be of type None')
