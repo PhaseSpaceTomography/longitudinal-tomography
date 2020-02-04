@@ -1,6 +1,6 @@
 '''Unit-tests for the Tracking class.
 
-Run as python test_phase_space_info.py in console or via coverage
+Run as python test_tracking.py in console or via coverage
 '''
 
 import numpy as np
