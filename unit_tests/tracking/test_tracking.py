@@ -208,3 +208,39 @@ class TestTracker(unittest.TestCase):
                                msg='Missing self field voltages '
                                    'should raise an error'):
             tracker.enable_self_fields(profiles)
+
+    def test_kick_and_drift_hybrid_correct(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.nprofiles = 10
+        machine.values_at_turns()
+        
+        phase_0 = np.array([0.33178332])
+        energy_0 = np.array([-115567.32591061])
+        
+        rfv1 = machine.vrf1_at_turn * machine.q
+        rfv2 = machine.vrf2_at_turn * machine.q
+        
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.kick_and_drift(
+                    energy_0, phase_0, rfv1, rfv2, rec_prof=5)
+        
+        correct_x = [0.22739336232235102, 0.24930078456175753,
+                     0.27073013058527245, 0.29164399861825624,
+                     0.3120065061037849, 0.33178332,
+                     0.350941678970489, 0.3694504079276061,
+                     0.3872799254524489, 0.40440224466848473]
+        
+        correct_y = [-131465.5660292741, -128721.12723284948,
+                     -125750.0786811894, -122561.328959532,
+                     -119163.98960288391, -115567.32591061,
+                     -111780.71031054154, -107813.57867853255,
+                     -103675.38995760499, -99375.58935765548]
+
+        for x, cx in zip(xp, correct_x):
+            self.assertAlmostEqual(
+                float(x), cx, msg='An error was found in the x-coordinates '
+                                  'tracked using self-fields.')
+        for y, cy in zip(yp, correct_y):
+            self.assertAlmostEqual(
+                float(y), cy, msg='An error was found in the y-coordinates '
+                                  'tracked using self-fields.')
