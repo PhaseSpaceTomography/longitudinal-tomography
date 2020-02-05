@@ -87,7 +87,8 @@ class TomographyCpp(stmo.Tomography):
         log.warning('TomographyCpp.run_hybrid() '
                     'may be removed in future updates!')
         if self.xp is None:
-            raise CoordinateError('No found x-coordinates.')
+            raise expt.CoordinateError(
+                'x-coordinates has value None, and must be provided')
         
         self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles()
