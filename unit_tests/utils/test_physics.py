@@ -94,7 +94,7 @@ class TestPhysics(unittest.TestCase):
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation rf_voltage')
 
-    def test_rf_voltage_correct(self):
+    def test_drf_voltage_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.vrf2 = 1250
         machine.time_at_turn = [1.3701195948153858e-06]
@@ -211,7 +211,7 @@ class TestPhysics(unittest.TestCase):
             ans, correct, msg='Error in found calculation of '
                               'self-field coefficients')
 
-    def test_phse_low_correct(self):
+    def test_phase_low_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.phi0 = [0.40078213]
         machine.time_at_turn = [1.3701195948153858e-06]
@@ -222,7 +222,7 @@ class TestPhysics(unittest.TestCase):
         self.assertAlmostEqual(ans, correct,
                                msg='Phase_low calculated incorrectly')
 
-    def test_phse_low_correct(self):
+    def test_dphase_low_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.phi0 = [0.40078213]
         machine.time_at_turn = [1.3701195948153858e-06]
