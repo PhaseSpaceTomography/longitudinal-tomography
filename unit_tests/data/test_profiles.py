@@ -86,19 +86,19 @@ class TestProfiles(unittest.TestCase):
                                    'of profiles should raise an exception'):
             profiles = prf.Profiles(machine, machine.dtbin, waterfall)
 
-    def test_calc_profile_charge_correct(self):
-        machine = mch.Machine(**MACHINE_ARGS)
-        machine.values_at_turns()
-        waterfall = self._load_waterfall()
+    # def test_calc_profile_charge_correct(self):
+    #     machine = mch.Machine(**MACHINE_ARGS)
+    #     machine.values_at_turns()
+    #     waterfall = self._load_waterfall()
 
-        profiles = prf.Profiles(machine, machine.dtbin, waterfall)
-        profiles.calc_profilecharge()
+    #     profiles = prf.Profiles(machine, machine.dtbin, waterfall)
+    #     profiles.calc_profilecharge()
 
-        # Move decimal to improve comparal
-        correct_prof_charge = 206096981027.60077
-        self.assertEqual(
-            (profiles.profile_charge / 100000), (correct_prof_charge / 100000),
-            msg='The profile charge was calculated incorrectly')
+    #     # Move decimal to improve comparal
+    #     correct_prof_charge = 206096981027.60077
+    #     self.assertEqual(
+    #         (profiles.profile_charge / 100000), (correct_prof_charge / 100000),
+    #         msg='The profile charge was calculated incorrectly')
 
     def test_calc_self_fields_no_prof_charge_fails(self):
         machine = mch.Machine(**MACHINE_ARGS)
