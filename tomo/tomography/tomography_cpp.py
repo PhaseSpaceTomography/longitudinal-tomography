@@ -6,6 +6,7 @@
 import numpy as np
 import logging as log
 
+from ..utils import exceptions as expt
 from ..cpp_routines import tomolib_wrappers as tlw
 from . import __tomography as stmo
 
@@ -167,7 +168,8 @@ class TomographyCpp(stmo.Tomography):
 
         '''
         if self.xp is None:
-            raise CoordinateError('No found x-coordinates.')
+            raise expt.CoordinateError(
+                'x-coordinates has value None, and must be provided')
         
         weight = np.ascontiguousarray(
                     np.zeros(self.nparts, dtype=np.float64))
