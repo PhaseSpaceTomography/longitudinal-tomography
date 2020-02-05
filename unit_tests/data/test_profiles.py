@@ -95,8 +95,8 @@ class TestProfiles(unittest.TestCase):
         profiles.calc_profilecharge()
 
         # Move decimal to improve comparal
-        correct_prof_charge = 206096981027.60077 / 100000
-        profiles.profile_charge /= 100000
+        correct_prof_charge = 206096981027.60077 * 1.0e-11
+        profiles.profile_charge *= 1.0e-11
 
         self.assertEqual(
             profiles.profile_charge, correct_prof_charge,
