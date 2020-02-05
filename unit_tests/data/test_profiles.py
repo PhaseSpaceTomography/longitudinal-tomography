@@ -98,7 +98,7 @@ class TestProfiles(unittest.TestCase):
         correct_prof_charge = 206096981027.60077 * 1.0e-11
         profiles.profile_charge *= 1.0e-11
 
-        self.assertEqual(
+        self.assertAlmostEqual(
             profiles.profile_charge, correct_prof_charge,
             msg='The profile charge was calculated incorrectly')
 
