@@ -94,10 +94,11 @@ class TestProfiles(unittest.TestCase):
         profiles = prf.Profiles(machine, machine.dtbin, waterfall)
         profiles.calc_profilecharge()
 
+        # Move decimal to improve comparal
         correct_prof_charge = 206096981027.60077
-        self.assertAlmostEqual(profiles.profile_charge, correct_prof_charge,
-                              msg='The profile charge was calculated '
-                                  'incorrectly')
+        self.assertEqual(
+            profiles.profile_charge / 100000, correct_prof_charge / 100000,
+            msg='The profile charge was calculated incorrectly')
 
     def test_calc_self_fields_no_prof_charge_fails(self):
         machine = mch.Machine(**MACHINE_ARGS)
