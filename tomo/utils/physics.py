@@ -71,7 +71,7 @@ def rfvolt_rf1(phi, machine, rf_turn):
     q_sign = np.sign([machine.q])
     return (v1 * np.sin(phi)
             - 2 * np.pi * machine.mean_orbit_rad
-                * machine.bending_rad * machine.bdot * q_sign)
+                * machine.bending_rad * machine.bdot * q_sign[0])
 
 
 def drfvolt_rf1(phi, machine, rf_turn):
@@ -246,7 +246,7 @@ def find_phi_lower_upper(machine, rf_turn):
                     - (machine.e0[rf_turn]
                         / float(machine.e_rest)))) > 0
     if condition:
-        phi_lower = -1.0 * np.pi
+        phi_lower = -np.pi
         phi_upper = np.pi
     else:
         phi_lower = 0.0
