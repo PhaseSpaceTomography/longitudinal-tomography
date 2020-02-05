@@ -54,6 +54,13 @@ MACHINE_ARGS = {
 
 class TestTracker(unittest.TestCase):
 
+    def test_parameter_notMachine_fails(self):
+        with self.assertRaises(
+                expt.MachineParameterError, msg='arguments not being of type '
+                                                'Machine should raise '
+                                                'an Exception'):
+            tracker = tck.Tracking(None)
+
     def test_tracking_aut_distr(self):
         machine = mch.Machine(**MACHINE_ARGS)
 
