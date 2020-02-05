@@ -124,6 +124,23 @@ class TestDataTreatment(unittest.TestCase):
         self.assertAlmostEqual(machine.dtbin, updated_dtbin,
                                msg='Error in updated dtbin')
 
+    def test_rebin_dtbin_update_correct(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.nbins = 8
+        machine.synch_part_x = 4.53
+        machine.dtbin = 0.535
+
+        waterfall = np.array([[1, 2, 3, 4, 5, 6, 7, 8],
+                              [10, 21, 32, 43, 54, 65, 76, 86]],
+                             dtype=float)
+        rbn = 2
+        _, dtbin = treat.rebin(waterfall, rbn, dtbin=machine.dtbin)
+
+        correct = 1.07
+        self.assertEqual(dtbin, correct, msg='error in calculation of '
+                                             'updated dtbin')
+
+
     def test_fit_synch_part_x_correct_x_coord(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.time_at_turn = np.array([1.3701195948153858e-06])
