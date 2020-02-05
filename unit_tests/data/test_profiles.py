@@ -86,19 +86,21 @@ class TestProfiles(unittest.TestCase):
                                    'of profiles should raise an exception'):
             profiles = prf.Profiles(machine, machine.dtbin, waterfall)
 
-    # def test_calc_profile_charge_correct(self):
-    #     machine = mch.Machine(**MACHINE_ARGS)
-    #     machine.values_at_turns()
-    #     waterfall = self._load_waterfall()
+    def test_calc_profile_charge_correct(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.values_at_turns()
+        waterfall = self._load_waterfall()
 
-    #     profiles = prf.Profiles(machine, machine.dtbin, waterfall)
-    #     profiles.calc_profilecharge()
+        profiles = prf.Profiles(machine, machine.dtbin, waterfall)
+        profiles.calc_profilecharge()
 
-    #     # Move decimal to improve comparal
-    #     correct_prof_charge = 206096981027.60077
-    #     self.assertEqual(
-    #         (profiles.profile_charge / 100000), (correct_prof_charge / 100000),
-    #         msg='The profile charge was calculated incorrectly')
+        # Move decimal to improve comparal
+        correct_prof_charge = 206096981027.60077 / 100000
+        profiles.profile_charge /= 100000
+
+        self.assertEqual(
+            profiles.profile_charge, correct_prof_charge,
+            msg='The profile charge was calculated incorrectly')
 
     def test_calc_self_fields_no_prof_charge_fails(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -113,7 +115,7 @@ class TestProfiles(unittest.TestCase):
                                    'having provided the profile charge.'):
             profiles.calc_self_fields()
 
-    def test_calc_self_fields_original_correct(self):
+    def test_calc_self_fields_original_correct_bdot_greater_than_zero(self):
         waterfall = self._load_waterfall()
         machine = mch.Machine(**MACHINE_ARGS)
         machine.values_at_turns()
@@ -139,12 +141,42 @@ class TestProfiles(unittest.TestCase):
 
         self.assertAlmostEqual(profiles.phiwrap, correct_phiwrap,
                                msg='phiwrap calculated incorrectly.')
-        self.assertAlmostEqual(profiles.wrap_length, correct_wrap_length,
-                               msg='wrap length calculated incorrectly.')
+        self.assertEqual(profiles.wrap_length, correct_wrap_length,
+                         msg='wrap length calculated incorrectly.')
         nptest.assert_almost_equal(
             profiles.vself, correct_vself,
             err_msg='Error in calculation self fields using original '
                     'method and filter.')
+
+    def test_calc_self_fields_wraplength_correct_bdot_less_than_zero(self):
+        waterfall = self._load_waterfall()
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.bdot = 0.0
+        machine.values_at_turns()
+
+        sample_time = machine.dtbin 
+
+        # Update fields due to loading of rebinned waterfall. 
+        rbn = 3
+        machine.dtbin *= rbn
+        machine.synch_part_x /= rbn
+
+        # Set space charge parameters
+        machine.g_coupling = 1.0
+        machine.zwall_over_n = 50.0
+
+        profiles = prf.Profiles(machine, sample_time, waterfall)
+        profiles.calc_profilecharge()
+        profiles.calc_self_fields()
+
+        correct_vself = self._load_vself()
+        correct_phiwrap = 6.283185307179586
+        correct_wrap_length = 457
+
+        self.assertAlmostEqual(profiles.phiwrap, correct_phiwrap,
+                               msg='phiwrap calculated incorrectly.')
+        self.assertEqual(profiles.wrap_length, correct_wrap_length,
+                         msg='wrap length calculated incorrectly.')
 
     def test_calc_self_fields_filter_outside_correct(self):
         waterfall = self._load_waterfall()
