@@ -27,7 +27,7 @@ def assert_greater(var, var_name, limit, error_class, extra_text=''):
         Extra text to be written after standard error message.
     '''
     if var <= limit:
-        msg = _write_std_err_msg(var_name, var, limit, '<', extra_text)
+        msg = _write_std_err_msg(var_name, var, limit, '>', extra_text)
         raise error_class(msg)
 
 
@@ -48,7 +48,7 @@ def assert_less(var, var_name, limit, error_class, extra_text=''):
         Extra text to be written after standard error message.
     '''
     if var >= limit:
-        msg = _write_std_err_msg(var_name, var, limit, '>', extra_text)
+        msg = _write_std_err_msg(var_name, var, limit, '<', extra_text)
         raise error_class(msg)
 
 
@@ -259,7 +259,7 @@ def assert_array_in_range(array, low_lim, up_lim, error_class,
 
 
 def assert_array_greater(array, limit, error_class,
-                         msg='', index_offset=''):
+                         msg='', index_offset=0):
     '''Assert all array elements are greater than x.
 
     Parameters
@@ -280,7 +280,7 @@ def assert_array_greater(array, limit, error_class,
 
 
 def assert_array_greater_eq(array, limit, error_class,
-                            msg='', index_offset=''):
+                            msg='', index_offset=0):
     '''Assert all array elements are greater than or equal to x.
 
     Parameters
@@ -301,7 +301,7 @@ def assert_array_greater_eq(array, limit, error_class,
 
 
 def assert_array_less(array, limit, error_class,
-                      msg='', index_offset=''):
+                      msg='', index_offset=0):
     '''Assert all array elements are less than x.
 
     Parameters
@@ -322,7 +322,7 @@ def assert_array_less(array, limit, error_class,
 
 
 def assert_array_less_eq(array, limit, error_class,
-                         msg='', index_offset=''):
+                         msg='', index_offset=0):
     '''Assert all array elements are less than or equal to x.
 
     Parameters
@@ -529,53 +529,26 @@ def assert_frame_inputs(frame):
     '''
     assert_greater(frame.nframes, 'nr of frames', 0, expt.InputError)
     assert_inrange(frame.skip_frames, 'skip frames',
-                   0, frame.nframes, expt.InputError)
+                   0, frame.nframes-1, expt.InputError)
     assert_greater(frame.nbins_frame, 'frame length', 0, expt.InputError)
     assert_inrange(frame.skip_bins_start, 'skip bins start',
-                   0, frame.nbins_frame, expt.InputError)
+                   0, frame.nbins_frame-1, expt.InputError,
+                   'The number of skipped bins in for a frame cannot'
+                   'exceed the number of bins in that same frame')
     assert_inrange(frame.skip_bins_end, 'skip bins end',
-                   0, frame.nbins_frame, expt.InputError)
+                   0, frame.nbins_frame-1, expt.InputError,
+                   'The number of skipped bins in for a frame cannot'
+                   'exceed the number of bins in that same frame')
+    assert_less(frame.skip_bins_start + frame.skip_bins_end,
+                'total bins skipped', frame.nbins_frame, expt.InputError,
+                'The number of skipped bins in for a frame cannot'
+                'exceed the number of bins in that same frame')
     assert_greater_or_equal(frame.rebin, 're-binning factor',
                             1, expt.InputError)
-
-
-def assert_parameter_arrays(machine):
-    '''Assert that the calculated turn-by-turn values of a machine
-    object are valid.
-    
-    Parameters
-    ----------
-    machine: Machine
-        Machine object to be asserted.
-
-    Raises
-    ------
-    InputError
-        Raised if the number bins is invalid.
-    UnequalArrayShapes
-        Raised if the calculated arrays have incorrect shapes.
-    '''
-    assert_greater_or_equal(machine._nbins, 'profile length', 0,
-                            expt.InputError,
-                            f'Make sure that the sum of post- and'
-                            f'pre-skip length is less'
-                            f'than the frame length\n'
-                            f'frame length: {machine.framelength}\n'
-                            f'pre-skip length: {machine.preskip_length}\n'
-                            f'post-skip length: {machine.postskip_length}')
-    assert_array_shape_equal([machine.time_at_turn, machine.omega_rev0,
-                              machine.phi0, machine.dphase, machine.deltaE0,
-                              machine.beta0, machine.eta0, machine.e0],
-                             ['time_at_turn', 'omega_re0',
-                              'phi0', 'dphase', 'deltaE0',
-                              'beta0', 'eta0', 'e0'],
-                             (machine._calc_number_of_turns() + 1, ))
-
 
 # =========================================================
 #                     ASSERTION UTILITIES
 # =========================================================
-
 
 # Generate standard error message for asserting scalars.
 def _write_std_err_msg(var_name, var, limit, operator, extra):
@@ -585,6 +558,6 @@ def _write_std_err_msg(var_name, var, limit, operator, extra):
     error_message += f'\n{extra}'
     return error_message
 
-def assert_var_not_none(var_name, var, error_class):
+def assert_var_not_none(var, var_name, error_class):
     if var is None:
         raise error_class(f'{var_name} cannot be of type None')
