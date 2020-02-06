@@ -53,8 +53,8 @@ class TomographyCpp(stmo.Tomography):
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
     '''
-    def __init__(self, waterfall, x_coords=None):
-        super().__init__(waterfall, x_coords)
+    def __init__(self, waterfall, x_coords=None, y_coords=None):
+        super().__init__(waterfall, x_coords, y_coords)
 
     def run_hybrid(self, niter=20, verbose=False):
         '''Function to perform tomographic reconstruction, implemented
@@ -179,7 +179,7 @@ class TomographyCpp(stmo.Tomography):
         flat_profiles = np.ascontiguousarray(
                         self.waterfall.flatten().astype(np.float64))
 
-        weight, self.diff = tlw.reconstruct(weight, self.xp, flat_profiles,
+        self.weight, self.diff = tlw.reconstruct(weight, self.xp, flat_profiles,
                                             self.diff, niter, self.nbins,
                                             self.nparts, self.nprofs, verbose)
-        return weight
+        return self.weight
