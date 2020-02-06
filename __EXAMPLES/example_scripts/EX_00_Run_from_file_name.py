@@ -9,4 +9,15 @@ import tomo.utils.tomo_run as tomorun
 
 ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
 in_file_pth = '/'.join(ex_dir + ['/input_files/flatTopINDIVRotate2.dat'])
-tomorun.run_file(in_file_pth)
+tRange, ERange, density = tomorun.run_file(in_file_pth)
+
+#%%
+
+vmin = np.min(density[density>0])
+vmax = np.max(density)
+
+plt.contourf(tRange*1E9, ERange/1E6, density.T, 
+             levels=np.linspace(vmin, vmax, 50), cmap='Oranges')
+plt.xlabel("dt (ns)")
+plt.ylabel("dE (MeV)")
+plt.show()

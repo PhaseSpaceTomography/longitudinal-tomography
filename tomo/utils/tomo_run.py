@@ -9,6 +9,7 @@ from ..utils import tomo_output as tomoout
 from ..tracking import particles as pts
 
 def run_file(file, reconstruct_profile = None):
+    
     with open(file, 'r') as file:
         raw_params, raw_data = tomoin._split_input(file.readlines())
     
@@ -16,8 +17,8 @@ def run_file(file, reconstruct_profile = None):
     machine.values_at_turns()
     waterfall = frames.to_waterfall(raw_data)
     
-    profiles = tomoin.raw_data_to_profiles(
-                    waterfall, machine, frames.rebin, frames.sampling_time)
+    profiles = tomoin.raw_data_to_profiles(waterfall, machine, frames.rebin, 
+                                           frames.sampling_time)
     profiles.calc_profilecharge()
     
     if profiles.machine.synch_part_x < 0:
@@ -44,11 +45,7 @@ def run_file(file, reconstruct_profile = None):
     xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
     
     # Tomography!
-    tomo = tomography.TomographyCpp(profiles.waterfall, xp)
-    weight = tomo.run(verbose=False)
+    tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
+    _ = tomo.run(verbose=False)
     
-    # Creating and presenting phase-space image
-    nbins = profiles.machine.nbins
-    image = tomoout.create_phase_space_image(xp, yp, weight, nbins, reconstr_idx)
-    
-    tomoout.show(image, tomo.diff, profiles.waterfall[reconstr_idx])
+    return dtreat.phase_space(tomo, machine, profile = reconstr_idx)
