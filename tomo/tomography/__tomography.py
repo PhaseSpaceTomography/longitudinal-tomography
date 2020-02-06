@@ -44,7 +44,7 @@ class Tomography:
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
     '''
-    def __init__(self, waterfall, x_coords=None):
+    def __init__(self, waterfall, x_coords=None, y_coords=None):
         self._waterfall = waterfall.clip(0.0)
         self._waterfall = self._normalize_profiles(self.waterfall)
         
@@ -52,6 +52,7 @@ class Tomography:
         self._nbins = self.waterfall.shape[1]
 
         self.xp = x_coords
+        self.yp = y_coords
 
         self.recreated = np.zeros(self.waterfall.shape)
         self.diff = None
