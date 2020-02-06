@@ -110,6 +110,7 @@ class Particles(object):
         psinfo.find_binned_phase_energy_limits()
         
         self.dEbin = psinfo.dEbin
+        machine.dEbin = self.dEbin
         self.xorigin = psinfo.xorigin
 
         nbins_y = np.sum(psinfo.jmax[psinfo.imin: psinfo.imax + 1]
