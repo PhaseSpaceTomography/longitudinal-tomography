@@ -200,7 +200,7 @@ class Tracking(ptracker.ParticleTracker):
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
             dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                         nparts, turn)
+                             nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
             denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
