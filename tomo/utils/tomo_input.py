@@ -9,7 +9,7 @@ import sys
 
 from ..data import profiles as profs
 from ..tracking import machine as mach
-from . import data_treatment as threat
+from . import data_treatment as treat
 from . import exceptions as expt
 from . import assertions as asrt
 
@@ -20,7 +20,7 @@ OUTPUT_DIR_IDX = 14
 
 
 class Frames:
-    '''Class for storing raw data and information on how to threat them,
+    '''Class for storing raw data and information on how to treat them,
     based on a Fortran style input file.
 
     Parameters
@@ -426,9 +426,10 @@ def _min_max_dt(nbins, input_array):
     return min_dt, max_dt
 
 
-def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
+def raw_data_to_profiles(waterfall, machine, rbn,
+                         sampling_time, synch_part_x=None):
     '''Function to convert from waterfall of raw data to
-    threated waterfall saved in a Profiles object.
+    treated waterfall saved in a Profiles object.
 
     Contains all functionality used by the original Fortran
     program. Works on copy of provided waterfall.
@@ -436,6 +437,9 @@ def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
     - Subtracts baseline
     - Rebin profiles
     - Creates Profiles object to store waterfall
+    
+    **NB: dtbin and synch_part_x of the provided machine object
+    will be updated.** 
 
     Parameters
     ----------
@@ -447,14 +451,30 @@ def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
         Rebinning factor - Number of frame bins to rebin into one profile bin.
     sampling_time: float
         Size of profile bins [s].
+    synch_part_x: (optional) float
+        X-coordinate of synchronous particle. If not given as argument,
+        the machine.synch_part_x will be used.
+    
+    Returns
+    -------
+    profile: Profiles
+        Profiles object holding the waterfall, and information about the
+        measurements. 
+
     '''
     if not hasattr(waterfall, '__iter__'):
         raise expt.WaterfallError('Waterfall should be an iterable')
+    if synch_part_x is None:
+        synch_part_x = machine.synch_part_x
+
     waterfall = np.array(waterfall)
     # Subtracting baseline
-    waterfall[:] -= threat.calc_baseline_ftn(
+    waterfall[:] -= treat.calc_baseline_ftn(
                         waterfall, machine.beam_ref_frame)
     # Rebinning
-    waterfall = threat.rebin(waterfall, rbn, machine)
+    (waterfall,
+     machine.dtbin,
+     machine.synch_part_x) = treat.rebin(
+                                waterfall, rbn, sampling_time, synch_part_x)
     # Returnin Profiles object.
     return profs.Profiles(machine, sampling_time, waterfall)

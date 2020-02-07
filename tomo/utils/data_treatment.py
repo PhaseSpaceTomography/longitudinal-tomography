@@ -49,7 +49,7 @@ def calc_baseline_ftn(waterfall, ref_prof, percent=0.05):
     return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
 
 
-def rebin(waterfall, rbn, machine=None, dtbin=None):
+def rebin(waterfall, rbn, dtbin=None, synch_part_x=None):
     '''Rebin waterfall from shape (nprofiles, xbins) to (nprofiles, ybins).
     Based on the rebinning function from the original Fortran program.  
     
@@ -59,13 +59,12 @@ def rebin(waterfall, rbn, machine=None, dtbin=None):
         Raw-data shaped as waterfall (nprofiles, nbins).
     rbn: int
         Rebinning factor. New number of bins will be nbins/rbn.
-    machine: Machine
-        Object containing machine parameters. If provided, the field
-        holding the number of bins in the profile measurement
-        will be updated.
     dtbin: float
         Size of profile bins [s]. If provided, the function
         will return the new size of the bins after rebinning.
+    synch_part_x: float
+        x-coordinate of synchronous particle, measured in bins.
+        If provided, the function will return its updated coordinate. 
 
     Returns
     -------
@@ -74,6 +73,11 @@ def rebin(waterfall, rbn, machine=None, dtbin=None):
     dtbin: float
         (optional) If a dtbin has been provided in the arguments, the
         new size of the profile bins will be returned.
+        If it is not provided, None will be returned.
+    synch_part_x: float
+        (optional) If a synch_part_x has been provided in the arguments, the
+        new x-coordinate of the synchronous particle in bins will be returned.
+        If it is not provided, None will be returned. 
     '''
     data = np.copy(waterfall)
 
@@ -83,14 +87,12 @@ def rebin(waterfall, rbn, machine=None, dtbin=None):
     else:
         rebinned = _rebin_individable(data, rbn)
 
-    if machine is not None:
-        machine.dtbin *= rbn
-        machine.synch_part_x /= float(rbn)
-
     if dtbin is not None:
-        return rebinned, dtbin * rbn
-    else:
-        return rebinned
+        dtbin *= rbn
+    if synch_part_x is not None:
+        synch_part_x /= rbn
+
+    return rebinned, dtbin, synch_part_x
 
 
 # Rebins an 2d array given a rebin factor (rbn).

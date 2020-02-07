@@ -72,7 +72,10 @@ class TestDataTreatment(unittest.TestCase):
                               [10, 21, 32, 43, 54, 65, 76, 86, 97]],
                              dtype=float)
         rbn = 2
-        rebinned = treat.rebin(waterfall, rbn, machine=machine)
+        (rebinned,
+         out_dtbin,
+         out_sync_pt_x) = treat.rebin(waterfall, rbn, machine.dtbin,
+                                      machine.synch_part_x)
 
         correct_rebinned = np.array([[3.0, 7.0, 11.0, 15.0, 16.0],
                                      [31.0, 75.0, 119.0, 162.0, 172.66666667]])
@@ -84,13 +87,13 @@ class TestDataTreatment(unittest.TestCase):
         # Checks that the x coordinate of synchronous particle
         # is updated to fit the new number of bins. 
         updated_synch_part_x = 2.265
-        self.assertAlmostEqual(machine.synch_part_x, updated_synch_part_x,
+        self.assertAlmostEqual(out_sync_pt_x, updated_synch_part_x,
                                msg='Error in updated synch part x')
 
         # Checks that the size of the bins are updated
         # is updated to fit the new number of bins.
         updated_dtbin = 1.07
-        self.assertAlmostEqual(machine.dtbin, updated_dtbin,
+        self.assertAlmostEqual(out_dtbin, updated_dtbin,
                                msg='Error in updated dtbin')
 
     def test_rebin_even_correct(self):
@@ -103,7 +106,10 @@ class TestDataTreatment(unittest.TestCase):
                               [10, 21, 32, 43, 54, 65, 76, 86]],
                              dtype=float)
         rbn = 2
-        rebinned = treat.rebin(waterfall, rbn, machine=machine)
+        (rebinned,
+         out_dtbin,
+         out_sync_pt_x) = treat.rebin(waterfall, rbn, machine.dtbin,
+                                      machine.synch_part_x)
 
         correct_rebinned = np.array([[3.0, 7.0, 11.0, 15.0],
                                      [31.0, 75.0, 119.0, 162.0]])
@@ -115,31 +121,14 @@ class TestDataTreatment(unittest.TestCase):
         # Checks that the x coordinate of synchronous particle
         # is updated to fit the new number of bins. 
         updated_synch_part_x = 2.265
-        self.assertAlmostEqual(machine.synch_part_x, updated_synch_part_x,
+        self.assertAlmostEqual(out_sync_pt_x, updated_synch_part_x,
                                msg='Error in updated synch part x')
 
         # Checks that the size of the bins are updated
         # is updated to fit the new number of bins.
         updated_dtbin = 1.07
-        self.assertAlmostEqual(machine.dtbin, updated_dtbin,
+        self.assertAlmostEqual(out_dtbin, updated_dtbin,
                                msg='Error in updated dtbin')
-
-    def test_rebin_dtbin_update_correct(self):
-        machine = mch.Machine(**MACHINE_ARGS)
-        machine.nbins = 8
-        machine.synch_part_x = 4.53
-        machine.dtbin = 0.535
-
-        waterfall = np.array([[1, 2, 3, 4, 5, 6, 7, 8],
-                              [10, 21, 32, 43, 54, 65, 76, 86]],
-                             dtype=float)
-        rbn = 2
-        _, dtbin = treat.rebin(waterfall, rbn, dtbin=machine.dtbin)
-
-        correct = 1.07
-        self.assertEqual(dtbin, correct, msg='error in calculation of '
-                                             'updated dtbin')
-
 
     def test_fit_synch_part_x_correct_x_coord(self):
         machine = mch.Machine(**MACHINE_ARGS)
