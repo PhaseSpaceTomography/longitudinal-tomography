@@ -8,30 +8,9 @@ import numpy.testing as nptest
 import os
 import unittest
 
-import tomo.tomography.tomography_cpp as tmo
+import tomo.tomography.tomography as tmo
 import tomo.utils.exceptions as expt
 
-'''TO TEST
-
-run_hybrid
- - self.xp is none fails                    [OK]
- - correct output                           []
- - waterfall reduced to zero                [OK]
-
-run
- - self.xp is none fails                    [OK]
- - correct output                           [OK]
- - reduced to zero?                         [HOW?]
-
-set xp
- - not iterable fails                       [OK]
- - number of dimentions is not two fails    [OK]
- - wrong number of profiles fails           [OK]
- - particle outside of image fails          [OK]
- - Particles can be set to None             [OK]
- - input_waterfall is <= 0                  [OK]
-
-'''
 
 class TestTomographyCpp(unittest.TestCase):
 

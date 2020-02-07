@@ -2,7 +2,7 @@ import sys
 
 # Tomo modules
 from ..tracking import tracking as tracking
-from ..tomography import tomography_cpp as tomography
+from ..tomography import tomography as tomography
 from ..utils import data_treatment as dtreat
 from ..utils import tomo_input as tomoin
 from ..utils import tomo_output as tomoout

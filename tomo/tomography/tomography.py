@@ -98,7 +98,7 @@ class TomographyCpp(stmo.Tomography):
         weight = np.zeros(self.nparts)
         
         weight = tlw.back_project(weight, flat_points, flat_profs,
-                              self.nparts, self.nprofs)
+                                  self.nparts, self.nprofs)
         weight = weight.clip(0.0)
 
         if verbose:

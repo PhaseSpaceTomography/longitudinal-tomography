@@ -38,20 +38,20 @@ def adjust_outpath(output_path):
 #                           PROFILES                              #
 # --------------------------------------------------------------- #
 
-def save_profile_ftn(profiles, rec_prof, output_dir):
+def save_profile_ftn(profiles, recprof, output_dir):
     '''Write phase-space image to text-file in tomoscope format.
     
     Parameters
     ----------
     profiles: ndarray
         Profile measurements as a 2D array with the shape: (nprofiles, nbins).
-    rec_prof: int
+    recprof: int
         Index of profile to be saved.
     output_dir: string
         Path to output directory.
     '''
-    out_profile = profiles[rec_prof].flatten()
-    file_path = f'{output_dir}profile{rec_prof + 1:03d}.data'
+    out_profile = profiles[recprof].flatten()
+    file_path = f'{output_dir}profile{recprof + 1:03d}.data'
     with open(file_path, 'w') as f:
         for element in out_profile:    
             f.write(f' {element:0.7E}\n')
@@ -77,25 +77,25 @@ def save_self_volt_profile_ftn(self_fields, output_dir):
 #                         PHASE-SPACE                             #
 # --------------------------------------------------------------- #
 
-def save_phase_space_ftn(image, rec_prof, output_path):
+def save_phase_space_ftn(image, recprof, output_path):
     '''Save phase-space image in a tomoscope format.
 
     Parameters
     ----------
     image: ndarray
         Recreated phase-space.
-    rec_prof: int
+    recprof: int
         Index of reconstructed profile.
     output_dir: string
         Path to output directory.
     '''
-    log.info(f'Saving image{rec_prof} to {output_path}')
+    log.info(f'Saving image{recprof} to {output_path}')
     image = image.flatten()
-    with open(f'{output_path}image{rec_prof + 1:03d}.data', 'w') as f:
+    with open(f'{output_path}image{recprof + 1:03d}.data', 'w') as f:
         for element in image:
             f.write(f'  {element:0.7E}\n')
 
-def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
+def create_phase_space_image(xp, yp, weight, n_bins, recprof):
     '''Convert from weighted particles to phase-space image.
 
     Output is equal to the phase space image created by the Fortran version. 
@@ -114,7 +114,7 @@ def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
         Array containing the weight of each particle.
     n_bins: int
         Number of bins in a profile measurment.
-    rec_prof: int
+    recprof: int
         Index of reconstructed profile.
     
     Returns
@@ -124,10 +124,11 @@ def create_phase_space_image(xp, yp, weight, n_bins, rec_prof):
         format as the image produced by the Fortran version.
 
     '''
+
     phase_space = np.zeros((n_bins, n_bins))
     
     # Creating n_bins x n_bins phase-space image
-    for x, y, w in zip(xp[:, rec_prof], yp[:, rec_prof], weight):
+    for x, y, w in zip(xp[:, recprof], yp[:, recprof], weight):
         phase_space[x, y] += w
     
     # Removing (if any) negative areas.
@@ -160,8 +161,8 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
         The returned string has the same format as in the Fortran version.
 
     '''
-    rec_prof = machine.filmstart
-    rec_turn = rec_prof * machine.dturns
+    recprof = machine.filmstart
+    rec_turn = recprof * machine.dturns
 
     # Check if a Fortran styled fit has been performed.
     fit_performed = True
@@ -212,18 +213,18 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
             f' tangentfootu =    {bunchlimit_up:.3f}\n'\
             f' fit xat0 =   {fitted_synch_part_x:.3f}\n'\
             f'Synchronous phase (in radians):\n'\
-            f' phi0( {rec_prof+1}) = {machine.phi0[rec_turn]:.4f}\n'\
+            f' phi0( {recprof+1}) = {machine.phi0[rec_turn]:.4f}\n'\
             f'Horizontal range (in pixels) of the region in '\
               f'phase space of map elements:\n'\
-            f' imin( {rec_prof+1}) =   {particles.imin} and '\
-            f'imax( {rec_prof+1}) =  {particles.imax}'
+            f' imin( {recprof+1}) =   {particles.imin} and '\
+            f'imax( {recprof+1}) =  {particles.imax}'
     return out_s
 
 # --------------------------------------------------------------- #
 #                         DISCREPANCY                             #
 # --------------------------------------------------------------- #
 
-def save_difference_ftn(diff, output_path, rec_prof):
+def save_difference_ftn(diff, output_path, recprof):
     '''Write reconstruction discrepancy to text file
     with tomoscope format.
 
@@ -234,11 +235,11 @@ def save_difference_ftn(diff, output_path, rec_prof):
         phase space at each iteration.
     output_dir: string
         Path to output directory.
-    rec_prof: int
+    recprof: int
         Index of profile to be saved.
     '''
     log.info(f'Saving saving difference to {output_path}')
-    with open(f'{output_path}d{rec_prof + 1:03d}.data', 'w') as f:
+    with open(f'{output_path}d{recprof + 1:03d}.data', 'w') as f:
         for i, d in enumerate(diff):
             f.write(f'         {i:3d}  {d:0.7E}\n')
 
@@ -258,7 +259,7 @@ def print_tracking_status_ftn(ref_prof, to_profile):
 
     Parameters
     ----------
-    rec_prof: int
+    recprof: int
         Index of profile to be reconstructed.
     to_profile: int
         Profile the algorithm is currently tracking towards.
@@ -270,7 +271,7 @@ def print_tracking_status_ftn(ref_prof, to_profile):
 #                         END PRODUCT                             #
 # --------------------------------------------------------------- #
 
-def show(image, diff, rec_profile):
+def show(image, diff, recprof):
     '''Nice presentation of reconstruction.
     
     Parameters
@@ -283,8 +284,8 @@ def show(image, diff, rec_profile):
         The measured profile to be reconstructed
     '''
 
-    # Normalizing rec_profile:
-    rec_profile[:] /= np.sum(rec_profile) 
+    # Normalizing recprof:
+    recprof[:] /= np.sum(recprof) 
 
     # Creating plot
     gs = gridspec.GridSpec(4, 4)
@@ -299,7 +300,7 @@ def show(image, diff, rec_profile):
     cimg = img.imshow(image.T, origin='lower',
                       interpolation='nearest', cmap='hot')
 
-    profs1.plot(rec_profile, label='measured')
+    profs1.plot(recprof, label='measured')
     profs1.plot(np.sum(image, axis=1),
                 label='reconstructed')
     profs1.legend()
