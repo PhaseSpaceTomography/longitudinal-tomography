@@ -5,6 +5,7 @@
 
 import numpy as np
 from scipy import optimize
+import itertools as itl
 
 from . import assertions as asrt
 from . import exceptions as expt
@@ -274,11 +275,23 @@ def _make_phase_space(xp, yp, weights, nbins):
     return phaseSpace
     
     
+# Converts the result of tomography to a distribution in phase space
+def convert_to_macroparticles(tomo, machine, profile, n_macro, 
+                              density_thresh = 1E-5):
     
+    tRange, ERange, density = phase_space(tomo, machine, profile)
     
+    sumDens = np.sum(density)
+    density[density/sumDens < density_thresh] = 0
     
+    prob = density.flatten()
+    prob = prob/np.sum(prob)
+    coords = np.array(list(itl.product(tRange, ERange)))
+    n_macro=int(n_macro)
     
-    
-    
-    
+    samples = np.random.choice(prob.shape[0], n_macro, p=prob)
 
+    dt = coords[samples, 0] + machine.dtbin*(np.random.random(n_macro)-0.5)
+    dE = coords[samples, 1] + machine.dEbin*(np.random.random(n_macro)-0.5)
+    
+    return (dt, dE)
