@@ -8,7 +8,7 @@ import numpy as np
 import logging as log
 
 from ..utils import tomo_output as tomoout 
-from . import particle_tracker as ptracker
+from . import __tracking as ptracker
 from ..cpp_routines import tomolib_wrappers as tlw
 
 class Tracking(ptracker.ParticleTracker):
