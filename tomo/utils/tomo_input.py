@@ -458,15 +458,3 @@ def raw_data_to_profiles(waterfall, machine, rbn, sampling_time):
     waterfall = threat.rebin(waterfall, rbn, machine)
     # Returnin Profiles object.
     return profs.Profiles(machine, sampling_time, waterfall)
-
-
-
-def run_file(file):
-    print(file)
-    with open(file, 'r') as file:
-        raw_params, raw_data = _split_input(file.readlines())
-    
-    machine, frames = tomoin.txt_input_to_machine(raw_param)
-    machine.values_at_turns()
-    waterfall = frames.to_waterfall(raw_data)
-
