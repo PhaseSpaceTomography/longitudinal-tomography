@@ -114,8 +114,9 @@ class Frames:
         if len(in_raw_data) == ndata:
             self._raw_data = np.array(in_raw_data)
         else:
-            expt.RawDataImportError(f'Raw data has length {len(raw_data)}.\n'
-                                    f'expected length: {ndata}')
+            raise expt.RawDataImportError(
+                    f'Raw data has length {len(in_raw_data)}.\n'
+                    f'expected length: {ndata}')
 
     def nprofs(self):
         '''Function to calculate number of profiles.
