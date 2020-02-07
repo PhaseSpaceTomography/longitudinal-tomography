@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 import tomo.tracking.particles as parts
-import tomo.tomography.tomography_cpp as tomography
+import tomo.tomography.tomography as tomography
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 

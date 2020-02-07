@@ -8,7 +8,7 @@ import numpy.testing as nptest
 import os
 import unittest
 
-import tomo.tomography.tomography_cpp as tmo
+import tomo.tomography.tomography as tmo
 import tomo.utils.exceptions as expt
 
 

@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 import tomo.utils.data_treatment as dtreat
-import tomo.tomography.tomography_cpp as tomography
+import tomo.tomography.tomography as tomography
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
