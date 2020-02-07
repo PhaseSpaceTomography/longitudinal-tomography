@@ -12,7 +12,6 @@ import sys
 from ..utils import exceptions as expt
 
 
-# TODO: Check if windows.
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__))
 
 # Setting system spescific parameters
@@ -271,7 +270,10 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     elif len(args) == 7:
         track_args += args
     else:
-        raise expt.InputError('Missing arguments.')
+        raise expt.InputError(
+            'Wrong amount of arguments.\n'
+            '*args are: phi0, deltaE0, omega_rev0, '
+            'drift_coef, phi12, h_ratio, dturns')
     
     track_args += [rec_prof, nturns, nparts, ftn_out]
 

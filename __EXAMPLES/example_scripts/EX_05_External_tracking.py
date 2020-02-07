@@ -4,7 +4,7 @@ import os
 from scipy import constants
 import sys
 
-import tomo.tomography.tomography_cpp as tomography
+import tomo.tomography.tomography as tomography
 import tomo.utils.tomo_output as tomoout
 import tomo.utils.data_treatment as dtreat
 

@@ -7,8 +7,9 @@ from numba import njit
 import numpy as np
 import logging as log
 
+from ..utils import assertions as asrt
 from ..utils import tomo_output as tomoout 
-from . import particle_tracker as ptracker
+from . import __tracking as ptracker
 from ..cpp_routines import tomolib_wrappers as tlw
 
 class Tracking(ptracker.ParticleTracker):
@@ -78,6 +79,7 @@ class Tracking(ptracker.ParticleTracker):
         recprof: int
             Time frame to set as start-profile.
             Here the particle will have its initial distribution.
+            Negative values starts counting from last profile.
         init_distr: tuple, (ndarray, ndarray)
             An optional initial distributin. Must be given as a tuple of
             coordinates (dphi, denergy). dphi is the phase difference
@@ -105,6 +107,10 @@ class Tracking(ptracker.ParticleTracker):
               energy [eV] relative to the synchronous particle.
 
         '''
+ 
+        recprof = asrt.assert_index_ok(
+                    recprof, self.machine.nprofiles, wrap_around=True)
+
         if init_distr is None:
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
@@ -200,7 +206,7 @@ class Tracking(ptracker.ParticleTracker):
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
             dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                         nparts, turn)
+                             nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
             denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,

@@ -6,7 +6,7 @@ import numpy as np
 
 # Tomo modules
 import tomo.tracking.tracking as tracking
-import tomo.tomography.tomography_cpp as tomography
+import tomo.tomography.tomography as tomography
 import tomo.utils.data_treatment as dtreat
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout

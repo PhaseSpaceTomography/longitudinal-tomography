@@ -59,6 +59,10 @@ class RawDataImportError(Exception):
 class ArgumentError(Exception):
     pass
 
+
+class NegativeIndexError(IndexError):
+    pass
+
 # ===========================
 # Time space Exceptions
 # ===========================
