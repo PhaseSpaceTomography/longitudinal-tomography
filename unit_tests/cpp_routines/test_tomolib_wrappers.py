@@ -53,30 +53,6 @@ MACHINE_ARGS = {
     }
 
 
-'''TO TEST
-
-kick
-    - up                            [OK]
-    - down                          [OK]
-
-drift
-    - up                            [OK]
-    - down                          [OK]
-
-kick_and_drift
-    - machine as arg correct        [OK]
-    - nargs = 7 correct             [OK]
-    - wrong nargs = error           [OK]
-
-back_project                        [OK]
-
-project                             [OK]
-
-reconstruct                         []
-
-'''
-
-
 class TestTLW(unittest.TestCase):
 
     def test_kick_up_correct(self):
