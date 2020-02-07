@@ -159,13 +159,13 @@ def fit_synch_part_x(profiles):
     -------
     fitted_synch_part_x
         X coordinate in the phase space coordinate system of the synchronous
-        particle.
+        particle given in bin numbers. 
     tfoot_low
-        Estimation of the lower bunch limit.
+        Estimation of the lower bunch limit in bin numbers.
         Needed for 'print plot info' function in order to have
         the original output format.
     tfoot_up
-        Estimation of the upper bunch limit.
+        Estimation of the upper bunch limit in bin numbers.
         Needed for 'print plot info' function in order to have
         the original output format.
     
