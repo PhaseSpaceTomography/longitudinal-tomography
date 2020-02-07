@@ -547,6 +547,52 @@ def assert_frame_inputs(frame):
                             1, expt.InputError)
 
 # =========================================================
+#                      INDEX ASSERTIONS
+# =========================================================
+
+
+'''Assert index is valid.
+ 
+Assert that index is within bounds [0, index limit).
+Wrap_around for negative indices can be enabled.
+
+Parameters
+----------
+index: int
+    Index to be tested.
+index limit: int
+    Maximum index + 1
+wrap_around: (optional), bool
+    Set to true to enable wrap around for negative indices.  
+
+Returns
+-------
+index: int
+    Asserted index from 0 to index_limit-1.
+
+Raises
+------
+IndexError: Exception
+    Index out of bounds.
+NegativeIndexError: Exception
+    Negative index given without setting wrap_around=True
+
+'''
+def assert_index_ok(index, index_limit, wrap_around=False):
+    index = int(index)
+    if index < 0:
+        if not wrap_around:
+            raise expt.NegativeIndexError('Index cannot be negative')
+        elif index_limit + index < 0:
+            raise IndexError('Index is out of bounds')
+        else:
+            index += index_limit
+    else:
+        if index >= index_limit:
+            raise IndexError('Index is out of bounds')
+    return index
+
+# =========================================================
 #                     ASSERTION UTILITIES
 # =========================================================
 
