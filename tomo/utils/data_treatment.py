@@ -283,8 +283,18 @@ def convert_to_macroparticles(tomo, machine, profile, n_macro,
     
     tRange, ERange, density = phase_space(tomo, machine, profile)
     
+    return density_to_macro(tRange, ERange, density, n_macro, density_thresh)
+
+
+# Takes a time range, energy range and density function and converts it to
+# n_macro number macroparticles to reproduce the distribution
+def density_to_macro(tRange, ERange, density, n_macro, threshold = 1E-5):
+    
+    dtbin = tRange[1] - tRange[0]
+    dEbin = ERange[1] - ERange[0]
+    
     sumDens = np.sum(density)
-    density[density/sumDens < density_thresh] = 0
+    density[density/sumDens < threshold] = 0
     
     prob = density.flatten()
     prob = prob/np.sum(prob)
@@ -293,7 +303,8 @@ def convert_to_macroparticles(tomo, machine, profile, n_macro,
     
     samples = np.random.choice(prob.shape[0], n_macro, p=prob)
 
-    dt = coords[samples, 0] + machine.dtbin*(np.random.random(n_macro)-0.5)
-    dE = coords[samples, 1] + machine.dEbin*(np.random.random(n_macro)-0.5)
+    dt = coords[samples, 0] + dtbin*(np.random.random(n_macro)-0.5)
+    dE = coords[samples, 1] + dEbin*(np.random.random(n_macro)-0.5)
     
-    return (dt, dE)
+    return dt, dE
+    
