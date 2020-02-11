@@ -7,9 +7,12 @@ in the Fortran program.
 '''
 
 import numpy as np
+import os
 import logging as log
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+
+from . import exceptions as expt
 
 
 # --------------------------------------------------------------- #
@@ -40,6 +43,8 @@ def adjust_outpath(output_path):
 
 def save_profile_ftn(profiles, recprof, output_dir):
     '''Write phase-space image to text-file in tomoscope format.
+    The name of the file will be profileXXX.data, where XXX is the index
+    of the time frame to be reconstructed counting from one.
     
     Parameters
     ----------
@@ -51,10 +56,10 @@ def save_profile_ftn(profiles, recprof, output_dir):
         Path to output directory.
     '''
     out_profile = profiles[recprof].flatten()
-    file_path = f'{output_dir}profile{recprof + 1:03d}.data'
+    file_path = os.path.join(output_dir, f'profile{recprof + 1:03d}.data')
     with open(file_path, 'w') as f:
         for element in out_profile:    
-            f.write(f' {element:0.7E}\n')
+            f.write(f' {element:0.7E}\r\n')
 
 
 def save_self_volt_profile_ftn(self_fields, output_dir):
@@ -68,10 +73,10 @@ def save_self_volt_profile_ftn(self_fields, output_dir):
         Path to output directory.
     '''
     out_profile = self_fields.flatten()
-    file_path = f'{output_dir}vself.data'
+    file_path = os.path.join(output_dir, 'vself.data')
     with open(file_path, 'w') as f:
         for element in out_profile:    
-            f.write(f' {element:0.7E}\n')
+            f.write(f' {element:0.7E}\r\n')
 
 # --------------------------------------------------------------- #
 #                         PHASE-SPACE                             #
@@ -83,7 +88,7 @@ def save_phase_space_ftn(image, recprof, output_path):
     Parameters
     ----------
     image: ndarray
-        Recreated phase-space.
+        2D array holding the weight of each cell of the recreated phase-space.
     recprof: int
         Index of reconstructed profile.
     output_dir: string
@@ -91,9 +96,10 @@ def save_phase_space_ftn(image, recprof, output_path):
     '''
     log.info(f'Saving image{recprof} to {output_path}')
     image = image.flatten()
-    with open(f'{output_path}image{recprof + 1:03d}.data', 'w') as f:
+    file_path = os.path.join(output_path, f'image{recprof + 1:03d}.data')
+    with open(file_path, 'w') as f:
         for element in image:
-            f.write(f'  {element:0.7E}\n')
+            f.write(f'  {element:0.7E}\r\n')
 
 def create_phase_space_image(xp, yp, weight, n_bins, recprof):
     '''Convert from weighted particles to phase-space image.
@@ -183,11 +189,13 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
 
 
     if particles.dEbin is None:
-        raise AssertionError('dEbin has not been calculated for this '
+        raise expt.EnergyBinningError(
+                             'dEbin has not been calculated for this '
                              'phase space info object.\n'
                              'Cannot print plot info.')
     if particles.imin is None or particles.imax is None:
-        raise AssertionError('The limits in phase (I) has not been found '
+        raise expt.PhaseLimitsError(
+                             'The limits in phase (I) has not been found '
                              'for this phase space info object.\n'
                              'Cannot print plot info.')  
 
@@ -239,7 +247,8 @@ def save_difference_ftn(diff, output_path, recprof):
         Index of profile to be saved.
     '''
     log.info(f'Saving saving difference to {output_path}')
-    with open(f'{output_path}d{recprof + 1:03d}.data', 'w') as f:
+    file_path = os.path.join(output_path, f'd{recprof + 1:03d}.data')
+    with open(file_path, 'w') as f:
         for i, d in enumerate(diff):
             f.write(f'         {i:3d}  {d:0.7E}\n')
 
