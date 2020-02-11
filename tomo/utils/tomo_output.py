@@ -14,29 +14,6 @@ import matplotlib.gridspec as gridspec
 
 from . import exceptions as expt
 
-
-# --------------------------------------------------------------- #
-#                           GENERAL                               #
-# --------------------------------------------------------------- #
-
-def adjust_outpath(output_path):
-    '''Functions which assurs that the given uotput path ends
-    on a slash.
-    
-    Parameters
-    ----------
-    output_path: string
-        Path to output directory.
-    
-    Returns
-    -------
-    output_path: string
-        Path to output directory ending on a slash.
-    '''
-    if output_path[-1] != '/':
-        output_path += '/'
-    return output_path
-
 # --------------------------------------------------------------- #
 #                           PROFILES                              #
 # --------------------------------------------------------------- #
