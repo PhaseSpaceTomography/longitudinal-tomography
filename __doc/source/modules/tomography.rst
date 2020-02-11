@@ -12,7 +12,7 @@ tomography Package
 :mod:`tomography_cpp` Module
 ----------------------------
 
-.. automodule:: tomo.tomography.tomography_cpp
+.. automodule:: tomo.tomography.tomography
     :members:
     :undoc-members:
     :show-inheritance:
