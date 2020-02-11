@@ -63,7 +63,7 @@ MACHINE_ARGS = {
     'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
 }
 
-class TestPhysics(unittest.TestCase):
+class TestTomoIn(unittest.TestCase):
 
     # Tests for frame class
     # ---------------------
