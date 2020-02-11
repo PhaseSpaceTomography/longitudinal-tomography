@@ -9,9 +9,9 @@ import tomo.tomography.tomography as tomography
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 
-ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
 file_name = 'C550MidPhaseNoise.dat'
-in_file_pth = '/'.join(ex_dir + [f'/input_files/{file_name}'])
+ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
+in_file_pth = os.path.join(ex_dir, 'input_files', file_name)
 
 parameter_lines = 98
 input_parameters = []

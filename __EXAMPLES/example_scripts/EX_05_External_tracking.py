@@ -57,8 +57,8 @@ def kick(dphi, dE, charge, voltage, E0):
 raise RuntimeError('Example not finished :-( ')
 
 # Loading measured data
-ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
-in_file_pth = '/'.join(ex_dir + ['/input_files/C500MidPhaseNoise.dat'])
+ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
+in_file_pth = os.path.join(ex_dir, 'input_files', 'C500MidPhaseNoise.dat')
 
 waterfall = np.genfromtxt(in_file_pth, skip_header=98)
 

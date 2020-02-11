@@ -8,8 +8,9 @@ import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
-ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
-in_file_pth = '/'.join(ex_dir + ['/input_files/INDIVShavingC325.dat'])
+
+ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
+in_file_pth = os.path.join(ex_dir, 'input_files', 'INDIVShavingC325.dat')
 
 # All values retrieved from INDIVShavingC325.dat
 dtbin = 9.999999999999999E-10

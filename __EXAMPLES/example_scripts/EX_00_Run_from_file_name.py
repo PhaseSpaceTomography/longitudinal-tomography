@@ -6,9 +6,9 @@ import os
 #Tomo imports
 import tomo.utils.tomo_run as tomorun
 
+ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
+in_file_pth = os.path.join(ex_dir, 'input_files', 'flatTopINDIVRotate2.dat')
 
-ex_dir = os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]
-in_file_pth = '/'.join(ex_dir + ['/input_files/flatTopINDIVRotate2.dat'])
 tRange, ERange, density = tomorun.run_file(in_file_pth)
 
 #%%
