@@ -10,7 +10,6 @@ from . import machine as mach
 from . import particles as pts 
 from ..utils import assertions as asrt
 from ..utils import exceptions as expt
-from ..utils import tomo_output as tomoout
 
 
 class ParticleTracker:
