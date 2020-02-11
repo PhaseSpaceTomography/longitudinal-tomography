@@ -9,7 +9,7 @@ tracking Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`particle_tracker` Module
+:mod:`__tracking` Module
 ------------------------------
 
 .. automodule:: tomo.tracking.__tracking

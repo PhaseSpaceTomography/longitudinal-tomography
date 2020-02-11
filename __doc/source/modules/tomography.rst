@@ -9,7 +9,7 @@ tomography Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`tomography_cpp` Module
+:mod:`tomography` Module
 ----------------------------
 
 .. automodule:: tomo.tomography.tomography
