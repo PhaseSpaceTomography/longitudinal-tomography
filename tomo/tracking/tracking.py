@@ -297,7 +297,7 @@ class Tracking(ptracker.ParticleTracker):
 
         rec_turn = rec_prof * self.machine.dturns
         turn = rec_turn
-        iprof = rec_prof
+        profile = rec_prof
         
         # To be saved for downwards tracking
         dphi0 = np.copy(dphi)
@@ -312,7 +312,8 @@ class Tracking(ptracker.ParticleTracker):
         yp[rec_prof] = (denergy / self.particles.dEbin
                         + self.machine.synch_part_y)
 
-        print(iprof)
+        if self.fortran_flag:
+            tomoout.print_tracking_status_ftn(rec_prof, profile)
         while turn < self.nturns:
             dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
                              nparts, turn)      
@@ -325,28 +326,29 @@ class Tracking(ptracker.ParticleTracker):
                                        self.machine.omega_rev0[turn],
                                        self.machine.dtbin,
                                        self._phiwrap)
-            selfvolt = self._vself[iprof, temp_xp.astype(int) - 1]
+            selfvolt = self._vself[profile, temp_xp.astype(int) - 1]
 
             denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn)
             denergy += selfvolt * self.machine.q
 
             if turn % self.machine.dturns == 0:
-                iprof += 1
-                xp[iprof] = temp_xp
-                yp[iprof] = (denergy / self.particles.dEbin
+                profile += 1
+                xp[profile] = temp_xp
+                yp[profile] = (denergy / self.particles.dEbin
                                + self.machine.synch_part_y)
-                print(iprof)
+                if self.fortran_flag:
+                    tomoout.print_tracking_status_ftn(rec_prof, profile)
 
 
         dphi = dphi0
         denergy = denergy0
         turn = rec_turn
-        iprof = rec_prof - 1
+        profile = rec_prof - 1
         temp_xp = xp[rec_prof]
 
         while turn > 0:
-            selfvolt = self._vself[iprof, temp_xp.astype(int)]
+            selfvolt = self._vself[profile, temp_xp.astype(int)]
 
             denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn, up=False)
@@ -364,11 +366,12 @@ class Tracking(ptracker.ParticleTracker):
                         self.machine.dtbin, self._phiwrap)
 
             if turn % self.machine.dturns == 0:
-                print(iprof)
-                xp[iprof] = temp_xp
-                yp[iprof] = (denergy / self.particles.dEbin
+                xp[profile] = temp_xp
+                yp[profile] = (denergy / self.particles.dEbin
                                + self.machine.synch_part_y)
-                iprof -= 1
+                profile -= 1
+                if self.fortran_flag:
+                    tomoout.print_tracking_status_ftn(rec_prof, profile)
 
         return xp, yp
 
