@@ -361,7 +361,7 @@ class TestTLW(unittest.TestCase):
             rec, correct,
             err_msg='Error in recreated profile data after projection')
 
-    def test_reconstruct_correct(self):
+    def test_old_reconstruct_correct(self):
         nprofs = 10
         nparts = 50
         nbins = 100
@@ -372,40 +372,34 @@ class TestTLW(unittest.TestCase):
 
         xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
         xp = xp.T
-        flat_points = xp.copy()
-        for i in range(nprofs):
-            flat_points[:, i] += nbins * i
-        flat_points = np.ascontiguousarray(flat_points).astype(np.int32)
 
+        xp = np.ascontiguousarray(xp).astype(np.int32)
+        
         waterfall = self._load_waterfall()
         waterfall = waterfall[:nprofs]
         waterfall = waterfall[:, 70:170]
         flat_profs = np.ascontiguousarray(
                         waterfall.flatten()).astype(np.float64)
 
-        weights, discr = tlw.reconstruct(
+        weights, discr = tlw._old_reconstruct(
                             weights, xp, flat_profs, discr, niter,
                             nbins, nparts, nprofs, verbose=False)
 
-        correct_w = np.array([11.91929074, 12.28856519, 12.28856519,
-                              12.46441016, 12.72817762, 12.72817762,
-                              12.81610011, 12.56991715, 12.53474815,
-                              12.41165667, 12.35890318, 12.28856519,
-                              12.27098069, 12.1830582,  12.2182272,
-                              12.34131868, 12.28856519, 12.2182272,
-                              12.51716365, 12.60508614, 12.71059313,
-                              12.93919159, 13.20295905, 13.41397302,
-                              13.53706451, 13.80083197, 14.11735292,
-                              14.32836689, 14.62730335, 14.57454985,
-                              14.69764134, 14.68005684, 14.48662737,
-                              14.48662737, 14.34595139, 14.32836689,
-                              14.32836689, 14.17010641, 14.09976842,
-                              13.99426144, 13.90633895, 13.80083197,
-                              13.589818,   13.6074025,  13.589818,  
-                              13.32605054, 12.93919159, 12.60508614,
-                              12.25339619, 11.93687524])
+        correct_w = np.array([1.40130575, 1.4324645 , 1.45323701, 1.47954884,
+                              1.49478201, 1.50101376, 1.51001518, 1.51001518,
+                              1.50932276, 1.51209243, 1.51209243, 1.49962893,
+                              1.49685926, 1.49339718, 1.48993509, 1.48785784,
+                              1.49616684, 1.48508818, 1.49339718, 1.50309101,
+                              1.49755168, 1.51416968, 1.53009527, 1.55156019,
+                              1.5605616,  1.57717961, 1.59587486, 1.60833836,
+                              1.62495636, 1.63949711, 1.64988337, 1.66511653,
+                              1.66234687, 1.67273312, 1.66996345, 1.66234687,
+                              1.65403787, 1.65196062, 1.64503645, 1.64018953,
+                              1.6263412,  1.61526253, 1.61249286, 1.60279903,
+                              1.59033552, 1.57994927, 1.58064169, 1.57371752,
+                              1.5647161,  1.5647161 ])
         
-        correct_discr = np.array([0.10268103, 0.10267469])
+        correct_discr = np.array([0.0745208, 0.0745208])
 
         nptest.assert_almost_equal(
             weights, correct_w,
@@ -414,6 +408,73 @@ class TestTLW(unittest.TestCase):
         nptest.assert_almost_equal(
             discr, correct_discr,
             err_msg='Error in calculated discrepancies after reconstruction.')
+
+    def test_reconstruct_correct(self):
+        nprofs = 10
+        nparts = 50
+        nbins = 100
+        niter = 1
+
+        xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
+        xp = xp.T
+
+        waterfall = self._load_waterfall()
+        waterfall = waterfall[:nprofs]
+        waterfall = waterfall[:, 70:170]
+
+        (weights,
+         discr,
+         recreated) = tlw.reconstruct(
+                            xp, waterfall, niter,
+                            nbins, nparts, nprofs,
+                            verbose=False)
+
+        correct_w = np.array([1.40130575, 1.4324645,  1.45323701, 1.47954884,
+                              1.49478201, 1.50101376, 1.51001518, 1.51001518,
+                              1.50932276, 1.51209243, 1.51209243, 1.49962893,
+                              1.49685926, 1.49339718, 1.48993509, 1.48785784,
+                              1.49616684, 1.48508818, 1.49339718, 1.50309101,
+                              1.49755168, 1.51416968, 1.53009527, 1.55156019,
+                              1.5605616,  1.57717961, 1.59587486, 1.60833836,
+                              1.62495636, 1.63949711, 1.64988337, 1.66511653,
+                              1.66234687, 1.67273312, 1.66996345, 1.66234687,
+                              1.65403787, 1.65196062, 1.64503645, 1.64018953,
+                              1.6263412,  1.61526253, 1.61249286, 1.60279903,
+                              1.59033552, 1.57994927, 1.58064169, 1.57371752,
+                              1.5647161,  1.5647161])
+        
+        
+        correct_discr = np.array([0.0745208, 0.0745208])
+
+        correct_rec = np.array([0.01797798, 0.01837773, 0.01864423, 0.01898179,
+                                0.01917723, 0.01925718, 0.01937266, 0.01937266,
+                                0.01936378, 0.01939931, 0.01939931, 0.01923941,
+                                0.01920388, 0.01915946, 0.01911504, 0.01908839,
+                                0.01919499, 0.01905286, 0.01915946, 0.01928383,
+                                0.01921276, 0.01942596, 0.01963028, 0.01990566,
+                                0.02002114, 0.02023434, 0.02047419, 0.02063409,
+                                0.02084729, 0.02103384, 0.02116709, 0.02136252,
+                                0.02132699, 0.02146024, 0.02142471, 0.02132699,
+                                0.02122039, 0.02119374, 0.02110491, 0.02104272,
+                                0.02086506, 0.02072292, 0.02068739, 0.02056303,
+                                0.02040313, 0.02026988, 0.02027876, 0.02018993,
+                                0.02007444, 0.02007444, 0., 0., 0., 0., 0., 0.,
+                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                0., 0., 0., 0., 0., 0., 0., 0.])
+
+        nptest.assert_almost_equal(
+            weights, correct_w,
+            err_msg='Error in weights after reconstruction.')
+
+        nptest.assert_almost_equal(
+            discr, correct_discr,
+            err_msg='Error in calculated discrepancies after reconstruction.')
+
+        for i in range(nprofs):
+            nptest.assert_almost_equal(recreated[i], correct_rec,
+                err_msg='Error in reconstructed waterfall.')
 
     def _load_waterfall(self):
         base_dir = os.path.split(os.path.realpath(__file__))[0]
