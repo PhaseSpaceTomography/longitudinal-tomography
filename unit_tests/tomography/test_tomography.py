@@ -139,6 +139,36 @@ class TestTomographyCpp(unittest.TestCase):
         nptest.assert_almost_equal(
             weights, cweights, err_msg='Weights were calculated incorrectly')
 
+    def test_run_old_correct_weights(self):
+        waterfall = self._load_waterfall()
+
+        nprofs = 10
+        nparts = 50
+        waterfall = waterfall[:nprofs]
+        waterfall = waterfall[:, 70:170]
+        xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
+
+        tomo = tmo.TomographyCpp(waterfall)
+        tomo.xp = xp.T
+        weights = tomo._run_old(1)
+
+        cweights = np.array([0.00861438, 0.00880599, 0.00893367, 0.00909539,
+                             0.00918903, 0.00922729, 0.00928258, 0.00928246,
+                             0.00927822, 0.00929515, 0.00929504, 0.00921845,
+                             0.0092014,  0.00918014, 0.00915893, 0.00914618,
+                             0.00919728, 0.00912925, 0.00918038, 0.00924009,
+                             0.00920603, 0.00930828, 0.00940621, 0.00953821,
+                             0.00959356, 0.00969566, 0.00981058, 0.00988708,
+                             0.00998924, 0.01007859, 0.01014255, 0.01023618,
+                             0.01021914, 0.01028299, 0.01026588, 0.01021909,
+                             0.01016806, 0.01015526, 0.01011276, 0.01008299,
+                             0.00999782, 0.00992973, 0.00991267, 0.00985308,
+                             0.00977646, 0.0097126,  0.00971697, 0.00967434,
+                             0.00961899, 0.00961908])
+
+        nptest.assert_almost_equal(
+            weights, cweights, err_msg='Weights were calculated incorrectly')
+
     def test_run_correct_diff(self):
         waterfall = self._load_waterfall()
 

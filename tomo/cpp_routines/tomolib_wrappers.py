@@ -77,15 +77,27 @@ _k_and_d.restypes = None
 # ---------------------------------------------
 
 # Reconstruction routine (flat version)
+# < to be removed when new version is prooven to be working correctly >
+_reconstruct_old = _tomolib.old_reconstruct
+_reconstruct_old.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+                             _double_ptr,
+                             np.ctypeslib.ndpointer(ct.c_double),
+                             np.ctypeslib.ndpointer(ct.c_double),
+                             ct.c_int, ct.c_int,
+                             ct.c_int, ct.c_int,
+                             ct.c_bool]
+
+# Reconstruction routine returning reconstructed profiles
 _reconstruct = _tomolib.reconstruct
 _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                          _double_ptr,
                          np.ctypeslib.ndpointer(ct.c_double),
                          np.ctypeslib.ndpointer(ct.c_double),
+                         np.ctypeslib.ndpointer(ct.c_double),
                          ct.c_int, ct.c_int,
                          ct.c_int, ct.c_int,
                          ct.c_bool]
-
+ 
 # Back_project (flat version)
 _back_project = _tomolib.back_project
 _back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
@@ -357,10 +369,14 @@ def project(recreated, flat_points, weights, nparts, nprofs, nbins):
     return recreated
 
 
-def reconstruct(weights, xp, flat_profiles, discr,
-                niter, nbins, npart, nprof, verbose):
+# < to be removed when new version is prooven to be working correctly >
+def _old_reconstruct(weights, xp, flat_profiles, discr,
+                     niter, nbins, npart, nprof, verbose):
     '''Wrapper for full reconstruction in C++.
     Used in the :mod:`~tomo.tomography.tomography` module.
+
+    Well tested, but do not return reconstructed waterfall.
+    Kept for reference.
 
     Parameters
     ----------
@@ -371,7 +387,7 @@ def reconstruct(weights, xp, flat_profiles, discr,
         at each time frame. Coordinates should given be as integers of
         the phase space coordinate system. shape: (nparts, nprofiles).
     flat_profiles: ndarray
-        2D array containing flattened waterfall.
+        1D array containing flattened waterfall.
     discr: ndarray
         Array large enough to hold the discrepancy for each iteration of the
         reconstruction process + 1.
@@ -396,10 +412,58 @@ def reconstruct(weights, xp, flat_profiles, discr,
         1D array containing discrepancy at each
         iteration of the reconstruction.
     '''
-    _reconstruct(weights, _get_2d_pointer(xp), flat_profiles,
-                 discr, niter, nbins, npart, nprof, verbose)
+    _reconstruct_old(weights, _get_2d_pointer(xp), flat_profiles,
+                     discr, niter, nbins, npart, nprof, verbose)
     return weights, discr
 
+def reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose):
+    '''Wrapper for full reconstruction in C++.
+    Used in the :mod:`~tomo.tomography.tomography` module.
+
+    Parameters
+    ----------
+    xp: ndarray
+        2D array containing the coordinate of each particle
+        at each time frame. Coordinates should given be as integers of
+        the phase space coordinate system. shape: (nparts, nprofiles).
+    waterfall: ndarray
+        2D array containing measured profiles as waterfall.
+        Shape: (nprofiles, nbins).
+    niter: int
+        Number of iterations in the reconstruction process.
+    nbins: int
+        Number of bins in a profile.
+    npart: int
+        Number of tracked particles.
+    nprof: int
+        Number of profiles.
+    verbose: boolean
+        Flag to indicate that the tomography routine should broadcast its
+        status to stdout. The output is identical to the output 
+        from the Fortran version.
+
+    Returns
+    -------
+    weights: ndarray
+        1D array containing the weight of each particle.
+    discr: ndarray
+        1D array containing discrepancy at each
+        iteration of the reconstruction.
+    recreated: ndarray
+        2D array containing the projected profiles as waterfall.
+        Shape: (nprofiles, nbins)
+    '''
+    xp = np.ascontiguousarray(xp).astype(np.int32)
+    weights = np.ascontiguousarray(np.zeros(npart, dtype=np.float64))
+    discr = np.zeros(niter + 1, dtype=np.float64)
+    recreated = np.ascontiguousarray(np.zeros(nprof * nbins, dtype=np.float64))
+    flat_profs = np.ascontiguousarray(waterfall.flatten().astype(np.float64))
+
+    _reconstruct(weights, _get_2d_pointer(xp), flat_profs,
+                 recreated, discr, niter, nbins, npart, nprof, verbose)
+    
+    recreated = recreated.reshape((nprof, nbins))
+    return weights, discr, recreated 
 
 # =============================================================
 # Utilities

@@ -152,7 +152,7 @@ class TomographyCpp(stmo.Tomography):
         return np.ascontiguousarray(
                 super()._create_flat_points()).astype(np.int32)
 
-    def run(self, niter=20, verbose=False):
+    def _run_old(self, niter=20, verbose=False):
         '''Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -190,7 +190,50 @@ class TomographyCpp(stmo.Tomography):
         flat_profiles = np.ascontiguousarray(
                         self.waterfall.flatten().astype(np.float64))
 
-        self.weight, self.diff = tlw.reconstruct(weight, self.xp, flat_profiles,
-                                            self.diff, niter, self.nbins,
-                                            self.nparts, self.nprofs, verbose)
+        (self.weight,
+         self.diff) = tlw._old_reconstruct(
+                            weight, self.xp, flat_profiles,
+                            self.diff, niter, self.nbins,
+                            self.nparts, self.nprofs, verbose)
+        return self.weight
+
+    def run(self, niter=20, verbose=False):
+        '''Function to perform tomographic reconstruction.
+
+        Performs the full reconstruction using C++.
+
+        - The discrepancy of each iteration is saved in the objects\
+        **diff** variable.
+        - The particles weights are saved in the objects **weight** variable.
+        - The reconstructed profiles are saved to the objects\
+        **recreated** variable.
+        
+        Parameters
+        ----------
+        niter: int
+            Number of iterations in reconstruction.
+        verbose: boolean
+            Flag to indicate that the status of the tomography should be 
+            written to stdout. The output is identical to output
+            generated in the original Fortran tomography.
+
+        Returns
+        -------
+        weight: ndarray
+            1D array containing the weight of each particle.
+        
+        Raises
+        ------
+        CoordinateError: Exception
+            X-coordinates is None
+        '''
+        if self.xp is None:
+            raise expt.CoordinateError(
+                'x-coordinates has value None, and must be provided')
+
+        (self.weight,
+         self.diff,
+         self.recreated) = tlw.reconstruct(
+                                self.xp, self.waterfall, niter, self.nbins,
+                                self.nparts, self.nprofs, verbose)
         return self.weight
