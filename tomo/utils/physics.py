@@ -37,7 +37,7 @@ def lorenz_beta(machine, rf_turn):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
 
     Returns
     -------
@@ -59,7 +59,7 @@ def rfvolt_rf1(phi, machine, rf_turn):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
 
     Returns
     -------
@@ -85,7 +85,7 @@ def drfvolt_rf1(phi, machine, rf_turn):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
 
     Returns
     -------
@@ -108,7 +108,7 @@ def rf_voltage(phi, machine, rf_turn):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
 
     Returns
     -------
@@ -136,7 +136,7 @@ def drf_voltage(phi, machine, rf_turn):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
 
     Returns
     -------
@@ -153,16 +153,16 @@ def drf_voltage(phi, machine, rf_turn):
                      * (phi - machine.phi12)))
 
 
-def short_rf_voltage_formula(phi, vrf1, vrf1dot, vrf2, vrf2dot,
-                             h_ratio, phi12, time_at_turn, rf_turn):
-    '''RF voltage formula without calculating the difference in E0
+def rf_voltage_at_phase(phi, vrf1, vrf1dot, vrf2, vrf2dot,
+                        h_ratio, phi12, time_at_turn, rf_turn):
+    '''RF voltage formula without calculating the difference in E0.
     '''
     turn_time = time_at_turn[rf_turn]
     v1 = vrft(vrf1, vrf1dot, turn_time)
     v2 = vrft(vrf2, vrf2dot, turn_time)
-    temp = v1 * np.sin(phi)
-    temp += v2 * np.sin(h_ratio * (phi - phi12))
-    return temp
+    voltage = v1 * np.sin(phi)
+    voltage += v2 * np.sin(h_ratio * (phi - phi12))
+    return voltage
 
 
 def vrft(vrf, vrf_dot, turn_time):
@@ -196,7 +196,7 @@ def find_synch_phase(machine, rf_turn, phi_lower, phi_upper):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
     phi_lower:
         Lower phase boundary
     phi_upper:
@@ -231,7 +231,7 @@ def find_phi_lower_upper(machine, rf_turn):
     machine: Machine
         Stores machine parameters and reconstruction settings.
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
 
     Returns
     -------
@@ -264,7 +264,8 @@ def phase_slip_factor(machine):
 
     Returns
     -------
-    phase slip factor: ndarray, float
+    phase slip factor: ndarray
+        1D array of phase slip factors for each turn.
     '''
     return (1.0 - machine.beta0**2) - machine.trans_gamma**(-2)
 
@@ -280,8 +281,8 @@ def find_dphase(machine):
 
     Returns
     -------
-    phase slip factor: ndarray, float
-        Phase slip factor for each machine turn.
+    drift factor: ndarray
+        1D array holding drift coefficient for each machine turn. 
     '''
     return (2 * np.pi * machine.h_num * machine.eta0
             / (machine.e0 * machine.beta0**2))
@@ -297,8 +298,8 @@ def revolution_freq(machine):
     
     Returns
     -------
-    revolution frequency: ndarray, float
-        Revolution frequency at each machine turn.
+    revolution frequency: ndarray
+        1D aray holding revolution frequency at each machine turn.
     '''
     return machine.beta0 * constants.c / machine.mean_orbit_rad
 
@@ -314,8 +315,8 @@ def calc_self_field_coeffs(machine):
 
     Returns
     -------
-    Self-field coefficients: ndarray, float
-        Self-field coefficient at each time frame.
+    Self-field coefficients: ndarray
+        1D array holding a self-field coefficient for each time frame.
     '''
     sfc = np.zeros(machine.nprofiles)
     for i in range(machine.nprofiles):
@@ -331,55 +332,51 @@ def calc_self_field_coeffs(machine):
 
 def phase_low(phase, machine, bunch_phaselength, rf_turn):
     '''Calculates potential energy at phase.
-    Needed for estimation of x coordinate of synchronous particle.
-
-    Write about term1, term2, term3.
+    Needed for estimation of x-coordinate of synchronous particle.
 
     Parameters
     ----------
     phase: float
-        Phase where potential energy is calculated.
+        Phase [rad] where potential energy is calculated.
     machine: Machine
         Stores machine parameters and reconstruction settings.
     bunch_phaselength: float
-        Length of bunch [rad]
+        Length of bunch, given as phase [rad]
     rf_turn: int
-        At whch RF turn the calculation should happen.
+        At which RF turn the calculation should happen.
     '''
-    term1 = (machine.vrf2
-             * (np.cos(machine.h_ratio
-                       * (phase
-                          + bunch_phaselength
-                          - machine.phi12))
-                - np.cos(machine.h_ratio
-                         * (phase - machine.phi12)))
-             / machine.h_ratio)
-    term2 = (machine.vrf1
-             * (np.cos(phase + bunch_phaselength)
-                - np.cos(phase)))
-    term3 = (bunch_phaselength
-             * short_rf_voltage_formula(
-                machine.phi0[rf_turn], machine.vrf1, machine.vrf1dot,
-                machine.vrf2, machine.vrf2dot, machine.h_ratio,
-                machine.phi12, machine.time_at_turn, rf_turn))
-    return term1 + term2 + term3
+    v1 = machine.vrf1 * (np.cos(phase + bunch_phaselength) - np.cos(phase))
+    
+    v2 = (machine.vrf2
+          * (np.cos(machine.h_ratio
+                    * (phase + bunch_phaselength - machine.phi12))
+             - np.cos(machine.h_ratio * (phase - machine.phi12)))
+          / machine.h_ratio)
+
+    v_synch_phase = (bunch_phaselength
+                     * rf_voltage_at_phase(
+                        machine.phi0[rf_turn], machine.vrf1, machine.vrf1dot,
+                        machine.vrf2, machine.vrf2dot, machine.h_ratio,
+                        machine.phi12, machine.time_at_turn, rf_turn))
+    
+    return v1 + v2 + v_synch_phase
 
 
 def dphase_low(phase, machine, bunch_phaselength, *args):
     '''Calculates derivative of the phase_low function.
-    The function is needed for estimation of x coordinate 
+    The function is needed for estimation of x-coordinate 
     of synchronous particle.
 
     Parameters
     ----------
     phase: float
-        Phase where potential energy is calculated.
+        Phase [rad] where potential energy is calculated.
     machine: Machine
         Stores machine parameters and reconstruction settings.
     bunch_phaselength: float
-        Length of bunch [rad]
+        Length of bunch, given as phase [rad]
     args: None
-        Not used, needed for implementation of Newton-Raphson root finder.
+        Not used, arg needed for implementation of Newton-Raphson root finder.
     '''
     return (-1.0 * machine.vrf2
             * (np.sin(machine.h_ratio

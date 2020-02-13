@@ -1,4 +1,5 @@
-"""Module containing fundamental physics formulas
+"""Module containing Machine class for storing
+machine and reconstruction parameters
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
@@ -63,13 +64,16 @@ class Machine:
     '''Class holding machine and reconstruction parameters.
     
     This class holds machine parameters and information about the measurements.
-    Also, it holds settings used to perform the reconstruction
-    like then number of iterations of the tomorgaphic reconstruction.
+    Also, it holds settings for the reconstruction process.
 
-    The Machine class is needed in order to perform the original particle
-    tracking routine. In addition to this, it is needed for the generation
-    of `Profiles` objects. Mostly this class is to be used if a program
-    resembling the original Fortran version is to be created. 
+    The Machine class and its values are needed for the original particle
+    tracking routine. Its values are used for calculation of reconstruction
+    area and info concerning the phase space, the distribution of particles,
+    and the tracking itself. In addition to this, the machine object is needed
+    for the generation of :class:`~tomo.data.profiles.Profiles` objects.
+
+    To summarize, the Machine class must be used if a program resembling the
+    original Fortran version is to be created.
 
     Parameters
     ----------
@@ -103,24 +107,20 @@ class Machine:
 
     Attributes
     ----------
-    demax: float
+    demax: float, default=-1.E6
         Maximum energy of reconstructed phase space.\n
-        Default value: -1.E6
     dturns: int
         Number of machine turns between each measurement.
     vrf1: float
         Peak voltage of the first RF system at the machine reference frame.
-    vrf2: float
+    vrf2: float, default=0.0
         Peak voltage of the second RF system at the machine reference frame.\n
-        Default value: 0.0
-    vrf1dot
-        Time derivatives of the voltages of the first RF system\
+    vrf1dot: float, default=0.0
+        Time derivatives of the voltages of the first RF system
         (considered constant).\n
-        Default value: 0.0
-    vrf2dot
-        Time derivatives of the voltages of the second RF system\
+    vrf2dot: float, default=0.0
+        Time derivatives of the voltages of the second RF system
         (considered constant).\n
-        Default value: 0.0
     mean_orbit_rad: float
         Mean orbit radius of machine [m].
     bending_rad: float
@@ -129,101 +129,89 @@ class Machine:
         B-field at machine reference frame [T].
     bdot: float
         Time derivative of B-field (considered constant) [T/s].
-    phi12: float
+    phi12: float, default=0.0
         Phase difference between the two RF systems (considered constant).\n
-        Default value: 0.0
-    h_ratio: float
+    h_ratio: float, default=1.0
         Ratio of harmonics between the two RF systems.\n
-        Default value: 1.0
-    h_num: int
+    h_num: int, default=1
         Principle harmonic number.\n
-        Default value: 1
     trans_gamma: float
         Transitional gamma.
     e_rest: float
         Rest energy of accelerated particle [eV/C^2].
-    q: int
+    q: int, default=1
         Charge state of accelerated particle.\n
-        Default value: 1
-    g_coupling: float
+    g_coupling: float, default=None
         Space charge coupling coefficient (geometrical coupling coefficient).\n
-        Default value: None
-    zwall_over_n: float
+    zwall_over_n: float, default=None
         Magnitude of Zwall/n, reactive impedance.\n
-        Default value: None
-    min_dt: float
+    min_dt: float, default=None
         Minimum phase of reconstruction area measured in seconds.\n
-        Default value: None
-    max_dt: float
+    max_dt: float, default=None
         Maximum phase of reconstruction area measured in seconds.\n
-        Default value: None
     nprofiles: int
         Number of measured profiles.
-    pickup_sensitivity: float
-        Effective pick-up sensitivity\
+    pickup_sensitivity: float, default=None
+        Effective pick-up sensitivity
         (in digitizer units per instantaneous Amp).\n
-        Default value: None
     nbins: int
         Number of bins in a profile.
     synch_part_x: float
-        Synchronous phase given in number of bins, counting\
+        Synchronous phase given in number of bins, counting
         from the lower profile bound to the synchronous phase.
+    synch_part_y: float
+        Energy coordinate of synchronous particle in phase space coordinates
+        of bins.The coordinate is set to be one half of the image width (nbins). 
     dtbin: float
         Size of profile bins [s].
-    self_field_flag: boolean
+    self_field_flag: boolean, default=False
         Flag to include self-fields in the tracking.\n
-        Default value: False
-    full_pp_flag: boolean
+    full_pp_flag: boolean, default=False
         If set, all pixels in reconstructed phase space will be tracked.\n
-        Default value: False
-    machine_ref_frame: int
+    machine_ref_frame: int, default=0
         Frame to which machine parameters are referenced.\n
-        Default value: 0
-    beam_ref_frame: int
+    beam_ref_frame: int, default=0
         Frame to which beam parameters are referenced.\n
-        Default value: 0
-    snpt: int
+    snpt: int, default=4
         Square root of particles pr. cell of phase space.\n
-        Default value: 4
-    niter: int
+    niter: int, default=20
         Number of iterations in tomographic reconstruction.\n
-        Default value: 20
-    filmstart: int
+    filmstart: int, default=0
         First profile to reconstruct.\n
-        Default value: 0
-    filmstop: int
+    filmstop: int, default=1
         Last profile to reconstruct.\n
-        Default value: 1
-    filmstep: int
+    filmstep: int, default=1
         Step between profiles to reconstruct.\n
-        Default value: 1
-    output_dir: string
+    output_dir: string, default=None
         Directory to save output.\n
-        Default value: None
-    time_at_turn: ndarray, float
-        Time at each turn. Turn zero = 0 [s].
-    phi0: ndarray, float
-        Synchronous phase angle at the end of each turn.
-    e0: ndarray, float
-        Total energy of synchronous particle at the end of each turn.
-    beta0: ndarray, float
-        Lorenz beta factor (v/c) at the end of each turn.
-    deltaE0: ndarray, float
-        Difference between e0(n) and e0(n-1) for each turn.
-    eta0: ndarray, float
-        Phase slip factor at each turn.
-    drift_coef: ndarray, float
-        Coefficient used for calculating difference,\
-        from phase n to phase n + 1.\
-        Needed in trajectory height calculator and tracking.
-    omega_rev0: ndarray, float
-        Revolution frequency at each turn.
-    vrf1_at_turn: ndarray, float
-        Peak voltage at each turn for the first RF station.
-    vrf1_at_turn: ndarray, float
-        Peak voltage at each turn for the second RF station.
+    time_at_turn: ndarray
+        1D array holding the time at each turn. Turn zero = 0 [s].
+    phi0: ndarray
+        1D array holding the synchronous phase angle at the end of each turn.
+    e0: ndarray
+        1D array holding the total energy of synchronous
+        particle at the end of each turn.
+    beta0: ndarray
+        1D array holding the Lorenz beta factor (v/c)
+        at the end of each turn.
+    deltaE0: ndarray
+        1D array holding the difference between
+        e0(n) and e0(n-1) for each turn.
+    eta0: ndarray
+        1D array holding the phase slip factor at each turn.
+    drift_coef: ndarray
+        1D array holding coefficient used for calculating difference,
+        from phase n to phase n + 1. Needed by trajectory height
+        calculator, and tracking.
+    omega_rev0: ndarray
+        1D array holding the revolution frequency at each turn.
+    vrf1_at_turn: ndarray
+        1D array holding the peak voltage at each turn for
+        the first RF station.
+    vrf2_at_turn: ndarray
+        1D array holding the peak voltage at each turn for
+        the second RF station. 
     '''
-
     def __init__(self, dturns, vrf1, mean_orbit_rad, bending_rad,
                  b0, bdot, trans_gamma, rest_energy, nprofiles, nbins,
                  synch_part_x, dtbin, **kwargs):
@@ -287,8 +275,8 @@ class Machine:
     @property
     def nbins(self):
         '''nbins defined as @property.
-        Updates the position of the y coordinate of the synchronous\
-        particle in the phase space coordinate system.
+        Updates the position of the y-coordinate of the synchronous
+        particle in the phase space coordinate system when set.
 
         Parameters
         ----------
@@ -313,26 +301,36 @@ class Machine:
  
     def load_fitted_synch_part_x_ftn(self, fit_info):
         '''Function for setting the synch_part_x if a fit has been performed.
-        Saves parameters retrieved from the fitting routine\
-        needed by the `print_plotinfo` function in `tomo.utils.tomo_output`.
+        Saves parameters retrieved from the fitting routine
+        needed by the :func:`~tomo.utils.tomo_output.write_plotinfo_ftn`
+        function in the :mod:`tomo.utils.tomo_output`. All needed info
+        will be returned from the
+        :func:`~tomo.utils.data_treatment.fit_synch_part_x` function.
 
         Sets the following fields:
 
-        * fitted_synch_part_x - The new x-coordinate of the\
-                                synchronous particle\
-                                (needed for `print_plotinfo`).
-        * bunchlimit_low - Lower phase of bunch\
-                           (needed for `print_plotinfo`).
-        * bunchlimit_up - Upper phase of bunch\
-                          (needed for `print_plotinfo`).
-        * synch_part_x - The x-coordinate of the synchronous paricle.
+        * fitted_synch_part_x
+            The new x-coordinate of the synchronous particle
+            (needed for :func:`~tomo.utils.tomo_output.write_plotinfo_ftn`).
+        * bunchlimit_low
+            Lower phase of bunch (needed for 
+            :func:`~tomo.utils.tomo_output.write_plotinfo_ftn`).
+        * bunchlimit_up 
+            Upper phase of bunch (needed for
+            :func:`~tomo.utils.tomo_output.write_plotinfo_ftn`).
+        * synch_part_x
+            The x-coordinate of the synchronous paricle.
 
         Parameters
         ----------
-        fit_info: Tuple (fitted_synch_part_x, lower bunch limit,\
-                        upper bunch limit)
-            Info needed for the `print plotinfo` function if a fit\
-            has been performed.
+        fit_info: tuple
+            Tuple should hold the following info in the following format:
+            (F, L, U), where F is the fitted value of the synchronous particle,
+            L is the lower bunch limit, and U is the upper bunch limit. All
+            of the values should be given in bins. The info needed by the
+            :func:`~tomo.utils.tomo_output.write_plotinfo_ftn` function
+            if a fit has been performed, and the a Fortran style output is
+            to be given during the particle tracking.
         '''
         log.info('Saving fitted synch_part_x to machine object.')
         self.fitted_synch_part_x = fit_info[0]
@@ -347,18 +345,28 @@ class Machine:
         The following values are calculated in this function. All are
         ndarrays of the data type float.
 
-        * time_at_turn - Time at each turn. Turn zero = 0 [s].
-        * phi0 - Synchronous phase angle at the end of each turn.
-        * e0 - Total energy of synchronous particle at the end of each turn.
-        * beta0 - Lorenz beta factor (v/c) at the end of each turn.
-        * deltaE0 - Difference between e0(n) and e0(n-1) for each turn.
-        * eta0 - Phase slip factor at each turn.
-        * drift_coef -  Coefficient used for calculating difference,\
-                        from phase n to phase n + 1.\
-                        Needed in trajectory height calculator and tracking.
-        * omega_rev0 - Revolution frequency at each turn.
-        * vrf1_at_turn - Peak voltage at each turn for the first RF station.
-        * vrf2_at_turn - Peak voltage at each turn for the second RF station.
+        * time_at_turn
+            Time at each turn. Turn zero = 0 [s].
+        * phi0
+            Synchronous phase angle at the end of each turn.
+        * e0
+            Total energy of synchronous particle at the end of each turn.
+        * beta0
+            Lorenz beta factor (v/c) at the end of each turn.
+        * deltaE0
+            Difference between e0(n) and e0(n-1) for each turn.
+        * eta0
+            Phase slip factor at each turn.
+        * drift_coef
+            Coefficient used for calculating difference,
+            from phase n to phase n + 1.
+            Needed in trajectory height calculator and tracking.
+        * omega_rev0
+            Revolution frequency at each turn.
+        * vrf1_at_turn
+            Peak voltage at each turn for the first RF station.
+        * vrf2_at_turn
+            Peak voltage at each turn for the second RF station.
 
         The values are saved as fields of the Machine object.
         '''
@@ -386,7 +394,7 @@ class Machine:
             
             self.e0[i] = (self.e0[i - 1]
                           + self.q
-                          * physics.short_rf_voltage_formula(
+                          * physics.rf_voltage_at_phase(
                                 self.phi0[i], self.vrf1, self.vrf1dot,
                                 self.vrf2, self.vrf2dot, self.h_ratio,
                                 self.phi12, self.time_at_turn, i))
@@ -396,7 +404,7 @@ class Machine:
         for i in range(i0 - 1, -1, -1):
             self.e0[i] = (self.e0[i + 1]
                           - self.q
-                          * physics.short_rf_voltage_formula(
+                          * physics.rf_voltage_at_phase(
                                 self.phi0[i + 1], self.vrf1, self.vrf1dot,
                                 self.vrf2, self.vrf2dot, self.h_ratio,
                                 self.phi12, self.time_at_turn, i + 1))

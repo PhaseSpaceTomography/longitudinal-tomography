@@ -1,4 +1,5 @@
-'''Module containing ParticleTracker class
+'''Module containing ParticleTracker class,
+a super class for particle trackers.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
@@ -13,15 +14,15 @@ from ..utils import exceptions as expt
 
 
 class ParticleTracker:
-    '''Super class for tracking classes.
+    '''Super class for classes meant tracking particles.
     
-    The particle class holds some general utilities por particle tracking.
-    These includes asserions of parameters and properties for flags.
+    This class holds some general utilities for tracking particles. These
+    utilities includes asserions and flags.
 
     Parameters
     ----------
     machine: Machine
-        Holds all information needed for particle tracking and generation of
+        Holds all information needed for particle tracking and generating
         the particle distribution.
 
     Attributes
@@ -30,22 +31,23 @@ class ParticleTracker:
         Holds all information needed for particle tracking and generation of
         the particle distribution.
     particles: Particles
-        Creates and/or holds initial distribution of particles.
+        Creates and/or stores the initial distribution of particles.
     nturns: int
-        Number of machine turns particles should be tracked trough.
-    self_field_flag: property, boolean
-        Flag to indicate that self-fields should be included during tracking.
-    fortran_flag: property, boolean
-        Flag to indicate that the particle tracking should print fortran-style
+        Number of machine turns of which the particles should
+        be tracked trough.
+    self_field_flag: boolean
+        Flag to indicate that self-fields should be included
+        during the tracking.
+    fortran_flag: boolean
+        Flag to indicate that the particle tracking should print Fortran-style
         output strings to stdout during tracking.
 
     Raises
     ------
     MachineParameterError: Exception
-        Input argument is not of type Machine, or Machine object\
-        fields needed for tracking are missing.
+        Input argument is not :class:`~tomo.tracking.machine.Machine`, or the 
+        Machine object provided is missing needed fields.
     '''
-    # The tracking routine works on a copy of the input coordinates. <- fix
     def __init__(self, machine):
 
         if not isinstance(machine, mach.Machine):
@@ -64,12 +66,13 @@ class ParticleTracker:
     def self_field_flag(self):
         '''self_field_flag defined as @property
         
-        Flag can be set to true by calling the function: enable_self_fields.
+        Flag can be set to true by calling :func:`enable_self_fields`.
 
         Returns
         -------
         self_field_flag: boolean
-            Flag to indicate that self-fields are to be used during tracking.
+            Flag to indicate if particle tracking using
+            self-fields is enabeled.
         '''
         return self._self_field_flag
     
@@ -77,39 +80,42 @@ class ParticleTracker:
     def fortran_flag(self):
         '''self_field_flag defined as @property
 
-        Flag can be set to true by calling the function: enable_fortran_output.
+        Flag can be set to true by calling :func:`enable_fortran_output`.
 
         Returns
         -------
         fortran_flag: boolean
-            Flag to indicate that Fortran styled output is enabeled.
+            Flag to indicate if Fortran styled output is enabeled.
         '''
         return self._ftn_flag
 
     def enable_fortran_output(self, profile_charge):
         '''Function for enabeling of Fortran-styled output.
         
-        Call this function in order to produce a Fortran-styled\
-        output during the particle tracking. The output will be\
-        printed to stdout.
+        Call this function in order to print a Fortran-styled output
+        to stdout during the particle tracking.
 
-        The output will initially be a print of the plot info needed for\
-        the tomoscope application. During the tracking, the output will
-        describe between which profiles the particles are currently\
-        being tracked between. Also, the number of 'lost particles' will be\
-        printed. This is however **not a real measurement**,\
-        but a static string needed due to changes in the tracking algorithm. 
+        The output will initially be a print of the plot info needed for
+        the tomoscope application. Then, During the tracking, the output will
+        print which profiles the particles are currently being tracked
+        between.
+
+        The number of 'lost particles' will be also be printed.
+        This is however **not a real measurement**, but a static string needed
+        for the interface to the tomoscope application.
+        The lost particles is not found during the tracking due to changes in
+        the algorithm. 
 
         Parameters
         ----------
         profile_charge: float
-            Total charge of profile.
+            Total charge of a reference profile.
 
         Raises
         ------
         ProfileChargeNotCalculated: Exception
-            Needed field for enabeling Fortran output,\
-            profile charge, is missing from Machine object.
+            Needed field for enabeling Fortran output,
+            profile_charge, is missing from the Machine object.
         '''
         if profile_charge is None:
             err_msg = 'profile_charge is needed for fortran-style output'
@@ -122,14 +128,15 @@ class ParticleTracker:
         '''Function for enabeling particle tracking using self-fields.
 
         Call this function to track the particles using self-fields.
-        Note that the self-field tracking is **much slower** than\
+        Note that the self-field tracking is **much slower** than
         tracking without self-fields. 
 
         Parameters
         ----------
         profiles: Profiles
-            Self-field calculations must have been performed in\
-            the Profiles object prior to calling this function.
+            Self-fields must be calculated in the the Profiles object prior
+            to calling this function.
+            See :func:`tomo.data.profiles.Profiles.calc_self_fields`.
 
         Raises
         ------

@@ -1,5 +1,7 @@
 '''Module containing Python wrappers for C++ functions.
 
+Should only be used by advanced users.
+
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
 
@@ -44,6 +46,12 @@ _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 # ========================================
 #           Setting argument types
 # ========================================
+
+# NB! It is critical that the input are of the same data type as spescified
+#       in the argtypes. The correct datatypes can also be found in the
+#       declarations of the C++ functions. Giving arays of datatype int
+#       to a C++ function expecting doubles will lead to mystical (and ugly)
+#       errors. 
 
 # kick and drift
 # ---------------------------------------------
@@ -101,36 +109,36 @@ def kick(machine, denergy, dphi, rfv1, rfv2, npart, turn, up=True):
 
     Particle kick for **one** machine turn.
 
+    Used in the :mod:`~tomo.tracking.tracking` module.
+
     Parameters
     ----------
     machine: Machine
         Object holding machine parameters.
     denergy: ndarray
-        Array holding the energy difference relative to the synchronous
+        1D array holding the energy difference relative to the synchronous
         particle for each particle at a turn.
     dphi: ndarray
-        Array holding the phase difference relative to the synchronous
+        1D array holding the phase difference relative to the synchronous
         particle for each particle at a turn.
     rfv1: ndarray
-        Array holding the radio frequency voltage
-        at RF station 1 for each turn, multiplied with the
-        charge state of the particles.
+        1D array holding the radio frequency voltage at RF station 1 for
+        each turn, multiplied with the charge state of the particles.
     rfv2: ndarray
-        Array holding the radio frequency voltage
-        at RF station 2 for each turn, multiplied with the
-        charge state of the particles.
+        1D array holding the radio frequency voltage at RF station 2 for
+        each turn, multiplied with the charge state of the particles.
     npart: int
-        Number of tracked particles.
+        The number of tracked particles.
     turn: int
-        Current machine turn.
-    up: boolean
+        The current machine turn.
+    up: boolean, optional, default=True
         Direction of tracking. Up=True tracks towards last machine turn,
         up=False tracks toward first machine turn.
 
     Returns
     -------
     denergy: ndarray
-        The new energy of each particle after voltage kick.
+        1D array containing the new energy of each particle after voltage kick.
     '''
     args = (_get_pointer(dphi),
             _get_pointer(denergy),
@@ -153,28 +161,31 @@ def drift(denergy, dphi, drift_coef, npart, turn, up=True):
 
     Particle drift for **one** machine turn
 
+    Used in the :mod:`~tomo.tracking.tracking` module.
+
     Parameters
     ----------
     denergy: ndarray
-        Array holding the energy difference relative to the synchronous
+        1D array holding the energy difference relative to the synchronous
         particle for each particle at a turn.
     dphi: ndarray
-        Array holding the phase difference relative to the synchronous
+        1D array holding the phase difference relative to the synchronous
         particle for each particle at a turn.
     drift_coef: ndarray
-        Array of drift coefficient at each machine turn
+        1D array of drift coefficient at each machine turn.
     npart: int
-        Number of tracked particles.
+        The number of tracked particles.
     turn: int
-        Current machine turn.
-    up: boolean
+        The current machine turn.
+    up: boolean, optional, default=True
         Direction of tracking. Up=True tracks towards last machine turn,
         up=False tracks toward first machine turn.
 
     Returns
     -------
     dphi: ndarray
-        The new phase for each particle after drifting for a machine turn.
+        1D array containing the new phase for each particle
+        after drifting for a machine turn.
     '''
     args = (_get_pointer(dphi),
             _get_pointer(denergy),
@@ -193,35 +204,35 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     
     Tracks all particles from the time frame to be recreated,
     trough all machine turns.
+    
+    Used in the :mod:`~tomo.tracking.tracking` module.
 
     Parameters
     ----------
     xp: ndarray
-        Array large enough to hold the phase of each particle
-        at every time frame. (nprofiles, nparts)
+        2D array large enough to hold the phase of each particle
+        at every time frame. Shape: (nprofiles, nparts)
     yp: ndarray
-        Array large enough to hold the energy of each particle
-        at every time frame. (nprofiles, nparts)
+        2D array large enough to hold the energy of each particle
+        at every time frame. Shape: (nprofiles, nparts)
     denergy: ndarray
-        Array holding the energy difference relative to the synchronous
-        particle for each particle at a turn.
+        1D array holding the energy difference relative to the synchronous
+        particle for each particle the initial turn.
     dphi: ndarray
-        Array holding the phase difference relative to the synchronous
-        particle for each particle at a turn.
+        1D array holding the phase difference relative to the synchronous
+        particle for each particle the initial turn.
     rfv1: ndarray
-        Array holding the radio frequency voltage
-        at RF station 1 for each turn, multiplied with the
-        charge state of the particles.
+        Array holding the radio frequency voltage at RF station 1 for each
+        turn, multiplied with the charge state of the particles.
     rfv2: ndarray
-        Array holding the radio frequency voltage
-        at RF station 2 for each turn, multiplied with the
-        charge state of the particles.
+        Array holding the radio frequency voltage at RF station 2 for each
+        turn, multiplied with the charge state of the particles.
     rec_prof: int
         Index of profile to be reconstructed.
     nturns: int
         Total number of machine turns.
     nparts: int
-        Number of particles.
+        The number of particles.
     args: tuple
         Arguments can be provided via the args if a machine object is not to
         be used. In this case, the args should be:
@@ -236,9 +247,9 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     
         The args will not be used if a Machine object is provided.
 
-    machine: Machine
+    machine: Machine, optional, default=False
         Object containing machine parameters.
-    ftn_out: boolean
+    ftn_out: boolean, optional, default=False
         Flag to enable printing of status of tracking to stdout.
         The format will be similar to the Fortran version.
         Note that the **information regarding lost particles
@@ -247,11 +258,11 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     Returns
     -------
     xp: ndarray
-        Array holding every particles coordinates in phase [rad]
-        at every time frame. 
+        2D array holding every particles coordinates in phase [rad]
+        at every time frame. Shape: (nprofiles, nparts)
     yp: ndarray
-        Array holding every particles coordinates in energy [eV]
-        at every time frame.
+        2D array holding every particles coordinates in energy [eV]
+        at every time frame. Shape: (nprofiles, nparts)
     '''
     xp = np.ascontiguousarray(xp.astype(np.float64))
     yp = np.ascontiguousarray(yp.astype(np.float64))
@@ -287,16 +298,17 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
 
 def back_project(weights, flat_points, flat_profiles, nparts, nprofs):
     '''Wrapper for back projection routine written in C++.
+    Used in the :mod:`~tomo.tomography.tomography` module.
     
     Parameters
     ----------
     weights: ndarray
-        Weight of each particle.
+        1D array containing the weight of each particle.
     flat_points: ndarray
-        Particle coordinates as integers, pointing at flattened versions
-        of the waterfall.
+        2D array containing particle coordinates as integers, pointing
+        at flattened versions of the waterfall. Shape: (nparts, nprofiles)
     flat_profiles: ndarray
-        Flattened waterfall.
+        1D array containing a flattened waterfall.
     nparts: int
         Number of tracked particles.
     nprofs: int
@@ -305,7 +317,7 @@ def back_project(weights, flat_points, flat_profiles, nparts, nprofs):
     Returns
     -------
     weights: ndarray
-        Updated weight of each particle. 
+        1D array containing the **new weight** of each particle.
     '''
     _back_project(weights, _get_2d_pointer(flat_points),
                   flat_profiles, nparts, nprofs)
@@ -314,17 +326,18 @@ def back_project(weights, flat_points, flat_profiles, nparts, nprofs):
 
 def project(recreated, flat_points, weights, nparts, nprofs, nbins):
     '''Wrapper projection routine written in C++.
+    Used in the :mod:`~tomo.tomography.tomography` module.
 
     Parameters
     ----------
     recreated: ndarray
-        Array with the shape of the waterfall
-        to be recreated, initiated as zero.
+        2D array with the shape of the waterfall to be recreated,
+        initiated as zero. Shape: (nprofiles, nbins)
     flat_points: ndarray
-        Particle coordinates as integers, pointing at flattened versions
-        of the waterfall.
+        2D array containing particle coordinates as integers, pointing
+        at flattened versions of the waterfall. Shape: (nparts, nprofiles)
     weights: ndarray
-        Weight of each particle.
+        1D array containing the weight of each particle.
     nparts: int
         Number of tracked particles.
     nprofs: int
@@ -335,7 +348,8 @@ def project(recreated, flat_points, weights, nparts, nprofs, nbins):
     Returns
     -------
     recreated: ndarray
-        Projected waterfall.
+        2D array containing the projected profiles as waterfall.
+        Shape: (nprofiles, nbins)
     '''
     recreated = np.ascontiguousarray(recreated.flatten())
     _proj(recreated, _get_2d_pointer(flat_points), weights, nparts, nprofs)
@@ -346,17 +360,18 @@ def project(recreated, flat_points, weights, nparts, nprofs, nbins):
 def reconstruct(weights, xp, flat_profiles, discr,
                 niter, nbins, npart, nprof, verbose):
     '''Wrapper for full reconstruction in C++.
+    Used in the :mod:`~tomo.tomography.tomography` module.
 
     Parameters
     ----------
     weights: ndarray
-        Array containing the weight of each particle initiated to zeroes.
+        1D array containing the weight of each particle initiated to zeroes.
     xp: ndarray
-        The coordinate of each particle at each time frame
-        (shape: (nparts, nprofiles)). Coordinates should be as integers
-        in the phase space coordinate system.
+        2D array containing the coordinate of each particle
+        at each time frame. Coordinates should given be as integers of
+        the phase space coordinate system. shape: (nparts, nprofiles).
     flat_profiles: ndarray
-        Flattened waterfall.
+        2D array containing flattened waterfall.
     discr: ndarray
         Array large enough to hold the discrepancy for each iteration of the
         reconstruction process + 1.
@@ -376,9 +391,10 @@ def reconstruct(weights, xp, flat_profiles, discr,
     Returns
     -------
     weights: ndarray
-        Final weight of each particle.
+        1D array containing the final weight of each particle.
     discr: ndarray
-        discrepancy at each iteration of the reconstruction.
+        1D array containing discrepancy at each
+        iteration of the reconstruction.
     '''
     _reconstruct(weights, _get_2d_pointer(xp), flat_profiles,
                  discr, niter, nbins, npart, nprof, verbose)

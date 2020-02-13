@@ -1,4 +1,4 @@
-'''Module containing the Profiles class for storing measurements
+'''Module containing the Profiles class for storing measurements.
 
 :Author(s): **Christoffer Hjertø Grindheim**'''
 
@@ -11,52 +11,63 @@ from scipy import constants
 from ..utils import physics
 from ..utils import exceptions as expt
 
+
 class Profiles(object):
     '''Class holding measured data.
 
     This class holds the measured data (waterfall) and their properties.
 
     The waterfall is a nprofiles x nbins shaped array, waterfall[0] is the
-    first measurement. Each bin is `machine.dtbin` long,
+    first measurement. Each bin is `Machine.dtbin` long,
     and holds the intensity of the beam at this time of the measurement.
 
     The profile charge can be provided, or calculated using
-    the `calc_profilecharge` function which is based
+    the `Profiles.calc_profilecharge` function which is based
     on the machines pickup sensitivity.
 
-    The class can also be used to calculate the self-fields of the bunch.
+    Also, the class can be used to calculate the self-fields of the bunch
+    by calling the `Profiles.calc_self_fields` function.
 
     Parameters
     ----------
     machine: Machine
-        Used to import different quantities like turns between measurements.
+        Holds information about the measurements and the machine.
     sampling_time: float
         Original measurement sampling time.
-    waterfall: ndarray, float
+    waterfall: ndarray
         2D-array containing all profile measurements.
-    profile_charge: float
+    profile_charge: float, optional, default=None
         Total charge of a reference profile.
 
     Attributes
     ----------
     machine: Machine
         The machine and its settings when measurements was taken.
+        This object is needed for assertions, to check that the provided
+        waterfall is correct compared to the machine parameters. It is
+        also needed for calculating the self fields and profile charge
+        of the bunch. 
     sampling_time: float
         Original sampling time of measurements.
         Needed for calculation of profile charge.
-    waterfall: ndarray, float
-        2D-array containing all profile measurements.
+    waterfall: ndarray
+        2D array containing all profile measurements.
+        Array should have the shape: (N, M), where N is the number of profiles
+        and M is the number of bins of each profile.
     profile_charge: float
-        Total charge of a reference profile.
+        The total charge of a reference profile.
     vself: ndarray, float
-        2D array of self-fields at each bin of each profile.
+        2D array of self-fields at each bin of each profile. 
+        The shape of the array is (N, W), N is the number of profiles, and
+        W is the `Profiles.wrap_length`.
     dsprofiles: ndarray, float
-        Filtered profiles.
+        2D array containing Filtered profiles. Shape should be 
+        (N, M), where N is the number of profiles
+        and M is the number of bins of each profile.
     phiwrap: float
-        Phase covering an integer of rf periods.
+        The phase [rad] covering an integer of rf periods.
     wrap_length: float
         Maximum number of bins to cover an integer number of rf periods.
-
     '''
     def __init__(self, machine, sampling_time, waterfall,
                  profile_charge=None):
@@ -69,31 +80,33 @@ class Profiles(object):
 
     @property
     def waterfall(self):
-        '''Waterfall defined as @property.
+        '''Waterfall defined as @property. The property does the
+        following when accessed:
 
-        * Asserts that input waterfall is iterable and has the correct\
-        amount of profiles, as stated by the Machine object.
-        * Removes negative values from waterfall (set to zero).
-        * Updates machine.nbins.
-
+        * Asserts for correctness of waterfall, here the number of profiles\
+        should be as stated by the `Machine` object.
+        * Negative values of waterfall are set to zero.
+        * `Machine.nbins` is updated with the number of bins in the waterfall.
 
         Parameters
         ----------
-        waterfall: ndarray, float
-            Measured profiles as a 2D array.
+        waterfall: ndarray
+            Measured profiles as a 2D array. Shape: (N, M), N is the number
+            of profiles and M is the number of bins of each profile.
         
         Returns
         -------
-        waterfall: ndarray, float
-            Measured profiles as a 2D array.
-
+        waterfall: ndarray
+            Measured profiles as a 2D array. Shape: (N, M), N is the number
+            of profiles and M is the number of bins of each profile.
+        
         Raises
         ------
         WaterfallError: Exception
-            If not iterable or wrong amount of profiles.
+            Waterfall not iterable or wrong has the amount of profiles.
         WaterfallReducedToZero: Exception
-            If all of profile is redduced to zero after removing
-            negaitve values.
+            All of waterfall is reduced to zero after removal of negative
+            values.
         '''
         return self._waterfall
 
@@ -120,8 +133,12 @@ class Profiles(object):
 
     def calc_profilecharge(self):
         '''Calculate the total charge of profile.
-        Uses the beam reference profile for the calculation.
-        Sets the `profile_charge` field.
+        Uses the beam reference profile to decide which profile should 
+        be used for the calculation.
+        Sets the `Profiles.profile_charge` field.
+
+        **NB:** The function requires that the **original sampling time**
+        of the measurements is provided.
         '''
         ref_prof = self.waterfall[self.machine.beam_ref_frame]
         self.profile_charge = (np.sum(ref_prof) * self.sampling_time
@@ -146,13 +163,14 @@ class Profiles(object):
 
         Parameters
         ----------
-        filtered_profiles: ndarray, float
-            If filtered profiles are provided, they will be used in the\
+        filtered_profiles: ndarray (optional, default=None)
+            If the filtered profiles are provided, they will be used in the\
             calculation of the self fields. If not, the original profiles\
             will be filtered using a standard or user spescified filter.
-        in_filter: function
-            The measured profiles will be filtered using the provided filter\
-            in stead of the savitzky-golay smoothing filter.
+        in_filter: function (optional, default=None)
+            If provided, the measured profiles will be filtered using
+            the provided filter in stead of the savitzky-golay
+            smoothing filter.
 
         Raises
         ------

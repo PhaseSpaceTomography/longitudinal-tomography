@@ -1,4 +1,5 @@
-'''Module containing functions for handling input from text files.
+'''Module containing functions for handling input from
+Fortran style text files.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
@@ -40,8 +41,8 @@ class Frames:
         Rebinning factor - Number of frame bins to rebin into one profile bin. 
     dtbin: float
         Size of profile bins (sampling size) [s].
-    raw_data_path: string
-        (optional) Path to file holding raw data for programmers reference.
+    raw_data_path: string, optional, default=''
+        Path to file holding raw data for programmers reference.
     
     Attributes
     ----------
@@ -59,7 +60,8 @@ class Frames:
     skip_bins_end: int
         Subtract this number of bins from end of the raw input.
     rebin: int
-        Rebinning factor - Number of frame bins to rebin into one profile bin.
+        Rebinning factor, the number of frame bins to
+        rebin into one profile bin.
     sampling_time: float
         Size of profile bins [s].
     raw_data_path: string
@@ -86,7 +88,7 @@ class Frames:
         Parameters
         ----------
         in_raw_data: ndarray
-            Array holding raw data as a direct read from text file.
+            1D array holding raw data as a direct read from text file.
         
         Returns
         -------
@@ -119,7 +121,7 @@ class Frames:
                     f'expected length: {ndata}')
 
     def nprofs(self):
-        '''Function to calculate number of profiles.
+        '''Function for calculating the number of profiles.
         This number should be used when creating a machine object.
         
         Returns
@@ -141,12 +143,19 @@ class Frames:
         return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
 
     def to_waterfall(self, raw_data):
-        '''Function to convert from raw data read from text file to waterfall
-        for use in reconstruction.
+        '''Function to convert from raw data to waterfall for use in
+        reconstruction. The waterfall wil be shaped based on the 
+        settings found in the :class:`Frames` object.
 
-        Shape of waterfall is generated based on
-        parameters of the Frame object. Created from copy of raw data.
+        Shape of waterfall is generated based on parameters of the Frames
+        object.
         
+        Parameters
+        ----------
+        raw_data: ndarray
+            1D array holding all measured raw data.
+            The function works on a copy of the given raw_data.
+
         Returns
         -------
         waterfall: ndarray
@@ -191,14 +200,14 @@ def get_user_input():
     '''Function to let user provide input as a text file either as
     file path or as stdin.
 
-    If filepath is given, the path to the output directory can be
-    given as the second argument. This will be as the new value
-    of the read input parameters.
+    If a filepath is given through the **system arguments**, the path to the
+    output directory can be given as the second argument. The spescified
+    output path will substitute the output path read from the input file.
+    A faile path to the measured data, or the measured data itself can
+    be given in the input file.
 
-    If the input is provided via stdin, the measured data must be
-    pipelined in the same text file. If given trough the system
-    arguments, the location of the measurement data can be given in
-    the parameters.
+    If the input is provided via **stdin**, the measured data must be
+    stored in the same input file.
 
     Returns
     -------
@@ -314,10 +323,11 @@ def _split_input(read_input):
 
 
 def txt_input_to_machine(input_array):
-    '''Function to convert from text to machine object.
-
-    Function takes the content of an input-file as a list holding a string for
-    each line of the file. From this a machine object is created.
+    '''Function converts the content of an input file and uses this to
+    generate an machine obect. The input file is given as a list
+    holding one line of the file in ach element. The list should
+    contain a direct read from a Fortran styled input file, where all
+    lines should be included.
 
     Parameters
     ----------
@@ -328,7 +338,8 @@ def txt_input_to_machine(input_array):
     Returns
     -------
     machine: Machine
-        Machine object containing all parameters set in input file.
+        Machine object containing parameters for the machine and the 
+        tomographic reconstruction.
 
     Raises
     ------
@@ -429,18 +440,20 @@ def _min_max_dt(nbins, input_array):
 
 def raw_data_to_profiles(waterfall, machine, rbn,
                          sampling_time, synch_part_x=None):
-    '''Function to convert from waterfall of raw data to
-    treated waterfall saved in a Profiles object.
+    '''Converts from waterfall of untreated data, to waterfall
+    ready for for tomography. The input waterfall is copied, and the 
+    treated waterfall is saved to a profiles object. 
 
-    Contains all functionality used by the original Fortran
-    program. Works on copy of provided waterfall.
+    The data treatment in this function is the same as in the original
+    original tomography program:
 
-    - Subtracts baseline
-    - Rebin profiles
+    - Subtracts baseline from measurments
+    - Re-binnes profiles
     - Creates Profiles object to store waterfall
+    - Negative values of waterfall is set to zero.
     
     **NB: dtbin and synch_part_x of the provided machine object
-    will be updated.** 
+    will be updated after re-binning.** 
 
     Parameters
     ----------
@@ -449,19 +462,19 @@ def raw_data_to_profiles(waterfall, machine, rbn,
     machine: Machine
         Machine object holding machine and reconstruction parameters.
     rbn: int
-        Rebinning factor - Number of frame bins to rebin into one profile bin.
+        Rebinning factor, the number of frame bins to
+        rebin into one profile bin.
     sampling_time: float
         Size of profile bins [s].
-    synch_part_x: (optional) float
+    synch_part_x: float, optional, default=None
         X-coordinate of synchronous particle. If not given as argument,
         the machine.synch_part_x will be used.
     
     Returns
     -------
     profile: Profiles
-        Profiles object holding the waterfall, and information about the
+        Profiles object holding the waterfall and information about the
         measurements. 
-
     '''
     if not hasattr(waterfall, '__iter__'):
         raise expt.WaterfallError('Waterfall should be an iterable')
@@ -470,8 +483,7 @@ def raw_data_to_profiles(waterfall, machine, rbn,
 
     waterfall = np.array(waterfall)
     # Subtracting baseline
-    waterfall[:] -= treat.calc_baseline_ftn(
-                        waterfall, machine.beam_ref_frame)
+    waterfall[:] -= treat.calc_baseline_ftn(waterfall, machine.beam_ref_frame)
     # Rebinning
     (waterfall,
      machine.dtbin,

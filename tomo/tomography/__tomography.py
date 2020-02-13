@@ -1,4 +1,4 @@
-'''Module containing the Tomography base class
+'''Module containing the Tomography super class
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
@@ -17,13 +17,11 @@ class Tomography:
 
     Parameters
     ----------
-    waterfall: ndarray, float
-        Measured profiles (nprofiles, nbins).
-        Negative values of waterfall is set to zero, and the
-        waterfall is normalized as the tomography objects are created.   
+    waterfall: ndarray
+        2D array of measured profiles, shaped: (nprofiles, nbins).   
     x_coords: ndarray: int
-        particles x-coordinates, given as coordinates of the reconstructed
-        phase space coordinate system (nparts, nprofiles).
+        x-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
 
     Attributes
     ----------
@@ -33,14 +31,17 @@ class Tomography:
         Number of profiles (time frames).
     nbins: int
         Number of bins in each profile.
-    waterfall: ndarray, float
-        Measured profiles.
-    xp: ndarray, int
-        particles x-coordinates, given as coordinates of the reconstructed
-        phase space coordinate system (nparts, nprofiles).
-    recreated: ndarray, float
-        Recreated waterfall. Directly comparable with `waterfall`.
-    diff: ndarray, float
+    waterfall: ndarray
+        2D array of measured profiles, shaped: (nprofiles, nbins).
+        Negative values of waterfall is set to zero, and the waterfall is
+        normalized.
+    xp: ndarray
+        x-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
+    recreated: ndarray
+        Recreated waterfall. Directly comparable with 
+        *Tomogaphy.waterfall*. Shape: (nprofiles, nbins).
+    diff: ndarray
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
     '''
@@ -63,13 +64,60 @@ class Tomography:
 
         Returns
         -------
-        waterfall: ndarray, float
+        waterfall: ndarray
             Measured profiles (nprofiles, nbins).
-            Negative values of waterfall is set to zero, and the
-            waterfall is normalized as the tomography objects are created. 
+            waterfall is normalized and its negative values are set to zero. 
         '''
         return self._waterfall
-    
+
+    @property
+    def yp(self):
+        '''Y-coordinates defined as @property.
+        
+        Parameters
+        ----------
+        value: ndarray, None
+            2D array of tracked particles energy coordinates,
+            given in phase space coordinates as integers.
+            Shape: (nparts, nprofiles).
+            
+            By setting tomography.yp = None, the saved y-coordinates
+            are deleted.
+
+        Returns
+        -------
+        xp: ndarray
+            particles y-coordinates, given as coordinates of the reconstructed
+            phase space coordinate system in integers.
+            shape: (nparts, nprofiles).
+
+        Raises
+        ------
+        CoordinateImportError: Exception
+            Provided coordinates are invalid.
+        '''
+        return self._yp
+
+    @yp.setter
+    def yp(self, value):
+        if hasattr(value, '__iter__'):
+            if self._xp is None:
+                raise expt.CoordinateImportError(
+                        'The object x-coordinates are None. x-coordinates'
+                        'must be provided before the y-coordinates.')
+            elif value.shape == self.xp.shape:
+                self._yp = value.astype(np.int32)
+            else:
+                raise expt.CoordinateImportError(
+                        'The given y-coordinates should be of the '
+                        'same shape as the x-coordinates.')
+        elif value is None:
+            self._yp = None
+        else:
+            raise expt.CoordinateImportError(
+                'Y-coordinates should be iterable, or None.')            
+
+
     @property
     def xp(self):
         '''X-coordinates defined as @property.
@@ -78,23 +126,27 @@ class Tomography:
 
         Parameters
         ----------
-        value: ndarray, int, None
-            Tracked particles, given in phase space coordinates as integers.
-            By setting tomography.xp = None,
-            the saved x-coordinates are deleted.
+        value: ndarray, None
+            2D array of tracked particles phase coordinates,
+            given in phase space coordinates as integers.
+            Shape: (nparts, nprofiles).
+
+            By setting tomography.xp = None, the saved x-coordinates
+            are deleted.
 
         Returns
         -------
-        xp: ndarray, int
+        xp: ndarray
             particles x-coordinates, given as coordinates of the reconstructed
-            phase space coordinate system (nparts, nprofiles).
+            phase space coordinate system in integers.
+            shape: (nparts, nprofiles).
 
         Raises
         ------
         CoordinateImportError: Exception
             Provided coordinates are invalid.
         XPOutOfImageWidthError: Exception
-            Particle(s) have left the image width.
+            Particle(s) out of image width.
         '''
         return self._xp
 
@@ -192,7 +244,7 @@ class Tomography:
     @njit
     # Static needed for use of njit.
     # Needed by reciprocal paricles function.
-    # C++ version excists.
+    # C++ version exists.
     def _count_particles_in_bins(ppb, profile_count, xp, nparts):
         for i in range(profile_count):
             for j in range(nparts):

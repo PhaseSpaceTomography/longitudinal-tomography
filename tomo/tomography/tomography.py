@@ -16,7 +16,7 @@ class TomographyCpp(stmo.Tomography):
     
     The tomographic routine largely consists of two parts. Projection and
     back projection. The **back projection** creates a phase space
-    reconstruction pased on the measured profiles. The **projection**
+    reconstruction based on the measured profiles. The **projection**
     routine converts from back projection to reconstructed profiles.
 
     By comparing the reconstructed profiles to the measured profiles,
@@ -26,13 +26,11 @@ class TomographyCpp(stmo.Tomography):
 
     Parameters
     ----------
-    waterfall: ndarray, float
-        Measured profiles (nprofiles, nbins).
-        Negative values of waterfall is set to zero, and the
-        waterfall is normalized as the tomography objects are created.   
-    x_coords: ndarray: int
-        particles x-coordinates, given as coordinates of the reconstructed
-        phase space coordinate system (nparts, nprofiles).
+    waterfall: ndarray
+        2D array of measured profiles, shaped: (nprofiles, nbins).  
+    x_coords: ndarray
+        x-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
 
     Attributes
     ----------
@@ -42,14 +40,17 @@ class TomographyCpp(stmo.Tomography):
         Number of profiles (time frames).
     nbins: int
         Number of bins in each profile.
-    waterfall: ndarray, float
-        Measured profiles.
-    xp: ndarray, int
-        particles x-coordinates, given as coordinates of the reconstructed
-        phase space coordinate system (nparts, nprofiles).
-    recreated: ndarray, float
-        Recreated waterfall. Directly comparable with `waterfall`.
-    diff: ndarray, float
+    waterfall: ndarray
+        2D array of measured profiles, shaped: (nprofiles, nbins).
+        Negative values of waterfall is set to zero, and the waterfall is
+        normalized.
+    xp: ndarray
+        x-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
+    recreated: ndarray
+        Recreated waterfall. Directly comparable with *Tomogaphy.waterfall*.
+        Shape: (nprofiles, nbins).
+    diff: ndarray
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
     '''
@@ -63,16 +64,16 @@ class TomographyCpp(stmo.Tomography):
         Projection and back projection routines are called from C++,
         the rest is written in python. Kept for reference.
 
-        The discrepancy of each iteration is saved in the `diff` variable
+        The discrepancy of each iteration is saved in the *diff* array
         of the object.
 
-        The recreated waterfall can be found calling the `recreated` field
+        The recreated waterfall can be found calling the *recreated* field
         of the object. 
 
         Parameters
         ----------
         niter: int
-            number of iterations of reconstruction.
+            Number of iterations in reconstruction.
         verbose: boolean
             Flag to indicate that the status of the tomography should be 
             written to stdout. The output is identical to output
@@ -80,9 +81,15 @@ class TomographyCpp(stmo.Tomography):
 
         Returns
         -------
-        weight: ndarray, float
-            Array containing weight of each particle.
+        weight: ndarray
+            1D array containing the weight of each particle.
 
+        Raises
+        ------
+        CoordinateError: Exception
+            X-coordinates is None
+        WaterfallReducedToZero: Exception
+            All of reconstructed watefall reduced to zero.  
         '''
         log.warning('TomographyCpp.run_hybrid() '
                     'may be removed in future updates!')
@@ -148,15 +155,15 @@ class TomographyCpp(stmo.Tomography):
     def run(self, niter=20, verbose=False):
         '''Function to perform tomographic reconstruction.
 
-        Performs the wull reconstruction using C++.
+        Performs the full reconstruction using C++.
 
-        The discrepancy of each iteration is saved in the `diff` variable
+        The discrepancy of each iteration is saved in the *diff* variable
         of the object.
 
         Parameters
         ----------
         niter: int
-            number of iterations of reconstruction.
+            Number of iterations in reconstruction.
         verbose: boolean
             Flag to indicate that the status of the tomography should be 
             written to stdout. The output is identical to output
@@ -164,9 +171,13 @@ class TomographyCpp(stmo.Tomography):
 
         Returns
         -------
-        weight: ndarray, float
-            Array containing weight of each particle.
-
+        weight: ndarray
+            1D array containing the weight of each particle.
+        
+        Raises
+        ------
+        CoordinateError: Exception
+            X-coordinates is None
         '''
         if self.xp is None:
             raise expt.CoordinateError(

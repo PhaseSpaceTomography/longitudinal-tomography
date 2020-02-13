@@ -1,8 +1,8 @@
-'''Module containing the Particles class for creting and storing the initial
-distibution of particles.
+'''Module containing the Particles class for creating and storing
+and initial particle distibution.
 
-Moule also contains utility functions for particle distributins,
-like assertions, convertions and filtering of loast particles.
+Moule also contains utility functions for particle distibution
+like assertions, convertions and filtering of lost particles.
 
 :Author(s): **Christoffer Hjertø Grindheim**'''
 
@@ -16,28 +16,30 @@ from ..utils import exceptions as expt
 
 class Particles(object):
     '''Class holding the initial particle distribution to be tracked.  
-    An homogeneous particle can also be automaticly generated
-    within the reconstruction area.
+    
+    An autmatic homogeneous particle based on the algorithm from the original
+    tomography program can be created, by calling
+    :func:`homogeneous_distribution`.
 
     Attributes
     ----------
-    dEbin: float
+    dEbin: float, default=None
         Energy size of bins in phase space coordinate system. 
-    xorigin: float
+    xorigin: float, default=None
         The absolute difference (in bins) between phase=0 and the origin
         of the reconstructed phase space coordinate system.
-    imin: int
-        Minimum phase, in phase space coordinates, of reconstruction area.
-    imax: int
-        Maximum phase, in phase space coordinates, of reconstruction area.
-    jmin: ndarray, float
+    imin: int, default=None
+        Minimum phase of reconstruction area. Given in bins phase space.
+    imax: int, default=None
+        Maximum phase of reconstruction area. Given in bins phase space.
+    jmin: ndarray, default=None
         Minimum energy for each phase of the phase space coordinate system. 
-    jmax: ndarray, float
+    jmax: ndarray, default=None
         Maximum energy for each phase of the phase space coordinate system.
-    coordinates_dphi_denergy: tuple (ndarray:float, ndarray:float)
-        Tuple containing coordinates of initial particle distibution
-        (dphi, denergy). These are the differences in phase [rad] energy [eV]
-        relative to the synchronous particle.
+    coordinates_dphi_denergy: tuple, default=(None, None)
+        Tuple containing coordinates of initial particle distibution as 1D
+        ndarrays (dphi, denergy). These are the differences in phase [rad]
+        energy [eV] relative to the synchronous particle.
     '''
     def __init__(self):       
         self.dEbin = None
@@ -64,16 +66,27 @@ class Particles(object):
 
         Parameters
         ----------
-        coordinates: tuple, (dphi, denergy)
-            `dphi` is an ndarray containing the phase of each particle.
-            `denergy` is an ndarray containing the energy of each particle.
+        coordinates: tuple
+            Tuple holding (dphi, denergy)
+            
+            * dphi
+                ndarray containing the phase [rad] of each particle
+                reative to the synchronous particle.
+            * denergy
+                ndarray containing the energy [eV] of each particle
+                reative to the synchronous particle.
 
         Returns
         -------
-        coordinates: tuple, (dphi, denergy)
-            `dphi` is an ndarray containing the phase of each particle.
-            `denergy` is an ndarray containing the energy of each particle.
+        coordinates: tuple
+            Returns a tuple holding (dphi, denergy)
 
+            * dphi
+                ndarray containing the phase [rad] of each particle
+                reative to the synchronous particle.
+            * denergy
+                ndarray containing the energy [eV] of each particle
+                reative to the synchronous particle.
         '''
         return (self._dphi, self._denergy)
 
@@ -85,18 +98,18 @@ class Particles(object):
         '''Function for automatic generation of particle distribution. 
 
         The distributions created are identical to the distributions created
-        in the Fortran tomography. 
+        in the Fortran tomography. The reconstructeon area is found by calling
+        :func:`~tomo.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`.
 
         Parameters
         ----------
         machine: Machine
-            Object containing the machine and its settings during the
-            measurements. Needed for the calculation of the reconstruction
-            area, and for spescification of the number of particles to
-            be created.
+            Object containing the machine settings during the measurements.
+            Needed for the calculation of the reconstruction area, and 
+            for setting the the number of particles to be created.
         recprof: int
-            The profile to be reconstructed. This will be the profile where
-            the distribution is generated.
+            The index of the profile (time frame) to be reconstructed.
+            This will be the profile where the distribution is generated.
 
         Raises
         ------
@@ -187,16 +200,16 @@ class Particles(object):
             'Did you remember to use machine.values_at_turns()?')
 
 def filter_lost(xp, yp, img_width):
-    '''Remove lost particles (particles outside of image width).
+    '''Remove lost particles (particles that leaves the image width).
 
     Parameters
     ----------
-    xp: ndarray, int
-        Array containing all x coordinates of tracked particles.
+    xp: ndarray
+        2D array containing x-coordinates of all particles at each time frame.
         Particle coordinates must be given in phase space coordinates
         as integers. Shape: (nprofiles, nparts).
     yp: ndarray, int
-        Array containing all y coordinates of tracked particles.
+        2D array containing y-coordinates of all particles at each time frame.
         Particle coordinates must be given in phase space coordinates
         as integers. Shape: (nprofiles, nparts).
     img_width: int
@@ -204,15 +217,13 @@ def filter_lost(xp, yp, img_width):
     
     Returns
     -------
-    xp: ndarray, int
-        Array containing all x coordinates of tracked particles.
-        Particle coordinates must be given in phase space coordinates
-        as integers. Now only containing particles inside of image width.
+    xp: ndarray
+        2D array containing x-coordinates of all particles at each time frame.
+        Now containing only particles inside of the image width.
         Shape: (nprofiles, nparts).
-    yp: ndarray, int
-        Array containing all y coordinates of tracked particles.
-        Particle coordinates must be given in phase space coordinates
-        as integers. Now only containing particles inside of image width.
+    yp: ndarray
+        2D array containing y-coordinates of all particles at each time frame.
+        Now containing only particles inside of the image width.
         Shape: (nprofiles, nparts).
     nr_lost_points: int
         Number of particles removed. 
@@ -240,21 +251,24 @@ def filter_lost(xp, yp, img_width):
 
 def physical_to_coords(tracked_dphi, tracked_denergy,
                        machine, xorigin, dEbin):
-    '''Function to convert from physical units to reconstructed 
-    phase space coordinates.
+    '''Function to convert from physical units ([rad], [eV]) to reconstructed 
+    phase space coordinates (bin numbers).
+
+    The phase space coordinates are needed for the tomographic reconstruction
+    routines.
 
     Parameters
     ----------
-    tracked_dphi: ndarray, float
-        2d array containing phase [rad] difference relative to 
-        the synchronous particle, for every particle at every time frame.
+    tracked_dphi: ndarray
+        2D array containing the phase difference [rad] relative to 
+        the synchronous particle for every particle at every time frame.
         Array shape: (nprofiles, nparticles)
-    tracked_denergy: ndarray, float
-        2d array containing energy [eV] difference relative to 
-        the synchronous particle, for every particle at every time frame.
+    tracked_denergy: ndarray
+        2D array containing the energy difference [eV] relative to 
+        the synchronous particle for every particle at every time frame.
         Array shape: (nprofiles, nparticles)
     machine: Machine
-        machine object holding machine parameters and settings for
+        machine object holding machine parameters, and settings for
         the reconstruction.
     xorigin: float
         The absolute difference (in bins) between phase=0 and the origin
@@ -264,13 +278,15 @@ def physical_to_coords(tracked_dphi, tracked_denergy,
     
     Returns
     -------
-    xp: ndarray, float
-        2d array containing the x-coordinate for every particle
-        at every time frame, given in phase space coordinates.
+    xp: ndarray
+        2D array containing the x-coordinate for every particle
+        at every time frame, given fractions of bins of
+        the phase space coordinate system.
         Array shape: (nprofiles, nparticles)
-    yp: ndarray, float
-        2d array containing the y-coordinate for every particle
-        at every time frame, given in phase space coordinates.
+    yp: ndarray
+        2D array containing the y-coordinate for every particle
+        at every time frame, given fractions of bins of
+        the phase space coordinate system.
         Array shape: (nprofiles, nparticles)
     '''
     if tracked_dphi.shape != tracked_denergy.shape:
@@ -295,39 +311,48 @@ def physical_to_coords(tracked_dphi, tracked_denergy,
     return xp, yp
 
 def ready_for_tomography(xp, yp, nbins):
-    '''Function to make tracked particles ready for the tomography routine.
+    '''Function to prepeare tracked particles tomography routine.
 
-    Handy if particles are tracked using the tomo tracking functions.
+    Handy if particles are tracked using the functions of the
+    :mod:`tomo.tracking.tracking` module.
+
+    **Function does the following actions:**
 
     * Removes particles leaving the image width.
     * Transposes the coordinate arrays from (nprofiles, nparts)\
     to (nparts, nprofiles).
     * Casts coordinates to integers.
 
-    The returned coordinates are ready to be used in the tomography routines.
+    The returned coordinates are ready to be used in the tomographic
+    reconstruction routines.
 
     Parameters
     ----------
-    xp: ndarray, float
-        2d array containing the x-coordinate for every particle
-        at every time frame, given in phase space coordinates.
-        Array shape: (nprofiles, nparticles)
+    xp: ndarray
+        2D array containing the x-coordinate for every particle
+        at every time frame, given fractions of bins of
+        the phase space coordinate system.
+        Array shape: **(N, M)**, where N is the number of profiles,
+        and M is the number of particles.
     yp: ndarray, float
-        2d array containing the y-coordinate for every particle
-        at every time frame, given in phase space coordinates.
-        Array shape: (nprofiles, nparticles)
+        2D array containing the y-coordinate for every particle
+        at every time frame, given fractions of bins of
+        the phase space coordinate system.
+        Array shape: **(N, M)**, where N is the number of profiles,
+        and M is the number of particles.
 
-    Attributes
-    ----------
-    xp: ndarray, int
-        2d array containing the x-coordinate for every particle
+    Returns
+    -------
+    xp: ndarray
+        2D array containing the x-coordinate for every particle
         at every time frame, given in phase space coordinates.
-        Array shape: (nparticles, nprofiles)
-    yp: ndarray, int
-        2d array containing the y-coordinate for every particle
+        Array shape: **(M, N)**, where N is the number of profiles,
+        and M is the number of particles.
+    yp: ndarray
+        2D array containing the y-coordinate for every particle
         at every time frame, given in phase space coordinates.
-        Array shape: (nparticles, nprofiles)
-
+        Array shape: **(M, N)**, where N is the number of profiles,
+        and M is the number of particles.
     '''
     xp, yp, lost = filter_lost(xp, yp, nbins)
     log.info(f'number of lost particles: {lost}')

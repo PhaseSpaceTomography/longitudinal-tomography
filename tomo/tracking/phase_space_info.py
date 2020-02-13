@@ -1,4 +1,4 @@
-'''Module containing the Tracking class
+'''Module containing the PhaseSpaceInfo class
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
@@ -13,7 +13,8 @@ from ..utils import exceptions as expt
 
 
 class PhaseSpaceInfo:
-    '''Class calculating and storing inforamtion about the reconstruction area.
+    '''Class for calculating and storing inforamtion about the phase
+    space reconstruction area.
     
     Parameters
     ----------
@@ -24,14 +25,16 @@ class PhaseSpaceInfo:
     ----------
     machine: Machine
         Object containing machine parameters and settings.
-    jmin: ndarray, int
-        Minimum energy for each phase of the phase space coordinate system.
-    jmax: ndarray, int
-        Maximum energy for each phase of the phase space coordinate system.
+    jmin: ndarray
+        1D array of integers holding the minimum energy for each phase
+        of the phase space coordinate system.
+    jmax: ndarray
+        1D array of integers holding the maximum energy for each phase
+        of the phase space coordinate system.
     imin: int
-        Minimum phase, in phase space coordinates, of reconstruction area.
+        Minimum phase of reconstruction area, given in phase space coordinates.
     imax: int
-        Maximum phase, in phase space coordinates, of reconstruction area.
+        Maximum phase of reconstruction area, given in phase space coordinates.
     dEbin: float
         Energy size of bins in phase space coordinate system.
     xorigin: float
@@ -48,27 +51,27 @@ class PhaseSpaceInfo:
         self.xorigin = None
 
     def find_binned_phase_energy_limits(self):
-        '''This function finds the limits in the i (phase)
-        and j (energy) axes of the reconstructed phase space coordinate system.
+        '''This function finds the limits in the i (phase) and j (energy) axes
+        of the reconstructed phase space coordinate system.
 
-        The area within the limits of i and j will be the reconstruction area.
-        This is where the particles will be populated.
-        By setting the `full_pp_flag` to True in the provided `Machine` object,
-        the reconstruction area will be set to the whole phase space image.
+        The area within the limits of i and j will be the phase space
+        reconstruction area. This is where the particles will be populated.
+        By setting the `full_pp_flag` in the provided
+        :class:`~tomo.tracking.machine.Machine` object to True,
+        the reconstruction area will be set to all of the phase space image.
 
         This function gives a value to all attributes of the class.  
         
         Raises
         ------
         EnergyBinningError: Exception
-            The energy size of the phase space coordinate
-            bins are less than zero. 
+            Size of each phase space bin in the enegy axis is less than zero. 
         PhaseLimitsError: Exception
-            Error in setting the limits in i (phase).
+            Error in the limits of the i (phase) axis.
         EnergyLimitsError: Exception
-            Error in setting the limits in j (energy).
+            Error in the limits of the j (energy) axis.
         ArrayLengthError: Exception
-            Difference in array shape of jmin and jmax.
+            Difference in length of jmin and jmax.
         '''
 
         self.xorigin = self.calc_xorigin()
@@ -102,19 +105,19 @@ class PhaseSpaceInfo:
         reconstructed phase space coordinate system.
         
         Needed by
-        :py:meth:`~tomo.tracking.phase_space_info.PhaseSpaceInfo\
-.find_binned_phase_energy_limits`
+        :meth:`~tomo.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`
         in order to calculate the reconstruction area.
 
         Returns
         -------
-        dEbin: float
+        dEbin:
             Energy size of bins in phase space coordinate system.
         
         Raises
         ------
         EnergyBinningError: Exception
-            The provided value of machine.demax is invalid.
+            The provided value of machine.demax is invalid, or xorigin is
+            not calculated before the function is called. 
         '''
         if self.xorigin is None:
             raise expt.EnergyBinningError(
@@ -159,15 +162,14 @@ class PhaseSpaceInfo:
         '''Function for calculating xorigin.
 
         Needed by
-        :py:meth:`~tomo.tracking.phase_space_info.PhaseSpaceInfo\
-.find_binned_phase_energy_limits`
+        :func:`~tomo.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`
         in order to calculate the reconstruction area.
 
         Returns
         -------
         xorigin: float
-        The absolute difference (in bins) between phase=0 and the origin
-        of the reconstructed phase space coordinate system.
+            The absolute difference (in bins) between phase=0 and the origin
+            of the reconstructed phase space coordinate system.
         '''
         beam_ref_turn = self.machine.beam_ref_frame * self.machine.dturns
         return (self.machine.phi0[beam_ref_turn]
@@ -308,7 +310,7 @@ class PhaseSpaceInfo:
                                  * (phi_known - self.machine.phi12)))
                         / self.machine.h_ratio
                         + (phi - phi_known)
-                        * physics.short_rf_voltage_formula(
+                        * physics.rf_voltage_at_phase(
                             self.machine.phi0[turn], self.machine.vrf1,
                             self.machine.vrf1dot, self.machine.vrf2,
                             self.machine.vrf2dot, self.machine.h_ratio,

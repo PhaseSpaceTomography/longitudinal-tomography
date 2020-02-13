@@ -18,7 +18,7 @@ def assert_greater(var, var_name, limit, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     limit: int, float
         Limit of which variable should be greater than.
     error_class: Exception
@@ -39,7 +39,7 @@ def assert_less(var, var_name, limit, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     limit: int, float
         Limit of which variable should be less than.
     error_class: Exception
@@ -60,7 +60,7 @@ def assert_equal(var, var_name, limit, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     limit: int, float
         Limit of which variable should be equal to.
     error_class: Exception
@@ -81,7 +81,7 @@ def assert_not_equal(var, var_name, limit, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     limit: int, float
         Limit of which variable should be unequal to.
     error_class: Exception
@@ -102,7 +102,7 @@ def assert_less_or_equal(var, var_name, limit, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     limit: int, float
         Limit of which variable should be less than or equal to.
     error_class: Exception
@@ -123,7 +123,7 @@ def assert_greater_or_equal(var, var_name, limit, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     limit: int, float
         Limit of which variable should be greater than or equal to.
     error_class: Exception
@@ -144,7 +144,7 @@ def assert_inrange(var, var_name, low_lim, up_lim, error_class, extra_text=''):
     var: int, float
         Variable to be asserted.
     var_name: string
-        Name of variable, for user reference.
+        Name of variable, for users reference.
     low_limit: int, float
         Lower limit of variable.
     up_limit: int, float
@@ -202,12 +202,14 @@ def assert_array_shape_equal(arrays, array_names,
 
     Parameters
     ----------
-    arrays: tuple (ndarray, ndarray)
-        Arrays to be asserted.
-    array_names: tuple (string, string)
-        Names of arrays, for user reference.
-    demanded_shape: tuple (int, int)
-        Demanded shape of arrays to be asserted.
+    arrays: tuple
+        tuple should contain (ndarrayX, ndarrayY).
+        ndarrays are the arrays to be asserted.
+    array_names: tuple
+        tuple of strings, being names of the arrays to be tested for the
+        users refernce.
+    demanded_shape: tuple
+        Demanded shape of arrays to be asserted. Tuple: (int, int).
     error_class: Exception
         Error class to be raised if assertion fails.
     extra_text: string
@@ -358,8 +360,8 @@ def _assert_log_arr(log_array_ok, error_class, index_offset, msg):
 def assert_only_valid_particles(xp, n_bins, msg=''):
     '''Assert all particles are within the image width.
     
-    An error is raised if the trajectory of one or more particles
-    goes outside of the image width.
+    An InvalidParticleError is raised if the trajectory
+    of one or more particles goes outside of the image width.
 
     Parameters
     ----------
@@ -394,8 +396,8 @@ def assert_fields(obj, obj_name, needed_fields, error_class, msg=''):
         Object to be asserted.
     obj_name: string
         Name of object, for user reference.
-    needed_fields: List
-        List containing attributes which tha object should contain.
+    needed_fields: array like
+        Array containing attributes which object should contain.
     error_class: Exception
         Error class to be raised if assertion fails.
     msg: string
@@ -513,14 +515,13 @@ def assert_machine_input(machine):
                                 'geometrical coupling coefficient')
 
 def assert_frame_inputs(frame):
-    '''Assert frame parameters are valid.
-    
-    Asserts that raw data will be correctly shaped to waterfall.
+    '''Assert that frame parameters are valid, and that raw data will be
+    correctly shaped to waterfall.
 
     Parameters
     ----------
     frame: Frame
-        Frame to be asserted.
+        Frame object to be asserted.
 
     Raises
     ------
@@ -550,35 +551,34 @@ def assert_frame_inputs(frame):
 #                      INDEX ASSERTIONS
 # =========================================================
 
-
-'''Assert index is valid.
- 
-Assert that index is within bounds [0, index limit).
-Wrap_around for negative indices can be enabled.
-
-Parameters
-----------
-index: int
-    Index to be tested.
-index limit: int
-    Maximum index + 1
-wrap_around: (optional), bool
-    Set to true to enable wrap around for negative indices.  
-
-Returns
--------
-index: int
-    Asserted index from 0 to index_limit-1.
-
-Raises
-------
-IndexError: Exception
-    Index out of bounds.
-NegativeIndexError: Exception
-    Negative index given without setting wrap_around=True
-
-'''
 def assert_index_ok(index, index_limit, wrap_around=False):
+    '''Assert index is valid.
+     
+    Assert that index is within bounds [0, index limit).
+    Wrap_around for negative indices can be enabled. If this is the
+    case, index -1 is points at the last index.
+    
+    Parameters
+    ----------
+    index: int
+        Index to be tested.
+    index limit: int
+        Maximum index + 1
+    wrap_around: bool, optional, default=False
+        Set to true to enable wrap around for negative indices.  
+    
+    Returns
+    -------
+    index: int
+        Asserted index from 0 to index_limit-1.
+    
+    Raises
+    ------
+    IndexError: Exception
+        Index out of bounds.
+    NegativeIndexError: Exception
+        Negative index given without setting wrap_around=True
+    '''
     index = int(index)
     if index < 0:
         if not wrap_around:

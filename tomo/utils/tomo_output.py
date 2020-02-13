@@ -1,7 +1,7 @@
 '''Module containing functions for handling output from tomography programs.
 
-Every function ending on 'ftn' creates an output equal to the one generated
-in the Fortran program.
+Every function ending on 'ftn' creates an
+output equal original Fortan program.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 '''
@@ -19,7 +19,7 @@ from . import exceptions as expt
 # --------------------------------------------------------------- #
 
 def save_profile_ftn(profiles, recprof, output_dir):
-    '''Write phase-space image to text-file in tomoscope format.
+    '''Write phase-space image to text-file in the original format.
     The name of the file will be profileXXX.data, where XXX is the index
     of the time frame to be reconstructed counting from one.
     
@@ -69,7 +69,7 @@ def save_phase_space_ftn(image, recprof, output_path):
     recprof: int
         Index of reconstructed profile.
     output_dir: string
-        Path to output directory.
+        Path to the output directory.
     '''
     log.info(f'Saving image{recprof} to {output_path}')
     image = image.flatten()
@@ -81,20 +81,25 @@ def save_phase_space_ftn(image, recprof, output_path):
 def create_phase_space_image(xp, yp, weight, n_bins, recprof):
     '''Convert from weighted particles to phase-space image.
 
-    Output is equal to the phase space image created by the Fortran version. 
+    The output is equal to the phase space image created
+    in the original version. 
     
     Parameters
     ----------
     xp: ndarray
-        Array containing the x coordinates of every
-        particle at every time frame. Must be given in coordinates
-        of the phase space coordinate system as integers. 
-    yp: ndarray
-        Array containing the y coordinates of every
+        2D array containing the x coordinates of every
         particle at every time frame. Must be given in coordinates
         of the phase space coordinate system as integers.
+        Shape: (N, M), where N is the number of particles and
+        M is the number of profiles.
+    yp: ndarray
+        2D array containing the y coordinates of every
+        particle at every time frame. Must be given in coordinates
+        of the phase space coordinate system as integers.
+        Shape: (N, M), where N is the number of particles and
+        M is the number of profiles.
     weight: ndarray
-        Array containing the weight of each particle.
+        1D array containing the weight of each particle.
     n_bins: int
         Number of bins in a profile measurment.
     recprof: int
@@ -103,9 +108,9 @@ def create_phase_space_image(xp, yp, weight, n_bins, recprof):
     Returns
     -------
     phase_space: ndarray
-        Phase space presented as nbins x nbins image. Has the same
-        format as the image produced by the Fortran version.
-
+        Phase space presented as 2D array with shape (N, N), 
+        where N is the number of bins in a profile. This
+        phase space image has the same format as from the orginal program.
     '''
 
     phase_space = np.zeros((n_bins, n_bins))
@@ -125,7 +130,8 @@ def create_phase_space_image(xp, yp, weight, n_bins, recprof):
 # --------------------------------------------------------------- #
 
 def write_plotinfo_ftn(machine, particles, profile_charge):
-    '''Creates string containing plot info needed for tomoscope application.
+    '''Creates string of plot info needed for the orignal output
+    for the tomography program.
     
     Parameters
     ----------
@@ -141,7 +147,7 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
     -------
     plot_info: string
         String containing information needed by the tomoscope application.
-        The returned string has the same format as in the Fortran version.
+        The returned string has the same format as in the original version.
 
     '''
     recprof = machine.filmstart
@@ -210,14 +216,13 @@ def write_plotinfo_ftn(machine, particles, profile_charge):
 # --------------------------------------------------------------- #
 
 def save_difference_ftn(diff, output_path, recprof):
-    '''Write reconstruction discrepancy to text file
-    with tomoscope format.
+    '''Write reconstruction discrepancy to text file with original format.
 
     Parameters
     ----------
     diff: ndarray
-        Array containing the discrepancy for the reconstructed
-        phase space at each iteration.
+        1D array containing the discrepancy for the phase space at each
+        iteration of the recostruction.
     output_dir: string
         Path to output directory.
     recprof: int
@@ -234,21 +239,21 @@ def save_difference_ftn(diff, output_path, recprof):
 # --------------------------------------------------------------- #
 
 def print_tracking_status_ftn(ref_prof, to_profile):
-    '''Write output for particle tracking in Fortran style.
-    The Fortran algorithm is a little different, so
+    '''Write output for particle tracking in the original format.
+    Since the original algorithm is somewhat different,
     the **output concerning lost particles is not valid**.
-    Meanwhile, it is needed for the tomoscope.
+    Meanwhile, the format it is needed by the tomoscope application.
     Profile numbers are added by one in order to compensate for
-    differences in python and fortran arrays. Fortran counts from
-    one, python counts from 0.
-    This function is needed by the tomography tracking algorithm.
+    differences in Python and Fortran indexing. Fortran counts from
+    one, Python counts from 0.
+    This function is used in the tracking algorithm.
 
     Parameters
     ----------
     recprof: int
         Index of profile to be reconstructed.
     to_profile: int
-        Profile the algorithm is currently tracking towards.
+        Profile to which the algorithm is currently tracking towards.
     '''
     print(f' Tracking from time slice  {ref_prof + 1} to  '\
           f'{to_profile + 1},   0.000% went outside the image width.')
@@ -264,10 +269,11 @@ def show(image, diff, recprof):
     ----------
     Image: ndarray
         Recreated phase-space image.
+        Shape: (N, N), where N is the number of profile bins. 
     Diff: ndarray
-        Array conatining discrepancies for each iteration of reconstruction.
-    Profile: ndarray
-        The measured profile to be reconstructed
+        1D array conatining discrepancies for each iteration of reconstruction.
+    recprof: ndarray
+        1D array containing the measured profile to be reconstructed.
     '''
 
     # Normalizing recprof:

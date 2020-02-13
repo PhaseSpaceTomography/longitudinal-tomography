@@ -48,3 +48,10 @@ utils Package
     :members:
     :undoc-members:
     :show-inheritance:
+
+:mod:`tomo_run` Module
+----------------------
+.. automodule:: tomo.utils.tomo_run
+    :members:
+    :undoc-members:
+    :show-inheritance:
