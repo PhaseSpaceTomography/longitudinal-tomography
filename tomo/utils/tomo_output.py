@@ -292,9 +292,9 @@ def show(image, diff, recprof):
     cimg = img.imshow(image.T, origin='lower',
                       interpolation='nearest', cmap='hot')
 
-    profs1.plot(recprof, label='measured')
-    profs1.plot(np.sum(image, axis=1),
-                label='reconstructed')
+    
+    profs1.plot(np.sum(image, axis=1), label='reconstructed', zorder=5)
+    profs1.plot(recprof, label='measured', zorder=0)
     profs1.legend()
 
     profs2.plot(np.sum(image, axis=0),
