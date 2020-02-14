@@ -39,10 +39,6 @@ else:
 # Pointer to pointers.
 _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 
-# Kick and drift (gpu version)
-# _k_and_d_gpu = _tomolib.kick_and_drift_gpu
-# _k_and_d_gpu.argtypes = _k_and_d.argtypes
-
 # ========================================
 #           Setting argument types
 # ========================================
