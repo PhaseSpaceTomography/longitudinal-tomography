@@ -1,12 +1,9 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import os
-from scipy import constants
 import sys
 
-import tomo.tomography.tomography as tomography
-import tomo.utils.tomo_output as tomoout
-import tomo.utils.data_treatment as dtreat
+import tomo.utils.tomo_input as tin
 
 def generateBunch(bunch_position, bunch_length,
                   bunch_energy, energy_spread,
@@ -54,106 +51,67 @@ def drift(dphi, dE, hnum, beta, E0, eta):
 def kick(dphi, dE, charge, voltage, E0):
     return dE + charge * voltage * np.sin(dphi) - E0
 
-raise RuntimeError('Example not finished :-( ')
-
-# Loading measured data
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'C500MidPhaseNoise.dat')
 
-waterfall = np.genfromtxt(in_file_pth, skip_header=98)
+file = []
+with open(in_file_pth, 'r') as f:
+    for i in range(98):
+        file.append(f.readline().strip())
 
-sampling_time = 4.999999999999999E-10
-nframes = 100
-dturns = 12
-nturns = nframes * dturns
-nbins = int(len(waterfall) / nframes)
+machine, frame = tin.txt_input_to_machine(file)
+machine.values_at_turns()
 
-waterfall = waterfall.reshape(nframes, nbins)
-waterfall -= dtreat.calc_baseline_ftn(waterfall, 0)
+bunch_position = machine.synch_part_x * machine.dtbin * 0.0
+bunch_length = machine.nbins * machine.dtbin
+bunch_energy = 0.0
+energy_spread = 1.0E6
+n_parts = int(4E4)
 
-bunch_position = 0.25591559666284924    # [rad]
-bunch_length = 1.7210323875576607       # [rad]
-bunch_energy = 0.0                      # [eV]
-energy_spread = 1969365.9337549524      # [eV]
-nparts = int(1E6)
+dphi, denergy = generateBunch(
+                    bunch_position, bunch_length, bunch_energy, 
+                    energy_spread, n_parts)
 
-dphi, denergy = generateBunch(bunch_position, bunch_length,
-                              bunch_energy, energy_spread, nparts)
+dphi = dphi * np.pi / (machine.nbins * machine.dtbin)
 
-energy = 1.33501286E09              # [eV]
-energy_kick = 2.4362921438217163E03 # [eV]
-beta=0.7113687870661543     
-charge=1
-voltage=7945.403672852664           # [V]
-harmonic=1
-eta=0.4344660490259821
+all_dphi = []
+all_denergy = []
+for i in range(1000):
+    dphi = drift(dphi, denergy, machine.h_num, machine.beta0[0],
+                 machine.e_rest, machine.eta0[0])
 
-dphi_up = np.max(dphi)
-dphi_low = np.min(dphi)
-dphi_bin = (dphi_up - dphi_low) / nbins
+    denergy = kick(dphi, denergy, machine.q, 1000, 0)
+    if i % 10 == 0:
+        all_dphi.append(dphi.tolist())
+        all_denergy.append(denergy.tolist())
+all_dphi = np.array(all_dphi)
+all_denergy = np.array(all_denergy)
 
-# TEMP
-# ------------------------------------------------------------
-# RF wave
-# phases = np.linspace(-np.pi*0.5, np.pi*0.5, 100)
-# rf = voltage * np.sin(phases)
 
-# plt.subplot(211)
-# plt.plot(phases, rf)
+xorigin = bunch_position - np.min(all_dphi[0])
+xp = all_dphi / np.pi * machine.nbins - xorigin
 
-# # Particles
-# plt.subplot(212)
-# plt.scatter(dphi[::500], denergy[::500])
-# plt.xlim(-np.pi*0.5, np.pi*0.5)
+dEmax = np.max(all_denergy)
+yp = all_denergy / dEmax * machine.nbins + machine.nbins / 2
 
+for x, y in zip(xp[::10], yp[::10]):
+    plt.scatter(x, y, s=0.5)
+    plt.show()
+
+# Filter particles
+# transpose particles
+# do tomography
+
+# xorigin plot
+# ------------
+# x = np.linspace(-np.pi/2, np.pi/2, 50)
+# plt.plot(x, np.sin(x))
+# plt.plot([x[0], x[-1]], [0, 0], color='black')
+# plt.plot([np.min(all_dphi[0]), np.min(all_dphi[0])], [-1, 1], color='g')
 # plt.show()
-# sys.exit()
-# ------------------------------------------------------------
-# END TEMP
 
-
-all_dphi = np.zeros((nframes, nparts))
-all_denergy = np.zeros((nframes, nparts))
-
-print('Tracking...')
-for i in range(nturns):
-    dphi = drift(dphi, denergy, harmonic, beta, energy, eta)
-    denergy = kick(dphi, denergy, charge, voltage, energy_kick)
-    if i % dturns == 0:
-        print(f'Time frame: {int(i / dturns)}')
-        all_dphi[int(i / dturns)] = np.copy(dphi)
-        all_denergy[int(i / dturns)] = np.copy(denergy)
-print('Tracking complete!')
-
-invalid_pts = np.argwhere(np.logical_or(
-                    all_dphi >= dphi_up, all_dphi < dphi_low))
-    
-nr_lost_pts = 0
-if np.size(invalid_pts) > 0:
-    # Find all invalid particles
-    invalid_pts = np.unique(invalid_pts.T[1])
-    nr_lost_pts = len(invalid_pts)
-
-    # Removing invalid particles
-    all_dphi = np.delete(all_dphi, invalid_pts, axis=1)
-    all_denergy = np.delete(all_denergy, invalid_pts, axis=1)
-
-print(f'Lost {nr_lost_pts} particles.')
-
-# + some phase in order to get have sync. part.
-#  in the middle of the coordinate system
-all_dphi = (all_dphi / dphi_bin) + 250
-
-denergy_bin = np.max(all_denergy) / nbins
-all_denergy = (all_denergy / denergy_bin) # + energy offset  
-
-all_dphi = np.ascontiguousarray(all_dphi.T.astype(int))
-all_denergy = np.ascontiguousarray(all_denergy.T.astype(int))
-
-tomo = tomography.TomographyCpp(waterfall, all_dphi)
-weight = tomo.run(20, verbose=True)
-
-for rec_idx in range(1):
-    image = tomoout.create_phase_space_image(
-                all_dphi, all_denergy, weight, nbins, rec_idx)
-    tomoout.show(image, tomo.diff, waterfall[rec_idx])
+# Particle trajectories
+# ---------------------
+# ipts = [0, 20, 200, 2000, 20000]
+# plt.plot(all_dphi[:,ipts], all_denergy[:,ipts])
+# plt.show()
