@@ -10,7 +10,7 @@ import ctypes
 import argparse
 
 
-def main(gpu_flag):
+def main():
     path = os.path.realpath(__file__)
     base_path = os.sep.join(path.split(os.sep)[:-2])
     cpp_dir_path = base_path + '/tomo/cpp_routines/'
@@ -20,18 +20,9 @@ def main(gpu_flag):
 
     # Sets flags
     c_flags = ['-std=c++11', '-shared', '-O3']
-    if gpu_flag:
-        # Now asumes device type: nvidia. Add argument to alter?
-        # c_flags += ['-Minfo=accel'] <- Verbose mode
-        c_flags += ['-acc', '-ta=nvidia']
-    else:
-        c_flags += ['-fopenmp', '-march=native', '-ffast-math']
+    c_flags += ['-fopenmp', '-march=native', '-ffast-math']
 
-    # Choose compiler:
-    if gpu_flag:
-        compiler = 'pgc++'
-    else:
-        compiler = 'g++'
+    compiler = 'g++'
 
     # Setting system spescific parameters
     if 'posix' in os.name:
@@ -44,12 +35,6 @@ def main(gpu_flag):
         print('YOU ARE NOT USING A WINDOWS'
               'OR LINUX OPERATING SYSTEM. ABORTING...')
         sys.exit(-1)
-
-    # Write compilation info to user
-    if gpu_flag:
-        print('\nCompilation mode: GPU')
-    else:
-        print('\nCompilation mode: CPU')
 
     print('C++ Compiler: ', compiler)
     print('Compiler flags: ', ' '.join(c_flags))
@@ -69,21 +54,5 @@ def main(gpu_flag):
     except Exception as e:
         print('\nCompilation failed.')
 
-
-def _get_parser():
-    parser = argparse.ArgumentParser(
-                description='Compile c++ functions for tomography program.')
-
-    parser.add_argument('-gpu', '--GPU',
-                        default=False,
-                        type=bool,
-                        nargs='?',
-                        const=True,
-                        help='Compile for gpu')
-    return parser
-
-
 if __name__ == '__main__':
-    parser = _get_parser()
-    args = parser.parse_args()
-    main(args.GPU)
+    main()
