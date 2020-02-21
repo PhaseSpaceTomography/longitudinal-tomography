@@ -65,6 +65,8 @@ def run_file(file, reconstruct_profile=None, verbose=False):
                     waterfall, machine, frames.rebin, frames.sampling_time)
     profiles.calc_profilecharge()
     
+    #TODO: Insert space charge calculation from example file
+    
     if profiles.machine.synch_part_x < 0:
         fit_info = dtreat.fit_synch_part_x(profiles)
         machine.load_fitted_synch_part_x_ftn(fit_info)
