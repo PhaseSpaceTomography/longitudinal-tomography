@@ -39,6 +39,7 @@ tracker = tracking.Tracking(machine)
 tracker.enable_fortran_output(profiles.profile_charge)
 
 # For including self fields during tracking 
+# FOR SELF FIELDS
 if machine.self_field_flag:
     profiles.calc_self_fields()
     tracker.enable_self_fields(profiles)
