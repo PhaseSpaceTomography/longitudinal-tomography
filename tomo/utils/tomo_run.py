@@ -12,6 +12,10 @@ from ..tomography import tomography as tomography
 from ..utils import data_treatment as dtreat
 from ..utils import tomo_input as tomoin
 from ..tracking import particles as pts
+from ..data import profiles as profs
+from ..utils import data_treatment as treat
+from ..utils import exceptions as excpt
+from ..tracking import particles as parts
 
 def run_file(file, reconstruct_profile=None, verbose=False):
     '''Function to perform full reconstruction based on the original
@@ -100,3 +104,34 @@ def run_file(file, reconstruct_profile=None, verbose=False):
     _ = tomo.run(verbose=verbose)
     
     return dtreat.phase_space(tomo, machine, profile=reconstr_idx)
+
+
+def make_tomo_object(machine, profiles, rebin = 1, sampling = None):
+    
+    if not isinstance(profiles, profs.Profiles):
+
+        try:
+            profiles = profiles*1.
+        except TypeError:
+            raise excpt.InputError("""profles must be either a profiles 
+                                   object or a np.ndarray""")
+
+        if sampling is None:
+            raise excpt.InputError("""If passing profiles as array, 
+                                   sampling time must be defined""")
+
+        profiles = tomoin.raw_data_to_profiles(profiles, machine, 
+                                               rebin, sampling)
+        
+    if machine.synch_part_x < 0:
+        fit_info = treat.fit_synch_part_x(profiles)
+        machine.load_fitted_synch_part_x_ftn(fit_info)
+    
+    tracker = tracking.Tracking(machine)
+    xp, yp = tracker.track(0)
+
+    xp, yp = parts.physical_to_coords(xp, yp, machine, tracker.particles.xorigin,
+                                      tracker.particles.dEbin)
+    xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
+    
+    return tomography.TomographyCpp(profiles.waterfall, xp, yp)
