@@ -1,17 +1,17 @@
-'''Unit-tests for the tomo_input module.
+"""Unit-tests for the tomo_input module.
 
 Run as python test_tomo_input.py in console or via coverage
-'''
+"""
 
-import numpy as np
 import os
 import unittest
+
+import numpy as np
 import numpy.testing as nptest
 
 import tomo.tracking.machine as mch
 import tomo.utils.exceptions as expt
 import tomo.utils.tomo_input as tomoin
-
 
 # All values retrieved from INDIVShavingC325.dat
 frame_input_args = {
@@ -63,6 +63,7 @@ MACHINE_ARGS = {
     'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
 }
 
+
 class TestTomoIn(unittest.TestCase):
 
     # Tests for frame class
@@ -72,7 +73,7 @@ class TestTomoIn(unittest.TestCase):
         frames = tomoin.Frames(**frame_input_args)
 
         with self.assertRaises(expt.RawDataImportError,
-                               msg='raw data provided as scalar shold raise '
+                               msg='raw data provided as scalar should raise '
                                    'an exception'):
             frames.raw_data = 1
 
@@ -119,7 +120,6 @@ class TestTomoIn(unittest.TestCase):
         nptest.assert_equal(
             waterfall, correct,
             err_msg='error in conversion from raw data to waterfall')
-
 
     def test_to_waterfall_skip_start_bins(self):
         nframes = 3

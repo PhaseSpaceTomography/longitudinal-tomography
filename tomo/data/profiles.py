@@ -1,19 +1,19 @@
-'''Module containing the Profiles class for storing measurements.
+"""Module containing the Profiles class for storing measurements.
 
-:Author(s): **Christoffer Hjertø Grindheim**'''
-
+:Author(s): **Christoffer Hjertø Grindheim**"""
 
 import logging as log
+
 import numpy as np
 import scipy.signal as sig
 from scipy import constants
 
-from ..utils import physics
 from ..utils import exceptions as expt
+from ..utils import physics
 
 
 class Profiles(object):
-    '''Class holding measured data.
+    """Class holding measured data.
 
     This class holds the measured data (waterfall) and their properties.
 
@@ -46,7 +46,7 @@ class Profiles(object):
         This object is needed for assertions, to check that the provided
         waterfall is correct compared to the machine parameters. It is
         also needed for calculating the self fields and profile charge
-        of the bunch. 
+        of the bunch.
     sampling_time: float
         Original sampling time of measurements.
         Needed for calculation of profile charge.
@@ -57,30 +57,37 @@ class Profiles(object):
     profile_charge: float
         The total charge of a reference profile.
     vself: ndarray, float
-        2D array of self-fields at each bin of each profile. 
+        2D array of self-fields at each bin of each profile.
         The shape of the array is (N, W), N is the number of profiles, and
         W is the `Profiles.wrap_length`.
     dsprofiles: ndarray, float
-        2D array containing Filtered profiles. Shape should be 
+        2D array containing Filtered profiles. Shape should be
         (N, M), where N is the number of profiles
         and M is the number of bins of each profile.
     phiwrap: float
         The phase [rad] covering an integer of rf periods.
     wrap_length: float
         Maximum number of bins to cover an integer number of rf periods.
-    '''
+    """
+
     def __init__(self, machine, sampling_time, waterfall,
                  profile_charge=None):
         self.machine = machine
         self.sampling_time = sampling_time
-        
+
         self.waterfall = waterfall
 
         self.profile_charge = profile_charge
 
+        # init
+        self.dsprofiles = None
+        self.phiwrap = None
+        self.wrap_length = None
+        self.vself = None
+
     @property
     def waterfall(self):
-        '''Waterfall defined as @property. The property does the
+        """Waterfall defined as @property. The property does the
         following when accessed:
 
         * Asserts for correctness of waterfall, here the number of profiles\
@@ -93,13 +100,13 @@ class Profiles(object):
         waterfall: ndarray
             Measured profiles as a 2D array. Shape: (N, M), N is the number
             of profiles and M is the number of bins of each profile.
-        
+
         Returns
         -------
         waterfall: ndarray
             Measured profiles as a 2D array. Shape: (N, M), N is the number
             of profiles and M is the number of bins of each profile.
-        
+
         Raises
         ------
         WaterfallError: Exception
@@ -107,19 +114,19 @@ class Profiles(object):
         WaterfallReducedToZero: Exception
             All of waterfall is reduced to zero after removal of negative
             values.
-        '''
+        """
         return self._waterfall
 
     @waterfall.setter
     def waterfall(self, new_waterfall):
         log.info('Loading waterfall...')
-        
+
         if not hasattr(new_waterfall, '__iter__'):
             raise expt.WaterfallError('waterfall should be an iterable.')
 
         if not new_waterfall.shape[0] == self.machine.nprofiles:
-            err_msg = f'Waterfall does not correspond to machine object.\n'\
-                      f'Expected nr of profiles: {self.machine.nprofiles}, '\
+            err_msg = f'Waterfall does not correspond to machine object.\n' \
+                      f'Expected nr of profiles: {self.machine.nprofiles}, ' \
                       f'nr of profiles in waterfall: {new_waterfall.shape[0]}'
             raise expt.WaterfallError(err_msg)
 
@@ -127,31 +134,32 @@ class Profiles(object):
         self._waterfall = new_waterfall.clip(0.0)
         if np.sum(np.abs(self.waterfall)) == 0.0:
             raise expt.WaterfallReducedToZero()
-        
+
         self.machine.nbins = self._waterfall.shape[1]
         log.info(f'Waterfall loaded with shape: {self.waterfall.shape})')
 
     def calc_profilecharge(self):
-        '''Calculate the total charge of profile.
-        Uses the beam reference profile to decide which profile should 
+        """Calculate the total charge of profile.
+        Uses the beam reference profile to decide which profile should
         be used for the calculation.
         Sets the `Profiles.profile_charge` field.
 
         **NB:** The function requires that the **original sampling time**
         of the measurements is provided.
-        '''
+        """
         ref_prof = self.waterfall[self.machine.beam_ref_frame]
         self.profile_charge = (np.sum(ref_prof) * self.sampling_time
                                / (constants.e
-                                 * self.machine.pickup_sensitivity))
+                                  * self.machine.pickup_sensitivity))
 
-    def calc_self_fields(self, filtered_profiles=None, in_filter=None):
-        '''Calculate self-fields based on filtered profiles.
+    def calc_self_fields(self, filtered_profiles: np.ndarray = None,
+                         in_filter=None):
+        """Calculate self-fields based on filtered profiles.
         If filtered profiles are not provided by the user,
         standard filter (savitzky-golay smoothing filter) is used.
 
         The function sets the following fields:
-        
+
         * vself - 2D array of self-fields at each bin of each profile.
         * dsprofiles - Filtered profiles.
         * phiwrap - Phase covering an integer of rf periods.
@@ -178,28 +186,27 @@ class Profiles(object):
             No profile charge has been provided or calculated.
         FilteredProfilesError: Exception
             Filtered profiles has the wrong shape or are not iterable.
-        '''
+        """
         if self.profile_charge is None:
-            err_msg = 'Profile charge must be calculated before '\
+            err_msg = 'Profile charge must be calculated before ' \
                       'calculating the self-fields'
             raise expt.ProfileChargeNotCalculated(err_msg)
 
         if filtered_profiles is not None:
             self.dsprofiles = self._check_manual_filtered_profs(
-                                                    filtered_profiles)
+                filtered_profiles)
         elif in_filter is not None:
             self.dsprofiles = np.copy(self.waterfall)
             self.dsprofiles = in_filter(self.dsprofiles)
             self.dsprofiles = self._check_manual_filtered_profs(
-                                                    self.dsprofiles)
+                self.dsprofiles)
         else:
             self.dsprofiles = np.copy(self.waterfall)
             # Makes normalized version of waterfall
             self.dsprofiles /= np.sum(self.dsprofiles, axis=1)[:, None]
             self.dsprofiles = sig.savgol_filter(
-                                x=self.dsprofiles, window_length=7,
-                                polyorder=4, deriv=1)
-
+                x=self.dsprofiles, window_length=7,
+                polyorder=4, deriv=1)
 
         (self.phiwrap,
          self.wrap_length) = self._find_wrap_length()
@@ -216,9 +223,9 @@ class Profiles(object):
         if fprofs.shape == self.waterfall.shape:
             return fprofs
         else:
-            err_msg = f'Filtered profiles should have the same shape'\
-                      f'as the waterfall.\n'\
-                      f'Shape profiles: {fprofs.shape}\n'\
+            err_msg = f'Filtered profiles should have the same shape' \
+                      f'as the waterfall.\n' \
+                      f'Shape profiles: {fprofs.shape}\n' \
                       f'Shape waterfall: {self.waterfall.shape}\n'
             raise expt.FilteredProfilesError(err_msg)
 
@@ -254,9 +261,9 @@ class Profiles(object):
         for i in range(self.machine.nprofiles - 1):
             vself[i, :self.machine.nbins] = (0.5 * self.profile_charge
                                              * (sfc[i]
-                                             * self.dsprofiles[
-                                                i,:self.machine.nbins]
-                                             + sfc[i + 1]
-                                             * self.dsprofiles[
-                                                i + 1, :self.machine.nbins]))
+                                                * self.dsprofiles[
+                                                 i, :self.machine.nbins]
+                                                + sfc[i + 1]
+                                                * self.dsprofiles[
+                                                 i + 1, :self.machine.nbins]))
         return vself

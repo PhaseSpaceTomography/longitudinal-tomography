@@ -1,16 +1,16 @@
-'''Unit-tests for the assertions module.
+"""Unit-tests for the assertions module.
 
 Run as python test_assertions.py in console or via coverage
-'''
+"""
+
+import unittest
 
 import numpy as np
-import unittest
 
 import tomo.tracking.machine as mch
 import tomo.utils.assertions as asrt
 import tomo.utils.exceptions as expt
 import tomo.utils.tomo_input as tomoin
-
 
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
@@ -291,7 +291,7 @@ class TestAssertions(unittest.TestCase):
         nbins = 25
         particles = np.ones((10, 10))
         
-        # Testing too large x coorinate
+        # Testing too large x coordinate
         particles[6, 9] = nbins
         with self.assertRaises(
                 expt.InvalidParticleError,

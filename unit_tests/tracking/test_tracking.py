@@ -1,18 +1,19 @@
-'''Unit-tests for the Tracking class.
+"""Unit-tests for the Tracking class.
 
 Run as python test_tracking.py in console or via coverage
-'''
+"""
 
-import numpy as np
 import os
 import unittest
 
-import tomo.utils.exceptions as expt
-import tomo.tracking.machine as mch
-import tomo.data.profiles as prof
-import tomo.tracking.tracking as tck
+import numpy as np
 
-# Machine arguments mased on the input file INDIVShavingC325.dat
+import tomo.data.profiles as prof
+import tomo.tracking.machine as mch
+import tomo.tracking.tracking as tck
+import tomo.utils.exceptions as expt
+
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,

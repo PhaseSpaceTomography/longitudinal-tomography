@@ -1,11 +1,12 @@
 import logging as log
-import numpy as np
-import matplotlib.pyplot as plt
 import os
 import time as tm
 
-import tomo.tracking.particles as parts
+import matplotlib.pyplot as plt
+import numpy as np
+
 import tomo.tomography.tomography as tomography
+import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 
@@ -27,8 +28,8 @@ machine.values_at_turns()
 measured_waterfall = frames.to_waterfall(raw_data)
 
 profiles = tomoin.raw_data_to_profiles(
-                measured_waterfall, machine,
-                frames.rebin, frames.sampling_time)
+    measured_waterfall, machine,
+    frames.rebin, frames.sampling_time)
 
 tomo = tomography.TomographyCpp(profiles.waterfall)
 
@@ -39,11 +40,11 @@ snpts = np.arange(snpt0, snpt1, dsnpt)
 
 diffs = []
 dtimes = []
-succsesfull_inputs = []
+successful_inputs = []
 for snpt in snpts:
-    print(f'Running tomo using {snpt**2} particles per cell of phase space.')
+    print(f'Running tomo using {snpt ** 2} particles per cell of phase space.')
     machine.snpt = snpt
-    
+
     try:
         t0 = tm.perf_counter()
 
@@ -51,11 +52,11 @@ for snpt in snpts:
         xp, yp = tracker.track(machine.filmstart)
 
         xp, yp = parts.physical_to_coords(
-                    xp, yp, machine, tracker.particles.xorigin,
-                    tracker.particles.dEbin)
+            xp, yp, machine, tracker.particles.xorigin,
+            tracker.particles.dEbin)
         xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 
-        tomo.xp = xp        
+        tomo.xp = xp
         weight = tomo.run(niter=machine.niter)
         tomo.xp = None
 
@@ -67,23 +68,23 @@ for snpt in snpts:
     else:
         dtimes.append(t1 - t0)
         diffs.append(tomo.diff[-1])
-        succsesfull_inputs.append(snpt)
+        successful_inputs.append(snpt)
 
 # Plotting
-if len(succsesfull_inputs) > 0:
-    for value, discr, time in zip(succsesfull_inputs, diffs, dtimes):
+if len(successful_inputs) > 0:
+    for value, discr, time in zip(successful_inputs, diffs, dtimes):
         plt.scatter(time, discr, label=f'{value}')
-    
+
     offset = max(diffs) * 0.05
     ylim_up = max(diffs) + offset
     ylim_low = min(diffs) - offset
     plt.ylim([ylim_low, ylim_up])
-    
+
     ax = plt.gca()
     ax.legend(title='snpt')
     ax.set_xlabel('Execution time [s]')
     ax.set_ylabel('Discrepancy')
-    ax.ticklabel_format(axis='y', scilimits=(0,0), style='sci')
+    ax.ticklabel_format(axis='y', scilimits=(0, 0), style='sci')
     plt.show()
 else:
-    print('No runs were successfull.')
+    print('No runs were successful.')
