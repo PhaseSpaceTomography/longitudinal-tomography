@@ -232,14 +232,14 @@ class Machine:
         # TODO: Take b-field info as a single input
 
         if 'min_dt' in kwargs and kwargs['min_dt'] is not None:
-            min_dt = 0.0
-        else:
             min_dt = kwargs['min_dt']
+        else:
+            min_dt = 0.0
 
         if 'max_dt' in kwargs and kwargs['max_dt'] is not None:
-            max_dt = nbins * dtbin
-        else:
             max_dt = kwargs['max_dt']
+        else:
+            max_dt = nbins * dtbin
 
         # Machine parameters
         self.demax = kwargs['demax']
