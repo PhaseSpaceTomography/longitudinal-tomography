@@ -6,8 +6,10 @@ like assertions, conversions and filtering of lost particles.
 
 :Author(s): **Christoffer Hjertø Grindheim**"""
 from __future__ import annotations
+
 import logging as log
 from typing import Tuple, Sequence, TYPE_CHECKING
+
 import numpy as np
 
 from . import phase_space_info as psi
@@ -314,17 +316,14 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     profiles = np.arange(nprof)
     turns = profiles * machine.dturns
 
-    xp = np.zeros(tracked_dphi.shape)
-    yp = np.zeros(tracked_dphi.shape)
+    xp = ((tracked_dphi
+           + machine.phi0[turns].reshape(-1, 1))
+          / (float(machine.h_num)
+             * machine.omega_rev0[turns].reshape(-1, 1)
+             * machine.dtbin) - xorigin)
 
-    xp[profiles] = ((tracked_dphi[profiles]
-                     + np.vstack(machine.phi0[turns]))
-                    / (float(machine.h_num)
-                       * np.vstack(machine.omega_rev0[turns])
-                       * machine.dtbin) - xorigin)
-
-    yp[profiles] = (tracked_denergy[profiles]
-                    / float(dEbin) + machine.synch_part_y)
+    yp = (tracked_denergy
+          / float(dEbin) + machine.synch_part_y)
     return xp, yp
 
 
