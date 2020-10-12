@@ -1,12 +1,13 @@
-'''Unit-tests for the TomographyCpp class.
+"""Unit-tests for the TomographyCpp class.
 
 Run as python test_tomography_cpp.py in console or via coverage
-'''
+"""
+
+import os
+import unittest
 
 import numpy as np
 import numpy.testing as nptest
-import os
-import unittest
 
 import tomo.tomography.tomography as tmo
 import tomo.utils.exceptions as expt
@@ -29,7 +30,7 @@ class TestTomographyCpp(unittest.TestCase):
         
         with self.assertRaises(expt.CoordinateImportError,
                                msg='Providing x coordinates array having '
-                                   'another number of dimnetions than two '
+                                   'another number of dimensions than two '
                                    'should raise an Exception'):
             tomo.xp = [1, 2, 4] 
 
@@ -59,7 +60,7 @@ class TestTomographyCpp(unittest.TestCase):
         xp[1, 2] = img_widt
         with self.assertRaises(expt.XPOutOfImageWidthError,
                                msg='Providing x coordinates array outside '
-                                   'of image widthshould raise an Exception'):
+                                   'of image width should raise an Exception'):
             tomo.xp = xp
 
     def test_set_xp_outside_of_img_lower_fails(self):
@@ -73,7 +74,7 @@ class TestTomographyCpp(unittest.TestCase):
         xp[1, 2] = -1
         with self.assertRaises(expt.XPOutOfImageWidthError,
                                msg='Providing x coordinates array outside '
-                                   'of image widthshould raise an Exception'):
+                                   'of image width should raise an Exception'):
             tomo.xp = xp
         
     def test_xp_can_be_set_to_none(self):
@@ -186,8 +187,6 @@ class TestTomographyCpp(unittest.TestCase):
         self.assertAlmostEqual(tomo.diff[0], correct,
                                msg='Discrepancy calculated incorrectly')
 
-
-
     def test_run_hybrid_reduced_to_zeros_fails(self):
         waterfall = self._load_waterfall()
 
@@ -196,7 +195,6 @@ class TestTomographyCpp(unittest.TestCase):
         xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
 
         tomo = tmo.TomographyCpp(waterfall, xp.T)
-
 
         with self.assertRaises(expt.WaterfallReducedToZero,
                                msg='Waterfall getting reduced to zero '
@@ -270,4 +268,3 @@ class TestTomographyCpp(unittest.TestCase):
         waterfall = np.load(os.path.join(
                         data_path, 'waterfall_INDIVShavingC325.npy'))
         return waterfall
-

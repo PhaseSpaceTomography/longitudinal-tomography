@@ -1,21 +1,21 @@
-'''Unit-tests for the funtions in the particles module.
+"""Unit-tests for the functions in the particles module.
 
 Run as python test_particles_class.py in console or via coverage
-'''
+"""
 
-import numpy as np
 import unittest
 
-import tomo.utils.exceptions as expt
+import numpy as np
+
 import tomo.tracking.machine as mch
 import tomo.tracking.particles as pts
+import tomo.utils.exceptions as expt
 
-
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
-    'output_dir':          '/tmp/',
-    'dtbin':               9.999999999999999E-10,
-    'dturns':              5,
+    'output_dir': '/tmp/',
+    'dtbin': 9.999999999999999E-10,
+    'dturns': 5,
     'synch_part_x':        334.00000000000006,
     'demax':               -1.E6,
     'filmstart':           0,
@@ -88,7 +88,6 @@ class TestParticlesMethods(unittest.TestCase):
         yp = np.ones(xp.shape)
 
         img_width = 5
-
 
         with self.assertRaises(expt.InvalidParticleError,
                                msg='Removing all particles should '
@@ -165,7 +164,7 @@ class TestParticlesMethods(unittest.TestCase):
 
         with self.assertRaises(expt.InvalidParticleError,
                                msg='Providing arrays of coordinates of '
-                                   'differenct lengths should raise '
+                                   'different lengths should raise '
                                    'an exception'):
             xp, yp = pts.physical_to_coords(
                         phases, energies, machine, xorigin, dEbin)

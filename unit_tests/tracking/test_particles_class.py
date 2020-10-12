@@ -1,16 +1,15 @@
-'''Unit-tests for the Particles class.
+"""Unit-tests for the Particles class.
 
 Run as python test_particles_class.py in console or via coverage
-'''
+"""
 
 import unittest
 
-import tomo.utils.exceptions as expt
 import tomo.tracking.machine as mch
 import tomo.tracking.particles as pts
+import tomo.utils.exceptions as expt
 
-
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,
@@ -59,7 +58,7 @@ class TestParticles(unittest.TestCase):
         ndims = len(input_coords)
 
         parts = pts.Particles()
-        parts.coordinates_dphi_denergy = input_coords 
+        parts.coordinates_dphi_denergy = input_coords
 
         for i in range(ndims):
             for read, correct in zip(parts.coordinates_dphi_denergy[i],
@@ -193,15 +192,15 @@ class TestParticles(unittest.TestCase):
         parts = pts.Particles()
         parts.homogeneous_distribution(machine, recprof=21)
 
-        correct = [-0.24180582, 0.04498875, 0.33178332, 0.61857789, 
+        correct = [-0.24180582, 0.04498875, 0.33178332, 0.61857789,
                    -0.24180582, 0.04498875, 0.33178332, 0.61857789,
                    -0.24180582, 0.04498875, 0.33178332, 0.61857789,
-                   -0.24180582, 0.04498875, 0.33178332, 0.61857789] 
-        
+                   -0.24180582, 0.04498875, 0.33178332, 0.61857789]
+
         for phase, corr in zip(parts.coordinates_dphi_denergy[0], correct):
             self.assertAlmostEqual(
                 phase, corr, msg='Error in setting of phase coordinate in '
-                                 'cell of phase space at inital distrubution')
+                                 'cell of phase space at initial distribution')
 
     def test_homogeneous_distribution_correct_energy(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -216,7 +215,7 @@ class TestParticles(unittest.TestCase):
         parts.homogeneous_distribution(machine, recprof=21)
 
         correct = [-115567.32591061, -115567.32591061, -115567.32591061,
-                   -115567.32591061, -38522.4419702,   -38522.4419702,  
+                   -115567.32591061, -38522.4419702,   -38522.4419702,
                    -38522.4419702,   -38522.4419702,   38522.4419702,
                    38522.4419702,    38522.4419702,    38522.4419702,
                    115567.32591061,  115567.32591061,  115567.32591061,
@@ -225,4 +224,5 @@ class TestParticles(unittest.TestCase):
         for energy, corr in zip(parts.coordinates_dphi_denergy[1], correct):
             self.assertAlmostEqual(
                 energy, corr, msg='Error in setting of phase coordinate in '
-                                 'cell of phase space at inital distrubution')
+                                  'cell of phase space at initial distribution'
+            )

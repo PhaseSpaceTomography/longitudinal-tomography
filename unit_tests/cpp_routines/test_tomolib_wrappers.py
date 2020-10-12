@@ -1,19 +1,19 @@
-'''Unit-tests for the funtions in the tomolib_wrappers module.
+"""Unit-tests for the functions in the tomolib_wrappers module.
 
 Run as python test_tomolib_wrappers.py in console or via coverage
-'''
+"""
 
-import numpy as np
-import numpy.testing as nptest
 import os
 import unittest
 
+import numpy as np
+import numpy.testing as nptest
+
 import tomo.cpp_routines.tomolib_wrappers as tlw
-import tomo.utils.exceptions as expt
 import tomo.tracking.machine as mch
+import tomo.utils.exceptions as expt
 
-
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,
@@ -69,14 +69,13 @@ class TestTLW(unittest.TestCase):
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
 
-
         new_denergy = tlw.kick(machine, denergy, dphi,
                                rfv1, rfv2, npart, turn, up=True)
 
         correct_energy = -113495.65825924404
         self.assertAlmostEqual(
             new_denergy[0], correct_energy,
-            msg='Kick in upward direction was calculated incorectly')
+            msg='Kick in upward direction was calculated incorrectly')
 
     def test_kick_down_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -92,14 +91,13 @@ class TestTLW(unittest.TestCase):
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
 
-
         new_denergy = tlw.kick(machine, denergy, dphi,
                                rfv1, rfv2, npart, turn, up=False)
 
         correct_energy = -116610.12118255378
         self.assertAlmostEqual(
             new_denergy[0], correct_energy,
-            msg='Kick in downward direction was calculated incorectly')
+            msg='Kick in downward direction was calculated incorrectly')
 
     def test_drift_up_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -117,7 +115,7 @@ class TestTLW(unittest.TestCase):
         correct_dphi = 0.3356669466375665
         self.assertAlmostEqual(
             new_dphi[0], correct_dphi,
-            msg='Drift in upward direction was calculated incorectly')
+            msg='Drift in upward direction was calculated incorrectly')
 
     def test_drift_down_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -135,7 +133,7 @@ class TestTLW(unittest.TestCase):
         correct_dphi = 0.3279023169434031
         self.assertAlmostEqual(
             new_dphi[0], correct_dphi,
-            msg='Drift in downward direction was calculated incorectly')
+            msg='Drift in downward direction was calculated incorrectly')
 
     def test_kick_and_drift_machine_arg_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -279,7 +277,6 @@ class TestTLW(unittest.TestCase):
         flat_profs = np.ascontiguousarray(
                         waterfall.flatten()).astype(np.float64)
 
-       
         xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
         xp = xp.T
         flat_points = xp.copy()
@@ -474,7 +471,8 @@ class TestTLW(unittest.TestCase):
 
         for i in range(nprofs):
             nptest.assert_almost_equal(recreated[i], correct_rec,
-                err_msg='Error in reconstructed waterfall.')
+                                       err_msg='Error in '
+                                               'reconstructed waterfall.')
 
     def _load_waterfall(self):
         base_dir = os.path.split(os.path.realpath(__file__))[0]

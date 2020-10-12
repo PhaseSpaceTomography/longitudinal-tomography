@@ -1,15 +1,16 @@
-'''Unit-tests for the physics module.
+"""Unit-tests for the physics module.
 
 Run as python test_physics.py in console or via coverage
-'''
+"""
+
+import unittest
 
 import numpy as np
-import unittest
 
 import tomo.tracking.machine as mch
 import tomo.utils.physics as physics
 
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,
@@ -62,7 +63,7 @@ class TestPhysics(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.e0 = [1015458784.835785]
         correct = 0.382420087611783
-        ans = physics.lorenz_beta(machine, rf_turn=0)
+        ans = physics.lorentz_beta(machine, rf_turn=0)
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation of Lorentz beta')
 

@@ -1,7 +1,7 @@
-'''Unit-tests for the PhaseSpaceInfo class.
+"""Unit-tests for the PhaseSpaceInfo class.
 
 Run as python test_phase_space_info.py in console or via coverage
-'''
+"""
 
 import unittest
 
@@ -9,7 +9,7 @@ import tomo.tracking.machine as mch
 import tomo.tracking.phase_space_info as psi
 import tomo.utils.exceptions as expt
 
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,
@@ -139,12 +139,11 @@ class TestMachine(unittest.TestCase):
     
         self.assertEqual(psinfo.imin, correct_imin,
                          msg='imin was calculated incorrectly'
-                             '(full_pp_flag not enabeled)')
+                             '(full_pp_flag not enabled)')
         self.assertEqual(psinfo.imax, correct_imax,
                          msg='imin was calculated incorrectly'
-                             '(full_pp_flag not enabeled)')
+                             '(full_pp_flag not enabled)')
 
-    
     def test_find_binned_phase_energy_limits_correct_jmax(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.values_at_turns()
@@ -167,7 +166,7 @@ class TestMachine(unittest.TestCase):
         for j, corr in zip(psinfo.jmax, correct):
             self.assertEqual(j, corr,
                              msg='jmax calculated incorrectly'
-                                 '(full_pp_flag not enabeled)')
+                                 '(full_pp_flag not enabled)')
 
     def test_find_binned_phase_energy_limits_correct_jmin(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -191,7 +190,7 @@ class TestMachine(unittest.TestCase):
         for j, corr in zip(psinfo.jmin, correct):
             self.assertEqual(j, corr,
                              msg='jmin calculated incorrectly'
-                                 '(full_pp_flag not enabeled)')
+                                 '(full_pp_flag not enabled)')
 
     def test_find_binned_phase_energy_limits_full_pp_correct_ilims(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -207,11 +206,10 @@ class TestMachine(unittest.TestCase):
     
         self.assertEqual(psinfo.imin, correct_imin,
                          msg='imin was calculated incorrectly'
-                             '(full_pp_flag enabeled)')
+                             '(full_pp_flag enabled)')
         self.assertEqual(psinfo.imax, correct_imax,
                          msg='imin was calculated incorrectly'
-                             '(full_pp_flag enabeled)')
-
+                             '(full_pp_flag enabled)')
 
     def test_find_binned_phase_energy_limits_full_pp_correct_jmax(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -232,7 +230,7 @@ class TestMachine(unittest.TestCase):
         for j, corr in zip(psinfo.jmax, correct):
             self.assertEqual(j, corr,
                              msg='jmax calculated incorrectly'
-                                 '(full_pp_flag enabeled)')
+                                 '(full_pp_flag enabled)')
 
     def test_find_binned_phase_energy_limits_full_pp_correct_jmin(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -253,4 +251,4 @@ class TestMachine(unittest.TestCase):
         for j, corr in zip(psinfo.jmin, correct):
             self.assertEqual(j, corr,
                              msg='jmin calculated incorrectly'
-                                 '(full_pp_flag enabeled)')
+                                 '(full_pp_flag enabled)')

@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Tomo modules
-import tomo.tracking.tracking as tracking
 import tomo.tomography.tomography as tomography
+import tomo.tracking.particles as pts
+import tomo.tracking.tracking as tracking
 import tomo.utils.data_treatment as dtreat
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
-import tomo.tracking.particles as pts
 
 # =========================
 #        Program 
 # =========================
 
-# --------------------- FORTRAN SPESCIFIC ------------------------
+# --------------------- FORTRAN SPECIFIC ------------------------
 
 # Loading input
 raw_param, raw_data = tomoin.get_user_input()

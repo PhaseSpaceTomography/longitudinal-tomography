@@ -1,19 +1,19 @@
-'''Unit-tests for the tomo_output module.
+"""Unit-tests for the tomo_output module.
 
 Run as python test_tomo_output.py in console or via coverage
-'''
+"""
 
-import numpy as np
-import numpy.testing as nptest
 import os
 import shutil
 import unittest
+
+import numpy as np
+import numpy.testing as nptest
 
 import tomo.tracking.machine as mch
 import tomo.tracking.particles as pts
 import tomo.utils.exceptions as expt
 import tomo.utils.tomo_output as tout
-
 
 base_dir = os.path.split(os.path.realpath(__file__))[0]
 base_dir = os.path.split(base_dir)[0]
@@ -162,7 +162,7 @@ class TestTomoOut(unittest.TestCase):
         correct = [' plotinfo.data',
                    'Number of profiles used in each reconstruction,',
                    ' profilecount = 150',
-                   'Width (in pixels) of each image = length (in bins) '\
+                   'Width (in pixels) of each image = length (in bins) '
                    'of each profile,',
                    ' profilelength = 760',
                    'Width (in s) of each pixel = width of each profile bin,',
@@ -180,13 +180,12 @@ class TestTomoOut(unittest.TestCase):
                    ' fit xat0 =   0.000',
                    'Synchronous phase (in radians):',
                    ' phi0( 1) = 0.4008',
-                   'Horizontal range (in pixels) of the region in '\
+                   'Horizontal range (in pixels) of the region in '
                    'phase space of map elements:',
                    ' imin( 1) =   0 and imax( 1) =  759']
         
         nptest.assert_equal(plotinfo_list, correct,
                             err_msg='Error in creation of plotinfo string')
-
 
     def test_write_plotinfo_ftn_fitted_x(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -207,7 +206,7 @@ class TestTomoOut(unittest.TestCase):
         correct = [' plotinfo.data',
                    'Number of profiles used in each reconstruction,',
                    ' profilecount = 150',
-                   'Width (in pixels) of each image = length (in bins) '\
+                   'Width (in pixels) of each image = length (in bins) '
                    'of each profile,',
                    ' profilelength = 760',
                    'Width (in s) of each pixel = width of each profile bin,',
@@ -225,7 +224,7 @@ class TestTomoOut(unittest.TestCase):
                    ' fit xat0 =   23.123',
                    'Synchronous phase (in radians):',
                    ' phi0( 1) = 0.4008',
-                   'Horizontal range (in pixels) of the region in '\
+                   'Horizontal range (in pixels) of the region in '
                    'phase space of map elements:',
                    ' imin( 1) =   0 and imax( 1) =  759']
         
@@ -288,6 +287,5 @@ class TestTomoOut(unittest.TestCase):
                             [0.04, 0.04, 0.04, 0.04, 0.04],
                             [0.04, 0.04, 0.04, 0.04, 0.04]])
 
-
         nptest.assert_equal(
-            img, correct, err_msg='Phase spcae image was created incorrectly')
+            img, correct, err_msg='Phase space image was created incorrectly')

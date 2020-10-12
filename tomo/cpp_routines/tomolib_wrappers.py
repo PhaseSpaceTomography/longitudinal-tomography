@@ -1,28 +1,32 @@
-'''Module containing Python wrappers for C++ functions.
+"""Module containing Python wrappers for C++ functions.
 
 Should only be used by advanced users.
 
 :Author(s): **Christoffer Hjertø Grindheim**
-'''
+"""
 
 import ctypes as ct
 import logging as log
-import numpy as np
 import os
 import sys
+from typing import Tuple, TYPE_CHECKING
+
+import numpy as np
 
 from ..utils import exceptions as expt
 
+if TYPE_CHECKING:
+    from ..tracking.machine import Machine
 
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__))
 
-# Setting system spescific parameters
+# Setting system specific parameters
 if 'posix' in os.name:
     _tomolib_pth = os.path.join(_tomolib_pth, 'tomolib.so')
 elif 'win' in sys.platform:
     _tomolib_pth = os.path.join(_tomolib_pth, 'tomolib.dll')
 else:
-    msg = 'YOU ARE NOT USING A WINDOWS'\
+    msg = 'YOU ARE NOT USING A WINDOWS' \
           'OR LINUX OPERATING SYSTEM. ABORTING...'
     raise SystemError(msg)
 
@@ -43,11 +47,11 @@ _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 #           Setting argument types
 # ========================================
 
-# NB! It is critical that the input are of the same data type as spescified
-#       in the argtypes. The correct datatypes can also be found in the
-#       declarations of the C++ functions. Giving arays of datatype int
+# NB! It is critical that the input are of the same data type as specified
+#       in the arg types. The correct data types can also be found in the
+#       declarations of the C++ functions. Giving arrays of datatype int
 #       to a C++ function expecting doubles will lead to mystical (and ugly)
-#       errors. 
+#       errors.
 
 # kick and drift
 # ---------------------------------------------
@@ -73,7 +77,7 @@ _k_and_d.restypes = None
 # ---------------------------------------------
 
 # Reconstruction routine (flat version)
-# < to be removed when new version is prooven to be working correctly >
+# < to be removed when new version is proven to be working correctly >
 _reconstruct_old = _tomolib.old_reconstruct
 _reconstruct_old.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                              _double_ptr,
@@ -93,7 +97,7 @@ _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
                          ct.c_int, ct.c_int,
                          ct.c_int, ct.c_int,
                          ct.c_bool]
- 
+
 # Back_project (flat version)
 _back_project = _tomolib.back_project
 _back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
@@ -108,16 +112,18 @@ _proj.restypes = None
 
 
 # =============================================================
-# Functions for paricle tracking
+# Functions for particle tracking
 # =============================================================
 
 
-def kick(machine, denergy, dphi, rfv1, rfv2, npart, turn, up=True):
-    '''Wrapper for C++ kick function.
+def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
+         rfv1: np.ndarray, rfv2: np.ndarray, npart: int, turn: int,
+         up: bool = True) -> np.ndarray:
+    """Wrapper for C++ kick function.
 
     Particle kick for **one** machine turn.
 
-    Used in the :mod:`~tomo.tracking.tracking` module.
+    Used in the :mod:`tomo.tracking.tracking` module.
 
     Parameters
     ----------
@@ -147,7 +153,7 @@ def kick(machine, denergy, dphi, rfv1, rfv2, npart, turn, up=True):
     -------
     denergy: ndarray
         1D array containing the new energy of each particle after voltage kick.
-    '''
+    """
     args = (_get_pointer(dphi),
             _get_pointer(denergy),
             ct.c_double(rfv1[turn]),
@@ -164,8 +170,9 @@ def kick(machine, denergy, dphi, rfv1, rfv2, npart, turn, up=True):
     return denergy
 
 
-def drift(denergy, dphi, drift_coef, npart, turn, up=True):
-    '''Wrapper for C++ drift function.
+def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
+          npart: int, turn: int, up: bool = True) -> np.ndarray:
+    """Wrapper for C++ drift function.
 
     Particle drift for **one** machine turn
 
@@ -194,7 +201,7 @@ def drift(denergy, dphi, drift_coef, npart, turn, up=True):
     dphi: ndarray
         1D array containing the new phase for each particle
         after drifting for a machine turn.
-    '''
+    """
     args = (_get_pointer(dphi),
             _get_pointer(denergy),
             ct.c_double(drift_coef[turn]),
@@ -206,14 +213,17 @@ def drift(denergy, dphi, drift_coef, npart, turn, up=True):
     return dphi
 
 
-def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
-                   nturns, nparts, *args, machine=None, ftn_out=False):
-    '''Wrapper for full kick and drift algorithm written in C++.
-    
+def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
+                   denergy: np.ndarray, dphi: np.ndarray,
+                   rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
+                   nturns: int, nparts: int, *args, machine: 'Machine' = None,
+                   ftn_out: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+    """Wrapper for full kick and drift algorithm written in C++.
+
     Tracks all particles from the time frame to be recreated,
     trough all machine turns.
-    
-    Used in the :mod:`~tomo.tracking.tracking` module.
+
+    Used in the :mod:`tomo.tracking.tracking` module.
 
     Parameters
     ----------
@@ -244,7 +254,7 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     args: tuple
         Arguments can be provided via the args if a machine object is not to
         be used. In this case, the args should be:
-        
+
         - phi0
         - deltaE0
         - omega_rev0
@@ -252,7 +262,7 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
         - phi12
         - h_ratio
         - dturns
-    
+
         The args will not be used if a Machine object is provided.
 
     machine: Machine, optional, default=False
@@ -262,7 +272,7 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
         The format will be similar to the Fortran version.
         Note that the **information regarding lost particles
         are not valid**.
-    
+
     Returns
     -------
     xp: ndarray
@@ -271,7 +281,7 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
     yp: ndarray
         2D array holding every particles coordinates in energy [eV]
         at every time frame. Shape: (nprofiles, nparts)
-    '''
+    """
     xp = np.ascontiguousarray(xp.astype(np.float64))
     yp = np.ascontiguousarray(yp.astype(np.float64))
 
@@ -287,27 +297,32 @@ def kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof,
                        machine.drift_coef, machine.phi12, machine.h_ratio,
                        machine.dturns]
     elif len(args) == 7:
+        # TODO: this should probably be switched to kwargs to increase
+        # robustness
         track_args += args
     else:
         raise expt.InputError(
             'Wrong amount of arguments.\n'
             '*args are: phi0, deltaE0, omega_rev0, '
             'drift_coef, phi12, h_ratio, dturns')
-    
+
     track_args += [rec_prof, nturns, nparts, ftn_out]
 
     _k_and_d(*track_args)
     return xp, yp
+
 
 # =============================================================
 # Functions for phase space reconstruction
 # =============================================================
 
 
-def back_project(weights, flat_points, flat_profiles, nparts, nprofs):
-    '''Wrapper for back projection routine written in C++.
+def back_project(weights: np.ndarray, flat_points: np.ndarray,
+                 flat_profiles: np.ndarray, nparts: int, nprofs: int) \
+        -> np.ndarray:
+    """Wrapper for back projection routine written in C++.
     Used in the :mod:`~tomo.tomography.tomography` module.
-    
+
     Parameters
     ----------
     weights: ndarray
@@ -326,14 +341,16 @@ def back_project(weights, flat_points, flat_profiles, nparts, nprofs):
     -------
     weights: ndarray
         1D array containing the **new weight** of each particle.
-    '''
+    """
     _back_project(weights, _get_2d_pointer(flat_points),
                   flat_profiles, nparts, nprofs)
     return weights
 
 
-def project(recreated, flat_points, weights, nparts, nprofs, nbins):
-    '''Wrapper projection routine written in C++.
+def project(recreated: np.ndarray, flat_points: np.ndarray,
+            weights: np.ndarray,
+            nparts: int, nprofs: int, nbins: int) -> np.ndarray:
+    """Wrapper projection routine written in C++.
     Used in the :mod:`~tomo.tomography.tomography` module.
 
     Parameters
@@ -358,17 +375,19 @@ def project(recreated, flat_points, weights, nparts, nprofs, nbins):
     recreated: ndarray
         2D array containing the projected profiles as waterfall.
         Shape: (nprofiles, nbins)
-    '''
+    """
     recreated = np.ascontiguousarray(recreated.flatten())
     _proj(recreated, _get_2d_pointer(flat_points), weights, nparts, nprofs)
     recreated = recreated.reshape((nprofs, nbins))
     return recreated
 
 
-# < to be removed when new version is prooven to be working correctly >
-def _old_reconstruct(weights, xp, flat_profiles, discr,
-                     niter, nbins, npart, nprof, verbose):
-    '''Wrapper for full reconstruction in C++.
+# < to be removed when new version is proven to be working correctly >
+def _old_reconstruct(weights: np.ndarray, xp: np.ndarray,
+                     flat_profiles: np.ndarray, discr: np.ndarray,
+                     niter: int, nbins: int, npart: int, nprof: int,
+                     verbose: bool):
+    """Wrapper for full reconstruction in C++.
     Used in the :mod:`~tomo.tomography.tomography` module.
 
     Well tested, but do not return reconstructed waterfall.
@@ -397,7 +416,7 @@ def _old_reconstruct(weights, xp, flat_profiles, discr,
         Number of profiles.
     verbose: boolean
         Flag to indicate that the tomography routine should broadcast its
-        status to stdout. The output is identical to the output 
+        status to stdout. The output is identical to the output
         from the Fortran version.
 
     Returns
@@ -407,13 +426,15 @@ def _old_reconstruct(weights, xp, flat_profiles, discr,
     discr: ndarray
         1D array containing discrepancy at each
         iteration of the reconstruction.
-    '''
+    """
     _reconstruct_old(weights, _get_2d_pointer(xp), flat_profiles,
                      discr, niter, nbins, npart, nprof, verbose)
     return weights, discr
 
-def reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose):
-    '''Wrapper for full reconstruction in C++.
+
+def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
+                npart: int, nprof: int, verbose: bool):
+    """Wrapper for full reconstruction in C++.
     Used in the :mod:`~tomo.tomography.tomography` module.
 
     Parameters
@@ -435,7 +456,7 @@ def reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose):
         Number of profiles.
     verbose: boolean
         Flag to indicate that the tomography routine should broadcast its
-        status to stdout. The output is identical to the output 
+        status to stdout. The output is identical to the output
         from the Fortran version.
 
     Returns
@@ -448,7 +469,7 @@ def reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose):
     recreated: ndarray
         2D array containing the projected profiles as waterfall.
         Shape: (nprofiles, nbins)
-    '''
+    """
     xp = np.ascontiguousarray(xp).astype(np.int32)
     weights = np.ascontiguousarray(np.zeros(npart, dtype=np.float64))
     discr = np.zeros(niter + 1, dtype=np.float64)
@@ -457,9 +478,10 @@ def reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose):
 
     _reconstruct(weights, _get_2d_pointer(xp), flat_profs,
                  recreated, discr, niter, nbins, npart, nprof, verbose)
-    
+
     recreated = recreated.reshape((nprof, nbins))
-    return weights, discr, recreated 
+    return weights, discr, recreated
+
 
 # =============================================================
 # Utilities
@@ -468,6 +490,7 @@ def reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose):
 # Retrieve pointer of ndarray
 def _get_pointer(x):
     return x.ctypes.data_as(ct.c_void_p)
+
 
 # Retrieve 2D pointer.
 # Needed for passing two-dimensional arrays to the C++ functions

@@ -1,13 +1,14 @@
-'''Module containing the Tracking class.
+#!/usr/bin/env python3
+
+"""Module containing the Tracking class.
 
 :Author(s): **Christoffer Hjertø Grindheim**
-'''
+"""
 
-import os
-import sys
-import subprocess
 import ctypes
-import argparse
+import os
+import subprocess
+import sys
 
 
 def main():
@@ -53,6 +54,7 @@ def main():
         print('\nCompilation succeeded!')
     except Exception as e:
         print('\nCompilation failed.')
+
 
 if __name__ == '__main__':
     main()

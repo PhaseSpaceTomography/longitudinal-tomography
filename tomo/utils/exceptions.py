@@ -75,11 +75,14 @@ class RebinningError(Exception):
 class WaterfallReducedToZero(Exception):
     pass
 
+
 class FilteredProfilesError(Exception):
     pass
 
+
 class WaterfallError(Exception):
     pass
+
 
 class ProfileChargeNotCalculated(Exception):
     pass
@@ -104,6 +107,7 @@ class PhaseLimitsError(Exception):
 class MapCreationError(Exception):
     pass
 
+
 # ============================
 # PARTICLE TRACKING EXCEPTIONS
 # ============================
@@ -111,8 +115,10 @@ class MapCreationError(Exception):
 class InvalidParticleError(Exception):
     pass
 
+
 class TrackingError(Exception):
     pass
+
 
 class SelfFieldTrackingError(Exception):
     pass
@@ -132,6 +138,7 @@ class XPOutOfImageWidthError(Exception):
 
 class CoordinateImportError(Exception):
     pass
+
 
 class CoordinateError(Exception):
     pass

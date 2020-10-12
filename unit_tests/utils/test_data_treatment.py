@@ -1,19 +1,19 @@
-'''Unit-tests for the physics module.
+"""Unit-tests for the physics module.
 
-Run as python test_data_treament.py in console or via coverage
-'''
+Run as python test_data_treatment.py in console or via coverage
+"""
 
-import numpy as np
-import numpy.testing as nptest
 import os
 import unittest
 
-import tomo.tracking.machine as mch
+import numpy as np
+import numpy.testing as nptest
+
 import tomo.data.profiles as prf
+import tomo.tracking.machine as mch
 import tomo.utils.data_treatment as treat
 
-
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,

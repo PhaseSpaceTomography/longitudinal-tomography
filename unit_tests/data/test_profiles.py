@@ -1,20 +1,20 @@
-'''Unit-tests for the Profiles class.
+"""Unit-tests for the Profiles class.
 
 Run as python test_tracking.py in console or via coverage
-'''
+"""
+
+import os
+import unittest
 
 import numpy as np
 import numpy.testing as nptest
-import os
 import scipy.signal as sig
-import unittest
 
-import tomo.utils.exceptions as expt
-import tomo.tracking.machine as mch
 import tomo.data.profiles as prf
+import tomo.tracking.machine as mch
+import tomo.utils.exceptions as expt
 
-
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,
@@ -204,7 +204,6 @@ class TestProfiles(unittest.TestCase):
                                 polyorder=4, deriv=1)
 
         profiles.calc_self_fields(filtered_profiles=smoothed_profs)
-
 
         correct_vself = self._load_vself()
         correct_phiwrap = 6.283185307179586

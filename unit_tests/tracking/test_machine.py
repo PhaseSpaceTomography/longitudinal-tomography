@@ -1,14 +1,14 @@
-'''Unit-tests for the Machine class.
+"""Unit-tests for the Machine class.
 
 Run as python test_machine.py in console or via coverage
-'''
+"""
 
 import unittest
 
 import tomo.tracking.machine as mch
 
 
-# Machine arguments mased on the input file INDIVShavingC325.dat
+# Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {
     'output_dir':          '/tmp/',
     'dtbin':               9.999999999999999E-10,
@@ -120,19 +120,18 @@ class TestMachine(unittest.TestCase):
         machine.machine_ref_frame = machine_ref_frame
         machine.values_at_turns()
 
-
         correct = [-1.37016417e-05, -1.23314411e-05, -1.09612485e-05,
                    -9.59106409e-06, -8.22088776e-06, -6.85071954e-06,
                    -5.48055942e-06, -4.11040741e-06, -2.74026350e-06,
-                   -1.37012770e-06,  0.00000000e+00,  1.37011959e-06,
-                    2.74023109e-06,  4.11033447e-06,  5.48042976e-06,
-                    6.85051693e-06,  8.22059601e-06,  9.59066698e-06, 
-                    1.09607299e-05,  1.23307846e-05,  1.37008313e-05]
-        
+                   -1.37012770e-06, 0.00000000e+00, 1.37011959e-06,
+                   2.74023109e-06, 4.11033447e-06, 5.48042976e-06,
+                   6.85051693e-06, 8.22059601e-06, 9.59066698e-06,
+                   1.09607299e-05, 1.23307846e-05, 1.37008313e-05]
+
         for tat, corr in zip(machine.time_at_turn, correct):
             self.assertAlmostEqual(tat, corr,
                                    msg='Error in calculation of time at turn')
-    
+
     def test_values_at_turns_correct_omega_rev0(self):
         nprofs = 5
         machine_ref_frame = 2
@@ -149,7 +148,7 @@ class TestMachine(unittest.TestCase):
                    4585920.57199441, 4585947.69655305, 4585974.82086881,
                    4586001.94494169, 4586029.0687717,  4586056.19235885,
                    4586083.31570313, 4586110.43880456, 4586137.56166313]
-        
+
         for omega, corr in zip(machine.omega_rev0, correct):
             self.assertAlmostEqual(omega, corr,
                                    msg='Error in calculation of revolution '
@@ -171,7 +170,6 @@ class TestMachine(unittest.TestCase):
                    0.40078213, 0.40078213, 0.40078213, 0.40078213,
                    0.40078213]
 
-        
         for phi, corr in zip(machine.phi0, correct):
             self.assertAlmostEqual(phi, corr,
                                    msg='Error in calculation of synchronous '
@@ -193,7 +191,7 @@ class TestMachine(unittest.TestCase):
                    3.36038749e-08, 3.36033702e-08, 3.36028654e-08,
                    3.36023607e-08, 3.36018560e-08, 3.36013513e-08,
                    3.36008466e-08, 3.36003419e-08, 3.35998373e-08]
-        
+
         for drift, corr in zip(machine.drift_coef, correct):
             self.assertAlmostEqual(drift, corr,
                                    msg='Error in calculation of drift '
@@ -236,11 +234,9 @@ class TestMachine(unittest.TestCase):
                    0.3824314,  0.38243366, 0.38243592, 0.38243818, 0.38244044,
                    0.38244271]
 
-
-        
         for beta, corr in zip(machine.beta0, correct):
             self.assertAlmostEqual(beta, corr,
-                                   msg='Error in calculation of realtivistic '
+                                   msg='Error in calculation of relativistic '
                                        'beta (beta0)')
 
     def test_values_at_turns_correct_eta0(self):
@@ -257,7 +253,7 @@ class TestMachine(unittest.TestCase):
                    0.79426648, 0.79426475, 0.79426302, 0.79426129, 0.79425956,
                    0.79425783, 0.7942561,  0.79425437, 0.79425264, 0.79425091,
                    0.79424918]
-        
+
         for eta, corr in zip(machine.eta0, correct):
             self.assertAlmostEqual(eta, corr,
                                    msg='Error in calculation of phase slip '
@@ -278,10 +274,10 @@ class TestMachine(unittest.TestCase):
                    1015458784, 1015459813, 1015460842, 1015461871, 1015462900,
                    1015463929, 1015464958, 1015465986, 1015467015, 1015468044,
                    1015469073]
-        
+
         for e0, corr in zip(machine.e0, correct):
             self.assertEqual(int(e0), corr,
-                             msg='Error in calculation of renergy '
+                             msg='Error in calculation of energy '
                                  'of synch. particle (e0)')
 
     def test_values_at_turns_correct_vrf_with_derivative(self):
@@ -301,7 +297,6 @@ class TestMachine(unittest.TestCase):
                    2637.19711314, 2637.19712684, 2637.19714054, 2637.19715424,
                    2637.19716794]
 
-        
         for vrf, corr in zip(machine.vrf1_at_turn, correct):
             self.assertAlmostEqual(vrf, corr,
                                    msg='Error in calculation of RF voltage '
