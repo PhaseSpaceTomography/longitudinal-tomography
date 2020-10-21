@@ -31,7 +31,7 @@ def save_phase_space_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
     :func:`~tomo.compat.fortran.save_phase_space`"""
     warn('This function has been moved to tomo.compat.fortran')
-    return fortran.save_self_volt_profile(*args, **kwargs)
+    return fortran.save_phase_space(*args, **kwargs)
 
 
 def write_plotinfo_ftn(*args, **kwargs):
