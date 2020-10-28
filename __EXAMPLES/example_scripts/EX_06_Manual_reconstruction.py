@@ -10,13 +10,15 @@ def discrepancy(nbins, nprofs, dwaterfall):
     return np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs))
 
 
-this_dir = os.path.realpath(os.path.dirname(__file__))
-resource_dir = os.path.join(this_dir, 'resources')
-
-xp = np.load(os.path.join(resource_dir, 'INDIVShavingC325_xcoords.npy'))
-yp = np.load(os.path.join(resource_dir, 'INDIVShavingC325_ycoords.npy'))
-waterfall = np.load(os.path.join(
-    resource_dir, 'INDIVShavingC325_waterfall.npy'))
+raise NotImplementedError('The resources required for this example has '
+                          'not yet been implemented properly.')
+# this_dir = os.path.realpath(os.path.dirname(__file__))
+# resource_dir = os.path.join(this_dir, 'resources')
+# 
+# xp = np.load(os.path.join(resource_dir, 'INDIVShavingC325_xcoords.npy'))
+# yp = np.load(os.path.join(resource_dir, 'INDIVShavingC325_ycoords.npy'))
+# waterfall = np.load(os.path.join(
+#     resource_dir, 'INDIVShavingC325_waterfall.npy'))
 
 niterations = 20
 nprofs = waterfall.shape[0]
