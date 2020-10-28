@@ -8,9 +8,21 @@ the file LICENCE.txt. In applying this licence, CERN does not waive the
 privileges and immunities granted to it by virtue of its status as an
 Intergovernmental Organization or submit itself to any jurisdiction.
 
-INSTALL
-=======
 
+INSTALL
+-------
+
+Clone the repository and run
+```
+pip install .
+```
+
+OR
+
+Run
+```
+pip install -e "git+git://gitlab.cern.ch/anlu/tomographyv3.git#egg=beam_tomography"
+```
 
 Requirements
 ------------
