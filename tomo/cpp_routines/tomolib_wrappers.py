@@ -6,7 +6,8 @@ Should only be used by advanced users.
 """
 
 import ctypes as ct
-import logging as log
+from glob import glob
+import logging
 import os
 import sys
 from typing import Tuple, TYPE_CHECKING
@@ -18,17 +19,26 @@ from ..utils import exceptions as expt
 if TYPE_CHECKING:
     from ..tracking.machine import Machine
 
+log = logging.getLogger(__name__)
+
 _tomolib_pth = os.path.dirname(os.path.realpath(__file__))
 
 # Setting system specific parameters
+# NB: the wildcard is to deal with how setup.py names compiled libraries
 if 'posix' in os.name:
-    _tomolib_pth = os.path.join(_tomolib_pth, 'tomolib.so')
+    _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.so'))
 elif 'win' in sys.platform:
-    _tomolib_pth = os.path.join(_tomolib_pth, 'tomolib.dll')
+    _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.dll'))
 else:
     msg = 'YOU ARE NOT USING A WINDOWS' \
           'OR LINUX OPERATING SYSTEM. ABORTING...'
     raise SystemError(msg)
+
+if len(_tomolib_pth) != 1:
+    raise expt.LibraryNotFound('Could not find library. Try reinstalling '
+                               'the package with '
+                               'python setup.py install.')
+_tomolib_pth = _tomolib_pth[0]
 
 # Attempting to load C++ library
 if os.path.exists(_tomolib_pth):

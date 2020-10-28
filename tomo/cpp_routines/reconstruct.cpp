@@ -244,7 +244,10 @@ extern "C" void old_reconstruct(double * __restrict__ weights,            // out
     for(i = 0; i < npart; i++) {
         delete[] flat_points[i];
     }
-    delete[] rparts, flat_points, flat_rec, diff_prof;
+    delete[] rparts;
+    delete[] flat_points;
+    delete[] flat_rec;
+    delete[] diff_prof;
 
     if (verbose)
         std::cout << " Done!" << std::endl;
@@ -322,7 +325,9 @@ extern "C" void reconstruct(double * __restrict__ weights,             // out
     for(i = 0; i < npart; i++) {
         delete[] flat_points[i];
     }
-    delete[] rparts, flat_points, diff_prof;
+    delete[] rparts;
+    delete[] flat_points;
+    delete[] diff_prof;
 
     if (verbose)
         std::cout << " Done!" << std::endl;
