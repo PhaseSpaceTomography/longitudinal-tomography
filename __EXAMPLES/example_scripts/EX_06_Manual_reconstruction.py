@@ -1,8 +1,11 @@
 import os
 
 import numpy as np
-
 import tomo.cpp_routines.tomolib_wrappers as tlw
+import tomo.tracking.machine as mch
+import tomo.tracking.particles as parts
+import tomo.tracking.tracking as tracking
+import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
 
@@ -10,15 +13,70 @@ def discrepancy(nbins, nprofs, dwaterfall):
     return np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs))
 
 
-raise NotImplementedError('The resources required for this example has '
-                          'not yet been implemented properly.')
-# this_dir = os.path.realpath(os.path.dirname(__file__))
-# resource_dir = os.path.join(this_dir, 'resources')
-# 
-# xp = np.load(os.path.join(resource_dir, 'INDIVShavingC325_xcoords.npy'))
-# yp = np.load(os.path.join(resource_dir, 'INDIVShavingC325_ycoords.npy'))
-# waterfall = np.load(os.path.join(
-#     resource_dir, 'INDIVShavingC325_waterfall.npy'))
+# -----------------------------------------------------------------------------
+# Data loading or generation, not part of the example. Skip ahead.
+# -----------------------------------------------------------------------------
+this_dir = os.path.realpath(os.path.dirname(__file__))
+resource_dir = os.path.join(this_dir, 'resources')
+
+xp_file = os.path.join(resource_dir, 'INDIVShavingC325_xcoords.npy')
+yp_file = os.path.join(resource_dir, 'INDIVShavingC325_ycoords.npy')
+waterfall_file = os.path.join(resource_dir, 'INDIVShavingC325_waterfall.npy')
+
+if os.path.exists(xp_file) and os.path.isfile(xp_file):
+    xp = np.load(xp_file)
+    yp = np.load(yp_file)
+    waterfall = np.load(waterfall_file)
+else:
+    # construct pre-tracked data, this routine is not part of the example
+    # the saved numpy arrays take up too much space in the repo, instead
+    # they are generated when needed
+    ex_dir = os.path.split(this_dir)[0]
+    in_file_pth = os.path.join(ex_dir, 'input_files', 'INDIVShavingC325.dat')
+
+    with open(in_file_pth, 'r') as file:
+        raw_params, raw_data = tomoin._split_input(file.readlines())
+
+    machine, frames = tomoin.txt_input_to_machine(raw_params)
+    machine.values_at_turns()
+    measured_waterfall = frames.to_waterfall(raw_data)
+
+    profiles = tomoin.raw_data_to_profiles(
+        measured_waterfall, machine, frames.rebin, frames.sampling_time)
+    profiles.calc_profilecharge()
+
+    if profiles.machine.synch_part_x < 0:
+        fit_info = dtreat.fit_synch_part_x(profiles)
+        machine.load_fitted_synch_part_x_ftn(fit_info)
+
+    reconstr_idx = machine.filmstart
+
+    # Tracking...
+    tracker = tracking.Tracking(machine)
+
+    xp, yp = tracker.track(reconstr_idx)
+
+    # Converting from physical coordinates ([rad], [eV])
+    # to phase space coordinates.
+    if not tracker.self_field_flag:
+        xp, yp = parts.physical_to_coords(
+            xp, yp, machine, tracker.particles.xorigin,
+            tracker.particles.dEbin)
+
+    # Filters out lost particles, transposes particle matrix,
+    # casts to np.int32.
+    xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
+
+    waterfall = profiles.waterfall
+
+    os.makedirs(resource_dir, exist_ok=True)
+    np.save(xp_file, xp)
+    np.save(yp_file, yp)
+    np.save(waterfall_file, waterfall)
+
+# -----------------------------------------------------------------------------
+# Begin main example
+# -----------------------------------------------------------------------------
 
 niterations = 20
 nprofs = waterfall.shape[0]
@@ -39,7 +97,7 @@ rec_tframe = 0
 # ------------------------------------------------------
 
 # Waterfall must be normalized, and negatives
-# reduced to zeroes befor reconstruction.
+# reduced to zeroes before reconstruction.
 flat_profs = waterfall.copy()
 flat_profs = flat_profs.clip(0.0)
 
@@ -59,7 +117,7 @@ for i in range(nprofs):
 weight = np.zeros(nparts)
 rec_wf = np.zeros(waterfall.shape)
 
-# Initial estimation of weight factors using (flattended) measured profiles. 
+# Initial estimation of weight factors using (flattened) measured profiles.
 weight = tlw.back_project(weight, flat_points, flat_profs,
                           nparts, nprofs)
 weight = weight.clip(0.0)
