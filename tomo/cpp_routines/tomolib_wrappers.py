@@ -46,7 +46,7 @@ if os.path.exists(_tomolib_pth):
     _tomolib = ct.CDLL(_tomolib_pth)
 else:
     error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
-                f'\n- Try to run compile.py in the tomo directory\n'
+                f'\n- Try to python setup.py build_ext --inplace \n'
     raise expt.LibraryNotFound(error_msg)
 
 # Needed for sending 2D arrays to C++ functions.
