@@ -7,7 +7,7 @@ tests:
   - apt-get install -y build-essential
   - conda env create -f .environment.yml
   - source activate tomo_env
-  - pip install .
+  - python setup.py build_ext --inplace
   script:
     - echo "Installing coverage"
     - pip install coverage
