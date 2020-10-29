@@ -311,8 +311,6 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                   rfv2.astype(np.float64)]
 
     machine_args = [phi0, deltaE0, omega_rev0, drift_coef, phi12, h_ratio, dturns]
-    truth_table = [x is None for x in machine_args]
-    print(truth_table)
 
     if machine is not None:
         track_args += [machine.phi0, machine.deltaE0, machine.omega_rev0,
