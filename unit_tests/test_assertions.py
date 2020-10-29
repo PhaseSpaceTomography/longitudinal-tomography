@@ -8,8 +8,7 @@ import unittest
 import numpy as np
 
 import tomo.tracking.machine as mch
-import tomo.utils.assertions as asrt
-import tomo.utils.exceptions as expt
+from tomo import assertions as asrt, exceptions as expt
 import tomo.utils.tomo_input as tomoin
 
 MACHINE_ARGS = {

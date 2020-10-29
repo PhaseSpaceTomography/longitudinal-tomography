@@ -13,15 +13,16 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from ..utils import exceptions as expt
+from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
-    from ..tracking.machine import Machine
+    # from ..tracking.machine import Machine
     from ..tracking.particles import Particles
 
 log = logging.getLogger(__name__)
 
 
+# Input-output
 # --------------------------------------------------------------- #
 #                           PROFILES                              #
 # --------------------------------------------------------------- #
@@ -98,7 +99,7 @@ def save_phase_space(image: np.ndarray, recprof: int, output_path: str):
 # --------------------------------------------------------------- #
 
 def write_plotinfo(machine: 'Machine', particles: 'Particles',
-                       profile_charge: float) -> str:
+                   profile_charge: float) -> str:
     """Creates string of plot info needed for the original output
     for the tomography program.
 
@@ -227,3 +228,45 @@ def print_tracking_status(ref_prof: int, to_profile: int):
     """
     print(f' Tracking from time slice  {ref_prof + 1} to  '
           f'{to_profile + 1},   0.000% went outside the image width.')
+
+
+# Data treatment
+
+def calc_baseline(waterfall: np.ndarray, ref_prof: int,
+                      percent: float = 0.05) -> float:
+    """Function for finding baseline of raw data.
+
+    The function is based on the original Fortran program,
+    and uses a percentage of a reference profile in order to
+    find the baseline of the measurements.
+
+    Parameters
+    ----------
+    waterfall: ndarray
+        Raw-data shaped as waterfall: (nprofiles, nbins).
+    ref_prof: int
+        Index of reference profile.
+    percent: float, optional, default=0.05
+        A number between 0 and 1 describing the percentage of the
+        reference profile used to find the baseline.
+
+    Returns
+    -------
+    baseline: float
+        Baseline of reference profile.
+
+    Raises
+    ------
+    InputError: Exception
+        Raised if percentage is not given as a float between 0 and 1.
+
+    """
+    asrt.assert_inrange(percent, 'percent', 0.0, 1.0, expt.InputError,
+                        'The chosen percent of raw_data '
+                        'to create baseline from is not valid')
+
+    nbins = len(waterfall[ref_prof])
+    iend = int(percent * nbins)
+
+    return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
+

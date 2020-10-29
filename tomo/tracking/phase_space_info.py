@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Tuple
 import numpy as np
 
 from ..utils import physics
-from ..utils import assertions as asrt
-from ..utils.exceptions import EnergyBinningError, EnergyLimitsError, \
+from .. import assertions as asrt
+from tomo.exceptions import EnergyBinningError, EnergyLimitsError, \
     PhaseLimitsError, ArrayLengthError
 
 if TYPE_CHECKING:

@@ -14,7 +14,7 @@ from typing import Tuple, TYPE_CHECKING
 
 import numpy as np
 
-from ..utils import exceptions as expt
+from .. import exceptions as expt
 
 if TYPE_CHECKING:
     from ..tracking.machine import Machine

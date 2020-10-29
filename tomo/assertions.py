@@ -7,11 +7,11 @@ from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
 
 import numpy as np
 
-from . import exceptions as expt
+from tomo import exceptions as expt
 
 if TYPE_CHECKING:
-    from ..tracking.machine import Machine
-    from .tomo_input import Frames
+    from tomo.tracking.machine import Machine
+    from tomo.utils.tomo_input import Frames
 
 
 # =========================================================

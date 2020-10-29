@@ -64,28 +64,6 @@ class TestMachine(unittest.TestCase):
         self.assertEqual(machine.synch_part_y, 100.0,
                          msg='yat0 was set incorrectly when nbins was updated')
 
-    def test_load_fitted_synch_part_x_ftn_correct(self):
-        new_x = 118.37008249622234
-        bunch_min = 21.56907195264529
-        bunch_max = 255.84863660530607
-        fit_info = (new_x, bunch_min, bunch_max)
-
-        machine = mch.Machine(**MACHINE_ARGS)
-        machine.load_fitted_synch_part_x_ftn(fit_info)
-
-        self.assertAlmostEqual(
-                machine.fitted_synch_part_x, 118.37008249622234,
-                msg='fitted synch x coordinate set incorrectly')
-        self.assertAlmostEqual(
-                machine.synch_part_x, 118.37008249622234,
-                msg='fitted synch x coordinate set incorrectly')
-        self.assertAlmostEqual(
-                machine.bunchlimit_low, 21.56907195264529,
-                msg='fitted lower bunch limit set incorrectly')
-        self.assertAlmostEqual(
-                machine.bunchlimit_up, 255.84863660530607,
-                msg='fitted upper bunch limit set incorrectly')
-
     def test_values_at_turns_correct_length(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.values_at_turns()

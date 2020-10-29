@@ -4,14 +4,12 @@ a super class for particle trackers.
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-import numpy as np
 import logging as log
 from typing import TYPE_CHECKING
 
 from .machine import Machine
 from . import particles as pts
-from ..utils import assertions as asrt
-from ..utils import exceptions as expt
+from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
     from ..data.profiles import Profiles

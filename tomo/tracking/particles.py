@@ -13,8 +13,7 @@ from typing import Tuple, Sequence, TYPE_CHECKING
 import numpy as np
 
 from . import phase_space_info as psi
-from ..utils import assertions as asrt
-from ..utils import exceptions as expt
+from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
     from .machine import Machine

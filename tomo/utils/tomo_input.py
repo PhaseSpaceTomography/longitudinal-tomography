@@ -9,11 +9,11 @@ from typing import List, Tuple, Union, Collection, Sequence
 
 import numpy as np
 
-from . import assertions as asrt
-from . import data_treatment as treat
-from . import exceptions as expt
+from .. import assertions as asrt, exceptions as expt
 from ..data.profiles import Profiles
+from ..data import data_treatment as treat
 from ..tracking.machine import Machine
+from tomo.compat import fortran
 
 # Some constants for input files containing machine parameters.
 
@@ -490,7 +490,7 @@ def raw_data_to_profiles(waterfall: np.ndarray, machine: Machine, rbn: int,
 
     waterfall = np.array(waterfall)
     # Subtracting baseline
-    waterfall[:] -= treat.calc_baseline_ftn(waterfall, machine.beam_ref_frame)
+    waterfall[:] -= fortran.calc_baseline(waterfall, machine.beam_ref_frame)
     # Rebinning
     (waterfall,
      machine.dtbin,

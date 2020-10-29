@@ -7,7 +7,7 @@ import unittest
 
 import tomo.tracking.machine as mch
 import tomo.tracking.phase_space_info as psi
-import tomo.utils.exceptions as expt
+from tomo import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {

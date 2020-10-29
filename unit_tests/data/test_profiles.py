@@ -12,7 +12,7 @@ import scipy.signal as sig
 
 import tomo.data.profiles as prf
 import tomo.tracking.machine as mch
-import tomo.utils.exceptions as expt
+from tomo import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = {

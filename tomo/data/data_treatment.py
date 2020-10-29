@@ -7,53 +7,13 @@ from typing import Tuple, TYPE_CHECKING
 import numpy as np
 from scipy import optimize
 
-from . import assertions as asrt
-from . import exceptions as expt
-from . import physics
+from tomo import exceptions as expt
+from tomo.utils import physics
 
 if TYPE_CHECKING:
-    from ..data.profiles import Profiles
-    from ..tracking.machine import Machine
-    from ..tomography.__tomography import Tomography
-
-
-def calc_baseline_ftn(waterfall: np.ndarray, ref_prof: int,
-                      percent: float = 0.05) -> float:
-    """Function for finding baseline of raw data.
-
-    The function is based on the original Fortran program,
-    and uses a percentage of a reference profile in order to
-    find the baseline of the measurements.
-
-    Parameters
-    ----------
-    waterfall: ndarray
-        Raw-data shaped as waterfall: (nprofiles, nbins).
-    ref_prof: int
-        Index of reference profile.
-    percent: float, optional, default=0.05
-        A number between 0 and 1 describing the percentage of the
-        reference profile used to find the baseline.
-
-    Returns
-    -------
-    baseline: float
-        Baseline of reference profile.
-
-    Raises
-    ------
-    InputError: Exception
-        Raised if percentage is not given as a float between 0 and 1.
-
-    """
-    asrt.assert_inrange(percent, 'percent', 0.0, 1.0, expt.InputError,
-                        'The chosen percent of raw_data '
-                        'to create baseline from is not valid')
-
-    nbins = len(waterfall[ref_prof])
-    iend = int(percent * nbins)
-
-    return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
+    from tomo.data.profiles import Profiles
+    from tomo.tracking.machine import Machine
+    from tomo.tomography.__tomography import Tomography
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,

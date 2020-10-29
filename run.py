@@ -1,14 +1,10 @@
 # General utils
-import time as tm
-import sys
-import matplotlib.pyplot as plt
-import numpy as np
 
 # Tomo modules
 import tomo.tomography.tomography as tomography
 import tomo.tracking.particles as pts
 import tomo.tracking.tracking as tracking
-import tomo.utils.data_treatment as dtreat
+import tomo.data.data_treatment as dtreat
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 

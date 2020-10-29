@@ -10,7 +10,7 @@ import numpy as np
 import numpy.testing as nptest
 
 import tomo.tomography.tomography as tmo
-import tomo.utils.exceptions as expt
+from tomo import exceptions as expt
 
 
 class TestTomographyCpp(unittest.TestCase):

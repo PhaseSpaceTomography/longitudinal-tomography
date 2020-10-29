@@ -9,6 +9,8 @@ import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
+import tomo.compat.machine as mch
+
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'INDIVShavingC325.dat')
 

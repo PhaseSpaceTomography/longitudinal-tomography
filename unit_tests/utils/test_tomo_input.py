@@ -10,7 +10,7 @@ import numpy as np
 import numpy.testing as nptest
 
 import tomo.tracking.machine as mch
-import tomo.utils.exceptions as expt
+from tomo import exceptions as expt
 import tomo.utils.tomo_input as tomoin
 
 # All values retrieved from INDIVShavingC325.dat

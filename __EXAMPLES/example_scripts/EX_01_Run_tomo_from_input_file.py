@@ -5,7 +5,7 @@ import numpy as np
 import tomo.tomography.tomography as tomography
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
-import tomo.utils.data_treatment as dtreat
+import tomo.data.data_treatment as dtreat
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 

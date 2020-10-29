@@ -9,7 +9,7 @@ import numpy as np
 
 from . import __tomography as stmo
 from ..cpp_routines import tomolib_wrappers as tlw
-from ..utils import exceptions as expt
+from .. import exceptions as expt
 
 
 class TomographyCpp(stmo.Tomography):

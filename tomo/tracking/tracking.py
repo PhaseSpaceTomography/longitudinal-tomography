@@ -10,7 +10,7 @@ from numba import njit
 import numpy as np
 import logging
 
-from ..utils import assertions as asrt
+from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import tomolib_wrappers as tlw
 from ..compat import fortran

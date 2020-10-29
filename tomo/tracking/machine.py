@@ -10,7 +10,7 @@ from typing import Tuple
 import numpy as np
 from scipy import optimize, constants
 
-from ..utils import assertions as asrt
+from .. import assertions as asrt
 from ..utils import physics
 
 _machine_opts_def = {
@@ -283,9 +283,6 @@ class Machine:
         self.output_dir = kwargs['output_dir']
 
         # initialise attributes for later use
-        self.fitted_synch_part_x = None
-        self.bunchlimit_low = None
-        self.bunchlimit_up = None
         self.eta0 = None
         self.drift_coef = None
         self.omega_rev0 = None
@@ -317,46 +314,6 @@ class Machine:
         log.info(f'synch_part_y was updated when the '
                  f'number of profile bins changed.\nNew values - '
                  f'nbins: {self.nbins}, synch_part_y: {self.synch_part_y}')
-
-    def load_fitted_synch_part_x_ftn(self,
-                                     fit_info: Tuple[float, float, float]):
-        """Function for setting the synch_part_x if a fit has been performed.
-        Saves parameters retrieved from the fitting routine
-        needed by the :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
-        function in the :mod:`tomo.utils.tomo_output`. All needed info
-        will be returned from the
-        :func:`tomo.utils.data_treatment.fit_synch_part_x` function.
-
-        Sets the following fields:
-
-        * fitted_synch_part_x
-            The new x-coordinate of the synchronous particle
-            (needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`).
-        * bunchlimit_low
-            Lower phase of bunch (needed for
-            :func:`tomo.utils.tomo_output.write_plotinfo_ftn`).
-        * bunchlimit_up
-            Upper phase of bunch (needed for
-            :func:`tomo.utils.tomo_output.write_plotinfo_ftn`).
-        * synch_part_x
-            The x-coordinate of the synchronous particle.
-
-        Parameters
-        ----------
-        fit_info: tuple
-            Tuple should hold the following info in the following format:
-            (F, L, U), where F is the fitted value of the synchronous particle,
-            L is the lower bunch limit, and U is the upper bunch limit. All
-            of the values should be given in bins. The info needed by the
-            :func:`tomo.utils.tomo_output.write_plotinfo_ftn` function
-            if a fit has been performed, and the a Fortran style output is
-            to be given during the particle tracking.
-        """
-        log.info('Saving fitted synch_part_x to machine object.')
-        self.fitted_synch_part_x = fit_info[0]
-        self.bunchlimit_low = fit_info[1]
-        self.bunchlimit_up = fit_info[2]
-        self.synch_part_x = self.fitted_synch_part_x
 
     def values_at_turns(self):
         """Calculating machine values for each turn.
