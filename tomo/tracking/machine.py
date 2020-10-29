@@ -449,3 +449,10 @@ class Machine:
         rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn
         rf2v = self.vrf2 + self.vrf2dot * self.time_at_turn
         return rf1v, rf2v
+
+    def load_fitted_synch_part_x_ftn(self, *args):
+        raise DeprecationWarning('This method has moved '
+                                 'to tomo.compat.machine. '
+                                 'Please use '
+                                 'tomo.compat.machine.Machine '
+                                 'for Fortran compatibility.')

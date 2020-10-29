@@ -1,3 +1,11 @@
+"""
+Compatibility module. Everything in this submodule can be removed at once with
+minimal impact to the rest of the package (some if-statements need to be
+removed in the rest of the package as well).
+
+The intention of this package is to provide Fortran I/O compatibility with the
+tomoscope until it is deprecated.
+"""
 from typing import Tuple
 
 import logging
@@ -9,6 +17,9 @@ log = logging.getLogger(__name__)
 
 
 class Machine(SuperMachine):
+    """
+    Machine object for use with Fortran. Intended to be for backwards compatibility.
+    """
     def __init__(self, *args, **kwargs):
         super(Machine, self).__init__(*args, **kwargs)
 

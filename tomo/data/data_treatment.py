@@ -3,6 +3,7 @@
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 from typing import Tuple, TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from scipy import optimize
@@ -279,3 +280,9 @@ def _make_phase_space(xp: np.ndarray, yp: np.ndarray, weights: np.ndarray,
         phase_space[x, y] += w
 
     return phase_space
+
+
+def calc_baseline_ftn(*args):
+    warn('This function has moved to tomo.compat.fortran.')
+    from tomo.compat.fortran import calc_baseline
+    return calc_baseline(*args)
