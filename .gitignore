@@ -5,6 +5,9 @@ tomo/.idea
 .pytest_cache
 __doc/build
 unit_tests/old/
+.vscode
+.idea
+cmake-build-debug
 
 # Filetypes
 *.pyc
