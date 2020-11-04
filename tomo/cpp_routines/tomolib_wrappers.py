@@ -310,7 +310,8 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                   denergy, dphi, rfv1.astype(np.float64),
                   rfv2.astype(np.float64)]
 
-    machine_args = [phi0, deltaE0, omega_rev0, drift_coef, phi12, h_ratio, dturns]
+    machine_args = [phi0, deltaE0, omega_rev0,
+                    drift_coef, phi12, h_ratio, dturns]
 
     if machine is not None:
         track_args += [machine.phi0, machine.deltaE0, machine.omega_rev0,

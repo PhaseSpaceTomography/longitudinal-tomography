@@ -19,7 +19,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -49,8 +49,8 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
+}
 
 
 class TestTLW(unittest.TestCase):
@@ -154,9 +154,9 @@ class TestTLW(unittest.TestCase):
         yp = np.zeros((machine.nprofiles, nparts))
 
         xp, yp = tlw.kick_and_drift(
-                        xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                        nturns, nparts, machine=machine)
-        
+            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
+            nturns, nparts, machine=machine)
+
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
                                [0.291644], [0.31200651], [0.33178332],
                                [0.35094168], [0.36945041], [0.38727993],
@@ -165,11 +165,11 @@ class TestTLW(unittest.TestCase):
                                [-125750.07868119], [-122561.32895953],
                                [-119163.98960288], [-115567.32591061],
                                [-111780.71031054], [-107813.57867853],
-                               [-103675.3899576], [ -99375.58935766]])
-        
+                               [-103675.3899576], [-99375.58935766]])
+
         nptest.assert_almost_equal(xp, correct_xp,
                                    err_msg='Error in tracked x coordinates')
-      
+
         nptest.assert_almost_equal(yp, correct_yp,
                                    err_msg='Error in tracked y coordinates')
 
@@ -200,10 +200,10 @@ class TestTLW(unittest.TestCase):
         dturns = machine.dturns
 
         xp, yp = tlw.kick_and_drift(
-                        xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                        nturns, nparts, phi0, deltaE0, omega_rev0,
-                        drift_coef, phi12, h_ratio, dturns)
-        
+            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
+            nturns, nparts, phi0, deltaE0, omega_rev0,
+            drift_coef, phi12, h_ratio, dturns)
+
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
                                [0.291644], [0.31200651], [0.33178332],
                                [0.35094168], [0.36945041], [0.38727993],
@@ -212,11 +212,11 @@ class TestTLW(unittest.TestCase):
                                [-125750.07868119], [-122561.32895953],
                                [-119163.98960288], [-115567.32591061],
                                [-111780.71031054], [-107813.57867853],
-                               [-103675.3899576], [ -99375.58935766]])
-        
+                               [-103675.3899576], [-99375.58935766]])
+
         nptest.assert_almost_equal(xp, correct_xp,
                                    err_msg='Error in tracked x coordinates')
-      
+
         nptest.assert_almost_equal(yp, correct_yp,
                                    err_msg='Error in tracked y coordinates')
 
@@ -249,9 +249,9 @@ class TestTLW(unittest.TestCase):
                                msg='Too few arrays should '
                                    'raise an exception'):
             xp, yp = tlw.kick_and_drift(
-                            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                            nturns, nparts, phi0, deltaE0, omega_rev0,
-                            drift_coef, phi12, h_ratio)
+                xp, yp, denergy, dphi, rfv1, rfv2, recprof,
+                nturns, nparts, phi0, deltaE0, omega_rev0,
+                drift_coef, phi12, h_ratio)
 
         dturns = machine.dturns
         some_useless_var = None
@@ -259,9 +259,9 @@ class TestTLW(unittest.TestCase):
                                msg='Too many arrays should '
                                    'raise an exception'):
             xp, yp = tlw.kick_and_drift(
-                            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                            nturns, nparts, phi0, deltaE0, omega_rev0,
-                            drift_coef, phi12, h_ratio)        
+                xp, yp, denergy, dphi, rfv1, rfv2, recprof,
+                nturns, nparts, phi0, deltaE0, omega_rev0,
+                drift_coef, phi12, h_ratio)
 
     def test_back_project(self):
         waterfall = self._load_waterfall()
@@ -273,9 +273,9 @@ class TestTLW(unittest.TestCase):
         nbins = len(waterfall[0])
 
         weights = np.zeros(nparts, dtype=np.float64)
-        
+
         flat_profs = np.ascontiguousarray(
-                        waterfall.flatten()).astype(np.float64)
+            waterfall.flatten()).astype(np.float64)
 
         xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
         xp = xp.T
@@ -283,7 +283,7 @@ class TestTLW(unittest.TestCase):
         for i in range(nprofs):
             flat_points[:, i] += nbins * i
         flat_points = np.ascontiguousarray(flat_points).astype(np.int32)
-        
+
         tlw.back_project(weights, flat_points, flat_profs, nparts, nprofs)
 
         cweights = np.array([0.79054276, 0.80812089, 0.81983964, 0.83468339,
@@ -299,7 +299,7 @@ class TestTLW(unittest.TestCase):
                              0.91749589, 0.91124589, 0.90968339, 0.90421464,
                              0.89718339, 0.89132401, 0.89171464, 0.88780839,
                              0.88273026, 0.88273026])
-                
+
         nptest.assert_almost_equal(
             weights, cweights, err_msg='Weights were calculated incorrectly')
 
@@ -371,18 +371,18 @@ class TestTLW(unittest.TestCase):
         xp = xp.T
 
         xp = np.ascontiguousarray(xp).astype(np.int32)
-        
+
         waterfall = self._load_waterfall()
         waterfall = waterfall[:nprofs]
         waterfall = waterfall[:, 70:170]
         flat_profs = np.ascontiguousarray(
-                        waterfall.flatten()).astype(np.float64)
+            waterfall.flatten()).astype(np.float64)
 
         weights, discr = tlw._old_reconstruct(
-                            weights, xp, flat_profs, discr, niter,
-                            nbins, nparts, nprofs, verbose=False)
+            weights, xp, flat_profs, discr, niter,
+            nbins, nparts, nprofs, verbose=False)
 
-        correct_w = np.array([1.40130575, 1.4324645 , 1.45323701, 1.47954884,
+        correct_w = np.array([1.40130575, 1.4324645, 1.45323701, 1.47954884,
                               1.49478201, 1.50101376, 1.51001518, 1.51001518,
                               1.50932276, 1.51209243, 1.51209243, 1.49962893,
                               1.49685926, 1.49339718, 1.48993509, 1.48785784,
@@ -394,8 +394,8 @@ class TestTLW(unittest.TestCase):
                               1.65403787, 1.65196062, 1.64503645, 1.64018953,
                               1.6263412,  1.61526253, 1.61249286, 1.60279903,
                               1.59033552, 1.57994927, 1.58064169, 1.57371752,
-                              1.5647161,  1.5647161 ])
-        
+                              1.5647161,  1.5647161])
+
         correct_discr = np.array([0.0745208, 0.0745208])
 
         nptest.assert_almost_equal(
@@ -422,9 +422,9 @@ class TestTLW(unittest.TestCase):
         (weights,
          discr,
          recreated) = tlw.reconstruct(
-                            xp, waterfall, niter,
-                            nbins, nparts, nprofs,
-                            verbose=False)
+            xp, waterfall, niter,
+            nbins, nparts, nprofs,
+            verbose=False)
 
         correct_w = np.array([1.40130575, 1.4324645,  1.45323701, 1.47954884,
                               1.49478201, 1.50101376, 1.51001518, 1.51001518,
@@ -439,8 +439,7 @@ class TestTLW(unittest.TestCase):
                               1.6263412,  1.61526253, 1.61249286, 1.60279903,
                               1.59033552, 1.57994927, 1.58064169, 1.57371752,
                               1.5647161,  1.5647161])
-        
-        
+
         correct_discr = np.array([0.0745208, 0.0745208])
 
         correct_rec = np.array([0.01797798, 0.01837773, 0.01864423, 0.01898179,
@@ -478,7 +477,7 @@ class TestTLW(unittest.TestCase):
         base_dir = os.path.split(os.path.realpath(__file__))[0]
         base_dir = os.path.split(base_dir)[0]
         data_path = os.path.join(base_dir, 'resources')
-    
+
         waterfall = np.load(os.path.join(
-                        data_path, 'waterfall_INDIVShavingC325.npy'))
+            data_path, 'waterfall_INDIVShavingC325.npy'))
         return waterfall

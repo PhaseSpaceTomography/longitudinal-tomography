@@ -140,7 +140,7 @@ for i in range(niterations):
     # Calculating discrepancy
     diff.append(np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs)))
 
-    # Back projecting using the difference between measured and rec. waterfall 
+    # Back projecting using the difference between measured and rec. waterfall
     weight = tlw.back_project(weight, flat_points, dwaterfall.flatten(),
                               nparts, nprofs)
     weight = weight.clip(0.0)

@@ -16,7 +16,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -46,7 +46,7 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
 }
 
 
@@ -71,7 +71,7 @@ class TestPhysics(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.time_at_turn = [1.3701195948153858e-06]
         correct = -705.3144383117857
-        ans = physics.rfvolt_rf1(0.123, machine, rf_turn=0) 
+        ans = physics.rfvolt_rf1(0.123, machine, rf_turn=0)
 
         self.assertAlmostEqual(
             float(ans), correct, msg='Error in calculation of rfvolt1')
@@ -80,7 +80,7 @@ class TestPhysics(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.time_at_turn = [1.3701195948153858e-06]
         correct = 2617.2730921111274
-        ans = physics.drfvolt_rf1(0.123, machine, rf_turn=0) 
+        ans = physics.drfvolt_rf1(0.123, machine, rf_turn=0)
 
         self.assertAlmostEqual(
             float(ans), correct, msg='Error in calculation drfvolt1')
@@ -90,7 +90,7 @@ class TestPhysics(unittest.TestCase):
         machine.vrf2 = 1250
         machine.time_at_turn = [1.3701195948153858e-06]
         correct = -1364.5929048626685
-        ans = physics.rf_voltage(0.123, machine, rf_turn=0) 
+        ans = physics.rf_voltage(0.123, machine, rf_turn=0)
 
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation rf_voltage')
@@ -100,7 +100,7 @@ class TestPhysics(unittest.TestCase):
         machine.vrf2 = 1250
         machine.time_at_turn = [1.3701195948153858e-06]
         correct = 4741.280534228331
-        ans = physics.drf_voltage(0.123, machine, rf_turn=0) 
+        ans = physics.drf_voltage(0.123, machine, rf_turn=0)
 
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation drf_voltage')
@@ -109,9 +109,9 @@ class TestPhysics(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         correct = -1132.2371121228516
         ans = physics.rf_voltage_at_phase(
-                phi=0.123, vrf1=2500, vrf1dot=0, vrf2=2135, vrf2dot=0,
-                h_ratio=2, phi12=1.324, time_at_turn=[1.3701195948],
-                rf_turn=0)
+            phi=0.123, vrf1=2500, vrf1dot=0, vrf2=2135, vrf2dot=0,
+            h_ratio=2, phi12=1.324, time_at_turn=[1.3701195948],
+            rf_turn=0)
 
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation drf_voltage')
@@ -128,8 +128,8 @@ class TestPhysics(unittest.TestCase):
 
         correct = 2.740810528223139
         ans = physics.find_synch_phase(
-                machine, rf_turn=0, phi_lower=0, phi_upper=2*np.pi)
-        
+            machine, rf_turn=0, phi_lower=0, phi_upper=2*np.pi)
+
         self.assertAlmostEqual(
             ans, correct, msg='Error in found synchronous phase')
 
@@ -176,7 +176,7 @@ class TestPhysics(unittest.TestCase):
         machine.beta0 = np.array([0.38242009])
         machine.eta0 = np.array([0.79426648])
         machine.e0 = np.array([1015458784.835785])
-        
+
         correct = 3.360488420030597e-08
         ans = physics.find_dphase(machine)
         ans = ans[0]
@@ -187,7 +187,7 @@ class TestPhysics(unittest.TestCase):
     def test_calc_revolution_freq_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.beta0 = np.array([0.38242009])
-        
+
         correct = 4585866.350787248
         ans = physics.revolution_freq(machine)
         ans = ans[0]

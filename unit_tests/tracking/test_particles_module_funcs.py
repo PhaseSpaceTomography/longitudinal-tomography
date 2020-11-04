@@ -17,7 +17,7 @@ MACHINE_ARGS = {
     'dtbin': 9.999999999999999E-10,
     'dturns': 5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -47,8 +47,8 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
+}
 
 
 class TestParticlesMethods(unittest.TestCase):
@@ -104,7 +104,7 @@ class TestParticlesMethods(unittest.TestCase):
 
         phases = np.array(phases)
         energies = np.array(energies)
-        
+
         machine = mch.Machine(**MACHINE_ARGS)
 
         machine.dturns = 5
@@ -121,7 +121,7 @@ class TestParticlesMethods(unittest.TestCase):
         dEbin = 1232.7181430465346
 
         xp, yp = pts.physical_to_coords(
-                    phases, energies, machine, xorigin, dEbin)
+            phases, energies, machine, xorigin, dEbin)
 
         correct_xp = [[281.27150807, 343.8103066,  406.34910513, 468.88790365],
                       [281.27048287, 343.80743192, 406.34438098, 468.88133003]]
@@ -132,7 +132,7 @@ class TestParticlesMethods(unittest.TestCase):
             for x, cx in zip(xvec, cxvec):
                 self.assertAlmostEqual(
                     x, cx, msg='Error in calculated xp coordinates ')
-        
+
         for yvec, cyvec in zip(yp, correct_yp):
             for y, cy in zip(yvec, cyvec):
                 self.assertAlmostEqual(
@@ -146,7 +146,7 @@ class TestParticlesMethods(unittest.TestCase):
 
         phases = np.array(phases)
         energies = np.array(energies)
-        
+
         machine = mch.Machine(**MACHINE_ARGS)
 
         machine.dturns = 5
@@ -167,4 +167,4 @@ class TestParticlesMethods(unittest.TestCase):
                                    'different lengths should raise '
                                    'an exception'):
             xp, yp = pts.physical_to_coords(
-                        phases, energies, machine, xorigin, dEbin)
+                phases, energies, machine, xorigin, dEbin)

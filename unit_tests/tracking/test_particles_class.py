@@ -15,7 +15,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -45,8 +45,8 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
+}
 
 
 class TestParticles(unittest.TestCase):
@@ -134,7 +134,6 @@ class TestParticles(unittest.TestCase):
                          msg='imin has an unexpected value.')
         self.assertEqual(parts.imax, imax_correct,
                          msg='imax has an unexpected value.')
-
 
     def test_homogeneous_distribution_correct_jmin(self):
         machine = mch.Machine(**MACHINE_ARGS)

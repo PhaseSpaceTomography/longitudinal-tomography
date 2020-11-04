@@ -15,7 +15,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -45,8 +45,8 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
+}
 
 
 class TestMachine(unittest.TestCase):
@@ -61,12 +61,12 @@ class TestMachine(unittest.TestCase):
 
         correct_dEbin = 1232.7181430465346
         self.assertAlmostEqual(dEbin, correct_dEbin,
-                              msg='dEbin was calculated incorrectly')
+                               msg='dEbin was calculated incorrectly')
 
     def test_find_dEbin_demax_lt_zero_vrf2_not_zero_output_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.vrf2 = 1500
-        machine.h_num =machine.vrf2 = 1500
+        machine.h_num = machine.vrf2 = 1500
         machine.h_num = 2
         machine.values_at_turns()
 
@@ -76,7 +76,7 @@ class TestMachine(unittest.TestCase):
 
         correct_dEbin = 185.1099466310996
         self.assertAlmostEqual(dEbin, correct_dEbin,
-                              msg='dEbin was calculated incorrectly')
+                               msg='dEbin was calculated incorrectly')
 
     def test_find_dEbin_demax_gt_zero_vrf2_not_zero_output_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -89,7 +89,7 @@ class TestMachine(unittest.TestCase):
 
         correct_dEbin = 26315.78947368421
         self.assertAlmostEqual(dEbin, correct_dEbin,
-                              msg='dEbin was calculated incorrectly')
+                               msg='dEbin was calculated incorrectly')
 
     def test_find_dEbin_demax_eq_zero_fails(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -125,7 +125,7 @@ class TestMachine(unittest.TestCase):
 
         correct_xorigin = -246.60492626420734
         self.assertAlmostEqual(xorigin, correct_xorigin,
-                              msg='xorigin was calculated incorrectly')
+                               msg='xorigin was calculated incorrectly')
 
     def test_find_binned_phase_energy_limits_correct_ilims(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -136,7 +136,7 @@ class TestMachine(unittest.TestCase):
 
         correct_imin = 0
         correct_imax = 759
-    
+
         self.assertEqual(psinfo.imin, correct_imin,
                          msg='imin was calculated incorrectly'
                              '(full_pp_flag not enabled)')
@@ -203,7 +203,7 @@ class TestMachine(unittest.TestCase):
 
         correct_imin = 0
         correct_imax = 759
-    
+
         self.assertEqual(psinfo.imin, correct_imin,
                          msg='imin was calculated incorrectly'
                              '(full_pp_flag enabled)')

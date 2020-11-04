@@ -20,7 +20,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -50,8 +50,8 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
+}
 
 
 class TestProfiles(unittest.TestCase):
@@ -106,7 +106,7 @@ class TestProfiles(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.values_at_turns()
         waterfall = self._load_waterfall()
-        
+
         profiles = prf.Profiles(machine, machine.dtbin, waterfall)
         with self.assertRaises(expt.ProfileChargeNotCalculated,
                                msg='An exception should be raised when '
@@ -120,9 +120,9 @@ class TestProfiles(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.values_at_turns()
 
-        sample_time = machine.dtbin 
+        sample_time = machine.dtbin
 
-        # Update fields due to loading of rebinned waterfall. 
+        # Update fields due to loading of rebinned waterfall.
         rbn = 3
         machine.dtbin *= rbn
         machine.synch_part_x /= rbn
@@ -154,9 +154,9 @@ class TestProfiles(unittest.TestCase):
         machine.bdot = 0.0
         machine.values_at_turns()
 
-        sample_time = machine.dtbin 
+        sample_time = machine.dtbin
 
-        # Update fields due to loading of rebinned waterfall. 
+        # Update fields due to loading of rebinned waterfall.
         rbn = 3
         machine.dtbin *= rbn
         machine.synch_part_x /= rbn
@@ -185,7 +185,7 @@ class TestProfiles(unittest.TestCase):
 
         sample_time = machine.dtbin
 
-        # Update fields due to loading of rebinned waterfall. 
+        # Update fields due to loading of rebinned waterfall.
         rbn = 3
         machine.dtbin *= rbn
         machine.synch_part_x /= rbn
@@ -196,12 +196,12 @@ class TestProfiles(unittest.TestCase):
 
         profiles = prf.Profiles(machine, sample_time, waterfall)
         profiles.calc_profilecharge()
-        
+
         smoothed_profs = np.copy(waterfall)
         smoothed_profs /= np.sum(smoothed_profs, axis=1)[:, None]
         smoothed_profs = sig.savgol_filter(
-                                x=smoothed_profs, window_length=7,
-                                polyorder=4, deriv=1)
+            x=smoothed_profs, window_length=7,
+            polyorder=4, deriv=1)
 
         profiles.calc_self_fields(filtered_profiles=smoothed_profs)
 
@@ -226,7 +226,7 @@ class TestProfiles(unittest.TestCase):
         sample_time = machine.dtbin
 
         profiles = prf.Profiles(machine, sample_time, waterfall)
-        profiles.calc_profilecharge()     
+        profiles.calc_profilecharge()
 
         with self.assertRaises(
                 expt.FilteredProfilesError,
@@ -242,7 +242,7 @@ class TestProfiles(unittest.TestCase):
         sample_time = machine.dtbin
 
         profiles = prf.Profiles(machine, sample_time, waterfall)
-        profiles.calc_profilecharge()     
+        profiles.calc_profilecharge()
 
         with self.assertRaises(
                 expt.FilteredProfilesError,
@@ -254,9 +254,9 @@ class TestProfiles(unittest.TestCase):
         base_dir = os.path.split(os.path.realpath(__file__))[0]
         base_dir = os.path.split(base_dir)[0]
         data_path = os.path.join(base_dir, 'resources')
-    
+
         waterfall = np.load(os.path.join(
-                        data_path, 'waterfall_INDIVShavingC325.npy'))
+            data_path, 'waterfall_INDIVShavingC325.npy'))
         return waterfall
 
     def _load_vself(self):

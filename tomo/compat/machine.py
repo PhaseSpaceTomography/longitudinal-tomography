@@ -20,6 +20,7 @@ class Machine(SuperMachine):
     """
     Machine object for use with Fortran. Intended to be for backwards compatibility.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -67,5 +68,3 @@ class Machine(SuperMachine):
         self.bunchlimit_low = fit_info[1]
         self.bunchlimit_up = fit_info[2]
         self.synch_part_x = self.fitted_synch_part_x
-
-

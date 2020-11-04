@@ -19,7 +19,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -49,8 +49,8 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
+}
 
 
 class TestTracker(unittest.TestCase):
@@ -74,12 +74,12 @@ class TestTracker(unittest.TestCase):
         machine.nprofiles = 20
 
         machine.values_at_turns()
-        
+
         tracker = tck.Tracking(machine)
         xp, yp = tracker.track(recprof=10)
 
         # Comparing the coordinates of particle #0 only.
-        correct_x = [-19.432295466713434, -19.3925512994595, 
+        correct_x = [-19.432295466713434, -19.3925512994595,
                      -19.35163208683023, -19.309627946073313,
                      -19.266631745225464, -19.222738757376533,
                      -19.178046284007912, -19.132653251008257,
@@ -106,15 +106,15 @@ class TestTracker(unittest.TestCase):
                 x, cx, msg='Error in tracking of particle '
                            'found in x-coordinate')
         for y, cy in zip(yp[:, 0], correct_y):
-                self.assertAlmostEqual(
-                    y, cy, msg='Error in tracking of particle '
-                               'found in y-coordinate')
+            self.assertAlmostEqual(
+                y, cy, msg='Error in tracking of particle '
+                           'found in y-coordinate')
 
     def test_tracking_man_distr(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.nprofiles = 20
         machine.values_at_turns()
-        
+
         phase_0 = np.array([0.33178332])
         energy_0 = np.array([-115567.32591061])
         in_coordinates = (phase_0, energy_0)
@@ -127,7 +127,7 @@ class TestTracker(unittest.TestCase):
                      0.29165905, 0.31201393, 0.33178332, 0.35093449,
                      0.36943629, 0.38725915, 0.40437511, 0.4207578,
                      0.4363824, 0.45122569, 0.46526597, 0.47848306]
-        
+
         for x, cx in zip(xp[:, 0], correct_x):
             self.assertAlmostEqual(
                 x, cx, msg='Error in tracking of particle '
@@ -145,7 +145,6 @@ class TestTracker(unittest.TestCase):
                 y, cy, msg='Error in tracking of particle '
                            'found in y-coordinate')
 
-
     def test_self_field_tracking(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.zwall_over_n = 50.0
@@ -157,7 +156,7 @@ class TestTracker(unittest.TestCase):
         data_path = os.path.join(base_dir, 'resources')
 
         waterfall = np.load(os.path.join(
-                        data_path, 'waterfall_INDIVShavingC325.npy'))
+            data_path, 'waterfall_INDIVShavingC325.npy'))
         vself = np.load(os.path.join(
                         data_path, 'vself_INDIVShavingC325.npy'))
 
@@ -196,7 +195,7 @@ class TestTracker(unittest.TestCase):
                 y, cy, msg='An error was found in the y-coordinates '
                            'tracked using self-fields.')
 
-        correct_x =[xp_0, xp_50, xp_149]
+        correct_x = [xp_0, xp_50, xp_149]
         test_x = [float(xp[0]), float(xp[50]), float(xp[149])]
         for x, cx in zip(test_x, correct_x):
             self.assertAlmostEqual(
@@ -221,23 +220,23 @@ class TestTracker(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.nprofiles = 10
         machine.values_at_turns()
-        
+
         phase_0 = np.array([0.33178332])
         energy_0 = np.array([-115567.32591061])
-        
+
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
-        
+
         tracker = tck.Tracking(machine)
         xp, yp = tracker.kick_and_drift(
-                    energy_0, phase_0, rfv1, rfv2, rec_prof=5)
-        
+            energy_0, phase_0, rfv1, rfv2, rec_prof=5)
+
         correct_x = [0.22739336232235102, 0.24930078456175753,
                      0.27073013058527245, 0.29164399861825624,
                      0.3120065061037849, 0.33178332,
                      0.350941678970489, 0.3694504079276061,
                      0.3872799254524489, 0.40440224466848473]
-        
+
         correct_y = [-131465.5660292741, -128721.12723284948,
                      -125750.0786811894, -122561.328959532,
                      -119163.98960288391, -115567.32591061,

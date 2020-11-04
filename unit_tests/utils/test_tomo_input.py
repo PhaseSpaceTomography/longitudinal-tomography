@@ -22,7 +22,7 @@ frame_input_args = {
     'dtbin':               9.999999999999999E-10,
     'skip_bins_start':     170,
     'skip_bins_end':       70,
-    'rebin':               3 
+    'rebin':               3
 }
 
 MACHINE_ARGS = {
@@ -30,7 +30,7 @@ MACHINE_ARGS = {
     'dtbin':               9.999999999999999E-10,
     'dturns':              5,
     'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
+    'demax': -1.E6,
     'filmstart':           0,
     'filmstop':            1,
     'filmstep':            1,
@@ -60,7 +60,7 @@ MACHINE_ARGS = {
     'nprofiles':           150,
     'nbins':               760,
     'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
+    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
 }
 
 
@@ -106,8 +106,8 @@ class TestTomoIn(unittest.TestCase):
         raw_data = np.arange(ndata)
 
         frames = tomoin.Frames(
-                    nframes, nbins_frame, skip_frames, skip_bins_start,
-                    skip_bins_end, rebin, dtbin)
+            nframes, nbins_frame, skip_frames, skip_bins_start,
+            skip_bins_end, rebin, dtbin)
 
         waterfall = frames.to_waterfall(raw_data)
 
@@ -135,8 +135,8 @@ class TestTomoIn(unittest.TestCase):
         raw_data = np.arange(ndata)
 
         frames = tomoin.Frames(
-                    nframes, nbins_frame, skip_frames, skip_bins_start,
-                    skip_bins_end, rebin, dtbin)
+            nframes, nbins_frame, skip_frames, skip_bins_start,
+            skip_bins_end, rebin, dtbin)
 
         waterfall = frames.to_waterfall(raw_data)
 
@@ -159,8 +159,8 @@ class TestTomoIn(unittest.TestCase):
         rebin = 1
 
         frames = tomoin.Frames(
-                    nframes, nbins_frame, skip_frames, skip_bins_start,
-                    skip_bins_end, rebin, dtbin)
+            nframes, nbins_frame, skip_frames, skip_bins_start,
+            skip_bins_end, rebin, dtbin)
 
         raw_data = np.arange(20)
 
@@ -180,8 +180,8 @@ class TestTomoIn(unittest.TestCase):
         rebin = 1
 
         frames = tomoin.Frames(
-                    nframes, nbins_frame, skip_frames, skip_bins_start,
-                    skip_bins_end, rebin, dtbin)
+            nframes, nbins_frame, skip_frames, skip_bins_start,
+            skip_bins_end, rebin, dtbin)
 
         raw_data = 1
         with self.assertRaises(expt.RawDataImportError,
@@ -213,7 +213,7 @@ class TestTomoIn(unittest.TestCase):
         s_time = machine.dtbin
 
         profiles = tomoin.raw_data_to_profiles(
-                            waterfall, machine, rbn, s_time)
+            waterfall, machine, rbn, s_time)
 
         correct_waterfall = self._load_waterfall()
 
@@ -247,8 +247,8 @@ class TestTomoIn(unittest.TestCase):
     def test_txt_input_to_machine_machine_correct(self):
         data_path = self._find_resource_dir()
         infile = os.path.join(data_path, 'parameters_INDIVShavingC325.dat')
-        
-        with open(infile, 'r') as f: 
+
+        with open(infile, 'r') as f:
             file_lines = f.readlines()
         machine, _ = tomoin.txt_input_to_machine(file_lines)
 
@@ -346,7 +346,7 @@ class TestTomoIn(unittest.TestCase):
                          msg='filmstop set incorrectly')
         self.assertEqual(machine.filmstep, MACHINE_ARGS['filmstep'],
                          msg='filmstep set incorrectly')
-        
+
         nprofiles = 150
         self.assertEqual(machine.nprofiles, nprofiles,
                          msg='nprofiles set incorrectly')
@@ -357,8 +357,8 @@ class TestTomoIn(unittest.TestCase):
     def test_txt_input_to_machine_frames_correct(self):
         data_path = self._find_resource_dir()
         infile = os.path.join(data_path, 'parameters_INDIVShavingC325.dat')
-        
-        with open(infile, 'r') as f: 
+
+        with open(infile, 'r') as f:
             file_lines = f.readlines()
         _, frames = tomoin.txt_input_to_machine(file_lines)
 
@@ -409,14 +409,14 @@ class TestTomoIn(unittest.TestCase):
     def _load_waterfall(self):
         data_path = self._find_resource_dir()
         waterfall = np.load(os.path.join(
-                        data_path, 'waterfall_INDIVShavingC325.npy'))
+            data_path, 'waterfall_INDIVShavingC325.npy'))
         return waterfall
 
     def _load_raw_data(self):
         data_path = self._find_resource_dir()
         raw_data = np.genfromtxt(
-                    os.path.join(data_path,
-                                'raw_data_INDIVShavingC325.dat'))
+            os.path.join(data_path,
+                         'raw_data_INDIVShavingC325.dat'))
         return raw_data
 
     def _find_resource_dir(self):

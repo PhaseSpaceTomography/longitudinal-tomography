@@ -38,12 +38,12 @@ def generate_bunch(bunch_position, bunch_length,
                                n_macroparticles, p=density_grid.flatten())
 
     # Randomize particles inside each grid cell (uniform distribution)
-    particle_phase = (np.ascontiguousarray(phase_grid.flatten()[indexes] +
-                                           (np.random.rand(
-                                               n_macroparticles) - 0.5) * bin_phase))
-    particle_energy = (np.ascontiguousarray(deltaE_grid.flatten()[indexes] +
-                                            (np.random.rand(
-                                                n_macroparticles) - 0.5) * bin_energy))
+    particle_phase = np.ascontiguousarray(
+        phase_grid.flatten()[indexes] + (np.random.rand(
+            n_macroparticles) - 0.5) * bin_phase)
+    particle_energy = np.ascontiguousarray(
+        deltaE_grid.flatten()[indexes] + (np.random.rand(
+            n_macroparticles) - 0.5) * bin_energy)
 
     return particle_phase, particle_energy
 

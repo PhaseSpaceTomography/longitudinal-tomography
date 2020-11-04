@@ -233,7 +233,7 @@ def print_tracking_status(ref_prof: int, to_profile: int):
 # Data treatment
 
 def calc_baseline(waterfall: np.ndarray, ref_prof: int,
-                      percent: float = 0.05) -> float:
+                  percent: float = 0.05) -> float:
     """Function for finding baseline of raw data.
 
     The function is based on the original Fortran program,
@@ -269,4 +269,3 @@ def calc_baseline(waterfall: np.ndarray, ref_prof: int,
     iend = int(percent * nbins)
 
     return np.sum(waterfall[ref_prof, :iend]) / np.floor(percent * nbins)
-

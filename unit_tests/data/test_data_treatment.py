@@ -78,7 +78,7 @@ class TestDataTreatment(unittest.TestCase):
             err_msg='Rebinning array of odd length failed')
 
         # Checks that the x coordinate of synchronous particle
-        # is updated to fit the new number of bins. 
+        # is updated to fit the new number of bins.
         updated_synch_part_x = 2.265
         self.assertAlmostEqual(out_sync_pt_x, updated_synch_part_x,
                                msg='Error in updated synch part x')
@@ -112,7 +112,7 @@ class TestDataTreatment(unittest.TestCase):
             err_msg='Rebinning array of odd length failed')
 
         # Checks that the x coordinate of synchronous particle
-        # is updated to fit the new number of bins. 
+        # is updated to fit the new number of bins.
         updated_synch_part_x = 2.265
         self.assertAlmostEqual(out_sync_pt_x, updated_synch_part_x,
                                msg='Error in updated synch part x')
