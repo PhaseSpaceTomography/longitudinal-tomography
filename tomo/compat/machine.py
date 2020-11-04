@@ -18,7 +18,8 @@ log = logging.getLogger(__name__)
 
 class Machine(SuperMachine):
     """
-    Machine object for use with Fortran. Intended to be for backwards compatibility.
+    Machine object for use with Fortran. Intended to be for backwards
+    compatibility.
     """
 
     def __init__(self, *args, **kwargs):
@@ -33,22 +34,22 @@ class Machine(SuperMachine):
                                  fit_info: Tuple[float, float, float]):
         """Function for setting the synch_part_x if a fit has been performed.
         Saves parameters retrieved from the fitting routine
-        needed by the :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        needed by the :func:`tomo.compat.fortran.write_plotinfo`
         function in the :mod:`tomo.utils.tomo_output`. All needed info
         will be returned from the
-        :func:`tomo.utils.data_treatment.fit_synch_part_x` function.
+        :func:`tomo.data.data_treatment.fit_synch_part_x` function.
 
         Sets the following fields:
 
         * fitted_synch_part_x
             The new x-coordinate of the synchronous particle
-            (needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`).
+            (needed for :func:`tomo.cimpat.fortran.write_plotinfo`).
         * bunchlimit_low
             Lower phase of bunch (needed for
-            :func:`tomo.utils.tomo_output.write_plotinfo_ftn`).
+            :func:`tomo.compat.fortran.write_plotinfo`).
         * bunchlimit_up
             Upper phase of bunch (needed for
-            :func:`tomo.utils.tomo_output.write_plotinfo_ftn`).
+            :func:`tomo.compat.fortran.write_plotinfo`).
         * synch_part_x
             The x-coordinate of the synchronous particle.
 
@@ -59,7 +60,7 @@ class Machine(SuperMachine):
             (F, L, U), where F is the fitted value of the synchronous particle,
             L is the lower bunch limit, and U is the upper bunch limit. All
             of the values should be given in bins. The info needed by the
-            :func:`tomo.utils.tomo_output.write_plotinfo_ftn` function
+            :func:`tomo.compat.fortran.write_plotinfo` function
             if a fit has been performed, and the a Fortran style output is
             to be given during the particle tracking.
         """
