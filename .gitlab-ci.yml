@@ -1,11 +1,11 @@
 image: continuumio/miniconda3:latest
 
 variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/opt/cache/pip"
 
 cache:
   paths:
-    - .cache/pip
+    - /opt/cache/pip
 
 before_script:
   - apt-get update -q -y
@@ -16,9 +16,8 @@ before_script:
 
 tests:
   stage: test
-  before_script: []
   script:
-    - conda activate tomo_env
+    - source activate tomo_env
     - echo "Installing coverage"
     - pip install coverage coverage-badge
     - pip install pylint
@@ -37,9 +36,8 @@ tests:
 pep8:
   # Checks for conformity to PEP8 style guidelines
   stage: test
-  before_script: []
   script:
-    - conda activate tomo_env
+    - source activate tomo_env
     - pip install pycodestyle
     - pycodestyle --count
 
@@ -51,7 +49,7 @@ pages:
   dependencies:
     - tests
   script:
-    - conda activate tomo_env
+    - source activate tomo_env
     - mv htmlcov/ public/
     - pip install sphinx sphinxcontrib-napoleon sphinx-rtd-theme
     - cd __docs
