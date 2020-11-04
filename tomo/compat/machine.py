@@ -21,7 +21,7 @@ class Machine(SuperMachine):
     Machine object for use with Fortran. Intended to be for backwards compatibility.
     """
     def __init__(self, *args, **kwargs):
-        super(Machine, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Initialise all variables init
         self.fitted_synch_part_x = None

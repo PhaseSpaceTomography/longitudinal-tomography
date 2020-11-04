@@ -13,16 +13,21 @@ INSTALL
 -------
 
 Clone the repository and run
-```
-pip install .
-```
+.. code-block:: shell
+    pip install .
+
 
 OR
 
 Run
-```
-pip install -e "git+git://gitlab.cern.ch/anlu/tomographyv3.git#egg=beam_tomography"
-```
+.. code-block:: shell
+    pip install -e "git+git://gitlab.cern.ch/anlu/tomographyv3.git#egg=beam_tomography"
+
+For development environments where it's preferable to compile the C++ extension inplace, it's possible to run the command
+.. code-block:: shell
+    python setup.py build_ext --inplace
+which will compile the C++ extension using the available compiler (decided by setuptools).
+
 
 Requirements
 ------------
