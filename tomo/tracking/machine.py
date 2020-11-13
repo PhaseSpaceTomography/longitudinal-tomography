@@ -231,12 +231,12 @@ class Machine:
         # TODO: Take rfv info as a single input
         # TODO: Take b-field info as a single input
 
-        if 'min_dt' in kwargs and kwargs['min_dt'] is not None:
+        if kwargs['min_dt'] is not None:
             min_dt = kwargs['min_dt']
         else:
             min_dt = 0.0
 
-        if 'max_dt' in kwargs and kwargs['max_dt'] is not None:
+        if kwargs['max_dt'] is not None:
             max_dt = kwargs['max_dt']
         else:
             max_dt = nbins * dtbin

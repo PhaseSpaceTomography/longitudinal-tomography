@@ -47,7 +47,7 @@ class PhaseSpaceInfo:
         of the reconstructed phase space coordinate system.
     """
 
-    def __init__(self, machine: 'Machine'):
+    def __init__(self, machine: Machine):
         self.machine = machine
         self.jmin = None
         self.jmax = None

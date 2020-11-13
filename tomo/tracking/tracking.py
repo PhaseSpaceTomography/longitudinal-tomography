@@ -52,7 +52,7 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: 'Machine'):
+    def __init__(self, machine: Machine):
         super().__init__(machine)
 
     def track(self, recprof: int,

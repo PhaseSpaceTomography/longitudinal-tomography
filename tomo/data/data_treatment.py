@@ -2,6 +2,9 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
+
+from __future__ import annotations
+
 from typing import Tuple, TYPE_CHECKING
 from warnings import warn
 
@@ -124,7 +127,7 @@ def _rebin_last(data: np.ndarray, rbn: int) -> np.ndarray:
 
 # Original function for finding synch_part_x
 # Finds synch_part_x based on a linear fit on a reference profile.
-def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(profiles: Profiles) -> Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -221,7 +224,7 @@ def _calc_tangentbins(ref_profile: np.ndarray, nbins: int,
     return tangent_bin_up, tangent_bin_low
 
 
-def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
+def phase_space(tomo: Tomography, machine: Machine, profile: int = 0) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been

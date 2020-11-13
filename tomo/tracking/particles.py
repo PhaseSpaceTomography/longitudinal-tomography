@@ -106,7 +106,7 @@ class Particles(object):
         """
         self._dphi, self._denergy = _assert_coordinates(coordinates)
 
-    def homogeneous_distribution(self, machine: 'Machine', recprof: int):
+    def homogeneous_distribution(self, machine: Machine, recprof: int):
         """Function for automatic generation of particle distribution.
 
         The distributions created are identical to the distributions created
