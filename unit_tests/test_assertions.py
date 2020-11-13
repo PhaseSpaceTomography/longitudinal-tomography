@@ -7,47 +7,13 @@ import unittest
 
 import numpy as np
 
+from . import commons
 import tomo.tracking.machine as mch
 from tomo import assertions as asrt, exceptions as expt
 import tomo.utils.tomo_input as tomoin
 
-MACHINE_ARGS = {
-    'output_dir':          '/tmp/',
-    'dtbin':               9.999999999999999E-10,
-    'dturns':              5,
-    'synch_part_x':        334.00000000000006,
-    'demax': -1.E6,
-    'filmstart':           0,
-    'filmstop':            1,
-    'filmstep':            1,
-    'niter':               20,
-    'snpt':                4,
-    'full_pp_flag':        False,
-    'beam_ref_frame':      0,
-    'machine_ref_frame':   0,
-    'vrf1':                2637.197030932989,
-    'vrf1dot':             0.0,
-    'vrf2':                0.0,
-    'vrf2dot':             0.0,
-    'h_num':               1,
-    'h_ratio':             2.0,
-    'phi12':               0.4007821253666541,
-    'b0':                  0.15722,
-    'bdot':                0.7949999999999925,
-    'mean_orbit_rad':      25.0,
-    'bending_rad':         8.239,
-    'trans_gamma':         4.1,
-    'rest_energy':         0.93827231E9,
-    'charge':              1,
-    'self_field_flag':     False,
-    'g_coupling':          0.0,
-    'zwall_over_n':        0.0,
-    'pickup_sensitivity':  0.36,
-    'nprofiles':           150,
-    'nbins':               760,
-    'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760
-}
+
+MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestAssertions(unittest.TestCase):

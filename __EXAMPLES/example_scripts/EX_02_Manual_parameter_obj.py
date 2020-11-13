@@ -2,14 +2,13 @@ import os
 
 import numpy as np
 
+import tomo.compat.machine as mch
 import tomo.tomography.tomography as tomography
-import tomo.tracking.machine as mch
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
-import tomo.compat.machine as mch
 
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'INDIVShavingC325.dat')
@@ -21,14 +20,14 @@ dtbin = 9.999999999999999E-10
 #  collection and format of measured raw data.
 # This can be omitted by shaping the waterfall yourself.
 frame_input_args = {
-    'raw_data_path': in_file_pth,
-    'framecount': 150,
-    'skip_frames': 0,
-    'framelength': 1000,
-    'dtbin': dtbin,
-    'skip_bins_start': 170,
-    'skip_bins_end': 70,
-    'rebin': 3
+    'raw_data_path':    in_file_pth,
+    'framecount':       150,
+    'skip_frames':      0,
+    'framelength':      1000,
+    'dtbin':            dtbin,
+    'skip_bins_start':  170,
+    'skip_bins_end':    70,
+    'rebin':            3
 }
 
 frames = tomoin.Frames(**frame_input_args)
@@ -37,41 +36,42 @@ nbins = frames.nbins()
 
 # Machine and reconstruction parameters
 machine_args = {
-    'output_dir': '/tmp/',
-    'dtbin': dtbin,
-    'dturns': 5,
-    'synch_part_x': 334.00000000000006,
-    'demax': -1.E6,
-    'filmstart': 0,
-    'filmstop': 1,
-    'filmstep': 1,
-    'niter': 20,
-    'snpt': 4,
-    'full_pp_flag': False,
-    'beam_ref_frame': 0,
-    'machine_ref_frame': 0,
-    'vrf1': 2637.197030932989,
-    'vrf1dot': 0.0,
-    'vrf2': 0.0,
-    'vrf2dot': 0.0,
-    'h_num': 1,
-    'h_ratio': 2.0,
-    'phi12': 0.4007821253666541,
-    'b0': 0.15722,
-    'bdot': 0.7949999999999925,
-    'mean_orbit_rad': 25.0,
-    'bending_rad': 8.239,
-    'trans_gamma': 4.1,
-    'rest_energy': 0.93827231E9,
-    'charge': 1,
-    'self_field_flag': False,
-    'g_coupling': 0.0,
-    'zwall_over_n': 0.0,
-    'pickup_sensitivity': 0.36,
-    'nprofiles': nprofiles,
-    'nbins': nbins,
-    'min_dt': 0.0,
-    'max_dt': dtbin * nbins}
+    'output_dir':           '/tmp/',
+    'dtbin':                dtbin,
+    'dturns':               5,
+    'synch_part_x':         334.00000000000006,
+    'demax':                -1.E6,              # noqa
+    'filmstart':            0,
+    'filmstop':             1,
+    'filmstep':             1,
+    'niter':                20,
+    'snpt':                 4,
+    'full_pp_flag':         False,
+    'beam_ref_frame':       0,
+    'machine_ref_frame':    0,
+    'vrf1':                 2637.197030932989,
+    'vrf1dot':              0.0,
+    'vrf2':                 0.0,
+    'vrf2dot':              0.0,
+    'h_num':                1,
+    'h_ratio':              2.0,
+    'phi12':                0.4007821253666541,
+    'b0':                   0.15722,
+    'bdot':                 0.7949999999999925,
+    'mean_orbit_rad':       25.0,
+    'bending_rad':          8.239,
+    'trans_gamma':          4.1,
+    'rest_energy':          0.93827231E9,
+    'charge':               1,
+    'self_field_flag':      False,
+    'g_coupling':           0.0,
+    'zwall_over_n':         0.0,
+    'pickup_sensitivity':   0.36,
+    'nprofiles':            nprofiles,
+    'nbins':                nbins,
+    'min_dt':               0.0,
+    'max_dt':               dtbin * nbins
+}
 
 machine = mch.Machine(**machine_args)
 

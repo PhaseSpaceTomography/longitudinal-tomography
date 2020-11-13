@@ -10,48 +10,13 @@ import numpy as np
 import numpy.testing as nptest
 import scipy.signal as sig
 
+from .. import commons
 import tomo.data.profiles as prf
 import tomo.tracking.machine as mch
 from tomo import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
-MACHINE_ARGS = {
-    'output_dir':          '/tmp/',
-    'dtbin':               9.999999999999999E-10,
-    'dturns':              5,
-    'synch_part_x':        334.00000000000006,
-    'demax': -1.E6,
-    'filmstart':           0,
-    'filmstop':            1,
-    'filmstep':            1,
-    'niter':               20,
-    'snpt':                4,
-    'full_pp_flag':        False,
-    'beam_ref_frame':      0,
-    'machine_ref_frame':   0,
-    'vrf1':                2637.197030932989,
-    'vrf1dot':             0.0,
-    'vrf2':                0.0,
-    'vrf2dot':             0.0,
-    'h_num':               1,
-    'h_ratio':             2.0,
-    'phi12':               0.4007821253666541,
-    'b0':                  0.15722,
-    'bdot':                0.7949999999999925,
-    'mean_orbit_rad':      25.0,
-    'bending_rad':         8.239,
-    'trans_gamma':         4.1,
-    'rest_energy':         0.93827231E9,
-    'charge':              1,
-    'self_field_flag':     False,
-    'g_coupling':          0.0,
-    'zwall_over_n':        0.0,
-    'pickup_sensitivity':  0.36,
-    'nprofiles':           150,
-    'nbins':               760,
-    'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760  # dtbin * nbins
-}
+MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestProfiles(unittest.TestCase):
@@ -200,8 +165,8 @@ class TestProfiles(unittest.TestCase):
         smoothed_profs = np.copy(waterfall)
         smoothed_profs /= np.sum(smoothed_profs, axis=1)[:, None]
         smoothed_profs = sig.savgol_filter(
-            x=smoothed_profs, window_length=7,
-            polyorder=4, deriv=1)
+                                x=smoothed_profs, window_length=7,
+                                polyorder=4, deriv=1)
 
         profiles.calc_self_fields(filtered_profiles=smoothed_profs)
 

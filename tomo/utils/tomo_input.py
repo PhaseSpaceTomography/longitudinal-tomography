@@ -12,7 +12,7 @@ import numpy as np
 from .. import assertions as asrt, exceptions as expt
 from ..data.profiles import Profiles
 from ..data import data_treatment as treat
-from ..tracking.machine import Machine
+from ..compat.machine import Machine
 from tomo.compat import fortran
 
 # Some constants for input files containing machine parameters.

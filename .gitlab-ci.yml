@@ -38,11 +38,12 @@ pep8:
   stage: test
   script:
     - source activate tomo_env
-    - pip install pycodestyle
-    - pycodestyle --count
+    - pip install flake8
+    - flake8 --count
 
   only:
     - merge_requests
+  allow_failure: true
 
 pages:
   stage: deploy

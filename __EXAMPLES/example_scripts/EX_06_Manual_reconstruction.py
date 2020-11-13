@@ -2,11 +2,11 @@ import os
 
 import numpy as np
 import tomo.cpp_routines.tomolib_wrappers as tlw
-import tomo.tracking.machine as mch
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
+import tomo.data.data_treatment as dtreat
 
 
 def discrepancy(nbins, nprofs, dwaterfall):
