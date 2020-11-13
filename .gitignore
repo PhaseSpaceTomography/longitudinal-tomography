@@ -7,7 +7,6 @@ __doc/build
 unit_tests/old/
 .vscode
 .idea
-cmake-build-debug
 
 # Filetypes
 *.pyc
@@ -16,3 +15,5 @@ cmake-build-debug
 *.npy
 *.so
 *.o
+/cmake-build-debug/
+/cmake-build-release/
