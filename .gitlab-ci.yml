@@ -19,7 +19,7 @@ tests:
   script:
     - source activate tomo_env
     - echo "Installing coverage"
-    - pip install coverage coverage-badge
+    - pip install coverage coverage-badge pyyaml
     - pip install pylint
     - pylint --errors-only tomo
     - coverage run -m pytest -v unit_tests/*/test*.py
