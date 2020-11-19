@@ -416,7 +416,7 @@ class Machine:
         # Calculate RF-voltages at each turn
         self.vrf1_at_turn, self.vrf2_at_turn = self._rfv_at_turns()
 
-    def load_fitted_synch_part_x(self,
+    def load_fitted_synch_part_x_ftn(self,
                                  fit_info: Tuple[float, float, float]):
         """Function for setting the synch_part_x if a fit has been performed.
         Saves parameters retrieved from the fitting routine
