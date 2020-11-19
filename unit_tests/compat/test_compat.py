@@ -166,7 +166,7 @@ class TestCompat(unittest.TestCase):
         fittedx = 23.123445677
         tanbin_low = 3.12345567
         tanbin_up = 80.12345567
-        machine.load_fitted_synch_part_x((fittedx, tanbin_low, tanbin_up))
+        machine.load_fitted_synch_part_x_ftn((fittedx, tanbin_low, tanbin_up))
 
         particles = pts.Particles()
         particles.homogeneous_distribution(machine, 0)
@@ -247,7 +247,7 @@ class TestCompat(unittest.TestCase):
         fit_info = (new_x, bunch_min, bunch_max)
 
         machine = mch.Machine(**MACHINE_ARGS)
-        machine.load_fitted_synch_part_x(fit_info)
+        machine.load_fitted_synch_part_x_ftn(fit_info)
 
         self.assertAlmostEqual(
             machine.fitted_synch_part_x, 118.37008249622234,
