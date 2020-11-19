@@ -11,7 +11,7 @@ import numpy as np
 import numpy.testing as nptest
 
 from .. import commons
-import tomo.compat.machine as mch
+import tomo.tracking.machine as mch
 import tomo.tracking.particles as pts
 from tomo import exceptions as expt
 import tomo.compat.fortran as ftn

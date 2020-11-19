@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-import tomo.compat.machine as mch
+import tomo.tracking.machine as mch
 import tomo.tomography.tomography as tomography
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
