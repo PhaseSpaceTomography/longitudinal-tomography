@@ -3,15 +3,18 @@ tomography
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
+
+from __future__ import annotations
+
 from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
 
 import numpy as np
 
-from . import exceptions as expt
+from tomo import exceptions as expt
 
 if TYPE_CHECKING:
-    from ..tracking.machine import Machine
-    from .tomo_input import Frames
+    from tomo.tracking.machine import Machine
+    from tomo.utils.tomo_input import Frames
 
 
 # =========================================================
@@ -454,7 +457,7 @@ def assert_fields(obj: Any, obj_name: str, needed_fields: Collection,
             raise error_class(err_msg)
 
 
-def assert_machine_input(machine: 'Machine'):
+def assert_machine_input(machine: Machine):
     """Assert that input parameters for a machine object is valid.
 
     Parameters
@@ -558,7 +561,7 @@ def assert_machine_input(machine: 'Machine'):
                                 'geometrical coupling coefficient')
 
 
-def assert_frame_inputs(frame: 'Frames'):
+def assert_frame_inputs(frame: Frames):
     """Assert that frame parameters are valid, and that raw data will be
     correctly shaped to waterfall.
 

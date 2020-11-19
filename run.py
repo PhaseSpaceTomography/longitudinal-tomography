@@ -1,19 +1,15 @@
 # General utils
-import time as tm
-import sys
-import matplotlib.pyplot as plt
-import numpy as np
 
 # Tomo modules
 import tomo.tomography.tomography as tomography
 import tomo.tracking.particles as pts
 import tomo.tracking.tracking as tracking
-import tomo.utils.data_treatment as dtreat
+import tomo.data.data_treatment as dtreat
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 
 # =========================
-#        Program 
+#        Program
 # =========================
 
 # --------------------- FORTRAN SPECIFIC ------------------------
@@ -30,7 +26,7 @@ waterfall = frames.to_waterfall(raw_data)
 
 # Creating profiles object
 profiles = tomoin.raw_data_to_profiles(
-                waterfall, machine, frames.rebin, frames.sampling_time)
+    waterfall, machine, frames.rebin, frames.sampling_time)
 profiles.calc_profilecharge()
 
 if profiles.machine.synch_part_x < 0:
@@ -52,8 +48,8 @@ xp, yp = tracker.track(reconstr_idx)
 # to phase space coordinates.
 if not tracker.self_field_flag:
     xp, yp = pts.physical_to_coords(
-                xp, yp, machine, tracker.particles.xorigin,
-                tracker.particles.dEbin)
+        xp, yp, machine, tracker.particles.xorigin,
+        tracker.particles.dEbin)
 
 # Filters out lost particles, transposes particle matrix, casts to np.int32.
 xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)

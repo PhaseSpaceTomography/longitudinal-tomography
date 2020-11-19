@@ -8,7 +8,7 @@ import numpy as np
 import scipy.signal as sig
 from scipy import constants
 
-from ..utils import exceptions as expt
+from .. import exceptions as expt
 from ..utils import physics
 
 

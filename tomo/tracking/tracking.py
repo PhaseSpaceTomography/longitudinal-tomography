@@ -8,15 +8,17 @@ from typing import Tuple, TYPE_CHECKING
 
 from numba import njit
 import numpy as np
-import logging as log
+import logging
 
-from ..utils import assertions as asrt
-from ..utils import tomo_output as tomoout
+from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import tomolib_wrappers as tlw
+from ..compat import fortran
 
 if TYPE_CHECKING:
     from .machine import Machine
+
+log = logging.getLogger(__name__)
 
 
 class Tracking(ParticleTracker):
@@ -50,7 +52,7 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: 'Machine'):
+    def __init__(self, machine: Machine):
         super().__init__(machine)
 
     def track(self, recprof: int,
@@ -131,7 +133,7 @@ class Tracking(ParticleTracker):
 
             # Print fortran style plot info. Needed for tomograph.
             if self.fortran_flag:
-                print(tomoout.write_plotinfo_ftn(
+                print(fortran.write_plotinfo(
                     self.machine, self.particles, self._profile_charge))
 
         else:
@@ -231,7 +233,7 @@ class Tracking(ParticleTracker):
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
                 if self.fortran_flag:
-                    tomoout.print_tracking_status_ftn(rec_prof, profile)
+                    fortran.print_tracking_status(rec_prof, profile)
 
         # Starting again from homogenous distribution
         dphi = np.copy(out_dphi[rec_prof])
@@ -254,7 +256,7 @@ class Tracking(ParticleTracker):
                 out_dphi[profile] = np.copy(dphi)
                 out_denergy[profile] = np.copy(denergy)
                 if self.fortran_flag:
-                    tomoout.print_tracking_status_ftn(rec_prof, profile)
+                    fortran.print_tracking_status(rec_prof, profile)
 
         return out_dphi, out_denergy
 
@@ -326,7 +328,7 @@ class Tracking(ParticleTracker):
                         + self.machine.synch_part_y)
 
         if self.fortran_flag:
-            tomoout.print_tracking_status_ftn(rec_prof, profile)
+            fortran.print_tracking_status(rec_prof, profile)
         while turn < self.nturns:
             dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
                              nparts, turn)
@@ -351,7 +353,7 @@ class Tracking(ParticleTracker):
                 yp[profile] = (denergy / self.particles.dEbin
                                + self.machine.synch_part_y)
                 if self.fortran_flag:
-                    tomoout.print_tracking_status_ftn(rec_prof, profile)
+                    fortran.print_tracking_status(rec_prof, profile)
 
         dphi = dphi0
         denergy = denergy0
@@ -383,7 +385,7 @@ class Tracking(ParticleTracker):
                                + self.machine.synch_part_y)
                 profile -= 1
                 if self.fortran_flag:
-                    tomoout.print_tracking_status_ftn(rec_prof, profile)
+                    fortran.print_tracking_status(rec_prof, profile)
 
         return xp, yp
 

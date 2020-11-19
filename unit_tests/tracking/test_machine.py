@@ -5,47 +5,12 @@ Run as python test_machine.py in console or via coverage
 
 import unittest
 
+from .. import commons
 import tomo.tracking.machine as mch
 
 
 # Machine arguments based on the input file INDIVShavingC325.dat
-MACHINE_ARGS = {
-    'output_dir':          '/tmp/',
-    'dtbin':               9.999999999999999E-10,
-    'dturns':              5,
-    'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
-    'filmstart':           0,
-    'filmstop':            1,
-    'filmstep':            1,
-    'niter':               20,
-    'snpt':                4,
-    'full_pp_flag':        False,
-    'beam_ref_frame':      0,
-    'machine_ref_frame':   0,
-    'vrf1':                2637.197030932989,
-    'vrf1dot':             0.0,
-    'vrf2':                0.0,
-    'vrf2dot':             0.0,
-    'h_num':               1,
-    'h_ratio':             2.0,
-    'phi12':               0.4007821253666541,
-    'b0':                  0.15722,
-    'bdot':                0.7949999999999925,
-    'mean_orbit_rad':      25.0,
-    'bending_rad':         8.239,
-    'trans_gamma':         4.1,
-    'rest_energy':         0.93827231E9,
-    'charge':              1,
-    'self_field_flag':     False,
-    'g_coupling':          0.0,
-    'zwall_over_n':        0.0,
-    'pickup_sensitivity':  0.36,
-    'nprofiles':           150,
-    'nbins':               760,
-    'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestMachine(unittest.TestCase):
@@ -63,28 +28,6 @@ class TestMachine(unittest.TestCase):
         machine.nbins = new_nbins
         self.assertEqual(machine.synch_part_y, 100.0,
                          msg='yat0 was set incorrectly when nbins was updated')
-
-    def test_load_fitted_synch_part_x_ftn_correct(self):
-        new_x = 118.37008249622234
-        bunch_min = 21.56907195264529
-        bunch_max = 255.84863660530607
-        fit_info = (new_x, bunch_min, bunch_max)
-
-        machine = mch.Machine(**MACHINE_ARGS)
-        machine.load_fitted_synch_part_x_ftn(fit_info)
-
-        self.assertAlmostEqual(
-                machine.fitted_synch_part_x, 118.37008249622234,
-                msg='fitted synch x coordinate set incorrectly')
-        self.assertAlmostEqual(
-                machine.synch_part_x, 118.37008249622234,
-                msg='fitted synch x coordinate set incorrectly')
-        self.assertAlmostEqual(
-                machine.bunchlimit_low, 21.56907195264529,
-                msg='fitted lower bunch limit set incorrectly')
-        self.assertAlmostEqual(
-                machine.bunchlimit_up, 255.84863660530607,
-                msg='fitted upper bunch limit set incorrectly')
 
     def test_values_at_turns_correct_length(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -216,7 +159,7 @@ class TestMachine(unittest.TestCase):
         for dE0, corr in zip(machine.deltaE0, correct):
             self.assertAlmostEqual(dE0, corr,
                                    msg='Error in calculation of energy '
-                                       'difference of synch part pr turn ' 
+                                       'difference of synch part pr turn '
                                        '(deltaE0)')
 
     def test_values_at_turns_correct_beta0(self):

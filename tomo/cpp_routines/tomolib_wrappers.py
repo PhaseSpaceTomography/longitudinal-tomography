@@ -5,16 +5,18 @@ Should only be used by advanced users.
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
+from __future__ import annotations
+
 import ctypes as ct
-from glob import glob
 import logging
 import os
 import sys
+from glob import glob
 from typing import Tuple, TYPE_CHECKING
 
 import numpy as np
 
-from ..utils import exceptions as expt
+from .. import exceptions as expt
 
 if TYPE_CHECKING:
     from ..tracking.machine import Machine
@@ -46,7 +48,7 @@ if os.path.exists(_tomolib_pth):
     _tomolib = ct.CDLL(_tomolib_pth)
 else:
     error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
-                f'\n- Try to run compile.py in the tomo directory\n'
+                f'\n- Try to python setup.py build_ext --inplace \n'
     raise expt.LibraryNotFound(error_msg)
 
 # Needed for sending 2D arrays to C++ functions.
@@ -126,7 +128,7 @@ _proj.restypes = None
 # =============================================================
 
 
-def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
+def kick(machine: Machine, denergy: np.ndarray, dphi: np.ndarray,
          rfv1: np.ndarray, rfv2: np.ndarray, npart: int, turn: int,
          up: bool = True) -> np.ndarray:
     """Wrapper for C++ kick function.
@@ -226,7 +228,15 @@ def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
 def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    denergy: np.ndarray, dphi: np.ndarray,
                    rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
-                   nturns: int, nparts: int, *args, machine: 'Machine' = None,
+                   nturns: int, nparts: int,
+                   phi0: np.ndarray = None,
+                   deltaE0: np.ndarray = None,
+                   omega_rev0: np.ndarray = None,
+                   drift_coef: np.ndarray = None,
+                   phi12: float = None,
+                   h_ratio: float = None,
+                   dturns: int = None,
+                   machine: Machine = None,
                    ftn_out: bool = False) -> Tuple[np.ndarray, np.ndarray]:
     """Wrapper for full kick and drift algorithm written in C++.
 
@@ -302,19 +312,21 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                   denergy, dphi, rfv1.astype(np.float64),
                   rfv2.astype(np.float64)]
 
+    machine_args = [phi0, deltaE0, omega_rev0,
+                    drift_coef, phi12, h_ratio, dturns]
+
     if machine is not None:
         track_args += [machine.phi0, machine.deltaE0, machine.omega_rev0,
                        machine.drift_coef, machine.phi12, machine.h_ratio,
                        machine.dturns]
-    elif len(args) == 7:
-        # TODO: this should probably be switched to kwargs to increase
-        # robustness
-        track_args += args
+    elif all([x is not None for x in machine_args]):
+        track_args += machine_args
     else:
         raise expt.InputError(
-            'Wrong amount of arguments.\n'
-            '*args are: phi0, deltaE0, omega_rev0, '
-            'drift_coef, phi12, h_ratio, dturns')
+            'Wrong input arguments.\n'
+            'Either: phi0, deltaE0, omega_rev0, '
+            'drift_coef, phi12, h_ratio, dturns '
+            'OR machine is required.')
 
     track_args += [rec_prof, nturns, nparts, ftn_out]
 

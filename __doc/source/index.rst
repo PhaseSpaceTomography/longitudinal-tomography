@@ -24,7 +24,7 @@ Modules
    modules/tomography.rst
    modules/utils.rst
    modules/cpp_routines.rst
-   modules/compile.rst
+   modules/compat.rst
 
 
 Indices and tables

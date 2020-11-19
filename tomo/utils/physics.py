@@ -2,12 +2,15 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-from typing import Tuple
+from __future__ import annotations
+
+from typing import Tuple, TYPE_CHECKING
 
 import numpy as np
 from scipy import optimize, constants
 
-from ..tracking.machine import Machine
+if TYPE_CHECKING:
+    from ..tracking.machine import Machine
 
 
 def b_to_e(machine: Machine) -> float:

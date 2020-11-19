@@ -2,11 +2,11 @@ import os
 
 import numpy as np
 import tomo.cpp_routines.tomolib_wrappers as tlw
-import tomo.tracking.machine as mch
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
+import tomo.data.data_treatment as dtreat
 
 
 def discrepancy(nbins, nprofs, dwaterfall):
@@ -140,7 +140,7 @@ for i in range(niterations):
     # Calculating discrepancy
     diff.append(np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs)))
 
-    # Back projecting using the difference between measured and rec. waterfall 
+    # Back projecting using the difference between measured and rec. waterfall
     weight = tlw.back_project(weight, flat_points, dwaterfall.flatten(),
                               nparts, nprofs)
     weight = weight.clip(0.0)

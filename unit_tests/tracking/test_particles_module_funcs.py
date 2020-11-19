@@ -7,48 +7,13 @@ import unittest
 
 import numpy as np
 
+from .. import commons
 import tomo.tracking.machine as mch
 import tomo.tracking.particles as pts
-import tomo.utils.exceptions as expt
+from tomo import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
-MACHINE_ARGS = {
-    'output_dir': '/tmp/',
-    'dtbin': 9.999999999999999E-10,
-    'dturns': 5,
-    'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
-    'filmstart':           0,
-    'filmstop':            1,
-    'filmstep':            1,
-    'niter':               20,
-    'snpt':                4,
-    'full_pp_flag':        False,
-    'beam_ref_frame':      0,
-    'machine_ref_frame':   0,
-    'vrf1':                2637.197030932989,
-    'vrf1dot':             0.0,
-    'vrf2':                0.0,
-    'vrf2dot':             0.0,
-    'h_num':               1,
-    'h_ratio':             2.0,
-    'phi12':               0.4007821253666541,
-    'b0':                  0.15722,
-    'bdot':                0.7949999999999925,
-    'mean_orbit_rad':      25.0,
-    'bending_rad':         8.239,
-    'trans_gamma':         4.1,
-    'rest_energy':         0.93827231E9,
-    'charge':              1,
-    'self_field_flag':     False,
-    'g_coupling':          0.0,
-    'zwall_over_n':        0.0,
-    'pickup_sensitivity':  0.36,
-    'nprofiles':           150,
-    'nbins':               760,
-    'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestParticlesMethods(unittest.TestCase):
@@ -104,7 +69,7 @@ class TestParticlesMethods(unittest.TestCase):
 
         phases = np.array(phases)
         energies = np.array(energies)
-        
+
         machine = mch.Machine(**MACHINE_ARGS)
 
         machine.dturns = 5
@@ -121,7 +86,7 @@ class TestParticlesMethods(unittest.TestCase):
         dEbin = 1232.7181430465346
 
         xp, yp = pts.physical_to_coords(
-                    phases, energies, machine, xorigin, dEbin)
+            phases, energies, machine, xorigin, dEbin)
 
         correct_xp = [[281.27150807, 343.8103066,  406.34910513, 468.88790365],
                       [281.27048287, 343.80743192, 406.34438098, 468.88133003]]
@@ -132,7 +97,7 @@ class TestParticlesMethods(unittest.TestCase):
             for x, cx in zip(xvec, cxvec):
                 self.assertAlmostEqual(
                     x, cx, msg='Error in calculated xp coordinates ')
-        
+
         for yvec, cyvec in zip(yp, correct_yp):
             for y, cy in zip(yvec, cyvec):
                 self.assertAlmostEqual(
@@ -146,7 +111,7 @@ class TestParticlesMethods(unittest.TestCase):
 
         phases = np.array(phases)
         energies = np.array(energies)
-        
+
         machine = mch.Machine(**MACHINE_ARGS)
 
         machine.dturns = 5
@@ -167,4 +132,4 @@ class TestParticlesMethods(unittest.TestCase):
                                    'different lengths should raise '
                                    'an exception'):
             xp, yp = pts.physical_to_coords(
-                        phases, energies, machine, xorigin, dEbin)
+                phases, energies, machine, xorigin, dEbin)

@@ -6,12 +6,12 @@ style tomographic reconstruction.
 
 from typing import Type
 
-from ..tomography import tomography as tomography
-from ..tracking import particles as pts
+from tomo.tomography import tomography as tomography
+from tomo.tracking import particles as pts
 # Tomo modules
-from ..tracking import tracking as tracking
-from ..utils import data_treatment as dtreat
-from ..utils import tomo_input as tomoin
+from tomo.tracking import tracking as tracking
+from tomo.data import data_treatment as dtreat
+from tomo.utils import tomo_input as tomoin
 
 
 def run_file(file: str, reconstruct_profile: bool = None,
