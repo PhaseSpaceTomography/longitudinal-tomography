@@ -82,6 +82,7 @@ pypi:
   stage: deploy
   dependencies:
     - build-wheels
-  before_script: []
   script:
+    - source activate tomo_env
+    - pip install twine
     - twine upload -r testpypi wheelhouse/longidutinal_tomography*.whl
