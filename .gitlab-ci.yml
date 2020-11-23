@@ -1,3 +1,7 @@
+include:
+  - project: acc-co/devops/python/acc-py-devtools
+    file: acc_py_devtools/templates/gitlab-ci/python.yml
+
 image: continuumio/miniconda3:latest
 
 stages:
@@ -112,3 +116,5 @@ docs:
   only:
     - master
 
+release_sdist_on_tag:
+  extends: .acc_py_release_sdist
