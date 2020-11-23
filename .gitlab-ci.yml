@@ -84,6 +84,7 @@ build-wheels:
       - wheelhouse/longitudinal_tomography*.whl
 
 pypi:
+  image: python:3
   stage: deploy
   dependencies:
     - build-wheels
@@ -91,6 +92,5 @@ pypi:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD
   script:
-    - source activate tomo_env
-    - pip install twine
+    - pip install -U twine
     - twine upload -r testpypi wheelhouse/longitudinal_tomography*.whl
