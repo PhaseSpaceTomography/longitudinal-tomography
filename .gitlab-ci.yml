@@ -53,22 +53,35 @@ pages:
     - source activate tomo_env
     - mv htmlcov/ public/
     - pip install sphinx sphinxcontrib-napoleon sphinx-rtd-theme
-    - cd __docs
+    - cd __doc
     - make html
     - mv build/html ../public
   artifacts:
     paths:
       - public
     expire_in: 30 days
-  only:
-    - master
+#  only:
+#    - master
 
+build-wheels:
+  image: quay.io/pypa/manylinux2010_x86_64
+  stage: deploy
+  dependencies:
+    - tests
+  before_script: []
+  script:
+    - bash tools/build-wheels.sh
+  variables:
+    PLAT: manylinux2010_x86_64
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - wheelhouse/longitudinal_tomography*.whl
 
-
-
-
-
-
-
-
-
+pypi:
+  stage: deploy
+  dependencies:
+    - build-wheels
+  before_script: []
+  script:
+    - twine upload -r testpypi wheelhouse/longidutinal_tomography*.whl

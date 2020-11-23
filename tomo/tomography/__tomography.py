@@ -6,7 +6,6 @@
 import logging as log
 
 import numpy as np
-from numba import njit
 
 from tomo import exceptions as expt
 
@@ -243,13 +242,11 @@ class Tomography:
         ppb[ppb == 0] = 1
         return np.max(ppb) / ppb
 
-    @staticmethod
-    @njit
-    # Static needed for use of njit.
     # Needed by reciprocal particles function.
-    # C++ version exists.
-    def _count_particles_in_bins(ppb: np.ndarray, profile_count: np.ndarray,
-                                 xp: np.ndarray, nparts: int):
+    # TODO: removed njit, reimplement in C in the future
+    def _count_particles_in_bins(self, ppb: np.ndarray,
+                                 profile_count: np.ndarray,
+                                 xp: np.ndarray, nparts: int) -> np.ndarray:
         for i in range(profile_count):
             for j in range(nparts):
                 ppb[xp[j, i], i] += 1
