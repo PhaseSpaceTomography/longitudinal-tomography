@@ -85,7 +85,7 @@ pypi:
   stage: deploy
   dependencies:
     - build-wheels
-    - create-sdist
+    - build-sdist
   before_script: []
   script:
     - pip install -U twine
