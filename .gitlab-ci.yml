@@ -65,7 +65,7 @@ pages:
 
 build-wheels:
   image: quay.io/pypa/manylinux2010_x86_64
-  stage: deploy
+  stage: build
   dependencies:
     - tests
   before_script: []
