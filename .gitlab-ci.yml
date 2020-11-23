@@ -91,6 +91,7 @@ pypi:
   variables:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD
+  before_script: []
   script:
     - pip install -U twine
     - twine upload -r testpypi wheelhouse/longitudinal_tomography*.whl
