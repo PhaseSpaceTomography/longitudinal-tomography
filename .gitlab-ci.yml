@@ -90,4 +90,4 @@ pypi:
   script:
     - source activate tomo_env
     - pip install twine
-    - twine upload -r testpypi wheelhouse/longidutinal_tomography*.whl
+    - twine upload -r testpypi wheelhouse/longitudinal_tomography*.whl
