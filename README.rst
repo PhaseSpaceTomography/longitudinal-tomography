@@ -1,6 +1,6 @@
-.. image:: https://gitlab.cern.ch/cgrindhe/tomo_v3/badges/master/pipeline.svg
-.. image:: https://gitlab.cern.ch/cgrindhe/tomo_v3/badges/master/coverage.svg
-    :target: https://gitlab.cern.ch/cgrindhe/tomo_v3/-/jobs/artifacts/master/download?job=pages
+.. image:: https://gitlab.cern.ch/anlu/tomographyv3/badges/master/pipeline.svg
+.. image:: https://gitlab.cern.ch/anlu/tomographyv3/badges/master/coverage.svg
+    :target: https://gitlab.cern.ch/anlu/tomo_v3/-/jobs/artifacts/master/download?job=pages
 
 Copyright 2020 CERN. This software is distributed under the terms of the
 GNU General Public Licence version 3 (GPL Version 3), copied verbatim in
@@ -17,13 +17,6 @@ Clone the repository and run
 
    pip install .
 
-
-OR
-
-Run
-::
-
-    pip install -e "git+git://gitlab.cern.ch/anlu/tomographyv3.git#egg=beam_tomography"
 
 For development environments where it's preferable to compile the C++ extension inplace, it's possible to run the command
 ::
