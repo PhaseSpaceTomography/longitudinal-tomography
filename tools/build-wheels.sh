@@ -16,7 +16,7 @@ yum install -y gcc
 
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
-    if [[ "$PYBIN" == *cp2* ]]; then
+    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* ]]; then
       # skip python2
       continue
     fi
@@ -30,7 +30,7 @@ done
 
 # Install packages and test
 for PYBIN in /opt/python/*/bin/; do
-    if [[ "$PYBIN" == *cp2* ]]; then
+    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* ]]; then
       # skip python2
       continue
     fi
