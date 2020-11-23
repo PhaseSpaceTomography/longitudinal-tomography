@@ -66,18 +66,33 @@ build-wheels:
     - nightly
     - tags
 
+create-sdist:
+  image: python:3
+  stage: build
+  before_script: []
+  script: python setup.py sdist
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - dist/*.tar.gz
+  only:
+    - master
+    - nightly
+    - tags
+
 pypi:
   image: python:3
   stage: deploy
   dependencies:
     - build-wheels
+    - create-sdist
   before_script: []
   script:
     - pip install -U twine
     # upload to testpypi first for error checking
-    - twine upload -r testpypi --username __token__ --password $TWINE_TESTPYPI_PASSWORD wheelhouse/longitudinal_tomography*.whl
+    - twine upload -r testpypi --username __token__ --password $TWINE_TESTPYPI_PASSWORD wheelhouse/longitudinal_tomography*.whl dist/*.tar.gz
     # upload to pypi
-    - twine upload --username $TWINE_USERNAME --password $TWINE_PYPI_PASSWORD wheelhouse/longitudinal_tomography*.whl
+    - twine upload --username $TWINE_USERNAME --password $TWINE_PYPI_PASSWORD wheelhouse/longitudinal_tomography*.whl dist/*.tar.gz
   only:
     - tags
 
