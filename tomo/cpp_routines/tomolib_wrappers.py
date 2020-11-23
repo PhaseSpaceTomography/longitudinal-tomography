@@ -5,8 +5,6 @@ Should only be used by advanced users.
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-from __future__ import annotations
-
 import ctypes as ct
 import logging
 import os
@@ -128,7 +126,7 @@ _proj.restypes = None
 # =============================================================
 
 
-def kick(machine: Machine, denergy: np.ndarray, dphi: np.ndarray,
+def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
          rfv1: np.ndarray, rfv2: np.ndarray, npart: int, turn: int,
          up: bool = True) -> np.ndarray:
     """Wrapper for C++ kick function.
@@ -236,7 +234,7 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    phi12: float = None,
                    h_ratio: float = None,
                    dturns: int = None,
-                   machine: Machine = None,
+                   machine: 'Machine' = None,
                    ftn_out: bool = False) -> Tuple[np.ndarray, np.ndarray]:
     """Wrapper for full kick and drift algorithm written in C++.
 

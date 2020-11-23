@@ -3,9 +3,6 @@ a super class for particle trackers.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-
-from __future__ import annotations
-
 import logging as log
 from typing import TYPE_CHECKING
 
@@ -133,7 +130,7 @@ class ParticleTracker:
         self._profile_charge = profile_charge
         log.info('Fortran style output for particle tracking enabled!')
 
-    def enable_self_fields(self, profiles: Profiles):
+    def enable_self_fields(self, profiles: 'Profiles'):
         """Function for enabling particle tracking using self-fields.
 
         Call this function to track the particles using self-fields.

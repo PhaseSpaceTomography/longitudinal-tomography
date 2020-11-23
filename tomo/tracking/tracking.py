@@ -2,8 +2,6 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-from __future__ import annotations
-
 from typing import Tuple, TYPE_CHECKING
 
 import numpy as np
@@ -51,7 +49,7 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: 'Machine'):
         super().__init__(machine)
 
     def track(self, recprof: int,

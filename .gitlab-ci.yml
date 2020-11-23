@@ -23,7 +23,6 @@ tests:
   stage: test
   script:
     - source activate tomo_env
-    - echo "Installing coverage"
     - pip install coverage coverage-badge pyyaml
     - pip install pylint
     - pylint --errors-only tomo
@@ -50,10 +49,40 @@ pep8:
     - merge_requests
   allow_failure: true
 
-pages:
+build-wheels:
+  image: quay.io/pypa/manylinux2010_x86_64
+  stage: build
+  before_script: []
+  script:
+    - bash tools/build-wheels.sh
+  variables:
+    PLAT: manylinux2010_x86_64
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - wheelhouse/longitudinal_tomography*.whl
+  only:
+    - master
+    - nightly
+    - tags
+
+pypi:
+  image: python:3
   stage: deploy
   dependencies:
-    - tests
+    - build-wheels
+  before_script: []
+  script:
+    - pip install -U twine
+    # upload to testpypi first for error checking
+    - twine upload -r testpypi --username __token__ --password $TWINE_TESTPYPI_PASSWORD wheelhouse/longitudinal_tomography*.whl
+    # upload to pypi
+    - twine upload --username $TWINE_USERNAME --password $TWINE_PYPI_PASSWORD wheelhouse/longitudinal_tomography*.whl
+  only:
+    - tags
+
+docs:
+  stage: deploy
   script:
     - source activate tomo_env
     - mv htmlcov/ public/
@@ -65,33 +94,6 @@ pages:
     paths:
       - public
     expire_in: 30 days
-#  only:
-#    - master
+  only:
+    - master
 
-build-wheels:
-  image: quay.io/pypa/manylinux2010_x86_64
-  stage: build
-  dependencies:
-    - tests
-  before_script: []
-  script:
-    - bash tools/build-wheels.sh
-  variables:
-    PLAT: manylinux2010_x86_64
-  artifacts:
-    expire_in: 7 days
-    paths:
-      - wheelhouse/longitudinal_tomography*.whl
-
-pypi:
-  image: python:3
-  stage: deploy
-  dependencies:
-    - build-wheels
-  variables:
-    TWINE_USERNAME: $TWINE_USERNAME
-    TWINE_PASSWORD: $TWINE_PASSWORD
-  before_script: []
-  script:
-    - pip install -U twine
-    - twine upload -r testpypi wheelhouse/longitudinal_tomography*.whl
