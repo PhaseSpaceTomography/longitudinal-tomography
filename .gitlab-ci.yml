@@ -66,7 +66,7 @@ build-wheels:
     - nightly
     - tags
 
-create-sdist:
+build-sdist:
   image: python:3
   stage: build
   before_script: []
