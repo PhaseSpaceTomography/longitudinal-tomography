@@ -9,7 +9,6 @@ cpp_routines = Extension('tomo.cpp_routines.tomolib',
                          extra_compile_args=['-fopenmp',
                                              '-fPIC',
                                              '-std=c++11',
-                                             '-march=native',
                                              '-ffast-math'],
                          extra_link_args=['-lgomp'])
 
