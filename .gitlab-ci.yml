@@ -71,7 +71,7 @@ build-sdist:
 #    - tags
 
 test-wheels:
-  image: quay.io/pypa/manylinux2010_x86_64
+  image: quay.io/pypa/manylinux2014_x86_64
   stage: build-test
   dependencies:
     - build-wheels
