@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 # from map_info import MapInfo
 # from new_tomo_cpp import NewTomographyC
 # from utils.assertions import TomoAssertions as ta
-from utils.exceptions import InputError
-from tracking import tracking as tracking
-import tomography.tomography as tomography
-import utils.data_treatment as dtreat
-import utils.tomo_input as tomoin
-import utils.tomo_output as tomoout
-import tracking.particles as pts
+from tomo.utils.exceptions import InputError
+import tomo.tracking.tracking as tracking
+import tomo.tomography.tomography as tomography
+import tomo.utils.data_treatment as dtreat
+import tomo.utils.tomo_input as tomoin
+import tomo.utils.tomo_output as tomoout
+import tomo.tracking.particles as pts
 
 def main():
 
@@ -66,11 +66,12 @@ def main():
     tomo = tomography.TomographyCpp(profiles.waterfall, xp)
     weight = tomo.run(verbose=True)
 
-    for film in range(machine.filmstart - 1, machine.filmstop,
+    for film in range(machine.filmstart,# - 1,
+                      machine.filmstop,
                       machine.filmstep):
         save_image(xp, yp, weight, machine.nbins, film, output_path)
 
-    save_difference(tomo.diff, output_path, machine.filmstart - 1)
+    save_difference(tomo.diff, output_path, machine.filmstart)# - 1)
 
 
 
