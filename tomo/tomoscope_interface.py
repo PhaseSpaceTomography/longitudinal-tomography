@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 # from new_tomo_cpp import NewTomographyC
 # from utils.assertions import TomoAssertions as ta
 from utils.exceptions import InputError
-import tomo.tracking.tracking as tracking
-import tomo.tomography.tomography as tomography
-import tomo.utils.data_treatment as dtreat
-import tomo.utils.tomo_input as tomoin
-import tomo.utils.tomo_output as tomoout
-import tomo.tracking.particles as pts
+import tracking.tracking as tracking
+import tomography.tomography as tomography
+import utils.data_treatment as dtreat
+import utils.tomo_input as tomoin
+import utils.tomo_output as tomoout
+import tracking.particles as pts
 
 def main():
 
