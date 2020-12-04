@@ -3,65 +3,74 @@ import time as tm
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from tracking import tracking
-from time_space import TimeSpace
-from map_info import MapInfo
-from new_tomo_cpp import NewTomographyC
-from utils.assertions import TomoAssertions as ta
+# from tracking import tracking
+# from time_space import TimeSpace
+# from map_info import MapInfo
+# from new_tomo_cpp import NewTomographyC
+# from utils.assertions import TomoAssertions as ta
 from utils.exceptions import InputError
+import tomo.tracking.tracking as tracking
+import tomo.tomography.tomography as tomography
+import tomo.utils.data_treatment as dtreat
+import tomo.utils.tomo_input as tomoin
+import tomo.utils.tomo_output as tomoout
+import tomo.tracking.particles as pts
 
 def main():
-    
+
     raw_param, raw_data = get_input_file()
-    
-    print(' Start')   
 
-    # Collecting time space parameters and data
-    ts = TimeSpace()
-    ts.create(raw_param, raw_data)
+    print(' Start')
+    # Generating machine object
+    machine, frames = tomoin.txt_input_to_machine(raw_param)
+    machine.values_at_turns()
+    waterfall = frames.to_waterfall(raw_data)
 
-    # Deleting input data
-    del(raw_param)
-    del(raw_data)
-    
     # Setting path for all output as path read from file
-    output_path = adjust_out_path(ts.par.output_dir)
+    output_path = machine.output_dir
+    if output_path[-1] != '/':
+        output_path += ('/')
 
-    ts.save_profiles_text(ts.profiles[ts.par.filmstart-1, :],
-                          output_path, f'profile{ts.par.filmstart:03d}.data')
+    # Creating profiles object
+    profiles = tomoin.raw_data_to_profiles(
+                    waterfall, machine, frames.rebin, frames.sampling_time)
+    profiles.calc_profilecharge()
 
-    if ts.par.self_field_flag:
-        ts.save_profiles_text(ts.vself[ts.par.filmstart-1,
-                                       :ts.par.profile_length],
-                              output_path, f'vself{ts.par.filmstart:03d}.data')
-    
-    # Creating map outlining for reconstruction
-    mi = MapInfo(ts)
+    if profiles.machine.synch_part_x < 0:
+        fit_info = dtreat.fit_synch_part_x(profiles)
+        machine.load_fitted_synch_part_x_ftn(fit_info)
+    reconstr_idx = machine.filmstart
 
-    # mi.write_jmax_tofile(ts, mi, output_path) # Needed operationally?
-    mi.print_plotinfo()
+    # Tracking...
+    tracker = tracking.Tracking(machine)
+    tracker.enable_fortran_output(profiles.profile_charge)
+
+    if tracker.self_field_flag:
+        profiles.calc_self_fields()
+        tracker.enable_self_fields(profiles)
 
     # Particle tracking
-    tr = Tracking(ts, mi)
-    xp, yp = tr.track()
+    xp, yp = tracker.track(reconstr_idx)
 
-    ta.assert_only_valid_particles(xp, ts.par.profile_length)
+    # Converting from physical coordinates ([rad], [eV])
+    # to phase space coordinates.
+    if not tracker.self_field_flag:
+        xp, yp = pts.physical_to_coords(
+                    xp, yp, machine, tracker.particles.xorigin,
+                    tracker.particles.dEbin)
 
-    # Transposing needed for tomography routine
-    # -1 is Fortran compensation (now counting from 0)
-    # OBS: This takes a notable amount of time
-    #      (~0.5s for C500MidPhaseNoise)
-    xp = np.ceil(xp).astype(int).T - 1
-    yp = np.ceil(yp).astype(int).T - 1
-   
-    # Reconstructing phase space  
-    tomo = NewTomographyC(ts, xp, yp)
-    weight = tomo.run_cpp()
+    # Filter out lost particles, transposes particle matrix, casts to np.int32.
+    xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
-    for film in range(ts.par.filmstart - 1, ts.par.filmstop, ts.par.filmstep):
-        save_image(xp, yp, weight, ts.par.profile_length, film, output_path)
-    
-    save_difference(tomo.diff, output_path, ts.par.filmstart - 1)
+    # Tomography!
+    tomo = tomography.TomographyCpp(profiles.waterfall, xp)
+    weight = tomo.run(verbose=True)
+
+    for film in range(machine.filmstart - 1, machine.filmstop,
+                      machine.filmstep):
+        save_image(xp, yp, weight, machine.nbins, film, output_path)
+
+    save_difference(tomo.diff, output_path, machine.filmstart - 1)
 
 
 
@@ -69,29 +78,29 @@ def save_difference(diff, output_path, film):
     # Saving to file with numbers counting from one
     logging.info(f'Saving saving difference to {output_path}')
     # np.savetxt(f'{output_path}d{film + 1:03d}.data', diff) as f:
-        
+
     with open(f'{output_path}d{film + 1:03d}.data', 'w') as f:
         for i, d in enumerate(diff):
             if i < 10:
                 f.write(f'           {i}  {d:0.7E}\n')
             else:
                 f.write(f'          {i}  {d:0.7E}\n')
-                
+
 
 def save_image(xp, yp, weight, n_bins, film, output_path):
     phase_space = np.zeros((n_bins, n_bins))
-    
+
     # Creating n_bins * n_bins phase-space image
-    logging.info(f'Saving picture {film}.') 
+    logging.info(f'Saving picture {film}.')
     for x, y, w in zip(xp[:, film], yp[:, film], weight):
         phase_space[x, y] += w
-    
+
     # Suppressing negative numbers
     phase_space = phase_space.clip(0.0)
 
     # Normalizing
     phase_space /= np.sum(phase_space)
-    
+
     logging.info(f'Saving image{film} to {output_path}')
     # np.save(f'{output_path}py_image{film + 1:03d}', phase_space)
     # np.savetxt(f'{output_path}image{film + 1:03d}.data',
@@ -139,5 +148,5 @@ def adjust_out_path(output_path):
         output_path += '/'
     return output_path
 
-    
-main()
+if __name__ == '__main__':
+    main()
