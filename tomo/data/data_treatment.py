@@ -3,7 +3,7 @@
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING, Union
 from warnings import warn
 
 import numpy as np
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
           synch_part_x: float = None) \
-        -> Tuple[np.ndarray, float, float]:
+        -> Union[Tuple[np.ndarray, float, float], Tuple[np.ndarray, float]]:
     """Rebin waterfall from shape (P, X) to (P, Y).
     P is the number of profiles, X is the original number of bins,
     and Y is the number of bins after the re-binning.
@@ -70,8 +70,9 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
         dtbin *= rbn
     if synch_part_x is not None:
         synch_part_x /= rbn
+        return rebinned, dtbin, synch_part_x
 
-    return rebinned, dtbin, synch_part_x
+    return rebinned, dtbin
 
 
 # Rebins an 2d array given a rebin factor (rbn).
@@ -253,9 +254,7 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
         to have been used.
 
     """
-    try:
-        machine.dEbin
-    except AttributeError:
+    if machine.dEbin is None:
         raise expt.InputError("""phase_space function requires automatic
                               phase space generation to have been used""")
 
