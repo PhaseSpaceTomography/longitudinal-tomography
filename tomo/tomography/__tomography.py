@@ -59,6 +59,7 @@ class Tomography:
 
         self.recreated = np.zeros(self.waterfall.shape)
         self.diff = None
+        self.weight = None
 
     @property
     def waterfall(self) -> np.ndarray:
