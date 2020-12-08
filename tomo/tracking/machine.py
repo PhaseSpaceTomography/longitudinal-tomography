@@ -173,6 +173,8 @@ class Machine:
         (nbins).
     dtbin: float
         Size of profile bins [s].
+    dEbin: float
+        Size of profile bins in energy.
     self_field_flag: boolean, default=False
         Flag to include self-fields in the tracking.\n
     full_pp_flag: boolean, default=False
@@ -288,6 +290,10 @@ class Machine:
         self.omega_rev0 = None
         self.vrf1_at_turn = None
         self.vrf2_at_turn = None
+
+        # Used as flag for checking if particles particle tracking
+        # has been done
+        self.dEbin = None
 
         self.fitted_synch_part_x = None
         self.bunchlimit_low = None
