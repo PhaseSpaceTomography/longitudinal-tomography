@@ -26,7 +26,8 @@ def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
     Parameters
     ----------
     phase_space : np.ndarray
-        A 2-dimensional array that represents the phase space of size (#t_bins, #e_bins)
+        A 2-dimensional array that represents the phase space of size
+        (#t_bins, #e_bins)
     t_bins : np.ndarray
         A 1 or 2-dimensional vector that represent the bins on the time axis
     e_bins : np.ndarray
@@ -75,7 +76,8 @@ def emittance_rms(histogram: np.ndarray,
     Parameters
     ----------
     histogram : np.ndarray
-        A 2-dimensional array that represents the phase space of size (#t_bins, #e_bins)
+        A 2-dimensional array that represents the phase space of size
+        (#t_bins, #e_bins)
     t_bins : np.ndarray
         A 1 or 2-dimensional vector that represent the bins on the time axis
     e_bins : np.ndarray
@@ -186,7 +188,8 @@ def emittance_fractional(histogram: np.ndarray,
 
 
 @dispatch(Number, Number, Number, Number)
-def rms_dpp(energy_std: Number, energy: Number, momentum: Number, mass: Number):
+def rms_dpp(energy_std: Number, energy: Number, momentum: Number,
+            mass: Number) -> float:
     """
     Calculates the RMS dp/p using the energy projection histogram.
     Provided as a convenience function that first calculates
@@ -223,7 +226,7 @@ def rms_dpp(energy_std: Number, energy: Number, momentum: Number, mass: Number):
 def rms_dpp(energy_proj: np.ndarray, energy_bins: np.ndarray,
             energy: Number,
             momentum: Number,
-            mass: Number):
+            mass: Number) -> float:
     """
     Calculates the RMS dp/p using the energy projection histogram.
     Provided as a convenience function that first calculates
@@ -285,5 +288,3 @@ def _std_from_histogram(histogram: np.ndarray, bins: np.ndarray) -> float:
 
     std = np.sqrt(var)
     return std
-
-

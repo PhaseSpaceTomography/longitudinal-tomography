@@ -433,9 +433,9 @@ def _assert_log_arr(log_array_ok: np.ndarray, error_class: Type[Exception],
     if not log_array_ok.all():
         error_msg = '\nError found at index: ' \
                     '{}\n'.format(
-            np.argwhere(log_array_ok is False).flatten()
-            + index_offset
-        )
+                        np.argwhere(log_array_ok is False).flatten()
+                        + index_offset
+                    )
         raise error_class(error_msg + msg)
 
 

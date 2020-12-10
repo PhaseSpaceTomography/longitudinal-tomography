@@ -260,4 +260,3 @@ class TestTomographyCpp(unittest.TestCase):
         correct = 0.009561478717303548
         self.assertAlmostEqual(tomo.diff[0], correct,
                                msg='Discrepancy calculated incorrectly')
-

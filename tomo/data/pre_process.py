@@ -75,7 +75,8 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
 
 
 @dispatch(np.ndarray, Machine)
-def fit_synch_part_x(waterfall: np.ndarray, machine: Machine) -> Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
+        -> Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -212,6 +213,7 @@ def cut_waterfall(waterfall: Union[List[np.ndarray], np.ndarray],
 
     waterfall = waterfall[:, cut_left:cut_right]
     return waterfall
+
 
 # Finds foot tangents of profile. Needed to estimate bunch duration
 # when performing a fit to find synch_part_x.

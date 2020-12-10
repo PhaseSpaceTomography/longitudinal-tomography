@@ -31,7 +31,9 @@ def load_data():
         'rebin':            1
     }
 
-    raw_data = np.genfromtxt(path.join(test_root, 'resources/raw_data_INDIVShavingC325.dat'))
+    raw_data = np.genfromtxt(
+        path.join(test_root,
+                  'resources/raw_data_INDIVShavingC325.dat'))
     frames = tomoin.Frames(**frame_input_args)
 
     waterfall = frames.to_waterfall(raw_data)
@@ -70,6 +72,7 @@ def get_tomography_params():
     if _tomo is None:
         load_data()
     return copy.deepcopy(_tomo), copy.deepcopy(_machine)
+
 
 def get_machine_args() -> dict:
     test_root = path.split(path.abspath(__file__))[0]
