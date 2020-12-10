@@ -3,7 +3,7 @@ tomography
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-
+from numbers import Number
 from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
 
 import numpy as np
@@ -263,6 +263,49 @@ def assert_array_shape_equal(arrays: Tuple[np.ndarray, np.ndarray],
         raise expt.UnequalArrayShapes(error_message)
 
 
+def assert_array_numel_equal(arrays: Tuple[np.ndarray, np.ndarray],
+                             array_names: Tuple[str, str],
+                             demanded_numel: Tuple[int, int],
+                             extra_text: str = ''):
+    """Assert that two arrays have the given number of items
+
+    Parameters
+    ----------
+    arrays: tuple
+        tuple should contain (ndarrayX, ndarrayY).
+        ndarrays are the arrays to be asserted.
+    array_names: tuple
+        tuple of strings, being names of the arrays to be tested for the
+        users reference.
+    demanded_numel: tuple
+        Demanded shape of arrays to be asserted. Tuple: (int, int).
+    extra_text: string
+        Extra text to be written after standard error message.
+    """
+    assert_greater_or_equal(len(arrays), 'number of arrays', 2,
+                            AssertionError,
+                            'Unable to compare arrays, since less than two '
+                            'arrays are given.')
+    if isinstance(demanded_numel, Number):
+        demanded_numel = (demanded_numel,)
+
+    ok = True
+    counter = 0
+    array_error_str = ''
+    for i in range(len(arrays)):
+        if demanded_numel != arrays[i].shape:
+            ok = False
+            array_error_str += (f'{array_names[i]} with '
+                                f'shape: {arrays[i].shape}\n')
+            counter += 1
+    if not ok:
+        error_message = (f'\ndeviation from a desired array size '
+                         f'of {demanded_numel} found in array(s):\n'
+                         f'{array_error_str}'
+                         f'{extra_text}')
+        raise expt.UnequalArrayShapes(error_message)
+
+
 def assert_array_in_range(array: np.ndarray, low_lim: Union[int, float],
                           up_lim: Union[int, float],
                           error_class: Type[Exception],
@@ -390,9 +433,9 @@ def _assert_log_arr(log_array_ok: np.ndarray, error_class: Type[Exception],
     if not log_array_ok.all():
         error_msg = '\nError found at index: ' \
                     '{}\n'.format(
-                        np.argwhere(log_array_ok is False).flatten()
-                        + index_offset
-                    )
+            np.argwhere(log_array_ok is False).flatten()
+            + index_offset
+        )
         raise error_class(error_msg + msg)
 
 

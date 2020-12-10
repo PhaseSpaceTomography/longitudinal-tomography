@@ -12,6 +12,8 @@ import numpy.testing as nptest
 import tomo.tomography.tomography as tmo
 from tomo import exceptions as expt
 
+from .. import commons
+
 
 class TestTomographyCpp(unittest.TestCase):
 
@@ -111,7 +113,7 @@ class TestTomographyCpp(unittest.TestCase):
             tomo.run()
 
     def test_run_correct_weights(self):
-        waterfall = self._load_waterfall()
+        waterfall = commons.load_waterfall()
 
         nprofs = 10
         nparts = 50
@@ -141,7 +143,7 @@ class TestTomographyCpp(unittest.TestCase):
             weights, cweights, err_msg='Weights were calculated incorrectly')
 
     def test_run_old_correct_weights(self):
-        waterfall = self._load_waterfall()
+        waterfall = commons.load_waterfall()
 
         nprofs = 10
         nparts = 50
@@ -171,7 +173,7 @@ class TestTomographyCpp(unittest.TestCase):
             weights, cweights, err_msg='Weights were calculated incorrectly')
 
     def test_run_correct_diff(self):
-        waterfall = self._load_waterfall()
+        waterfall = commons.load_waterfall()
 
         nprofs = 10
         nparts = 50
@@ -188,7 +190,7 @@ class TestTomographyCpp(unittest.TestCase):
                                msg='Discrepancy calculated incorrectly')
 
     def test_run_hybrid_reduced_to_zeros_fails(self):
-        waterfall = self._load_waterfall()
+        waterfall = commons.load_waterfall()
 
         nprofs = waterfall.shape[0]
         nparts = 50
@@ -213,7 +215,7 @@ class TestTomographyCpp(unittest.TestCase):
             tomo.run_hybrid()
 
     def test_run_hybrid_correct(self):
-        waterfall = self._load_waterfall()
+        waterfall = commons.load_waterfall()
 
         nprofs = 10
         nparts = 50
@@ -243,7 +245,7 @@ class TestTomographyCpp(unittest.TestCase):
             weights, cweights, err_msg='Weights were calculated incorrectly')
 
     def test_run_hybrid_correct_diff(self):
-        waterfall = self._load_waterfall()
+        waterfall = commons.load_waterfall()
 
         nprofs = 10
         nparts = 50
@@ -259,11 +261,3 @@ class TestTomographyCpp(unittest.TestCase):
         self.assertAlmostEqual(tomo.diff[0], correct,
                                msg='Discrepancy calculated incorrectly')
 
-    def _load_waterfall(self):
-        base_dir = os.path.split(os.path.realpath(__file__))[0]
-        base_dir = os.path.split(base_dir)[0]
-        data_path = os.path.join(base_dir, 'resources')
-
-        waterfall = np.load(os.path.join(
-            data_path, 'waterfall_INDIVShavingC325.npy'))
-        return waterfall

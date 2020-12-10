@@ -9,6 +9,22 @@ data Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`pre_process` Module
+----------------------------
+
+.. automodule:: tomo.utils.pre_process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`post_process` Module
+----------------------------
+
+.. automodule:: tomo.utils.post_process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`profiles` Module
 ----------------------
 
