@@ -1,0 +1,101 @@
+//
+// Created by anton on 12/17/20.
+//
+
+#ifndef TOMO_RECONSTRUCT_H
+#define TOMO_RECONSTRUCT_H
+
+
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <stdexcept>
+#include <cmath>
+
+// Back projection using flattened arrays
+extern "C" void back_project(double *  weights,
+                             int ** __restrict__ flat_points,
+                             const double *  flat_profiles,
+                             const int npart, const int nprof);
+
+// Projections using flattened arrays
+extern "C" void project(double *  flat_rec,
+                        int ** __restrict__ flat_points,
+                        const double *  __restrict__ weights,
+                        const int npart, const int nprof);
+
+void normalize(double * __restrict__ flat_rec,
+               const int nprof,
+               const int nbins);
+
+void clip(double * __restrict__ array,
+          const int length,
+          const double clip_val);
+
+
+void find_difference_profile(double * __restrict__ diff_prof,
+                             const double * __restrict__ flat_rec,
+                             const double * __restrict__ flat_profiles,
+                             const int all_bins);
+
+double discrepancy(const double * __restrict__ diff_prof,
+                   const int nprof,
+                   const int nbins);
+
+void compensate_particle_amount(double * __restrict__ diff_prof,
+                                double ** __restrict__ rparts,
+                                const int nprof,
+                                const int nbins);
+
+double max_2d(double **  __restrict__ arr,
+              const int x_axis,
+              const int y_axis);
+
+void count_particles_in_bin(double ** __restrict__ rparts,
+                            const int ** __restrict__ xp,
+                            const int nprof,
+                            const int npart);
+
+void reciprocal_particles(double **  __restrict__ rparts,
+                          const int ** __restrict__ xp,
+                          const int nbins,
+                          const int nprof,
+                          const int npart);
+
+void create_flat_points(const int ** __restrict__ xp,
+                        int ** __restrict__ flat_points,
+                        const int npart,
+                        const int nprof,
+                        const int nbins);
+
+// VERSION 0
+// Projections using flattened arrays
+// Working original version
+// Well tested (12.02.2020)
+// < to be removed when new version is prooven to be working correctly >
+extern "C" void old_reconstruct(double * __restrict__ weights,
+                                const int ** __restrict__ xp,
+                                const double * __restrict__ flat_profiles,
+                                double * __restrict__ discr,
+                                const int niter,
+                                const int nbins,
+                                const int npart,
+                                const int nprof,
+                                const bool verbose);
+
+// VERSION 1
+// Projections using flattened arrays
+// Version returning final recreated phase space
+// Not well tested (12.02.2020)
+extern "C" void reconstruct(double * __restrict__ weights,
+                            const int ** __restrict__ xp,
+                            const double * __restrict__ flat_profiles,
+                            double * __restrict__ flat_rec,
+                            double * __restrict__ discr,
+                            const int niter,
+                            const int nbins,
+                            const int npart,
+                            const int nprof,
+                            const bool verbose);
+
+#endif //TOMO_RECONSTRUCT_H

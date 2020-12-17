@@ -11,6 +11,7 @@ import os
 import sys
 from glob import glob
 from typing import Tuple, TYPE_CHECKING
+import tomo.cpp_routines.libtomo as libtomo
 
 import numpy as np
 
@@ -21,37 +22,37 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-_tomolib_pth = os.path.dirname(os.path.realpath(__file__))
+# _tomolib_pth = os.path.dirname(os.path.realpath(__file__))
 
 # Setting system specific parameters
 # NB: the wildcard is to deal with how setup.py names compiled libraries
-if 'posix' in os.name:
-    _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.so'))
-elif 'win' in sys.platform:
-    _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.dll'))
-else:
-    msg = 'YOU ARE NOT USING A WINDOWS' \
-          'OR LINUX OPERATING SYSTEM. ABORTING...'
-    raise SystemError(msg)
-
-if len(_tomolib_pth) != 1:
-    raise expt.LibraryNotFound('Could not find library. Try reinstalling '
-                               'the package with '
-                               'python setup.py install.')
-_tomolib_pth = _tomolib_pth[0]
-
-# Attempting to load C++ library
-if os.path.exists(_tomolib_pth):
-    log.debug(f'Loading C++ library: {_tomolib_pth}')
-    _tomolib = ct.CDLL(_tomolib_pth)
-else:
-    error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
-                f'\n- Try to python setup.py build_ext --inplace \n'
-    raise expt.LibraryNotFound(error_msg)
-
-# Needed for sending 2D arrays to C++ functions.
-# Pointer to pointers.
-_double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
+# if 'posix' in os.name:
+#     _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.so'))
+# elif 'win' in sys.platform:
+#     _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.dll'))
+# else:
+#     msg = 'YOU ARE NOT USING A WINDOWS' \
+#           'OR LINUX OPERATING SYSTEM. ABORTING...'
+#     raise SystemError(msg)
+#
+# if len(_tomolib_pth) != 1:
+#     raise expt.LibraryNotFound('Could not find library. Try reinstalling '
+#                                'the package with '
+#                                'python setup.py install.')
+# _tomolib_pth = _tomolib_pth[0]
+#
+# # Attempting to load C++ library
+# if os.path.exists(_tomolib_pth):
+#     log.debug(f'Loading C++ library: {_tomolib_pth}')
+#     _tomolib = ct.CDLL(_tomolib_pth)
+# else:
+#     error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
+#                 f'\n- Try to python setup.py build_ext --inplace \n'
+#     raise expt.LibraryNotFound(error_msg)
+#
+# # Needed for sending 2D arrays to C++ functions.
+# # Pointer to pointers.
+# _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 
 # ========================================
 #           Setting argument types
@@ -65,60 +66,63 @@ _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
 
 # kick and drift
 # ---------------------------------------------
-_k_and_d = _tomolib.kick_and_drift
-_k_and_d.argtypes = [_double_ptr,
-                     _double_ptr,
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     np.ctypeslib.ndpointer(ct.c_double),
-                     ct.c_double,
-                     ct.c_double,
-                     ct.c_int,
-                     ct.c_int,
-                     ct.c_int,
-                     ct.c_int,
-                     ct.c_bool]
-_k_and_d.restypes = None
+# _k_and_d = _tomolib.kick_and_drift
+# _k_and_d.argtypes = [_double_ptr,
+#                      _double_ptr,
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      np.ctypeslib.ndpointer(ct.c_double),
+#                      ct.c_double,
+#                      ct.c_double,
+#                      ct.c_int,
+#                      ct.c_int,
+#                      ct.c_int,
+#                      ct.c_int,
+#                      ct.c_bool]
+# _k_and_d.restypes = None
 # ---------------------------------------------
 
 # Reconstruction routine (flat version)
 # < to be removed when new version is proven to be working correctly >
-_reconstruct_old = _tomolib.old_reconstruct
-_reconstruct_old.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-                             _double_ptr,
-                             np.ctypeslib.ndpointer(ct.c_double),
-                             np.ctypeslib.ndpointer(ct.c_double),
-                             ct.c_int, ct.c_int,
-                             ct.c_int, ct.c_int,
-                             ct.c_bool]
+# _reconstruct_old = _tomolib.old_reconstruct
+# _reconstruct_old.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+#                              _double_ptr,
+#                              np.ctypeslib.ndpointer(ct.c_double),
+#                              np.ctypeslib.ndpointer(ct.c_double),
+#                              ct.c_int, ct.c_int,
+#                              ct.c_int, ct.c_int,
+#                              ct.c_bool]
 
 # Reconstruction routine returning reconstructed profiles
-_reconstruct = _tomolib.reconstruct
-_reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-                         _double_ptr,
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         np.ctypeslib.ndpointer(ct.c_double),
-                         ct.c_int, ct.c_int,
-                         ct.c_int, ct.c_int,
-                         ct.c_bool]
+# _reconstruct = _tomolib.reconstruct
+# _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+#                          _double_ptr,
+#                          np.ctypeslib.ndpointer(ct.c_double),
+#                          np.ctypeslib.ndpointer(ct.c_double),
+#                          np.ctypeslib.ndpointer(ct.c_double),
+#                          ct.c_int, ct.c_int,
+#                          ct.c_int, ct.c_int,
+#                          ct.c_bool]
 
 # Back_project (flat version)
-_back_project = _tomolib.back_project
-_back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-                          _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
-_back_project.restypes = None
+# _back_project = _tomolib.back_project
+# _back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+#                           _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
+# _back_project.restypes = None
+#
+# # Project (flat version)
+# _proj = _tomolib.project
+# _proj.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
+#                   _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
+# _proj.restypes = None
 
-# Project (flat version)
-_proj = _tomolib.project
-_proj.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-                  _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
-_proj.restypes = None
+
+pybind_kick_and_drift = libtomo.kick_and_drift
 
 
 # =============================================================
@@ -174,9 +178,13 @@ def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
             ct.c_int(npart),
             ct.c_double(machine.deltaE0[turn]))
     if up:
-        _tomolib.kick_up(*args)
+        libtomo.kick_up(dphi, denergy, rfv1[turn], rfv2[turn],
+                        machine.phi0[turn], machine.phi12,
+                        machine.h_ratio, npart, machine.deltaE0[turn])
     else:
-        _tomolib.kick_down(*args)
+        libtomo.kick_down(dphi, denergy, rfv1[turn], rfv2[turn],
+                        machine.phi0[turn], machine.phi12,
+                        machine.h_ratio, npart, machine.deltaE0[turn])
     return denergy
 
 
@@ -217,9 +225,9 @@ def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
             ct.c_double(drift_coef[turn]),
             ct.c_int(npart))
     if up:
-        _tomolib.drift_up(*args)
+        libtomo.drift_up(dphi, denergy, drift_coef[turn], npart)
     else:
-        _tomolib.drift_down(*args)
+        libtomo.drift_down(dphi, denergy, drift_coef[turn], npart)
     return dphi
 
 
@@ -314,11 +322,15 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                     drift_coef, phi12, h_ratio, dturns]
 
     if machine is not None:
-        track_args += [machine.phi0, machine.deltaE0, machine.omega_rev0,
-                       machine.drift_coef, machine.phi12, machine.h_ratio,
-                       machine.dturns]
+        phi0 = machine.phi0
+        deltaE0 = machine.deltaE0
+        omega_rev0 = machine.omega_rev0
+        drift_coef = machine.drift_coef
+        phi12 = machine.phi12
+        h_ratio = machine.h_ratio
+        dturns = machine.dturns
     elif all([x is not None for x in machine_args]):
-        track_args += machine_args
+        pass
     else:
         raise expt.InputError(
             'Wrong input arguments.\n'
@@ -328,7 +340,10 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
 
     track_args += [rec_prof, nturns, nparts, ftn_out]
 
-    _k_and_d(*track_args)
+    # _k_and_d(*track_args)
+    libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0,
+                           omega_rev0, drift_coef, phi12, h_ratio, dturns,
+                           rec_prof, nturns, nparts, ftn_out)
     return xp, yp
 
 
@@ -362,8 +377,9 @@ def back_project(weights: np.ndarray, flat_points: np.ndarray,
     weights: ndarray
         1D array containing the **new weight** of each particle.
     """
-    _back_project(weights, _get_2d_pointer(flat_points),
-                  flat_profiles, nparts, nprofs)
+    libtomo.back_project(weights, flat_points, flat_profiles, nparts, nprofs)
+    # _back_project(weights, _get_2d_pointer(flat_points),
+    #               flat_profiles, nparts, nprofs)
     return weights
 
 
@@ -397,7 +413,8 @@ def project(recreated: np.ndarray, flat_points: np.ndarray,
         Shape: (nprofiles, nbins)
     """
     recreated = np.ascontiguousarray(recreated.flatten())
-    _proj(recreated, _get_2d_pointer(flat_points), weights, nparts, nprofs)
+    libtomo.project(recreated, flat_points, weights, nparts, nprofs)
+    # _proj(recreated, _get_2d_pointer(flat_points), weights, nparts, nprofs)
     recreated = recreated.reshape((nprofs, nbins))
     return recreated
 
@@ -447,8 +464,10 @@ def _old_reconstruct(weights: np.ndarray, xp: np.ndarray,
         1D array containing discrepancy at each
         iteration of the reconstruction.
     """
-    _reconstruct_old(weights, _get_2d_pointer(xp), flat_profiles,
-                     discr, niter, nbins, npart, nprof, verbose)
+    libtomo.reconstruct_old(weights, xp, flat_profiles, discr, niter,
+                            nbins, npart, nprof, verbose)
+    # _reconstruct_old(weights, _get_2d_pointer(xp), flat_profiles,
+    #                  discr, niter, nbins, npart, nprof, verbose)
     return weights, discr
 
 
@@ -496,8 +515,10 @@ def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
     recreated = np.ascontiguousarray(np.zeros(nprof * nbins, dtype=np.float64))
     flat_profs = np.ascontiguousarray(waterfall.flatten().astype(np.float64))
 
-    _reconstruct(weights, _get_2d_pointer(xp), flat_profs,
-                 recreated, discr, niter, nbins, npart, nprof, verbose)
+    libtomo.reconstruct(weights, xp, flat_profs, recreated, discr,
+                        niter, nbins, npart, nprof, verbose)
+    # _reconstruct(weights, _get_2d_pointer(xp), flat_profs,
+    #              recreated, discr, niter, nbins, npart, nprof, verbose)
 
     recreated = recreated.reshape((nprof, nbins))
     return weights, discr, recreated
