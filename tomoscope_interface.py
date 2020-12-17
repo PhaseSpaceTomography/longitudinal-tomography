@@ -38,7 +38,8 @@ def main():
                     waterfall, machine, frames.rebin, frames.sampling_time)
     profiles.calc_profilecharge()
 
-    tomoout.save_profile_ftn(profiles.waterfall, machine.filmstart,
+    tomoout.save_profile_ftn(profiles.waterfall/np.sum(profiles.waterfall[0]),
+                             machine.filmstart,
                              output_path)
 
     if profiles.machine.synch_part_x < 0:
