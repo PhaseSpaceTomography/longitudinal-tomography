@@ -16,6 +16,8 @@ import tomo.utils.tomo_input as tomoin
 import tomo.utils.tomo_output as tomoout
 import tomo.tracking.particles as pts
 
+print("import done")
+
 def main():
 
     raw_param, raw_data = get_input_file()
@@ -35,6 +37,9 @@ def main():
     profiles = tomoin.raw_data_to_profiles(
                     waterfall, machine, frames.rebin, frames.sampling_time)
     profiles.calc_profilecharge()
+
+    tomoout.save_profile_ftn(profiles.waterfall, machine.filmstart,
+                             output_path)
 
     if profiles.machine.synch_part_x < 0:
         fit_info = dtreat.fit_synch_part_x(profiles)
