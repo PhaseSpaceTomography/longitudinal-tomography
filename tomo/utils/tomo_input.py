@@ -11,7 +11,7 @@ import numpy as np
 
 from .. import assertions as asrt, exceptions as expt
 from ..data.profiles import Profiles
-from ..data import data_treatment as treat
+from ..data import pre_process
 from ..tracking.machine import Machine
 from tomo.compat import fortran
 
@@ -494,7 +494,7 @@ def raw_data_to_profiles(waterfall: np.ndarray, machine: Machine, rbn: int,
     # Rebinning
     (waterfall,
      machine.dtbin,
-     machine.synch_part_x) = treat.rebin(
+     machine.synch_part_x) = pre_process.rebin(
         waterfall, rbn, sampling_time, synch_part_x)
     # Returning Profiles object.
     return Profiles(machine, sampling_time, waterfall)

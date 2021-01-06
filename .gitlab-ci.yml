@@ -17,7 +17,6 @@ image: python:$PY_VERSION
 test_dev:
   extends: .acc_py_dev_test
   script:
-    - pylint --errors-only tomo
     - coverage run -m pytest unit_tests/
     - coverage report -m
     - coverage html
