@@ -2,11 +2,8 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-from __future__ import annotations
-
 from typing import Tuple, TYPE_CHECKING
 
-from numba import njit
 import numpy as np
 import logging
 
@@ -52,7 +49,7 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: 'Machine'):
         super().__init__(machine)
 
     def track(self, recprof: int,
@@ -391,8 +388,8 @@ class Tracking(ParticleTracker):
 
     # Calculate from physical coordinates to x-coordinates.
     # Needed for tracking using self-fields.
+    # TODO: removed njit, reimplement in C in the future
     @staticmethod
-    @njit
     def _calc_xp_sf(dphi: np.ndarray, phi0: np.ndarray, xorigin: int, h_num,
                     omega_rev0: np.ndarray, dtbin: int, phiwrap: float) \
             -> np.ndarray:

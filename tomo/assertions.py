@@ -4,8 +4,6 @@ tomography
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-from __future__ import annotations
-
 from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
 
 import numpy as np
@@ -457,7 +455,7 @@ def assert_fields(obj: Any, obj_name: str, needed_fields: Collection,
             raise error_class(err_msg)
 
 
-def assert_machine_input(machine: Machine):
+def assert_machine_input(machine: 'Machine'):
     """Assert that input parameters for a machine object is valid.
 
     Parameters
@@ -561,7 +559,7 @@ def assert_machine_input(machine: Machine):
                                 'geometrical coupling coefficient')
 
 
-def assert_frame_inputs(frame: Frames):
+def assert_frame_inputs(frame: 'Frames'):
     """Assert that frame parameters are valid, and that raw data will be
     correctly shaped to waterfall.
 

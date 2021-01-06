@@ -7,8 +7,6 @@ The intention of this package is to provide Fortran I/O compatibility with the
 tomoscope until it is deprecated.
 """
 
-from __future__ import annotations
-
 import logging
 import os
 from typing import TYPE_CHECKING
@@ -100,7 +98,7 @@ def save_phase_space(image: np.ndarray, recprof: int, output_path: str):
 #                          PLOT INFO                              #
 # --------------------------------------------------------------- #
 
-def write_plotinfo(machine: Machine, particles: Particles,
+def write_plotinfo(machine: 'Machine', particles: 'Particles',
                    profile_charge: float) -> str:
     """Creates string of plot info needed for the original output
     for the tomography program.

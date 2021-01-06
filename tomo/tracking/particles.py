@@ -5,8 +5,6 @@ Module also contains utility functions for particle distribution
 like assertions, conversions and filtering of lost particles.
 
 :Author(s): **Christoffer Hjertø Grindheim**"""
-from __future__ import annotations
-
 import logging as log
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
 
@@ -106,7 +104,7 @@ class Particles(object):
         """
         self._dphi, self._denergy = _assert_coordinates(coordinates)
 
-    def homogeneous_distribution(self, machine: Machine, recprof: int):
+    def homogeneous_distribution(self, machine: 'Machine', recprof: int):
         """Function for automatic generation of particle distribution.
 
         The distributions created are identical to the distributions created
@@ -177,10 +175,10 @@ class Particles(object):
 
     def _bin_nr_to_physical_coords(self,
                                    coordinates: Union[
-                                       Sequence[np.ndarray, np.ndarray],
+                                       Sequence[np.ndarray],
                                        np.ndarray
                                    ],
-                                   machine: Machine, recprof: int) \
+                                   machine: 'Machine', recprof: int) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Function to convert from reconstructed phase space coordinates
         to physical units.
@@ -207,7 +205,7 @@ class Particles(object):
 
     # Assertions to assure that all needed fields are provided in the
     # given machine object
-    def _assert_machine(self, machine: Machine):
+    def _assert_machine(self, machine: 'Machine'):
         needed_fieds = ['snpt', 'h_num', 'omega_rev0', 'eta0',
                         'dtbin', 'phi0', 'synch_part_y', 'dturns', 'phi12',
                         'nbins', 'beam_ref_frame', 'full_pp_flag',
@@ -271,7 +269,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
 
 
 def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
-                       machine: Machine, xorigin: float, dEbin: float) \
+                       machine: 'Machine', xorigin: float, dEbin: float) \
         -> Tuple[np.ndarray, np.ndarray]:
     """Function to convert from physical units ([rad], [eV]) to reconstructed
     phase space coordinates (bin numbers).
@@ -384,7 +382,7 @@ def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \
 
 
 # Function to check that coordinates are valid
-def _assert_coordinates(coordinates: Sequence[np.ndarray, np.ndarray]) \
+def _assert_coordinates(coordinates: Sequence[np.ndarray]) \
         -> Tuple[np.ndarray, np.ndarray]:
     if not hasattr(coordinates, '__getitem__'):
         raise expt.InvalidParticleError('coordinates should be a sequence')

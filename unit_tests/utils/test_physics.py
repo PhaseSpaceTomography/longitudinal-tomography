@@ -70,7 +70,7 @@ class TestPhysics(unittest.TestCase):
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation drf_voltage')
 
-    def test_rf_voltage_correct(self):
+    def test_rf_voltage_correct2(self):
         machine = mch.Machine(**MACHINE_ARGS)
         correct = -1132.2371121228516
         ans = physics.rf_voltage_at_phase(

@@ -1,10 +1,17 @@
 # Directories
-tomo/cpp_routines/.vscode
-example_input
-tomo/.idea
 .pytest_cache
+.coverage
 __doc/build
-unit_tests/old/
+
+# build folders
+/build/
+/wheelhouse/
+/dist/
+/cmake-build-debug/
+/cmake-build-release/
+*.egg-info
+
+# IDE files
 .vscode
 .idea
 
@@ -15,5 +22,3 @@ unit_tests/old/
 *.npy
 *.so
 *.o
-/cmake-build-debug/
-/cmake-build-release/
