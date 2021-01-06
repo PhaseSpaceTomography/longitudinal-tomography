@@ -1,8 +1,3 @@
-'''Module containing the Tracking class.
-
-:Author(s): **Christoffer Hjertø Grindheim**
-'''
-
 import os
 import sys
 import subprocess
