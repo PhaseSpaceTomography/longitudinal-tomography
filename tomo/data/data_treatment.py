@@ -58,7 +58,7 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
         new x-coordinate of the synchronous particle in bins will be returned.
         Otherwise, None will be returned.
     """
-    warn('The rebin function has been moved to tomo.data.pre_process')
+#    warn('The rebin function has been moved to tomo.data.pre_process')
     return pre_process.rebin(waterfall, rbn, dtbin, synch_part_x)
 
 
@@ -92,8 +92,8 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
         function in order to write the original output format.
 
     """
-    warn('The fit_synch_part_x function has moved to '
-         'tomo.data.pre_process')
+#    warn('The fit_synch_part_x function has moved to '
+#         'tomo.data.pre_process')
     return pre_process.fit_synch_part_x(profiles)
 
 
@@ -157,6 +157,6 @@ def _make_phase_space(xp: np.ndarray, yp: np.ndarray, weights: np.ndarray,
 
 
 def calc_baseline_ftn(*args):
-    warn('This function has moved to tomo.compat.fortran.')
+#    warn('This function has moved to tomo.compat.fortran.')
     from tomo.compat.fortran import calc_baseline
     return calc_baseline(*args)
