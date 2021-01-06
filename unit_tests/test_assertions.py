@@ -1,54 +1,19 @@
-'''Unit-tests for the assertions module.
+"""Unit-tests for the assertions module.
 
 Run as python test_assertions.py in console or via coverage
-'''
+"""
 
-import numpy as np
 import unittest
 
+import numpy as np
+
+from . import commons
 import tomo.tracking.machine as mch
-import tomo.utils.assertions as asrt
-import tomo.utils.exceptions as expt
+from tomo import assertions as asrt, exceptions as expt
 import tomo.utils.tomo_input as tomoin
 
 
-MACHINE_ARGS = {
-    'output_dir':          '/tmp/',
-    'dtbin':               9.999999999999999E-10,
-    'dturns':              5,
-    'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
-    'filmstart':           0,
-    'filmstop':            1,
-    'filmstep':            1,
-    'niter':               20,
-    'snpt':                4,
-    'full_pp_flag':        False,
-    'beam_ref_frame':      0,
-    'machine_ref_frame':   0,
-    'vrf1':                2637.197030932989,
-    'vrf1dot':             0.0,
-    'vrf2':                0.0,
-    'vrf2dot':             0.0,
-    'h_num':               1,
-    'h_ratio':             2.0,
-    'phi12':               0.4007821253666541,
-    'b0':                  0.15722,
-    'bdot':                0.7949999999999925,
-    'mean_orbit_rad':      25.0,
-    'bending_rad':         8.239,
-    'trans_gamma':         4.1,
-    'rest_energy':         0.93827231E9,
-    'charge':              1,
-    'self_field_flag':     False,
-    'g_coupling':          0.0,
-    'zwall_over_n':        0.0,
-    'pickup_sensitivity':  0.36,
-    'nprofiles':           150,
-    'nbins':               760,
-    'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760
-}
+MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestAssertions(unittest.TestCase):
@@ -62,12 +27,12 @@ class TestAssertions(unittest.TestCase):
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_greater(var, var_name, limit, error_class)
-        
+
         var = limit
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_greater(var, var_name, limit, error_class)
-        
+
         var = 20
         asrt.assert_greater(var, var_name, limit, error_class)
 
@@ -80,12 +45,12 @@ class TestAssertions(unittest.TestCase):
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_less(var, var_name, limit, error_class)
-        
+
         var = limit
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_less(var, var_name, limit, error_class)
-        
+
         var = 10
         asrt.assert_less(var, var_name, limit, error_class)
 
@@ -98,12 +63,12 @@ class TestAssertions(unittest.TestCase):
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_equal(var, var_name, limit, error_class)
-        
+
         var = 20
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_equal(var, var_name, limit, error_class)
-        
+
         var = limit
         asrt.assert_equal(var, var_name, limit, error_class)
 
@@ -114,12 +79,12 @@ class TestAssertions(unittest.TestCase):
 
         var = 10
         asrt.assert_not_equal(var, var_name, limit, error_class)
-        
+
         var = limit
         with self.assertRaises(
                 error_class, msg='An error should have been raised'):
             asrt.assert_not_equal(var, var_name, limit, error_class)
-        
+
         var = 20
         asrt.assert_not_equal(var, var_name, limit, error_class)
 
@@ -130,7 +95,7 @@ class TestAssertions(unittest.TestCase):
 
         var = 10
         asrt.assert_less_or_equal(var, var_name, limit, error_class)
-        
+
         var = limit
         asrt.assert_less_or_equal(var, var_name, limit, error_class)
 
@@ -146,7 +111,7 @@ class TestAssertions(unittest.TestCase):
 
         var = 10
         asrt.assert_less_or_equal(var, var_name, limit, error_class)
-        
+
         var = limit
         asrt.assert_less_or_equal(var, var_name, limit, error_class)
 
@@ -187,14 +152,14 @@ class TestAssertions(unittest.TestCase):
         error_class = AssertionError
 
         with self.assertRaises(
-                    error_class, msg='An error should have been raised'):
+                error_class, msg='An error should have been raised'):
             asrt.assert_array_not_equal(array, array_name, limit, error_class)
 
         array[1, 1] = 2
         asrt.assert_array_not_equal(array, array_name, limit, error_class)
 
     def test_assert_array_shape_equal(self):
-        a_array = np.zeros((2, 4))        
+        a_array = np.zeros((2, 4))
         b_array = np.zeros((2, 4))
         c_array = np.zeros((7, 4))
         correct_shape = (2, 4)
@@ -203,9 +168,9 @@ class TestAssertions(unittest.TestCase):
                 expt.UnequalArrayShapes,
                 msg='An error should have been raised'):
             asrt.assert_array_shape_equal(
-                    (a_array, b_array, c_array),
-                    ('a', 'b', 'c'), correct_shape)
-        
+                (a_array, b_array, c_array),
+                ('a', 'b', 'c'), correct_shape)
+
         asrt.assert_array_shape_equal((a_array, b_array),
                                       ('a', 'b'), correct_shape)
 
@@ -221,12 +186,12 @@ class TestAssertions(unittest.TestCase):
             asrt.assert_array_in_range(array, low_lim, up_lim, error_class)
 
         array = np.arange(low_lim, up_lim+1)
-        asrt.assert_array_in_range(array, low_lim, up_lim, error_class)        
+        asrt.assert_array_in_range(array, low_lim, up_lim, error_class)
 
     def test_assert_array_greater(self):
         limit = 10
         error_class = AssertionError
-        
+
         array = np.ones(10) * 15
         asrt.assert_array_greater(array, limit, error_class)
 
@@ -243,7 +208,7 @@ class TestAssertions(unittest.TestCase):
     def test_assert_array_greater_or_equal(self):
         limit = 10
         error_class = AssertionError
-        
+
         array = np.ones(10) * 15
         asrt.assert_array_greater_eq(array, limit, error_class)
 
@@ -258,7 +223,7 @@ class TestAssertions(unittest.TestCase):
     def test_assert_array_less(self):
         limit = 10
         error_class = AssertionError
-        
+
         array = np.ones(10) * 5
         asrt.assert_array_less(array, limit, error_class)
 
@@ -275,7 +240,7 @@ class TestAssertions(unittest.TestCase):
     def test_assert_array_less_or_equal(self):
         limit = 10
         error_class = AssertionError
-        
+
         array = np.ones(10) * 5
         asrt.assert_array_less_eq(array, limit, error_class)
 
@@ -290,8 +255,8 @@ class TestAssertions(unittest.TestCase):
     def test_assert_only_valid_particles(self):
         nbins = 25
         particles = np.ones((10, 10))
-        
-        # Testing too large x coorinate
+
+        # Testing too large x coordinate
         particles[6, 9] = nbins
         with self.assertRaises(
                 expt.InvalidParticleError,
@@ -310,7 +275,7 @@ class TestAssertions(unittest.TestCase):
         error_class = AssertionError
         needed_fields = ['hope']
         machine = mch.Machine(**MACHINE_ARGS)
-        
+
         with self.assertRaises(error_class,
                                msg='Object lacking needed fields '
                                    'should raise an exception'):
@@ -319,7 +284,7 @@ class TestAssertions(unittest.TestCase):
 
     def test_assert_machine_input_bad_dtbin(self):
         machine = mch.Machine(**MACHINE_ARGS)
-        
+
         machine.dtbin = None
         with self.assertRaises(
                 expt.MachineParameterError,
@@ -340,7 +305,7 @@ class TestAssertions(unittest.TestCase):
                 expt.MachineParameterError,
                 msg='dturns with value None should raise an Exception'):
             asrt.assert_machine_input(machine)
-        
+
         machine.dturns = 0
         with self.assertRaises(
                 expt.MachineParameterError,
@@ -579,8 +544,8 @@ class TestAssertions(unittest.TestCase):
 
     def test_assert_frame_input(self):
         frame = tomoin.Frames(
-                    framecount=10, framelength=10, skip_frames=2,
-                    skip_bins_start=2, skip_bins_end=2, rebin=1, dtbin=1e-7)
+            framecount=10, framelength=10, skip_frames=2,
+            skip_bins_start=2, skip_bins_end=2, rebin=1, dtbin=1e-7)
 
         # Checking nframes
         frame.nframes = 0
@@ -597,8 +562,8 @@ class TestAssertions(unittest.TestCase):
                 msg='skip_frames with negative value '
                     'should raise an Exception'):
             asrt.assert_frame_inputs(frame)
-        
-        frame.skip_frames = frame.nframes 
+
+        frame.skip_frames = frame.nframes
         with self.assertRaises(
                 expt.InputError,
                 msg='skip_frames with value equal to nframes '

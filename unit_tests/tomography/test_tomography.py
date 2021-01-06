@@ -1,15 +1,16 @@
-'''Unit-tests for the TomographyCpp class.
+"""Unit-tests for the TomographyCpp class.
 
 Run as python test_tomography_cpp.py in console or via coverage
-'''
+"""
 
-import numpy as np
-import numpy.testing as nptest
 import os
 import unittest
 
+import numpy as np
+import numpy.testing as nptest
+
 import tomo.tomography.tomography as tmo
-import tomo.utils.exceptions as expt
+from tomo import exceptions as expt
 
 
 class TestTomographyCpp(unittest.TestCase):
@@ -17,7 +18,7 @@ class TestTomographyCpp(unittest.TestCase):
     def test_set_xp_not_iterable_fails(self):
         waterfall = np.ones((10, 10))
         tomo = tmo.TomographyCpp(waterfall)
-        
+
         with self.assertRaises(expt.CoordinateImportError,
                                msg='Providing x coordinates as non iterable '
                                    'should raise an Exception'):
@@ -26,19 +27,19 @@ class TestTomographyCpp(unittest.TestCase):
     def test_set_xp_one_dim_fails(self):
         waterfall = np.ones((10, 10))
         tomo = tmo.TomographyCpp(waterfall)
-        
+
         with self.assertRaises(expt.CoordinateImportError,
                                msg='Providing x coordinates array having '
-                                   'another number of dimnetions than two '
+                                   'another number of dimensions than two '
                                    'should raise an Exception'):
-            tomo.xp = [1, 2, 4] 
+            tomo.xp = [1, 2, 4]
 
     def test_set_xp_wrong_nprofs_fails(self):
         nprofs = 5
         nbins = 10
         waterfall = np.ones((nprofs, nbins))
         tomo = tmo.TomographyCpp(waterfall)
-        
+
         nparts = 20
         pts_nprofs = 2
         with self.assertRaises(expt.CoordinateImportError,
@@ -53,13 +54,13 @@ class TestTomographyCpp(unittest.TestCase):
         img_widt = 10
         waterfall = np.ones((nprofs, img_widt))
         tomo = tmo.TomographyCpp(waterfall)
-        
+
         nparts = 20
         xp = np.ones((nparts, nprofs))
         xp[1, 2] = img_widt
         with self.assertRaises(expt.XPOutOfImageWidthError,
                                msg='Providing x coordinates array outside '
-                                   'of image widthshould raise an Exception'):
+                                   'of image width should raise an Exception'):
             tomo.xp = xp
 
     def test_set_xp_outside_of_img_lower_fails(self):
@@ -67,15 +68,15 @@ class TestTomographyCpp(unittest.TestCase):
         img_widt = 10
         waterfall = np.ones((nprofs, img_widt))
         tomo = tmo.TomographyCpp(waterfall)
-        
+
         nparts = 20
         xp = np.ones((nparts, nprofs))
         xp[1, 2] = -1
         with self.assertRaises(expt.XPOutOfImageWidthError,
                                msg='Providing x coordinates array outside '
-                                   'of image widthshould raise an Exception'):
+                                   'of image width should raise an Exception'):
             tomo.xp = xp
-        
+
     def test_xp_can_be_set_to_none(self):
         nprofs = 5
         img_widt = 10
@@ -186,8 +187,6 @@ class TestTomographyCpp(unittest.TestCase):
         self.assertAlmostEqual(tomo.diff[0], correct,
                                msg='Discrepancy calculated incorrectly')
 
-
-
     def test_run_hybrid_reduced_to_zeros_fails(self):
         waterfall = self._load_waterfall()
 
@@ -197,12 +196,10 @@ class TestTomographyCpp(unittest.TestCase):
 
         tomo = tmo.TomographyCpp(waterfall, xp.T)
 
-
         with self.assertRaises(expt.WaterfallReducedToZero,
                                msg='Waterfall getting reduced to zero '
                                    'should raise an Exception'):
             tomo.run_hybrid()
-
 
     def test_run_hybrid_xp_is_none_fails(self):
         nprofs = 5
@@ -214,7 +211,7 @@ class TestTomographyCpp(unittest.TestCase):
                                msg='Calling the run_hybrid function, with '
                                    'tomo.xp=None should raise an Exception'):
             tomo.run_hybrid()
-                
+
     def test_run_hybrid_correct(self):
         waterfall = self._load_waterfall()
 
@@ -266,8 +263,7 @@ class TestTomographyCpp(unittest.TestCase):
         base_dir = os.path.split(os.path.realpath(__file__))[0]
         base_dir = os.path.split(base_dir)[0]
         data_path = os.path.join(base_dir, 'resources')
-    
-        waterfall = np.load(os.path.join(
-                        data_path, 'waterfall_INDIVShavingC325.npy'))
-        return waterfall
 
+        waterfall = np.load(os.path.join(
+            data_path, 'waterfall_INDIVShavingC325.npy'))
+        return waterfall

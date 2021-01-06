@@ -1,17 +1,27 @@
-tests:
-  stage: test
-  image: continuumio/miniconda3:latest
-  before_script:
-  - export PIP_CACHE_DIR="/opt/cache/pip"
+image: continuumio/miniconda3:latest
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/opt/cache/pip"
+
+cache:
+  paths:
+    - /opt/cache/pip
+
+before_script:
   - apt-get update -q -y
   - apt-get install -y build-essential
   - conda env create -f .environment.yml
   - source activate tomo_env
-  - python tomo/compile.py
+  - python setup.py build_ext --inplace
+
+tests:
+  stage: test
   script:
+    - source activate tomo_env
     - echo "Installing coverage"
-    - pip install coverage
-    - pip install coverage-badge
+    - pip install coverage coverage-badge pyyaml
+    - pip install pylint
+    - pylint --errors-only tomo
     - coverage run -m pytest -v unit_tests/*/test*.py
     - coverage report -m
     - coverage html
@@ -23,12 +33,29 @@ tests:
       - coverage.svg
     expire_in: 1 day
 
+pep8:
+  # Checks for conformity to PEP8 style guidelines
+  stage: test
+  script:
+    - source activate tomo_env
+    - pip install flake8
+    - flake8 --count
+
+  only:
+    - merge_requests
+  allow_failure: true
+
 pages:
   stage: deploy
   dependencies:
     - tests
   script:
+    - source activate tomo_env
     - mv htmlcov/ public/
+    - pip install sphinx sphinxcontrib-napoleon sphinx-rtd-theme
+    - cd __docs
+    - make html
+    - mv build/html ../public
   artifacts:
     paths:
       - public

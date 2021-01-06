@@ -1,23 +1,27 @@
-'''Module containing ParticleTracker class,
+"""Module containing ParticleTracker class,
 a super class for particle trackers.
 
 :Author(s): **Christoffer Hjertø Grindheim**
-'''
+"""
 
-import numpy as np
+from __future__ import annotations
+
 import logging as log
+from typing import TYPE_CHECKING
 
-from . import machine as mach
-from . import particles as pts 
-from ..utils import assertions as asrt
-from ..utils import exceptions as expt
+from . import particles as pts
+from .machine import Machine
+from .. import assertions as asrt, exceptions as expt
+
+if TYPE_CHECKING:
+    from ..data.profiles import Profiles
 
 
 class ParticleTracker:
-    '''Super class for classes meant tracking particles.
-    
+    """Super class for classes meant tracking particles.
+
     This class holds some general utilities for tracking particles. These
-    utilities includes asserions and flags.
+    utilities includes assertions and flags.
 
     Parameters
     ----------
@@ -35,22 +39,23 @@ class ParticleTracker:
     nturns: int
         Number of machine turns of which the particles should
         be tracked trough.
-    self_field_flag: boolean
+    _self_field_flag: boolean
         Flag to indicate that self-fields should be included
         during the tracking.
-    fortran_flag: boolean
+    _ftn_flag: boolean
         Flag to indicate that the particle tracking should print Fortran-style
         output strings to stdout during tracking.
 
     Raises
     ------
     MachineParameterError: Exception
-        Input argument is not :class:`~tomo.tracking.machine.Machine`, or the 
+        Input argument is not :class:`~tomo.tracking.machine.Machine`, or the
         Machine object provided is missing needed fields.
-    '''
-    def __init__(self, machine):
+    """
 
-        if not isinstance(machine, mach.Machine):
+    def __init__(self, machine: Machine):
+
+        if not isinstance(machine, Machine):
             err_msg = 'Input argument must be Machine.'
             raise expt.MachineParameterError(err_msg)
 
@@ -62,36 +67,40 @@ class ParticleTracker:
         self._self_field_flag = False
         self._ftn_flag = False
 
+        self._profile_charge = None
+        self._phiwrap = None
+        self._vself = None
+
     @property
     def self_field_flag(self):
-        '''self_field_flag defined as @property
-        
+        """self_field_flag defined as @property
+
         Flag can be set to true by calling :func:`enable_self_fields`.
 
         Returns
         -------
         self_field_flag: boolean
             Flag to indicate if particle tracking using
-            self-fields is enabeled.
-        '''
+            self-fields is enabled.
+        """
         return self._self_field_flag
-    
+
     @property
     def fortran_flag(self):
-        '''self_field_flag defined as @property
+        """self_field_flag defined as @property
 
         Flag can be set to true by calling :func:`enable_fortran_output`.
 
         Returns
         -------
         fortran_flag: boolean
-            Flag to indicate if Fortran styled output is enabeled.
-        '''
+            Flag to indicate if Fortran styled output is enabled.
+        """
         return self._ftn_flag
 
-    def enable_fortran_output(self, profile_charge):
-        '''Function for enabeling of Fortran-styled output.
-        
+    def enable_fortran_output(self, profile_charge: float):
+        """Function for enabling of Fortran-styled output.
+
         Call this function in order to print a Fortran-styled output
         to stdout during the particle tracking.
 
@@ -104,7 +113,7 @@ class ParticleTracker:
         This is however **not a real measurement**, but a static string needed
         for the interface to the tomoscope application.
         The lost particles is not found during the tracking due to changes in
-        the algorithm. 
+        the algorithm.
 
         Parameters
         ----------
@@ -114,9 +123,9 @@ class ParticleTracker:
         Raises
         ------
         ProfileChargeNotCalculated: Exception
-            Needed field for enabeling Fortran output,
+            Needed field for enabling Fortran output,
             profile_charge, is missing from the Machine object.
-        '''
+        """
         if profile_charge is None:
             err_msg = 'profile_charge is needed for fortran-style output'
             raise expt.ProfileChargeNotCalculated(err_msg)
@@ -124,12 +133,12 @@ class ParticleTracker:
         self._profile_charge = profile_charge
         log.info('Fortran style output for particle tracking enabled!')
 
-    def enable_self_fields(self, profiles):
-        '''Function for enabeling particle tracking using self-fields.
+    def enable_self_fields(self, profiles: Profiles):
+        """Function for enabling particle tracking using self-fields.
 
         Call this function to track the particles using self-fields.
         Note that the self-field tracking is **much slower** than
-        tracking without self-fields. 
+        tracking without self-fields.
 
         Parameters
         ----------
@@ -143,7 +152,7 @@ class ParticleTracker:
         SelfFieldTrackingError: Exception
             Needed fields for tracking using self-fields missing\
             from Machine object.
-        '''
+        """
         needed_fieds = ['phiwrap', 'vself']
         asrt.assert_fields(profiles, 'profiles', needed_fieds,
                            expt.SelfFieldTrackingError)
@@ -153,10 +162,10 @@ class ParticleTracker:
         self._self_field_flag = True
         log.info('Tracking using self fields enabled!')
 
-    # Checks that the given machine object includes the nesscessary
+    # Checks that the given machine object includes the necessary
     # variables to perform the tracking.
     # Does not check parameters for calculating using self-fields.
-    def _assert_machine(self, machine):
+    def _assert_machine(self, machine: Machine):
         needed_fieds = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
                         'nprofiles', 'drift_coef', 'dturns', 'phi0',
                         'phi12', 'h_ratio', 'deltaE0', 'synch_part_x']

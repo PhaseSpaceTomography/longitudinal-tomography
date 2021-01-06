@@ -8,8 +8,25 @@ the file LICENCE.txt. In applying this licence, CERN does not waive the
 privileges and immunities granted to it by virtue of its status as an
 Intergovernmental Organization or submit itself to any jurisdiction.
 
+
 INSTALL
-=======
+-------
+
+Clone the repository and run
+.. code-block:: shell
+    pip install .
+
+
+OR
+
+Run
+.. code-block:: shell
+    pip install -e "git+git://gitlab.cern.ch/anlu/tomographyv3.git#egg=beam_tomography"
+
+For development environments where it's preferable to compile the C++ extension inplace, it's possible to run the command
+.. code-block:: shell
+    python setup.py build_ext --inplace
+which will compile the C++ extension using the available compiler (decided by setuptools).
 
 
 Requirements
