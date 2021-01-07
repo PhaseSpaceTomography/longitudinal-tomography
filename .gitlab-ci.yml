@@ -75,6 +75,10 @@ test-wheels:
   dependencies:
     - build-wheels
   script: bash tools/test-wheels.sh
+  only:
+    - master
+    - nightly
+    - tags
 
 pypi:
   image: python:3
