@@ -1,6 +1,6 @@
-.. image:: https://gitlab.cern.ch/anlu/tomographyv3/badges/master/pipeline.svg
-.. image:: https://gitlab.cern.ch/anlu/tomographyv3/badges/master/coverage.svg
-    :target: https://gitlab.cern.ch/anlu/tomographyv3/-/jobs/artifacts/master/download?job=pages
+.. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/pipeline.svg
+.. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/coverage.svg
+    :target: https://gitlab.cern.ch/anlu/longitudinaltomography/-/jobs/artifacts/master/download?job=pages
 
 Copyright 2020 CERN. This software is distributed under the terms of the
 GNU General Public Licence version 3 (GPL Version 3), copied verbatim in

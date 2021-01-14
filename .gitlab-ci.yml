@@ -51,10 +51,10 @@ build-wheels:
     expire_in: 7 days
     paths:
       - wheelhouse/longitudinal_tomography*manylinux*.whl
-#  only:
-#    - master
-#    - nightly
-#    - tags
+  only:
+    - master
+    - nightly
+    - tags
 
 build-sdist:
   image: python:3
@@ -64,10 +64,10 @@ build-sdist:
     expire_in: 7 days
     paths:
       - dist/*.tar.gz
-#  only:
-#    - master
-#    - nightly
-#    - tags
+  only:
+    - master
+    - nightly
+    - tags
 
 test-wheels:
   image: quay.io/pypa/manylinux2014_x86_64
@@ -75,6 +75,10 @@ test-wheels:
   dependencies:
     - build-wheels
   script: bash tools/test-wheels.sh
+  only:
+    - master
+    - nightly
+    - tags
 
 pypi:
   image: python:3
