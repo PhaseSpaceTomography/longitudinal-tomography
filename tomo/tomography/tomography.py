@@ -1,19 +1,20 @@
-'''Module containing the TomographyCpp class
+"""Module containing the TomographyCpp class
 
 :Author(s): **Christoffer Hjertø Grindheim**
-'''
+"""
 
-import numpy as np
 import logging as log
 
-from ..utils import exceptions as expt
-from ..cpp_routines import tomolib_wrappers as tlw
+import numpy as np
+
 from . import __tomography as stmo
+from ..cpp_routines import tomolib_wrappers as tlw
+from .. import exceptions as expt
 
 
 class TomographyCpp(stmo.Tomography):
-    '''Class for performing tomographic reconstruction of phase space.
-    
+    """Class for performing tomographic reconstruction of phase space.
+
     The tomographic routine largely consists of two parts. Projection and
     back projection. The **back projection** creates a phase space
     reconstruction based on the measured profiles. The **projection**
@@ -22,12 +23,12 @@ class TomographyCpp(stmo.Tomography):
     By comparing the reconstructed profiles to the measured profiles,
     adjustments of the weights can be made in order to create
     a better reconstruction. The number of iterations in this process can be
-    spescified by the user.
+    specified by the user.
 
     Parameters
     ----------
     waterfall: ndarray
-        2D array of measured profiles, shaped: (nprofiles, nbins).  
+        2D array of measured profiles, shaped: (nprofiles, nbins).
     x_coords: ndarray
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
@@ -48,17 +49,20 @@ class TomographyCpp(stmo.Tomography):
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
     recreated: ndarray
-        Recreated waterfall. Directly comparable with *Tomogaphy.waterfall*.
+        Recreated waterfall. Directly comparable with *Tomography.waterfall*.
         Shape: (nprofiles, nbins).
     diff: ndarray
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
-    '''
-    def __init__(self, waterfall, x_coords=None, y_coords=None):
+    """
+
+    def __init__(self, waterfall: np.ndarray, x_coords: np.ndarray = None,
+                 y_coords: np.ndarray = None):
         super().__init__(waterfall, x_coords, y_coords)
+        self.weight = None
 
     def run_hybrid(self, niter=20, verbose=False):
-        '''Function to perform tomographic reconstruction, implemented
+        """Function to perform tomographic reconstruction, implemented
         as a hybrid between C++ and Python.
 
         Projection and back projection routines are called from C++,
@@ -68,14 +72,14 @@ class TomographyCpp(stmo.Tomography):
         of the object.
 
         The recreated waterfall can be found calling the *recreated* field
-        of the object. 
+        of the object.
 
         Parameters
         ----------
         niter: int
             Number of iterations in reconstruction.
         verbose: boolean
-            Flag to indicate that the status of the tomography should be 
+            Flag to indicate that the status of the tomography should be
             written to stdout. The output is identical to output
             generated in the original Fortran tomography.
 
@@ -89,28 +93,28 @@ class TomographyCpp(stmo.Tomography):
         CoordinateError: Exception
             X-coordinates is None
         WaterfallReducedToZero: Exception
-            All of reconstructed watefall reduced to zero.  
-        '''
+            All of reconstructed waterfall reduced to zero.
+        """
         log.warning('TomographyCpp.run_hybrid() '
                     'may be removed in future updates!')
         if self.xp is None:
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
-        
+
         self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles()
         flat_points = self._create_flat_points()
         flat_profs = np.ascontiguousarray(
-                        self.waterfall.flatten()).astype(np.float64)
+            self.waterfall.flatten()).astype(np.float64)
         weight = np.zeros(self.nparts)
-        
+
         weight = tlw.back_project(weight, flat_points, flat_profs,
                                   self.nparts, self.nprofs)
         weight = weight.clip(0.0)
 
         if verbose:
             print(' Iterating...')
-        
+
         for i in range(niter):
             if verbose:
                 print(f'{i + 1:3d}')
@@ -122,10 +126,10 @@ class TomographyCpp(stmo.Tomography):
 
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts.T
-         
+
             weight = tlw.back_project(
-                        weight, flat_points, diff_waterfall.flatten(),
-                        self.nparts, self.nprofs)
+                weight, flat_points, diff_waterfall.flatten(),
+                self.nparts, self.nprofs)
             weight = weight.clip(0.0)
 
         self.recreated = self._project(flat_points, weight)
@@ -148,12 +152,12 @@ class TomographyCpp(stmo.Tomography):
         return rec
 
     # Convert x coordinates pointing at bins of flattened version of waterfall.
-    def _create_flat_points(self):
+    def _create_flat_points(self) -> np.ndarray:
         return np.ascontiguousarray(
-                super()._create_flat_points()).astype(np.int32)
+            super()._create_flat_points()).astype(np.int32)
 
     def _run_old(self, niter=20, verbose=False):
-        '''Function to perform tomographic reconstruction.
+        """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
 
@@ -165,7 +169,7 @@ class TomographyCpp(stmo.Tomography):
         niter: int
             Number of iterations in reconstruction.
         verbose: boolean
-            Flag to indicate that the status of the tomography should be 
+            Flag to indicate that the status of the tomography should be
             written to stdout. The output is identical to output
             generated in the original Fortran tomography.
 
@@ -173,47 +177,47 @@ class TomographyCpp(stmo.Tomography):
         -------
         weight: ndarray
             1D array containing the weight of each particle.
-        
+
         Raises
         ------
         CoordinateError: Exception
             X-coordinates is None
-        '''
+        """
         if self.xp is None:
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
-        
+
         weight = np.ascontiguousarray(
-                    np.zeros(self.nparts, dtype=np.float64))
+            np.zeros(self.nparts, dtype=np.float64))
         self.diff = np.zeros(niter + 1, dtype=np.float64)
 
         flat_profiles = np.ascontiguousarray(
-                        self.waterfall.flatten().astype(np.float64))
+            self.waterfall.flatten().astype(np.float64))
 
         (self.weight,
          self.diff) = tlw._old_reconstruct(
-                            weight, self.xp, flat_profiles,
-                            self.diff, niter, self.nbins,
-                            self.nparts, self.nprofs, verbose)
+            weight, self.xp, flat_profiles,
+            self.diff, niter, self.nbins,
+            self.nparts, self.nprofs, verbose)
         return self.weight
 
-    def run(self, niter=20, verbose=False):
-        '''Function to perform tomographic reconstruction.
+    def run(self, niter: int = 20, verbose: bool = False) -> np.ndarray:
+        """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
 
         - The discrepancy of each iteration is saved in the objects\
-        **diff** variable.
+          **diff** variable.
         - The particles weights are saved in the objects **weight** variable.
         - The reconstructed profiles are saved to the objects\
-        **recreated** variable.
-        
+          **recreated** variable.
+
         Parameters
         ----------
         niter: int
             Number of iterations in reconstruction.
         verbose: boolean
-            Flag to indicate that the status of the tomography should be 
+            Flag to indicate that the status of the tomography should be
             written to stdout. The output is identical to output
             generated in the original Fortran tomography.
 
@@ -221,12 +225,12 @@ class TomographyCpp(stmo.Tomography):
         -------
         weight: ndarray
             1D array containing the weight of each particle.
-        
+
         Raises
         ------
         CoordinateError: Exception
             X-coordinates is None
-        '''
+        """
         if self.xp is None:
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
@@ -234,6 +238,6 @@ class TomographyCpp(stmo.Tomography):
         (self.weight,
          self.diff,
          self.recreated) = tlw.reconstruct(
-                                self.xp, self.waterfall, niter, self.nbins,
-                                self.nparts, self.nprofs, verbose)
+            self.xp, self.waterfall, niter, self.nbins,
+            self.nparts, self.nprofs, verbose)
         return self.weight

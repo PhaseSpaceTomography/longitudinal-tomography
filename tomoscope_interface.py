@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 # from map_info import MapInfo
 # from new_tomo_cpp import NewTomographyC
 # from utils.assertions import TomoAssertions as ta
-from tomo.utils.exceptions import InputError
+#from tomo.utils.exceptions import InputError
+from tomo.exceptions import InputError
 import tomo.tracking.tracking as tracking
 import tomo.tomography.tomography as tomography
 import tomo.utils.data_treatment as dtreat

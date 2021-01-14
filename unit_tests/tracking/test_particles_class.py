@@ -1,53 +1,17 @@
-'''Unit-tests for the Particles class.
+"""Unit-tests for the Particles class.
 
 Run as python test_particles_class.py in console or via coverage
-'''
+"""
 
 import unittest
 
-import tomo.utils.exceptions as expt
+from .. import commons
 import tomo.tracking.machine as mch
 import tomo.tracking.particles as pts
+from tomo import exceptions as expt
 
-
-# Machine arguments mased on the input file INDIVShavingC325.dat
-MACHINE_ARGS = {
-    'output_dir':          '/tmp/',
-    'dtbin':               9.999999999999999E-10,
-    'dturns':              5,
-    'synch_part_x':        334.00000000000006,
-    'demax':               -1.E6,
-    'filmstart':           0,
-    'filmstop':            1,
-    'filmstep':            1,
-    'niter':               20,
-    'snpt':                4,
-    'full_pp_flag':        False,
-    'beam_ref_frame':      0,
-    'machine_ref_frame':   0,
-    'vrf1':                2637.197030932989,
-    'vrf1dot':             0.0,
-    'vrf2':                0.0,
-    'vrf2dot':             0.0,
-    'h_num':               1,
-    'h_ratio':             2.0,
-    'phi12':               0.4007821253666541,
-    'b0':                  0.15722,
-    'bdot':                0.7949999999999925,
-    'mean_orbit_rad':      25.0,
-    'bending_rad':         8.239,
-    'trans_gamma':         4.1,
-    'rest_energy':         0.93827231E9,
-    'charge':              1,
-    'self_field_flag':     False,
-    'g_coupling':          0.0,
-    'zwall_over_n':        0.0,
-    'pickup_sensitivity':  0.36,
-    'nprofiles':           150,
-    'nbins':               760,
-    'min_dt':              0.0,
-    'max_dt':              9.999999999999999E-10 * 760 # dtbin * nbins
-    }
+# Machine arguments based on the input file INDIVShavingC325.dat
+MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestParticles(unittest.TestCase):
@@ -59,7 +23,7 @@ class TestParticles(unittest.TestCase):
         ndims = len(input_coords)
 
         parts = pts.Particles()
-        parts.coordinates_dphi_denergy = input_coords 
+        parts.coordinates_dphi_denergy = input_coords
 
         for i in range(ndims):
             for read, correct in zip(parts.coordinates_dphi_denergy[i],
@@ -136,7 +100,6 @@ class TestParticles(unittest.TestCase):
         self.assertEqual(parts.imax, imax_correct,
                          msg='imax has an unexpected value.')
 
-
     def test_homogeneous_distribution_correct_jmin(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.values_at_turns()
@@ -193,15 +156,15 @@ class TestParticles(unittest.TestCase):
         parts = pts.Particles()
         parts.homogeneous_distribution(machine, recprof=21)
 
-        correct = [-0.24180582, 0.04498875, 0.33178332, 0.61857789, 
+        correct = [-0.24180582, 0.04498875, 0.33178332, 0.61857789,
                    -0.24180582, 0.04498875, 0.33178332, 0.61857789,
                    -0.24180582, 0.04498875, 0.33178332, 0.61857789,
-                   -0.24180582, 0.04498875, 0.33178332, 0.61857789] 
-        
+                   -0.24180582, 0.04498875, 0.33178332, 0.61857789]
+
         for phase, corr in zip(parts.coordinates_dphi_denergy[0], correct):
             self.assertAlmostEqual(
                 phase, corr, msg='Error in setting of phase coordinate in '
-                                 'cell of phase space at inital distrubution')
+                                 'cell of phase space at initial distribution')
 
     def test_homogeneous_distribution_correct_energy(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -216,7 +179,7 @@ class TestParticles(unittest.TestCase):
         parts.homogeneous_distribution(machine, recprof=21)
 
         correct = [-115567.32591061, -115567.32591061, -115567.32591061,
-                   -115567.32591061, -38522.4419702,   -38522.4419702,  
+                   -115567.32591061, -38522.4419702,   -38522.4419702,
                    -38522.4419702,   -38522.4419702,   38522.4419702,
                    38522.4419702,    38522.4419702,    38522.4419702,
                    115567.32591061,  115567.32591061,  115567.32591061,
@@ -225,4 +188,5 @@ class TestParticles(unittest.TestCase):
         for energy, corr in zip(parts.coordinates_dphi_denergy[1], correct):
             self.assertAlmostEqual(
                 energy, corr, msg='Error in setting of phase coordinate in '
-                                 'cell of phase space at inital distrubution')
+                                  'cell of phase space at initial distribution'
+            )

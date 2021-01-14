@@ -1,20 +1,26 @@
-tests:
-  stage: test
-  image: continuumio/miniconda3:latest
-  before_script:
-  - export PIP_CACHE_DIR="/opt/cache/pip"
-  - apt-get update -q -y
-  - apt-get install -y build-essential
-  - conda env create -f .environment.yml
-  - source activate tomo_env
-  - python tomo/compile.py
+include:
+  - project: acc-co/devops/python/acc-py-devtools
+    file: acc_py_devtools/templates/gitlab-ci/python.yml
+
+stages:
+  - test
+  - build
+  - build-test
+  - deploy
+
+variables:
+  project_name: tomo
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/opt/cache/pip"
+
+image: python:$PY_VERSION
+
+test_dev:
+  extends: .acc_py_dev_test
   script:
-    - echo "Installing coverage"
-    - pip install coverage
-    - pip install coverage-badge
-    - coverage run -m pytest -v unit_tests/*/test*.py
+    - coverage run -m pytest unit_tests/
     - coverage report -m
     - coverage html
+    - coverage xml -o report.xml
     - coverage-badge -o coverage.svg
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   artifacts:
@@ -23,12 +29,81 @@ tests:
       - coverage.svg
     expire_in: 1 day
 
-pages:
+pep8:
+  # Checks for conformity to PEP8 style guidelines
+  stage: test
+  script:
+    - pip install flake8
+    - flake8 --count
+
+  only:
+    - merge_requests
+  allow_failure: true
+
+build-wheels:
+  image: quay.io/pypa/manylinux2014_x86_64
+  stage: build
+  script:
+    - bash tools/build-wheels.sh
+  variables:
+    PLAT: manylinux2014_x86_64
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - wheelhouse/longitudinal_tomography*manylinux*.whl
+  only:
+    - master
+    - nightly
+    - tags
+
+build-sdist:
+  image: python:3
+  stage: build
+  script: python setup.py sdist
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - dist/*.tar.gz
+  only:
+    - master
+    - nightly
+    - tags
+
+test-wheels:
+  image: quay.io/pypa/manylinux2014_x86_64
+  stage: build-test
+  dependencies:
+    - build-wheels
+  script: bash tools/test-wheels.sh
+  only:
+    - master
+    - nightly
+    - tags
+
+pypi:
+  image: python:3
   stage: deploy
   dependencies:
-    - tests
+    - build-wheels
+    - build-sdist
+    - test-wheels
+  script:
+    - pip install -U twine
+    # upload to testpypi first for error checking
+    - twine upload -r testpypi --username __token__ --password $TWINE_TESTPYPI_PASSWORD wheelhouse/longitudinal_tomography*manylinux*.whl dist/*.tar.gz
+    # upload to pypi
+    - twine upload --username $TWINE_USERNAME --password $TWINE_PYPI_PASSWORD wheelhouse/longitudinal_tomography*manylinux*.whl dist/*.tar.gz
+  only:
+    - tags
+
+docs:
+  stage: deploy
   script:
     - mv htmlcov/ public/
+    - pip install sphinx sphinxcontrib-napoleon sphinx-rtd-theme
+    - cd __doc
+    - make html
+    - mv build/html ../public
   artifacts:
     paths:
       - public
@@ -36,12 +111,10 @@ pages:
   only:
     - master
 
+release_sdist_on_tag:
+  extends: .acc_py_release_sdist
 
-
-
-
-
-
-
-
-
+release_wheels_on_tag:
+  dependencies:
+    - test-wheels
+  extends: .acc_py_release_wheel

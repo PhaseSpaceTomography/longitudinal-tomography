@@ -9,30 +9,6 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`data_treatment` Module
-----------------------------
-
-.. automodule:: tomo.utils.data_treatment
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`assertions` Module
-------------------------
-
-.. automodule:: tomo.utils.assertions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`exceptions` Module
-------------------------
-
-.. automodule:: tomo.utils.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`tomo_input` Module
 ------------------------
 
