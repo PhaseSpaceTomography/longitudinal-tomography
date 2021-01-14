@@ -3,12 +3,7 @@ import time as tm
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-# from tracking import tracking
-# from time_space import TimeSpace
-# from map_info import MapInfo
-# from new_tomo_cpp import NewTomographyC
-# from utils.assertions import TomoAssertions as ta
-from utils.exceptions import InputError
+from .exceptions import InputError
 from tracking import tracking as tracking
 import tomography.tomography as tomography
 import utils.data_treatment as dtreat
@@ -71,7 +66,6 @@ def main():
         save_image(xp, yp, weight, machine.nbins, film, output_path)
 
     save_difference(tomo.diff, output_path, machine.filmstart - 1)
-
 
 
 def save_difference(diff, output_path, film):
