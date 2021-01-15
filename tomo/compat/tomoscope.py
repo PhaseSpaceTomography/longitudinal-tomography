@@ -4,6 +4,7 @@ from os import path
 import numpy as np
 
 from ..data import data_treatment as dtreat
+from ..utils import tomo_output as tomoout
 
 
 log = logging.getLogger(__name__)
@@ -22,18 +23,12 @@ def save_difference(diff: np.ndarray, output_path: str, film: int):
 
 
 def save_image(xp: np.ndarray, yp: np.ndarray, weight: np.ndarray,
-               n_bins: float, film: int, output_path: str):
+               n_bins: int, film: int, output_path: str):
     # Creating n_bins * n_bins phase-space image
     log.info(f'Saving picture {film}.')
 
-    phase_space = dtreat._make_phase_space(xp[:, film], yp[:, film],
-                                           weight, n_bins)
-
-    # Suppressing negative numbers
-    phase_space = phase_space.clip(0.0)
-
-    # Normalizing
-    phase_space /= np.sum(phase_space)
+    phase_space = tomoout.create_phase_space_image(xp, yp, weight, n_bins,
+                                                   film)
 
     log.info(f'Saving image{film} to {output_path}')
     out_ps = phase_space.flatten()

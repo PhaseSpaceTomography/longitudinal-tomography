@@ -6,13 +6,14 @@ style tomographic reconstruction.
 
 import logging
 from typing import Type
+import numpy as np
 
 from ..data import data_treatment as dtreat
 from ..tomography import tomography as tomography
 from ..tracking import particles as pts
 # Tomo modules
 from ..tracking import tracking as tracking
-from ..utils import tomo_input as tomoin
+from ..utils import tomo_input as tomoin, tomo_output as tomoout
 
 from ..compat import tomoscope as tscp
 
@@ -20,7 +21,8 @@ log = logging.getLogger(__name__)
 
 
 def run(input: str, reconstruct_profile: bool = None,
-        output_dir: str = None, tomoscope: bool = False) \
+        output_dir: str = None, tomoscope: bool = False,
+        plot: bool = False) \
         -> Type[dtreat.phase_space]:
     """Function to perform full reconstruction based on the original
     algorithm.
@@ -126,4 +128,15 @@ def run(input: str, reconstruct_profile: bool = None,
 
         tscp.save_difference(tomo.diff, output_dir, film)
 
-    return dtreat.phase_space(tomo, machine, profile=reconstr_idx)
+    t_range, E_range, phase_space = dtreat.phase_space(tomo, machine,
+                                                       reconstr_idx)
+
+    # Removing (if any) negative areas.
+    phase_space = phase_space.clip(0.0)
+    # Normalizing phase space.
+    phase_space /= np.sum(phase_space)
+
+    if plot:
+        tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])
+
+    return t_range, E_range, phase_space
