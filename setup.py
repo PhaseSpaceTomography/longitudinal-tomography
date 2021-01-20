@@ -7,7 +7,8 @@ HERE = path.split(path.abspath(__file__))[0]
 cpp_routines = Pybind11Extension('tomo.cpp_routines.libtomo',
                                  sources=['tomo/cpp_routines/libtomo.cpp',
                                           'tomo/cpp_routines/reconstruct.cpp',
-                                          'tomo/cpp_routines/kick_and_drift.cpp'],
+                                          'tomo/cpp_routines/kick_and_drift.cpp',
+                                          'tomo/cpp_routines/data_treatment.cpp'],
                                  extra_compile_args=['-fopenmp',
                                                      '-ffast-math'],
                                  extra_link_args=['-lgomp'])

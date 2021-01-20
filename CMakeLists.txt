@@ -35,7 +35,8 @@ include_directories(${PYBIND11_INCLUDE_DIR})
 
 add_library(tomo SHARED
         tomo/cpp_routines/libtomo.cpp
-        tomo/cpp_routines/kick_and_drift.cpp)
+        tomo/cpp_routines/kick_and_drift.cpp
+    tomo/cpp_routines/data_treatment.cpp)
 
 message(${PYTHON_LIBRARIES})
 target_link_libraries(tomo ${PYTHON_LIBRARIES})
@@ -48,4 +49,5 @@ set_target_properties(tomo
 add_executable(placeholder
     tomo/cpp_routines/libtomo.cpp
     tomo/cpp_routines/kick_and_drift.cpp
-    tomo/cpp_routines/reconstruct.cpp)
+    tomo/cpp_routines/reconstruct.cpp
+    tomo/cpp_routines/data_treatment.cpp)

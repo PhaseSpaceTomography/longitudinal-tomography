@@ -9,6 +9,7 @@
 #include "libtomo.h"
 #include "kick_and_drift.h"
 #include "reconstruct.h"
+#include "data_treatment.h"
 
 // ----------------
 // Python interface
@@ -275,6 +276,28 @@ void wrapper_reconstruct_old(
 }
 
 
+py::array_t<double> wrapper_make_phase_space(
+        py::array_t<int, py::array::c_style | py::array::forcecast> input_xp,
+        py::array_t<int, py::array::c_style | py::array::forcecast> input_yp,
+        py::array_t<double, py::array::c_style | py::array::forcecast> input_weight,
+        const int n_bins
+) {
+    py::buffer_info buffer_xp = input_xp.request();
+    py::buffer_info buffer_yp = input_yp.request();
+    py::buffer_info buffer_weight = input_weight.request();
+
+    const int n_particles = buffer_xp.shape[0];
+
+    int *const xp = static_cast<int *>(buffer_xp.ptr);
+    int *const yp = static_cast<int *>(buffer_yp.ptr);
+    double *const weights = static_cast<double *>(buffer_weight.ptr);
+
+    double* phase_space = make_phase_space(xp, yp, weights, n_particles, n_bins);
+
+    return py::array_t<double>({n_bins, n_bins}, phase_space);
+}
+
+
 
 // wrap as Python module
 PYBIND11_MODULE(libtomo, m) {
@@ -288,4 +311,5 @@ PYBIND11_MODULE(libtomo, m) {
     m.def("back_project", &wrapper_back_project, "Tomography back project");
     m.def("reconstruct", &wrapper_reconstruct, "Tomography reconstruct");
     m.def("reconstruct_old", &wrapper_reconstruct_old, "Tomography old reconstruct");
+    m.def("make_phase_space", &wrapper_make_phase_space, "Create density grid");
 }
