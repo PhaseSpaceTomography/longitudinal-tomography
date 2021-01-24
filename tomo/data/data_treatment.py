@@ -97,7 +97,7 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     return pre_process.fit_synch_part_x(profiles)
 
 
-def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
+def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0)\
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -109,7 +109,7 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
         Object holding the information about a tomographic reconstruction.
     machine: Machine
         Object holding information about machine and reconstruction parameters.
-    profile: int
+    reconstr_idx: int
         Index of profile to be reconstructed.
 
     Returns
@@ -132,7 +132,8 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
         raise expt.InputError("""phase_space function requires automatic
                               phase space generation to have been used""")
 
-    density = _make_phase_space(tomo.xp[:, profile], tomo.yp[:, profile],
+    density = _make_phase_space(tomo.xp[:, reconstr_idx],
+                                tomo.yp[:, reconstr_idx],
                                 tomo.weight, machine.nbins)
 
     t_cent = machine.synch_part_x

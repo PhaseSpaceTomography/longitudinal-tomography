@@ -12,6 +12,7 @@ from scipy import optimize, constants
 
 from .. import assertions as asrt
 from ..utils import physics
+# from ..data import pre_process
 
 _machine_opts_def = {
     'demax': -1.E6,
@@ -421,6 +422,10 @@ class Machine:
 
         # Calculate RF-voltages at each turn
         self.vrf1_at_turn, self.vrf2_at_turn = self._rfv_at_turns()
+
+    # def fit_synch_part_x(self, waterfall: np.ndarray):
+    #     fit_info = pre_process.fit_synch_part_x(waterfall, self)
+    #     self.load_fitted_synch_part_x_ftn(fit_info)
 
     def load_fitted_synch_part_x_ftn(self,
                                      fit_info: Tuple[float, float, float]):

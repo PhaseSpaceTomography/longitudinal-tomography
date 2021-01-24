@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from warnings import warn
 
+from ..cpp_routines import libtomo
 from ..compat import fortran
 
 
@@ -92,11 +93,15 @@ def create_phase_space_image(
         phase space image has the same format as from the original program.
     """
 
-    phase_space = np.zeros((n_bins, n_bins))
+    phase_space = libtomo.make_phase_space(xp[:, recprof].astype(np.int32),
+                                           yp[:, recprof].astype(np.int32),
+                                           weight, n_bins)
 
-    # Creating n_bins x n_bins phase-space image
-    for x, y, w in zip(xp[:, recprof], yp[:, recprof], weight):
-        phase_space[x, y] += w
+    # phase_space = np.zeros((n_bins, n_bins))
+    #
+    # # Creating n_bins x n_bins phase-space image
+    # for x, y, w in zip(xp[:, recprof], yp[:, recprof], weight):
+    #     phase_space[x, y] += w
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)

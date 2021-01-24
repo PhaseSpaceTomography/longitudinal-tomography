@@ -73,7 +73,6 @@ extern "C" void kick_and_drift(
         const double * rf2v,      // inn
         const double * phi0,      // inn
         const double * deltaE0,   // inn
-        const double * omega_rev0,// inn
         const double * drift_coef,// inn
         const double phi12,
         const double hratio,

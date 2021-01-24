@@ -341,9 +341,10 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
     track_args += [rec_prof, nturns, nparts, ftn_out]
 
     # _k_and_d(*track_args)
-    libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0,
-                           omega_rev0, drift_coef, phi12, h_ratio, dturns,
-                           rec_prof, nturns, nparts, ftn_out)
+    # libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0,
+    #                        omega_rev0, drift_coef, phi12, h_ratio, dturns,
+    #                        rec_prof, nturns, nparts, ftn_out)
+    libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, machine, rec_prof, nturns, nparts, ftn_out)
     return xp, yp
 
 

@@ -10,6 +10,7 @@ import logging
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import tomolib_wrappers as tlw
+from ..cpp_routines import libtomo
 from ..compat import fortran
 
 if TYPE_CHECKING:
@@ -160,10 +161,13 @@ class Tracking(ParticleTracker):
             yp = np.zeros((self.machine.nprofiles, nparts))
 
             # Calling C++ implementation of tracking routine.
-            xp, yp = tlw.kick_and_drift(
-                xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                nturns, nparts, machine=self.machine,
-                ftn_out=self.fortran_flag)
+            libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
+                                            self.machine, recprof, nturns, nparts,
+                                            self.fortran_flag)
+            # xp, yp = tlw.kick_and_drift(
+            #     xp, yp, denergy, dphi, rfv1, rfv2, recprof,
+            #     nturns, nparts, machine=self.machine,
+            #     ftn_out=self.fortran_flag)
 
         log.info('Tracking completed!')
         return xp, yp

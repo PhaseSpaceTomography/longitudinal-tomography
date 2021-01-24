@@ -11,6 +11,7 @@ import numpy.testing as nptest
 
 from .. import commons
 import tomo.cpp_routines.tomolib_wrappers as tlw
+from tomo.cpp_routines import libtomo
 import tomo.tracking.machine as mch
 from tomo import exceptions as expt
 
@@ -164,10 +165,9 @@ class TestTLW(unittest.TestCase):
         h_ratio = machine.h_ratio
         dturns = machine.dturns
 
-        xp, yp = tlw.kick_and_drift(
-            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-            nturns, nparts, phi0, deltaE0, omega_rev0,
-            drift_coef, phi12, h_ratio, dturns)
+        xp, yp = libtomo.kick_and_drift(
+            xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef,
+            phi12, h_ratio, dturns, recprof, nturns, nparts, False)
 
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
                                [0.291644], [0.31200651], [0.33178332],
