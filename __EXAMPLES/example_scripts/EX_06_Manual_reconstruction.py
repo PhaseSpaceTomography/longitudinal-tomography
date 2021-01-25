@@ -1,7 +1,8 @@
 import os
 
 import numpy as np
-import tomo.cpp_routines.tomolib_wrappers as tlw
+# import tomo.cpp_routines.tomolib_wrappers as tlw
+import tomo.cpp_routines.libtomo as libtomo
 import tomo.tracking.particles as parts
 import tomo.tracking.tracking as tracking
 import tomo.utils.tomo_input as tomoin
@@ -118,14 +119,14 @@ weight = np.zeros(nparts)
 rec_wf = np.zeros(waterfall.shape)
 
 # Initial estimation of weight factors using (flattened) measured profiles.
-weight = tlw.back_project(weight, flat_points, flat_profs,
+weight = libtomo.back_project(weight, flat_points, flat_profs,
                           nparts, nprofs)
 weight = weight.clip(0.0)
 
 diff = []
 for i in range(niterations):
     # Projection from phase space to time projections
-    rec_wf = tlw.project(rec_wf, flat_points, weight, nparts,
+    rec_wf = libtomo.project(rec_wf, flat_points, weight, nparts,
                          nprofs, nbins)
 
     # Normalizing reconstructed waterfall
@@ -141,14 +142,14 @@ for i in range(niterations):
     diff.append(np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs)))
 
     # Back projecting using the difference between measured and rec. waterfall
-    weight = tlw.back_project(weight, flat_points, dwaterfall.flatten(),
+    weight = libtomo.back_project(weight, flat_points, dwaterfall.flatten(),
                               nparts, nprofs)
     weight = weight.clip(0.0)
 
     print(f'Iteration: {i:3d}, discrepancy: {diff[-1]:3E}')
 
 # Finding last discrepancy...
-rec_wf = tlw.project(rec_wf, flat_points, weight, nparts, nprofs, nbins)
+rec_wf = libtomo.project(rec_wf, flat_points, weight, nparts, nprofs, nbins)
 rec_wf /= np.sum(rec_wf, axis=1)[:, None]
 dwaterfall = waterfall - rec_wf
 diff.append(np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs)))

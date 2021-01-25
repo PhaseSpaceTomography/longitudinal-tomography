@@ -9,6 +9,7 @@ import numpy as np
 
 from . import __tomography as stmo
 from ..cpp_routines import tomolib_wrappers as tlw
+from ..cpp_routines import libtomo
 from .. import exceptions as expt
 
 
@@ -146,8 +147,10 @@ class TomographyCpp(stmo.Tomography):
     # Project using C++ routine from tomolib_wrappers.
     # Normalizes recreated profiles before returning them.
     def _project(self, flat_points, weight):
-        rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
-                          weight, self.nparts, self.nprofs, self.nbins)
+        # rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
+        #                   weight, self.nparts, self.nprofs, self.nbins)
+        rec = libtomo.project(np.zeros(self.recreated.shape), flat_points,
+                              weight, self.nparts, self.nprofs, self.nbins)
         rec = self._normalize_profiles(rec)
         return rec
 

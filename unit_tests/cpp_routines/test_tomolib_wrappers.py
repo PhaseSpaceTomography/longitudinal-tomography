@@ -58,7 +58,7 @@ class TestTLW(unittest.TestCase):
         rfv2 = machine.vrf2_at_turn * machine.q
 
         new_denergy = tlw.kick(machine, denergy, dphi,
-                               rfv1, rfv2, npart, turn, up=False)
+                               rfv1, rfv2, npart, turn, False)
 
         correct_energy = -116610.12118255378
         self.assertAlmostEqual(

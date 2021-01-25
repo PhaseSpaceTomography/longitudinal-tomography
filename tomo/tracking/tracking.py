@@ -226,7 +226,7 @@ class Tracking(ParticleTracker):
                              nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn)
 
             if turn % self.machine.dturns == 0:
@@ -245,7 +245,7 @@ class Tracking(ParticleTracker):
         # Tracking 'downwards'
         while turn > 0:
             # Calculating change in energy for each particle at a turn
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
                                nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
