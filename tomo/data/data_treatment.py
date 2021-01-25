@@ -10,12 +10,17 @@ import numpy as np
 
 from tomo import exceptions as expt
 from tomo.utils import physics
+from ..cpp_routines import libtomo
 from . import pre_process
+
+import logging
 
 if TYPE_CHECKING:
     from tomo.data.profiles import Profiles
     from tomo.tracking.machine import Machine
     from tomo.tomography.__tomography import Tomography
+
+log = logging.getLogger(__name__)
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
@@ -58,7 +63,7 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
         new x-coordinate of the synchronous particle in bins will be returned.
         Otherwise, None will be returned.
     """
-#    warn('The rebin function has been moved to tomo.data.pre_process')
+    #    warn('The rebin function has been moved to tomo.data.pre_process')
     return pre_process.rebin(waterfall, rbn, dtbin, synch_part_x)
 
 
@@ -92,12 +97,12 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
         function in order to write the original output format.
 
     """
-#    warn('The fit_synch_part_x function has moved to '
-#         'tomo.data.pre_process')
+    #    warn('The fit_synch_part_x function has moved to '
+    #         'tomo.data.pre_process')
     return pre_process.fit_synch_part_x(profiles)
 
 
-def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0)\
+def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -132,9 +137,9 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0)\
         raise expt.InputError("""phase_space function requires automatic
                               phase space generation to have been used""")
 
-    density = _make_phase_space(tomo.xp[:, reconstr_idx],
-                                tomo.yp[:, reconstr_idx],
-                                tomo.weight, machine.nbins)
+    density = libtomo.make_phase_space(tomo.xp[:, reconstr_idx],
+                                       tomo.yp[:, reconstr_idx],
+                                       tomo.weight, machine.nbins)
 
     t_cent = machine.synch_part_x
     E_cent = machine.synch_part_y
@@ -149,15 +154,15 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0)\
 # particle
 def _make_phase_space(xp: np.ndarray, yp: np.ndarray, weights: np.ndarray,
                       nbins: int) -> np.ndarray:
-    phase_space = np.zeros([nbins, nbins])
-
-    for x, y, w in zip(xp, yp, weights):
-        phase_space[x, y] += w
-
-    return phase_space
+    log.warning('tomo.data.data_treatment._make_phase_space has moved to '
+                'the C++ library at '
+                'tomo.cpp_routines.libtomo.make_phase_space. '
+                'This function is provided for backwards compatibility '
+                'and can be removed without further notice.')
+    return libtomo.make_phase_space(xp, yp, weights, nbins)
 
 
 def calc_baseline_ftn(*args):
-#    warn('This function has moved to tomo.compat.fortran.')
+    #    warn('This function has moved to tomo.compat.fortran.')
     from tomo.compat.fortran import calc_baseline
     return calc_baseline(*args)

@@ -22,108 +22,6 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-# _tomolib_pth = os.path.dirname(os.path.realpath(__file__))
-
-# Setting system specific parameters
-# NB: the wildcard is to deal with how setup.py names compiled libraries
-# if 'posix' in os.name:
-#     _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.so'))
-# elif 'win' in sys.platform:
-#     _tomolib_pth = glob(os.path.join(_tomolib_pth, 'tomolib*.dll'))
-# else:
-#     msg = 'YOU ARE NOT USING A WINDOWS' \
-#           'OR LINUX OPERATING SYSTEM. ABORTING...'
-#     raise SystemError(msg)
-#
-# if len(_tomolib_pth) != 1:
-#     raise expt.LibraryNotFound('Could not find library. Try reinstalling '
-#                                'the package with '
-#                                'python setup.py install.')
-# _tomolib_pth = _tomolib_pth[0]
-#
-# # Attempting to load C++ library
-# if os.path.exists(_tomolib_pth):
-#     log.debug(f'Loading C++ library: {_tomolib_pth}')
-#     _tomolib = ct.CDLL(_tomolib_pth)
-# else:
-#     error_msg = f'\n\nCould not find library at:\n{_tomolib_pth}\n' \
-#                 f'\n- Try to python setup.py build_ext --inplace \n'
-#     raise expt.LibraryNotFound(error_msg)
-#
-# # Needed for sending 2D arrays to C++ functions.
-# # Pointer to pointers.
-# _double_ptr = np.ctypeslib.ndpointer(dtype=np.uintp, ndim=1, flags='C')
-
-# ========================================
-#           Setting argument types
-# ========================================
-
-# NB! It is critical that the input are of the same data type as specified
-#       in the arg types. The correct data types can also be found in the
-#       declarations of the C++ functions. Giving arrays of datatype int
-#       to a C++ function expecting doubles will lead to mystical (and ugly)
-#       errors.
-
-# kick and drift
-# ---------------------------------------------
-# _k_and_d = _tomolib.kick_and_drift
-# _k_and_d.argtypes = [_double_ptr,
-#                      _double_ptr,
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      np.ctypeslib.ndpointer(ct.c_double),
-#                      ct.c_double,
-#                      ct.c_double,
-#                      ct.c_int,
-#                      ct.c_int,
-#                      ct.c_int,
-#                      ct.c_int,
-#                      ct.c_bool]
-# _k_and_d.restypes = None
-# ---------------------------------------------
-
-# Reconstruction routine (flat version)
-# < to be removed when new version is proven to be working correctly >
-# _reconstruct_old = _tomolib.old_reconstruct
-# _reconstruct_old.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-#                              _double_ptr,
-#                              np.ctypeslib.ndpointer(ct.c_double),
-#                              np.ctypeslib.ndpointer(ct.c_double),
-#                              ct.c_int, ct.c_int,
-#                              ct.c_int, ct.c_int,
-#                              ct.c_bool]
-
-# Reconstruction routine returning reconstructed profiles
-# _reconstruct = _tomolib.reconstruct
-# _reconstruct.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-#                          _double_ptr,
-#                          np.ctypeslib.ndpointer(ct.c_double),
-#                          np.ctypeslib.ndpointer(ct.c_double),
-#                          np.ctypeslib.ndpointer(ct.c_double),
-#                          ct.c_int, ct.c_int,
-#                          ct.c_int, ct.c_int,
-#                          ct.c_bool]
-
-# Back_project (flat version)
-# _back_project = _tomolib.back_project
-# _back_project.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-#                           _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
-# _back_project.restypes = None
-#
-# # Project (flat version)
-# _proj = _tomolib.project
-# _proj.argtypes = [np.ctypeslib.ndpointer(ct.c_double),
-#                   _double_ptr, np.ctypeslib.ndpointer(ct.c_double)]
-# _proj.restypes = None
-
-
-pybind_kick_and_drift = libtomo.kick_and_drift
-
 
 # =============================================================
 # Functions for particle tracking
@@ -168,24 +66,11 @@ def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
     denergy: ndarray
         1D array containing the new energy of each particle after voltage kick.
     """
-    # args = (_get_pointer(dphi),
-    #         _get_pointer(denergy),
-    #         ct.c_double(rfv1[turn]),
-    #         ct.c_double(rfv2[turn]),
-    #         ct.c_double(machine.phi0[turn]),
-    #         ct.c_double(machine.phi12),
-    #         ct.c_double(machine.h_ratio),
-    #         ct.c_int(npart),
-    #         ct.c_double(machine.deltaE0[turn]))
-    # if up:
-    #     libtomo.kick_up(dphi, denergy, rfv1[turn], rfv2[turn],
-    #                     machine.phi0[turn], machine.phi12,
-    #                     machine.h_ratio, npart, machine.deltaE0[turn])
-    # else:
-    #     libtomo.kick_down(dphi, denergy, rfv1[turn], rfv2[turn],
-    #                     machine.phi0[turn], machine.phi12,
-    #                     machine.h_ratio, npart, machine.deltaE0[turn])
-    # return denergy
+    log.warning('tomo.cpp_routines.tomolib_wrappers.kick has moved to '
+                'tomo.cpp_routines.libtomo.kick with the same '
+                'function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     return libtomo.kick(machine, denergy, dphi, rfv1, rfv2,
                         npart, turn, up)
 
@@ -222,15 +107,11 @@ def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
         1D array containing the new phase for each particle
         after drifting for a machine turn.
     """
-    # args = (_get_pointer(dphi),
-    #         _get_pointer(denergy),
-    #         ct.c_double(drift_coef[turn]),
-    #         ct.c_int(npart))
-    # if up:
-    #     libtomo.drift_up(dphi, denergy, drift_coef[turn], npart)
-    # else:
-    #     libtomo.drift_down(dphi, denergy, drift_coef[turn], npart)
-    # return dphi
+    log.warning('tomo.cpp_routines.tomolib_wrappers.drift has moved to '
+                'tomo.cpp_routines.libtomo.drift with the same '
+                'function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     return libtomo.drift(denergy, dphi, drift_coef, npart, turn, up)
 
 
@@ -311,16 +192,12 @@ ftn_out: boolean, optional, default=False
         2D array holding every particles coordinates in energy [eV]
         at every time frame. Shape: (nprofiles, nparts)
     """
-    # xp = np.ascontiguousarray(xp.astype(np.float64))
-    # yp = np.ascontiguousarray(yp.astype(np.float64))
-    #
-    # denergy = np.ascontiguousarray(denergy.astype(np.float64))
-    # dphi = np.ascontiguousarray(dphi.astype(np.float64))
-    #
-    # track_args = [_get_2d_pointer(xp), _get_2d_pointer(yp),
-    #               denergy, dphi, rfv1.astype(np.float64),
-    #               rfv2.astype(np.float64)]
-    #
+
+    log.warning('tomo.cpp_routines.tomolib_wrappers.kick_and_drift has moved '
+                'to tomo.cpp_routines.libtomo.kick_and_drift with the same '
+                'function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     machine_args = [phi0, deltaE0, omega_rev0,
                     drift_coef, phi12, h_ratio, dturns]
 
@@ -338,15 +215,6 @@ ftn_out: boolean, optional, default=False
             'Either: phi0, deltaE0, omega_rev0, '
             'drift_coef, phi12, h_ratio, dturns '
             'OR machine is required.')
-
-    # track_args += [rec_prof, nturns, nparts, ftn_out]
-
-    # _k_and_d(*track_args)
-    # libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0,
-    #                        omega_rev0, drift_coef, phi12, h_ratio, dturns,
-    #                        rec_prof, nturns, nparts, ftn_out)
-    # libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, machine, rec_prof, nturns, nparts, ftn_out)
-    # return xp, yp
 
 
 # =============================================================
@@ -379,10 +247,12 @@ def back_project(weights: np.ndarray, flat_points: np.ndarray,
     weights: ndarray
         1D array containing the **new weight** of each particle.
     """
+    log.warning('tomo.cpp_routines.tomolib_wrappers.back_project has moved to '
+                'tomo.cpp_routines.libtomo.back_project with the same '
+                'function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     return libtomo.back_project(weights, flat_points, flat_profiles, nparts, nprofs)
-    # _back_project(weights, _get_2d_pointer(flat_points),
-    #               flat_profiles, nparts, nprofs)
-    # return weights
 
 
 def project(recreated: np.ndarray, flat_points: np.ndarray,
@@ -414,11 +284,11 @@ def project(recreated: np.ndarray, flat_points: np.ndarray,
         2D array containing the projected profiles as waterfall.
         Shape: (nprofiles, nbins)
     """
-    # recreated = np.ascontiguousarray(recreated.flatten())
-    # libtomo.project(recreated, flat_points, weights, nparts, nprofs)
-    # # _proj(recreated, _get_2d_pointer(flat_points), weights, nparts, nprofs)
-    # recreated = recreated.reshape((nprofs, nbins))
-    # return recreated
+    log.warning('tomo.cpp_routines.tomolib_wrappers.project has moved to '
+                'tomo.cpp_routines.libtomo.project with the same '
+                'function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     return libtomo.project(recreated, flat_points, weights, nparts, nprofs, nbins)
 
 
@@ -467,11 +337,13 @@ def _old_reconstruct(weights: np.ndarray, xp: np.ndarray,
         1D array containing discrepancy at each
         iteration of the reconstruction.
     """
+    log.warning('tomo.cpp_routines.tomolib_wrappers._old reconstruct has'
+                'moved to tomo.cpp_routines.libtomo.reconstruct_old with '
+                'the same function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     return libtomo.reconstruct_old(weights, xp, flat_profiles, discr, niter,
-                            nbins, npart, nprof, verbose)
-    # _reconstruct_old(weights, _get_2d_pointer(xp), flat_profiles,
-    #                  discr, niter, nbins, npart, nprof, verbose)
-    # return weights, discr
+                                   nbins, npart, nprof, verbose)
 
 
 def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
@@ -512,34 +384,9 @@ def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
         2D array containing the projected profiles as waterfall.
         Shape: (nprofiles, nbins)
     """
-    # xp = np.ascontiguousarray(xp).astype(np.int32)
-    # weights = np.ascontiguousarray(np.zeros(npart, dtype=np.float64))
-    # discr = np.zeros(niter + 1, dtype=np.float64)
-    # recreated = np.ascontiguousarray(np.zeros(nprof * nbins, dtype=np.float64))
-    # flat_profs = np.ascontiguousarray(waterfall.flatten().astype(np.float64))
-    #
-    # libtomo.reconstruct(weights, xp, flat_profs, recreated, discr,
-    #                     niter, nbins, npart, nprof, verbose)
-    # # _reconstruct(weights, _get_2d_pointer(xp), flat_profs,
-    # #              recreated, discr, niter, nbins, npart, nprof, verbose)
-    #
-    # recreated = recreated.reshape((nprof, nbins))
-    # return weights, discr, recreated
+    log.warning('tomo.cpp_routines.tomolib_wrappers.reconstruct has moved to '
+                'tomo.cpp_routines.libtomo.reconstruct with the same '
+                'function and return signature. This function is '
+                'provided for backwards compatibility and can be '
+                'removed without further notice.')
     return libtomo.reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose)
-
-
-# =============================================================
-# Utilities
-# =============================================================
-
-# Retrieve pointer of ndarray
-def _get_pointer(x):
-    return x.ctypes.data_as(ct.c_void_p)
-
-
-# Retrieve 2D pointer.
-# Needed for passing two-dimensional arrays to the C++ functions
-# as pointers to pointers.
-def _get_2d_pointer(arr2d):
-    return (arr2d.__array_interface__['data'][0]
-            + np.arange(arr2d.shape[0]) * arr2d.strides[0]).astype(np.uintp)

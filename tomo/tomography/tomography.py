@@ -8,7 +8,7 @@ import logging as log
 import numpy as np
 
 from . import __tomography as stmo
-from ..cpp_routines import tomolib_wrappers as tlw
+# from ..cpp_routines import tomolib_wrappers as tlw
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
 
@@ -109,7 +109,7 @@ class TomographyCpp(stmo.Tomography):
             self.waterfall.flatten()).astype(np.float64)
         weight = np.zeros(self.nparts)
 
-        weight = tlw.back_project(weight, flat_points, flat_profs,
+        weight = libtomo.back_project(weight, flat_points, flat_profs,
                                   self.nparts, self.nprofs)
         weight = weight.clip(0.0)
 
@@ -128,7 +128,7 @@ class TomographyCpp(stmo.Tomography):
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts.T
 
-            weight = tlw.back_project(
+            weight = libtomo.back_project(
                 weight, flat_points, diff_waterfall.flatten(),
                 self.nparts, self.nprofs)
             weight = weight.clip(0.0)
@@ -198,7 +198,7 @@ class TomographyCpp(stmo.Tomography):
             self.waterfall.flatten().astype(np.float64))
 
         (self.weight,
-         self.diff) = tlw._old_reconstruct(
+         self.diff) = libtomo.reconstruct_old(
             weight, self.xp, flat_profiles,
             self.diff, niter, self.nbins,
             self.nparts, self.nprofs, verbose)
@@ -240,7 +240,7 @@ class TomographyCpp(stmo.Tomography):
 
         (self.weight,
          self.diff,
-         self.recreated) = tlw.reconstruct(
+         self.recreated) = libtomo.reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
             self.nparts, self.nprofs, verbose)
         return self.weight

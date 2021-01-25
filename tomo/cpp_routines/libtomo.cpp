@@ -400,11 +400,11 @@ PYBIND11_MODULE(libtomo, m) {
           "dphi"_a, "denergy"_a, "drift_coef"_a, "n_particles"_a);
     m.def("kick_and_drift", &wrapper_kick_and_drift, "Tomography tracking routine",
           "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "machine"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a);
+          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false);
     m.def("kick_and_drift", &wrapper_kick_and_drift2, "Tomography tracking routine",
-          "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi"_a,
+          "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
           "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a);
+          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false);
     m.def("project", &wrapper_project, "Tomography project",
           "flat_rec"_a, "flat_points"_a, "weights"_a,
           "n_particles"_a, "n_profiles"_a, "n_bins"_a);
@@ -413,10 +413,10 @@ PYBIND11_MODULE(libtomo, m) {
           "n_particles"_a, "n_profiles"_a);
     m.def("reconstruct", &wrapper_reconstruct, "Tomography reconstruct",
           "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
-          "n_profiles"_a, "verbose"_a);
+          "n_profiles"_a, "verbose"_a = false);
     m.def("reconstruct_old", &wrapper_reconstruct_old, "Tomography old reconstruct",
           "weights"_a, "xp"_a, "flat_profiles"_a, "discr"_a, "n_iter"_a,
-          "n_bins"_a, "n_particles"_a, "n_profiles"_a, "verbose"_a);
+          "n_bins"_a, "n_particles"_a, "n_profiles"_a, "verbose"_a = false);
     m.def("make_phase_space", &wrapper_make_phase_space, "Create density grid",
           "xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
 }

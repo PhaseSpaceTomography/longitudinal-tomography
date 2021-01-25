@@ -9,7 +9,6 @@ import logging
 
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
-from ..cpp_routines import tomolib_wrappers as tlw
 from ..cpp_routines import libtomo
 from ..compat import fortran
 
@@ -162,12 +161,8 @@ class Tracking(ParticleTracker):
 
             # Calling C++ implementation of tracking routine.
             libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-                                            self.machine, recprof, nturns, nparts,
-                                            self.fortran_flag)
-            # xp, yp = tlw.kick_and_drift(
-            #     xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-            #     nturns, nparts, machine=self.machine,
-            #     ftn_out=self.fortran_flag)
+                                   self.machine, recprof, nturns, nparts,
+                                   self.fortran_flag)
 
         log.info('Tracking completed!')
         return xp, yp
@@ -222,12 +217,12 @@ class Tracking(ParticleTracker):
         # Tracking 'upwards'
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
             denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn)
+                                   nparts, turn)
 
             if turn % self.machine.dturns == 0:
                 profile += 1
@@ -246,11 +241,11 @@ class Tracking(ParticleTracker):
         while turn > 0:
             # Calculating change in energy for each particle at a turn
             denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn, up=False)
+                                   nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn, up=False)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn, up=False)
 
             if turn % self.machine.dturns == 0:
                 profile -= 1
@@ -331,8 +326,8 @@ class Tracking(ParticleTracker):
         if self.fortran_flag:
             fortran.print_tracking_status(rec_prof, profile)
         while turn < self.nturns:
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn)
 
             turn += 1
 
@@ -344,8 +339,8 @@ class Tracking(ParticleTracker):
                                        self._phiwrap)
             selfvolt = self._vself[profile, temp_xp.astype(int) - 1]
 
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn)
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                                   nparts, turn)
             denergy += selfvolt * self.machine.q
 
             if turn % self.machine.dturns == 0:
@@ -365,15 +360,15 @@ class Tracking(ParticleTracker):
         while turn > 0:
             selfvolt = self._vself[profile, temp_xp.astype(int)]
 
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn, up=False)
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                                   nparts, turn, up=False)
 
             denergy += selfvolt * self.machine.q
 
             turn -= 1
 
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn, up=False)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn, up=False)
 
             temp_xp = self._calc_xp_sf(
                 dphi, self.machine.phi0[turn], self.particles.xorigin,
