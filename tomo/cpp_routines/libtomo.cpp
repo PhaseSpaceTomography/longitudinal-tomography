@@ -5,7 +5,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include <iostream>
-#include <optional>
 
 #include "docs.h"
 #include "libtomo.h"
