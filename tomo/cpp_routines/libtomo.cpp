@@ -315,9 +315,13 @@ py::tuple wrapper_reconstruct(
 
     reconstruct(weights, xp_d, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose);
 
-    py::array_t<double> arr_weights = py::array_t<double>({n_particles}, weights);
-    py::array_t<double> arr_discr = py::array_t<double>({n_iter + 1}, discr);
-    py::array_t<double> arr_recreated = py::array_t<double>({n_profiles, n_bins}, recreated);
+    py::capsule capsule_weights(weights, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
+    py::capsule capsule_discr(discr, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
+    py::capsule capsule_recreated(recreated, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
+
+    py::array_t<double> arr_weights = py::array_t<double>({n_particles}, weights, capsule_weights);
+    py::array_t<double> arr_discr = py::array_t<double>({n_iter + 1}, discr, capsule_discr);
+    py::array_t<double> arr_recreated = py::array_t<double>({n_profiles, n_bins}, recreated, capsule_recreated);
 
     delete[] xp_d;
 
@@ -375,8 +379,9 @@ py::array_t<double> wrapper_make_phase_space(
     auto *const weights = static_cast<double *>(buffer_weight.ptr);
 
     double *phase_space = make_phase_space(xp, yp, weights, n_particles, n_bins);
+    py::capsule capsule(phase_space, [] (void* p) {delete[] reinterpret_cast<double*>(p);});
 
-    return py::array_t<double>({n_bins, n_bins}, phase_space);
+    return py::array_t<double>({n_bins, n_bins}, phase_space, capsule);
 }
 
 
