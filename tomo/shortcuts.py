@@ -4,6 +4,10 @@ import numpy as np
 from .tracking import Tracking
 from .tracking import Machine
 from .tracking import particles
+from .tomography import tomography
+
+
+__all__ = ['track', 'tomogram']
 
 
 def track(machine: Machine, reconstruction_idx: int = None) \
@@ -17,3 +21,12 @@ def track(machine: Machine, reconstruction_idx: int = None) \
     xp, yp = particles.ready_for_tomography(xp, yp, machine.nbins)
 
     return xp, yp
+
+
+def tomogram(waterfall: np.ndarray, xp: np.ndarray, yp: np.ndarray,
+             rec_prof: int, n_iter: int) -> tomography.TomographyCpp:
+
+    tomo = tomography.TomographyCpp(waterfall, xp, yp)
+    tomo.run(niter=20)
+
+    return tomo
