@@ -24,9 +24,9 @@ def track(machine: Machine, reconstruction_idx: int = None) \
 
 
 def tomogram(waterfall: np.ndarray, xp: np.ndarray, yp: np.ndarray,
-             rec_prof: int, n_iter: int) -> tomography.TomographyCpp:
+             n_iter: int) -> tomography.TomographyCpp:
 
     tomo = tomography.TomographyCpp(waterfall, xp, yp)
-    tomo.run(niter=20)
+    tomo.run(niter=n_iter)
 
     return tomo
