@@ -3,7 +3,7 @@ a super class for particle trackers.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-import logging as log
+import logging
 from typing import TYPE_CHECKING
 
 from . import particles as pts
@@ -12,6 +12,9 @@ from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
     from ..data.profiles import Profiles
+
+
+log = logging.getLogger(__name__)
 
 
 class ParticleTracker:

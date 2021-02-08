@@ -5,7 +5,7 @@ Module also contains utility functions for particle distribution
 like assertions, conversions and filtering of lost particles.
 
 :Author(s): **Christoffer Hjertø Grindheim**"""
-import logging as log
+import logging
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
 
 import numpy as np
@@ -15,6 +15,9 @@ from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
     from .machine import Machine
+
+
+log = logging.getLogger(__name__)
 
 
 class Particles(object):

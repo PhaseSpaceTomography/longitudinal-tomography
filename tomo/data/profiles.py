@@ -2,7 +2,7 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**"""
 
-import logging as log
+import logging
 
 import numpy as np
 import scipy.signal as sig
@@ -10,6 +10,9 @@ from scipy import constants
 
 from .. import exceptions as expt
 from ..utils import physics
+
+
+log = logging.getLogger(__name__)
 
 
 class Profiles(object):

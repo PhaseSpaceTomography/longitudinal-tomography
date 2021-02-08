@@ -4,7 +4,7 @@ machine and reconstruction parameters
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-import logging as log
+import logging
 from typing import Tuple
 
 import numpy as np
@@ -13,6 +13,8 @@ from scipy import optimize, constants
 from .. import assertions as asrt
 from ..utils import physics
 # from ..data import pre_process
+
+log = logging.getLogger(__name__)
 
 _machine_opts_def = {
     'demax': -1.E6,

@@ -3,11 +3,14 @@
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-import logging as log
+import logging
 
 import numpy as np
 
 from tomo import exceptions as expt
+
+
+log = logging.getLogger(__name__)
 
 
 class Tomography:

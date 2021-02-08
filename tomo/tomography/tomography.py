@@ -3,7 +3,7 @@
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
-import logging as log
+import logging
 
 import numpy as np
 
@@ -11,6 +11,9 @@ from . import __tomography as stmo
 # from ..cpp_routines import tomolib_wrappers as tlw
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
+
+
+log = logging.getLogger(__name__)
 
 
 class TomographyCpp(stmo.Tomography):
