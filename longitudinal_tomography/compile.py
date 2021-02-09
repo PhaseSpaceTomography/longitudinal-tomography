@@ -8,7 +8,7 @@ import argparse
 def main():
     path = os.path.realpath(__file__)
     base_path = os.sep.join(path.split(os.sep)[:-2])
-    cpp_dir_path = base_path + '/tomo/cpp_routines/'
+    cpp_dir_path = base_path + '/longitudinal_tomography/cpp_routines/'
 
     cpp_files = [os.path.join(cpp_dir_path, 'reconstruct.cpp'),
                  os.path.join(cpp_dir_path, 'kick_and_drift.cpp')]

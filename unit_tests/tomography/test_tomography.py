@@ -9,8 +9,8 @@ import unittest
 import numpy as np
 import numpy.testing as nptest
 
-import tomo.tomography.tomography as tmo
-from tomo import exceptions as expt
+import longitudinal_tomography.tomography.tomography as tmo
+from longitudinal_tomography import exceptions as expt
 
 from .. import commons
 
@@ -109,7 +109,7 @@ class TestTomographyCpp(unittest.TestCase):
 
         with self.assertRaises(expt.CoordinateError,
                                msg='Calling the run function, with '
-                                   'tomo.xp=None should raise an Exception'):
+                                   'longitudinal_tomography.xp=None should raise an Exception'):
             tomo.run()
 
     def test_run_correct_weights(self):
@@ -211,7 +211,7 @@ class TestTomographyCpp(unittest.TestCase):
 
         with self.assertRaises(expt.CoordinateError,
                                msg='Calling the run_hybrid function, with '
-                                   'tomo.xp=None should raise an Exception'):
+                                   'longitudinal_tomography.xp=None should raise an Exception'):
             tomo.run_hybrid()
 
     def test_run_hybrid_correct(self):

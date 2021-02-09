@@ -51,7 +51,7 @@ def run(input: str, reconstruct_profile: bool = None,
     -------
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
-    >>> import tomo.utils.run_tomo as tomorun
+    >>> import longitudinal_tomography.utils.run_tomo as tomorun
     >>>
     >>> filepath = '...my/favourite/input.dat'
     >>> tRange, ERange, density = tomorun.run_file(filepath)

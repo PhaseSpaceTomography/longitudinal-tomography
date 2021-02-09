@@ -8,14 +8,14 @@ from warnings import warn
 
 import numpy as np
 
-from tomo import exceptions as expt
-from tomo.utils import physics
+from longitudinal_tomography import exceptions as expt
+from longitudinal_tomography.utils import physics
 from . import pre_process
 
 if TYPE_CHECKING:
-    from tomo.data.profiles import Profiles
-    from tomo.tracking.machine import Machine
-    from tomo.tomography.__tomography import Tomography
+    from longitudinal_tomography.data.profiles import Profiles
+    from longitudinal_tomography.tracking.machine import Machine
+    from longitudinal_tomography.tomography.__tomography import Tomography
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
@@ -58,7 +58,7 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
         new x-coordinate of the synchronous particle in bins will be returned.
         Otherwise, None will be returned.
     """
-#    warn('The rebin function has been moved to tomo.data.pre_process')
+#    warn('The rebin function has been moved to longitudinal_tomography.data.pre_process')
     return pre_process.rebin(waterfall, rbn, dtbin, synch_part_x)
 
 
@@ -69,7 +69,7 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
     the beam reference profile, which is set in the
-    :class:`tomo.tracking.machine.Machine` object.
+    :class:`longitudinal_tomography.tracking.machine.Machine` object.
 
     Parameters
     ----------
@@ -84,16 +84,16 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
         particle given in bin numbers.
     lower bunch limit
         Estimation of the lower bunch limit in bin numbers.
-        Needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
     upper bunch limit
         Estimation of the upper bunch limit in bin numbers.
-        Needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
 
     """
 #    warn('The fit_synch_part_x function has moved to '
-#         'tomo.data.pre_process')
+#         'longitudinal_tomography.data.pre_process')
     return pre_process.fit_synch_part_x(profiles)
 
 
@@ -157,6 +157,6 @@ def _make_phase_space(xp: np.ndarray, yp: np.ndarray, weights: np.ndarray,
 
 
 def calc_baseline_ftn(*args):
-#    warn('This function has moved to tomo.compat.fortran.')
-    from tomo.compat.fortran import calc_baseline
+#    warn('This function has moved to longitudinal_tomography.compat.fortran.')
+    from longitudinal_tomography.compat.fortran import calc_baseline
     return calc_baseline(*args)

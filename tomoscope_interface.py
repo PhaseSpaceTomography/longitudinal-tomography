@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 # from map_info import MapInfo
 # from new_tomo_cpp import NewTomographyC
 # from utils.assertions import TomoAssertions as ta
-#from tomo.utils.exceptions import InputError
-from tomo.exceptions import InputError
-import tomo.tracking.tracking as tracking
-import tomo.tomography.tomography as tomography
-import tomo.utils.data_treatment as dtreat
-import tomo.utils.tomo_input as tomoin
-import tomo.utils.tomo_output as tomoout
-import tomo.tracking.particles as pts
+#from longitudinal_tomography.utils.exceptions import InputError
+from longitudinal_tomography.exceptions import InputError
+import longitudinal_tomography.tracking.tracking as tracking
+import longitudinal_tomography.tomography.tomography as tomography
+import longitudinal_tomography.utils.data_treatment as dtreat
+import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_output as tomoout
+import longitudinal_tomography.tracking.particles as pts
 
 print("import done")
 

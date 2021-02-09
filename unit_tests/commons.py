@@ -2,11 +2,11 @@ import yaml
 import numpy as np
 from os import path
 import re
-from tomo.tracking import machine as mch
-import tomo.utils.tomo_input as tomoin
-import tomo.tracking.tracking as tracking
-import tomo.tomography.tomography as tmo
-import tomo.tracking.particles as parts
+from longitudinal_tomography.tracking import machine as mch
+import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.tracking.tracking as tracking
+import longitudinal_tomography.tomography.tomography as tmo
+import longitudinal_tomography.tracking.particles as parts
 import copy
 
 

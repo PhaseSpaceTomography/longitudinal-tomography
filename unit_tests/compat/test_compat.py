@@ -11,10 +11,10 @@ import numpy as np
 import numpy.testing as nptest
 
 from .. import commons
-import tomo.tracking.machine as mch
-import tomo.tracking.particles as pts
-from tomo import exceptions as expt
-import tomo.compat.fortran as ftn
+import longitudinal_tomography.tracking.machine as mch
+import longitudinal_tomography.tracking.particles as pts
+from longitudinal_tomography import exceptions as expt
+import longitudinal_tomography.compat.fortran as ftn
 
 base_dir = os.path.split(os.path.realpath(__file__))[0]
 base_dir = os.path.split(base_dir)[0]

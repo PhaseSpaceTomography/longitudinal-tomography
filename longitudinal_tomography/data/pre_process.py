@@ -1,7 +1,7 @@
 """
 Module containing functions for pre-processing raw data
 
-The functions here are to be moved over from tomo.data.data_treatment
+The functions here are to be moved over from longitudinal_tomography.data.data_treatment
 
 :Author(s): **Anton Lu**, **Christoffer Hjertø Grindheim**
 """
@@ -11,7 +11,7 @@ import numpy as np
 from multipledispatch import dispatch
 from scipy import optimize
 
-from tomo.utils import physics
+from longitudinal_tomography.utils import physics
 from .profiles import Profiles
 from .. import assertions as asrt
 from ..tracking import Machine
@@ -81,7 +81,7 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
     the beam reference profile, which is set in the
-    :class:`tomo.tracking.machine.Machine` object.
+    :class:`longitudinal_tomography.tracking.machine.Machine` object.
 
     Parameters
     ----------
@@ -98,11 +98,11 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
         particle given in bin numbers.
     lower bunch limit
         Estimation of the lower bunch limit in bin numbers.
-        Needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
     upper bunch limit
         Estimation of the upper bunch limit in bin numbers.
-        Needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
 
     """
@@ -144,7 +144,7 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
     the beam reference profile, which is set in the
-    :class:`tomo.tracking.machine.Machine` object.
+    :class:`longitudinal_tomography.tracking.machine.Machine` object.
 
     Parameters
     ----------
@@ -159,11 +159,11 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
         particle given in bin numbers.
     lower bunch limit
         Estimation of the lower bunch limit in bin numbers.
-        Needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
     upper bunch limit
         Estimation of the upper bunch limit in bin numbers.
-        Needed for :func:`tomo.utils.tomo_output.write_plotinfo_ftn`
+        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
 
     """

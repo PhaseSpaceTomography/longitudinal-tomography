@@ -6,9 +6,9 @@ Run as python test_phase_space_info.py in console or via coverage
 import unittest
 
 from .. import commons
-import tomo.tracking.machine as mch
-import tomo.tracking.phase_space_info as psi
-from tomo import exceptions as expt
+import longitudinal_tomography.tracking.machine as mch
+import longitudinal_tomography.tracking.phase_space_info as psi
+from longitudinal_tomography import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
