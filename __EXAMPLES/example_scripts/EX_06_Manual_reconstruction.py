@@ -1,12 +1,12 @@
 import os
 
 import numpy as np
-import tomo.cpp_routines.tomolib_wrappers as tlw
-import tomo.tracking.particles as parts
-import tomo.tracking.tracking as tracking
-import tomo.utils.tomo_input as tomoin
-import tomo.utils.tomo_output as tomoout
-import tomo.data.data_treatment as dtreat
+import longitudinal_tomography.cpp_routines.tomolib_wrappers as tlw
+import longitudinal_tomography.tracking.particles as parts
+import longitudinal_tomography.tracking.tracking as tracking
+import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_output as tomoout
+import longitudinal_tomography.data.data_treatment as dtreat
 
 
 def discrepancy(nbins, nprofs, dwaterfall):
@@ -84,15 +84,15 @@ nbins = waterfall.shape[1]
 nparts = xp.shape[0]
 rec_tframe = 0
 
-# Remove comment to track using tomo routine:
+# Remove comment to track using longitudinal_tomography routine:
 # ------------------------------------------------------
-# import tomo.tomography.tomography_cpp as tomography
+# import longitudinal_tomography.tomography.tomography_cpp as tomography
 # import sys
-# tomo = tomography.TomographyCpp(waterfall, xp)
-# weight = tomo.run(niter=niterations)
+# longitudinal_tomography = tomography.TomographyCpp(waterfall, xp)
+# weight = longitudinal_tomography.run(niter=niterations)
 # image = tomoout.create_phase_space_image(
 #             xp, yp, weight, nbins, rec_tframe)
-# tomoout.show(image, tomo.diff, waterfall[rec_tframe])
+# tomoout.show(image, longitudinal_tomography.diff, waterfall[rec_tframe])
 # sys.exit()
 # ------------------------------------------------------
 

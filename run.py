@@ -1,12 +1,12 @@
 # General utils
 
 # Tomo modules
-import tomo.tomography.tomography as tomography
-import tomo.tracking.particles as pts
-import tomo.tracking.tracking as tracking
-import tomo.data.data_treatment as dtreat
-import tomo.utils.tomo_input as tomoin
-import tomo.utils.tomo_output as tomoout
+import longitudinal_tomography.tomography.tomography as tomography
+import longitudinal_tomography.tracking.particles as pts
+import longitudinal_tomography.tracking.tracking as tracking
+import longitudinal_tomography.data.data_treatment as dtreat
+import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_output as tomoout
 
 # =========================
 #        Program

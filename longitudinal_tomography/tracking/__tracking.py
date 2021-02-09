@@ -46,7 +46,7 @@ class ParticleTracker:
     Raises
     ------
     MachineParameterError: Exception
-        Input argument is not :class:`~tomo.tracking.machine.Machine`, or the
+        Input argument is not :class:`~longitudinal_tomography.tracking.machine.Machine`, or the
         Machine object provided is missing needed fields.
     """
 
@@ -142,7 +142,7 @@ class ParticleTracker:
         profiles: Profiles
             Self-fields must be calculated in the the Profiles object prior
             to calling this function.
-            See :func:`tomo.data.profiles.Profiles.calc_self_fields`.
+            See :func:`longitudinal_tomography.data.profiles.Profiles.calc_self_fields`.
 
         Raises
         ------

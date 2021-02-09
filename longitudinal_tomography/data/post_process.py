@@ -10,7 +10,7 @@ from multipledispatch import dispatch
 from .. import assertions as asrt
 
 
-# TODO: write function that only takes the weights of the tomo as input
+# TODO: write function that only takes the weights of the longitudinal_tomography as input
 
 
 def post_process(phase_space: np.ndarray, t_bins: np.ndarray,

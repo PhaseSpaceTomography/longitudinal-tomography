@@ -13,7 +13,7 @@ from .. import assertions as asrt, exceptions as expt
 from ..data.profiles import Profiles
 from ..data import pre_process
 from ..tracking.machine import Machine
-from tomo.compat import fortran
+from longitudinal_tomography.compat import fortran
 
 # Some constants for input files containing machine parameters.
 

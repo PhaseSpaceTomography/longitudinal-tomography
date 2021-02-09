@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'tomo'
+project = 'longitudinal_tomography'
 copyright = '2020, Christoffer Hjertø Grindheim'
 author = 'Christoffer Hjertø Grindheim'
 

@@ -5,8 +5,8 @@ Run as python test_post_process.py in console or via coverage
 
 import unittest
 
-import tomo.data.data_treatment as treat
-import tomo.data.post_process as post_process
+import longitudinal_tomography.data.data_treatment as treat
+import longitudinal_tomography.data.post_process as post_process
 from .. import commons
 
 # Machine arguments based on the input file INDIVShavingC325.dat

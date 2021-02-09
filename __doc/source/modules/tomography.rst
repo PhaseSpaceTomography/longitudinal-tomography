@@ -4,7 +4,7 @@ tomography Package
 :mod:`__tomography` Module
 --------------------------
 
-.. automodule:: tomo.tomography.__tomography
+.. automodule:: longitudinal_tomography.tomography.__tomography
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ tomography Package
 :mod:`tomography` Module
 ----------------------------
 
-.. automodule:: tomo.tomography.tomography
+.. automodule:: longitudinal_tomography.tomography.tomography
     :members:
     :undoc-members:
     :show-inheritance:

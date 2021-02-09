@@ -11,7 +11,7 @@ import numpy as np
 import numpy.testing as nptest
 
 from .. import commons
-import tomo.utils.tomo_output as tout
+import longitudinal_tomography.utils.tomo_output as tout
 
 base_dir = os.path.split(os.path.realpath(__file__))[0]
 base_dir = os.path.split(base_dir)[0]

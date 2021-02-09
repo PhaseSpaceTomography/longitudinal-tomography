@@ -8,7 +8,7 @@ import numpy as np
 
 from ..utils import physics
 from .. import assertions as asrt
-from tomo.exceptions import EnergyBinningError, EnergyLimitsError, \
+from longitudinal_tomography.exceptions import EnergyBinningError, EnergyLimitsError, \
     PhaseLimitsError, ArrayLengthError
 
 if TYPE_CHECKING:
@@ -61,7 +61,7 @@ class PhaseSpaceInfo:
         The area within the limits of i and j will be the phase space
         reconstruction area. This is where the particles will be populated.
         By setting the `full_pp_flag` in the provided
-        :class:`~tomo.tracking.machine.Machine` object to True,
+        :class:`~longitudinal_tomography.tracking.machine.Machine` object to True,
         the reconstruction area will be set to all of the phase space image.
 
         This function gives a value to all attributes of the class.
@@ -109,7 +109,7 @@ class PhaseSpaceInfo:
         reconstructed phase space coordinate system.
 
         Needed by
-        :meth:`tomo.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`
+        :meth:`longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`
         in order to calculate the reconstruction area.
 
         Returns
@@ -166,7 +166,7 @@ class PhaseSpaceInfo:
         """Function for calculating xorigin.
 
         Needed by
-        :func:`~tomo.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`
+        :func:`~longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`
         in order to calculate the reconstruction area.
 
         Returns

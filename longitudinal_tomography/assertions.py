@@ -8,11 +8,11 @@ from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
 
 import numpy as np
 
-from tomo import exceptions as expt
+from longitudinal_tomography import exceptions as expt
 
 if TYPE_CHECKING:
-    from tomo.tracking.machine import Machine
-    from tomo.utils.tomo_input import Frames
+    from longitudinal_tomography.tracking.machine import Machine
+    from longitudinal_tomography.utils.tomo_input import Frames
 
 
 # =========================================================
