@@ -4,7 +4,7 @@ data Package
 :mod:`data_treatment` Module
 ----------------------------
 
-.. automodule:: tomo.utils.data_treatment
+.. automodule:: longitudinal_tomography.utils.data_treatment
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ data Package
 :mod:`pre_process` Module
 ----------------------------
 
-.. automodule:: tomo.utils.pre_process
+.. automodule:: longitudinal_tomography.utils.pre_process
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,7 +20,7 @@ data Package
 :mod:`post_process` Module
 ----------------------------
 
-.. automodule:: tomo.utils.post_process
+.. automodule:: longitudinal_tomography.utils.post_process
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,7 +28,7 @@ data Package
 :mod:`profiles` Module
 ----------------------
 
-.. automodule:: tomo.data.profiles
+.. automodule:: longitudinal_tomography.data.profiles
     :members:
     :undoc-members:
     :show-inheritance:

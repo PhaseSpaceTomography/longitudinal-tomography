@@ -8,8 +8,8 @@ import unittest
 import numpy as np
 
 from .. import commons
-import tomo.tracking.machine as mch
-import tomo.utils.physics as physics
+import longitudinal_tomography.tracking.machine as mch
+import longitudinal_tomography.utils.physics as physics
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()

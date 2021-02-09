@@ -10,9 +10,9 @@ import numpy as np
 import numpy.testing as nptest
 
 from .. import commons
-import tomo.tracking.machine as mch
-from tomo import exceptions as expt
-import tomo.utils.tomo_input as tomoin
+import longitudinal_tomography.tracking.machine as mch
+from longitudinal_tomography import exceptions as expt
+import longitudinal_tomography.utils.tomo_input as tomoin
 
 # All values retrieved from INDIVShavingC325.dat
 frame_input_args = {

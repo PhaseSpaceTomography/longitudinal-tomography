@@ -11,9 +11,9 @@ import numpy.testing as nptest
 import scipy.signal as sig
 
 from .. import commons
-import tomo.data.profiles as prf
-import tomo.tracking.machine as mch
-from tomo import exceptions as expt
+import longitudinal_tomography.data.profiles as prf
+import longitudinal_tomography.tracking.machine as mch
+from longitudinal_tomography import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()

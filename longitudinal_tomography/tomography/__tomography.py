@@ -7,7 +7,7 @@ import logging as log
 
 import numpy as np
 
-from tomo import exceptions as expt
+from longitudinal_tomography import exceptions as expt
 
 
 class Tomography:

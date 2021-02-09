@@ -4,24 +4,32 @@ style tomographic reconstruction.
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 
+import logging
 from typing import Type
+import numpy as np
 
-from tomo.tomography import tomography as tomography
-from tomo.tracking import particles as pts
+from ..data import data_treatment as dtreat
+from ..tomography import tomography as tomography
+from ..tracking import particles as pts
 # Tomo modules
-from tomo.tracking import tracking as tracking
-from tomo.data import data_treatment as dtreat
-from tomo.utils import tomo_input as tomoin
+from ..tracking import tracking as tracking
+from ..utils import tomo_input as tomoin, tomo_output as tomoout
+
+from ..compat import tomoscope as tscp
+
+log = logging.getLogger(__name__)
 
 
-def run_file(file: str, reconstruct_profile: bool = None,
-             verbose: bool = False) -> Type[dtreat.phase_space]:
+def run(input: str, reconstruct_profile: bool = None,
+        output_dir: str = None, tomoscope: bool = False,
+        plot: bool = False) \
+        -> Type[dtreat.phase_space]:
     """Function to perform full reconstruction based on the original
     algorithm.
 
     Parameters
     ----------
-    file: string
+    input: string
         Path to input file.
     reconstruct_profile: int, optional, default=None
         Profile to be reconstructed. If not provided, machine.filmstart
@@ -43,7 +51,7 @@ def run_file(file: str, reconstruct_profile: bool = None,
     -------
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
-    >>> import tomo.utils.run_tomo as tomorun
+    >>> import longitudinal_tomography.utils.run_tomo as tomorun
     >>>
     >>> filepath = '...my/favourite/input.dat'
     >>> tRange, ERange, density = tomorun.run_file(filepath)
@@ -56,12 +64,20 @@ def run_file(file: str, reconstruct_profile: bool = None,
     >>> plt.ylabel('dE (MeV)')
     >>> plt.show()
     """
-    with open(file, 'r') as file:
-        raw_params, raw_data = tomoin._split_input(file.readlines())
+
+    raw_params, raw_data = tomoin.get_user_input(input)
+
+    if tomoscope:
+        print(' Start')
 
     machine, frames = tomoin.txt_input_to_machine(raw_params)
     machine.values_at_turns()
     waterfall = frames.to_waterfall(raw_data)
+
+    if output_dir is None or output_dir == '':
+        output_dir = machine.output_dir
+    else:
+        log.info(f'Overriding output dir with {output_dir}')
 
     profiles = tomoin.raw_data_to_profiles(
         waterfall, machine, frames.rebin, frames.sampling_time)
@@ -81,8 +97,12 @@ def run_file(file: str, reconstruct_profile: bool = None,
     # Tracking...
     tracker = tracking.Tracking(machine)
 
-    if verbose:
+    if tomoscope:
         tracker.enable_fortran_output(profiles.profile_charge)
+
+    if tracker.self_field_flag:
+        profiles.calc_self_fields()
+        tracker.enable_self_fields(profiles)
 
     xp, yp = tracker.track(reconstr_idx)
 
@@ -99,6 +119,24 @@ def run_file(file: str, reconstruct_profile: bool = None,
 
     # Tomography!
     tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
-    _ = tomo.run(verbose=verbose)
+    weight = tomo.run(verbose=tomoscope)
 
-    return dtreat.phase_space(tomo, machine, profile=reconstr_idx)
+    if tomoscope:
+        for film in range(machine.filmstart - 1, machine.filmstop,
+                          machine.filmstep):
+            tscp.save_image(xp, yp, weight, machine.nbins, film, output_dir)
+
+        tscp.save_difference(tomo.diff, output_dir, film)
+
+    t_range, E_range, phase_space = dtreat.phase_space(tomo, machine,
+                                                       reconstr_idx)
+
+    # Removing (if any) negative areas.
+    phase_space = phase_space.clip(0.0)
+    # Normalizing phase space.
+    phase_space /= np.sum(phase_space)
+
+    if plot:
+        tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])
+
+    return t_range, E_range, phase_space

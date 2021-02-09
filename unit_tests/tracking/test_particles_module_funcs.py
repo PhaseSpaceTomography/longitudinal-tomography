@@ -8,9 +8,9 @@ import unittest
 import numpy as np
 
 from .. import commons
-import tomo.tracking.machine as mch
-import tomo.tracking.particles as pts
-from tomo import exceptions as expt
+import longitudinal_tomography.tracking.machine as mch
+import longitudinal_tomography.tracking.particles as pts
+from longitudinal_tomography import exceptions as expt
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()

@@ -6,7 +6,7 @@ Run as python test_machine.py in console or via coverage
 import unittest
 
 from .. import commons
-import tomo.tracking.machine as mch
+import longitudinal_tomography.tracking.machine as mch
 
 
 # Machine arguments based on the input file INDIVShavingC325.dat

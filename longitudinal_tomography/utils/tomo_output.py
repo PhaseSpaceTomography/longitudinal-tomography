@@ -15,43 +15,43 @@ from ..compat import fortran
 
 def save_profile_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
-    :func:`~tomo.compat.fortran.save_profile`"""
-#    warn('This function has been moved to tomo.compat.fortran')
+    :func:`~longitudinal_tomography.compat.fortran.save_profile`"""
+#    warn('This function has been moved to longitudinal_tomography.compat.fortran')
     return fortran.save_profile(*args, **kwargs)
 
 
 def save_self_volt_profile_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
-    :func:`~tomo.compat.fortran.save_self_volt_profile`"""
-#    warn('This function has been moved to tomo.compat.fortran')
+    :func:`~longitudinal_tomography.compat.fortran.save_self_volt_profile`"""
+#    warn('This function has been moved to longitudinal_tomography.compat.fortran')
     return fortran.save_self_volt_profile(*args, **kwargs)
 
 
 def save_phase_space_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
-    :func:`~tomo.compat.fortran.save_phase_space`"""
-#    warn('This function has been moved to tomo.compat.fortran')
+    :func:`~longitudinal_tomography.compat.fortran.save_phase_space`"""
+#    warn('This function has been moved to longitudinal_tomography.compat.fortran')
     return fortran.save_phase_space(*args, **kwargs)
 
 
 def write_plotinfo_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
-    :func:`~tomo.compat.fortran.write_plotinfo`"""
-#    warn('This function has been moved to tomo.compat.fortran')
+    :func:`~longitudinal_tomography.compat.fortran.write_plotinfo`"""
+#    warn('This function has been moved to longitudinal_tomography.compat.fortran')
     return fortran.write_plotinfo(*args, **kwargs)
 
 
 def save_difference_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
-    :func:`~tomo.compat.fortran.save_difference`"""
-#    warn('This function has been moved to tomo.compat.fortran')
+    :func:`~longitudinal_tomography.compat.fortran.save_difference`"""
+#    warn('This function has been moved to longitudinal_tomography.compat.fortran')
     return fortran.save_difference(*args, **kwargs)
 
 
 def print_tracking_status_ftn(*args, **kwargs):
     """Here for backwards compatibility. See
-    :func:`~tomo.compat.fortran.print_tracking_status`"""
-#    warn('This function has been moved to tomo.compat.fortran')
+    :func:`~longitudinal_tomography.compat.fortran.print_tracking_status`"""
+#    warn('This function has been moved to longitudinal_tomography.compat.fortran')
     return fortran.print_tracking_status(*args, **kwargs)
 
 

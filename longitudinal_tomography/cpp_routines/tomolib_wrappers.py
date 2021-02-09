@@ -133,7 +133,7 @@ def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
 
     Particle kick for **one** machine turn.
 
-    Used in the :mod:`tomo.tracking.tracking` module.
+    Used in the :mod:`longitudinal_tomography.tracking.tracking` module.
 
     Parameters
     ----------
@@ -186,7 +186,7 @@ def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
 
     Particle drift for **one** machine turn
 
-    Used in the :mod:`~tomo.tracking.tracking` module.
+    Used in the :mod:`~longitudinal_tomography.tracking.tracking` module.
 
     Parameters
     ----------
@@ -241,7 +241,7 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
     Tracks all particles from the time frame to be recreated,
     trough all machine turns.
 
-    Used in the :mod:`tomo.tracking.tracking` module.
+    Used in the :mod:`longitudinal_tomography.tracking.tracking` module.
 
     Parameters
     ----------
@@ -341,7 +341,7 @@ def back_project(weights: np.ndarray, flat_points: np.ndarray,
                  flat_profiles: np.ndarray, nparts: int, nprofs: int) \
         -> np.ndarray:
     """Wrapper for back projection routine written in C++.
-    Used in the :mod:`~tomo.tomography.tomography` module.
+    Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
 
     Parameters
     ----------
@@ -371,7 +371,7 @@ def project(recreated: np.ndarray, flat_points: np.ndarray,
             weights: np.ndarray,
             nparts: int, nprofs: int, nbins: int) -> np.ndarray:
     """Wrapper projection routine written in C++.
-    Used in the :mod:`~tomo.tomography.tomography` module.
+    Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
 
     Parameters
     ----------
@@ -408,7 +408,7 @@ def _old_reconstruct(weights: np.ndarray, xp: np.ndarray,
                      niter: int, nbins: int, npart: int, nprof: int,
                      verbose: bool):
     """Wrapper for full reconstruction in C++.
-    Used in the :mod:`~tomo.tomography.tomography` module.
+    Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
 
     Well tested, but do not return reconstructed waterfall.
     Kept for reference.
@@ -455,7 +455,7 @@ def _old_reconstruct(weights: np.ndarray, xp: np.ndarray,
 def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
                 npart: int, nprof: int, verbose: bool):
     """Wrapper for full reconstruction in C++.
-    Used in the :mod:`~tomo.tomography.tomography` module.
+    Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
 
     Parameters
     ----------

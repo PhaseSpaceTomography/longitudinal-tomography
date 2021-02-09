@@ -8,9 +8,9 @@ import unittest
 import numpy as np
 
 from . import commons
-import tomo.tracking.machine as mch
-from tomo import assertions as asrt, exceptions as expt
-import tomo.utils.tomo_input as tomoin
+import longitudinal_tomography.tracking.machine as mch
+from longitudinal_tomography import assertions as asrt, exceptions as expt
+import longitudinal_tomography.utils.tomo_input as tomoin
 
 
 MACHINE_ARGS = commons.get_machine_args()

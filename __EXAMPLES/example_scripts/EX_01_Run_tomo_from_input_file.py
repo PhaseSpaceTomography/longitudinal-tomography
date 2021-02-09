@@ -2,12 +2,12 @@ import os
 
 import numpy as np
 
-import tomo.tomography.tomography as tomography
-import tomo.tracking.particles as parts
-import tomo.tracking.tracking as tracking
-import tomo.data.data_treatment as dtreat
-import tomo.utils.tomo_input as tomoin
-import tomo.utils.tomo_output as tomoout
+import longitudinal_tomography.tomography.tomography as tomography
+import longitudinal_tomography.tracking.particles as parts
+import longitudinal_tomography.tracking.tracking as tracking
+import longitudinal_tomography.data.data_treatment as dtreat
+import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_output as tomoout
 
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'C500MidPhaseNoise.dat')

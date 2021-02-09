@@ -4,7 +4,7 @@ tracking Package
 :mod:`machine` Module
 ---------------------
 
-.. automodule:: tomo.tracking.machine
+.. automodule:: longitudinal_tomography.tracking.machine
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ tracking Package
 :mod:`__tracking` Module
 ------------------------------
 
-.. automodule:: tomo.tracking.__tracking
+.. automodule:: longitudinal_tomography.tracking.__tracking
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,7 +20,7 @@ tracking Package
 :mod:`particles` Module
 -----------------------
 
-.. automodule:: tomo.tracking.particles
+.. automodule:: longitudinal_tomography.tracking.particles
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,7 +28,7 @@ tracking Package
 :mod:`phase_space_info` Module
 ------------------------------
 
-.. automodule:: tomo.tracking.phase_space_info
+.. automodule:: longitudinal_tomography.tracking.phase_space_info
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,7 +36,7 @@ tracking Package
 :mod:`tracking` Module
 ----------------------
 
-.. automodule:: tomo.tracking.tracking
+.. automodule:: longitudinal_tomography.tracking.tracking
     :members:
     :undoc-members:
     :show-inheritance:

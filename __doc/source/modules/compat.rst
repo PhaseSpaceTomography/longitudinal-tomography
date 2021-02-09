@@ -5,7 +5,7 @@ compat Module
 :mod:`compat` Module
 ---------------------
 
-.. automodule:: tomo.compat.fortran
+.. automodule:: longitudinal_tomography.compat.fortran
     :members:
     :undoc-members:
     :show-inheritance:

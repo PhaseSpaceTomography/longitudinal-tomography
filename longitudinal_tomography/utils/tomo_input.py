@@ -13,7 +13,7 @@ from .. import assertions as asrt, exceptions as expt
 from ..data.profiles import Profiles
 from ..data import pre_process
 from ..tracking.machine import Machine
-from tomo.compat import fortran
+from longitudinal_tomography.compat import fortran
 
 # Some constants for input files containing machine parameters.
 
@@ -201,7 +201,7 @@ class Frames:
         return np.array(raw_data)
 
 
-def get_user_input():
+def get_user_input(input: str = ''):
     """Function to let user provide input as a text file either as
     file path or as stdin.
 
@@ -221,18 +221,16 @@ def get_user_input():
         strings directly read from text file and ndarray containing
         raw data (parameters, raw data).
     """
-    if len(sys.argv) > 1:
-        read = _get_input_args()
-    else:
+    if input == 'stdin' or input == '':
         read = _get_input_stdin()
+    else:
+        read = _get_input_args(input)
     return _split_input(read)
 
 
 # Receive path to input file via sys.argv.
 # Can also receive the path to the output directory.
-def _get_input_args() -> np.ndarray:
-    input_file_pth = sys.argv[1]
-
+def _get_input_args(input_file_pth) -> np.ndarray:
     if not os.path.isfile(input_file_pth):
         raise expt.InputError(f'The input file: "{input_file_pth}" '
                               f'does not exist!')
@@ -240,13 +238,6 @@ def _get_input_args() -> np.ndarray:
     with open(input_file_pth, 'r') as f:
         read = f.readlines()
 
-    if len(sys.argv) > 2:
-        output_dir = sys.argv[2]
-        if os.path.isdir(output_dir):
-            read[OUTPUT_DIR_IDX] = output_dir
-        else:
-            raise expt.InputError(f'The chosen output directory: '
-                                  f'"{output_dir}" does not exist!')
     return np.array(read)
 
 
@@ -275,6 +266,7 @@ def _get_input_stdin() -> np.ndarray:
         if line_num == ndata_points:
             finished = True
         line_num += 1
+
     return np.array(read)
 
 

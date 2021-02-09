@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-import tomo.utils.tomo_input as tin
+import longitudinal_tomography.utils.tomo_input as tin
 
 
 def generate_bunch(bunch_position, bunch_length,
