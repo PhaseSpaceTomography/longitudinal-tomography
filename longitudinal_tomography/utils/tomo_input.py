@@ -387,7 +387,7 @@ def txt_input_to_machine(input_array: List) -> Tuple[Machine, Frames]:
         'synch_part_x': float(input_array[39]),
         'demax': float(input_array[41]),
         'filmstart': int(input_array[43]) - 1,
-        'filmstop': int(input_array[45]),
+        'filmstop': int(input_array[45]) - 1,
         'filmstep': int(input_array[47]),
         'niter': int(input_array[49]),
         'snpt': int(input_array[51]),

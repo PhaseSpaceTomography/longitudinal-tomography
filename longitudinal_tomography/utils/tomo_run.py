@@ -122,7 +122,7 @@ def run(input: str, reconstruct_profile: bool = None,
     weight = tomo.run(verbose=tomoscope)
 
     if tomoscope:
-        for film in range(machine.filmstart - 1, machine.filmstop,
+        for film in range(machine.filmstart, machine.filmstop + 1,
                           machine.filmstep):
             tscp.save_image(xp, yp, weight, machine.nbins, film, output_dir)
             tscp.save_profile(tomo.recreated[film], film, output_dir)
