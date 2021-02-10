@@ -6,7 +6,7 @@ dturns:              5
 synch_part_x:        334.00000000000006
 demax:               -1.E+6
 filmstart:           0
-filmstop:            1
+filmstop:            0
 filmstep:            1
 niter:               20
 snpt:                4
