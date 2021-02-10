@@ -35,3 +35,12 @@ def save_image(xp: np.ndarray, yp: np.ndarray, weight: np.ndarray,
     with open(path.join(output_path, f'image{film + 1:03d}.data'), 'w') as f:
         for element in out_ps:
             f.write(f'  {element:0.7E}\n')
+
+
+def save_profile(prof: np.ndarray, film: int, output_path: str):
+
+    log.info(f'Saving profile{film} to {output_path}')
+
+    with open(path.join(output_path, f'profile{film + 1:03d}.data'), 'w') as f:
+        for element in prof:
+            f.write(f' {element:0.7E}\n')
