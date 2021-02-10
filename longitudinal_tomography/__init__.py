@@ -1,6 +1,6 @@
 major_version = 3
 minor_version = 3
-patch_level = 1
+patch_level = 2
 
 dev_version = -1
 

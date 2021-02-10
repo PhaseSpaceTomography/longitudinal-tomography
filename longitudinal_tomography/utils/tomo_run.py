@@ -125,7 +125,7 @@ def run(input: str, reconstruct_profile: bool = None,
         for film in range(machine.filmstart, machine.filmstop + 1,
                           machine.filmstep):
             tscp.save_image(xp, yp, weight, machine.nbins, film, output_dir)
-            tscp.save_profile(tomo.recreated[film], film, output_dir)
+            tscp.save_profile(tomo.waterfall[film], film, output_dir)
 
         tscp.save_difference(tomo.diff, output_dir, film)
 
