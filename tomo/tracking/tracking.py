@@ -2,7 +2,7 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING, Callable
 
 import numpy as np
 import logging
@@ -52,7 +52,7 @@ class Tracking(ParticleTracker):
     def __init__(self, machine: 'Machine'):
         super().__init__(machine)
 
-    def track(self, recprof: int,
+    def track(self, recprof: int, callback: Callable = None,
               init_distr: Tuple[float, float] = None) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
@@ -96,6 +96,11 @@ class Tracking(ParticleTracker):
             coordinates (dphi, denergy). dphi is the phase difference
             from the synchronous particle [rad]. denergy is the difference
             in energy from the synchronous particle [eV].
+        callback: Callable
+            Passing a callback with function signature
+            (progress: int, total: int) will allow the tracking loop to call
+            this function at the end of each turn, allowing the python caller
+            to monitor the progress.
 
         Returns
         -------
@@ -162,7 +167,7 @@ class Tracking(ParticleTracker):
             # Calling C++ implementation of tracking routine.
             libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
                                    self.machine, recprof, nturns, nparts,
-                                   self.fortran_flag)
+                                   self.fortran_flag, callback=callback)
 
         log.info('Tracking completed!')
         return xp, yp

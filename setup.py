@@ -16,6 +16,7 @@ elif platform.system() == 'Linux':
 
 
 cpp_routines = Pybind11Extension('tomo.cpp_routines.libtomo',
+                                 cxx_std=17,
                                  sources=['tomo/cpp_routines/libtomo.cpp',
                                           'tomo/cpp_routines/reconstruct.cpp',
                                           'tomo/cpp_routines/kick_and_drift.cpp',

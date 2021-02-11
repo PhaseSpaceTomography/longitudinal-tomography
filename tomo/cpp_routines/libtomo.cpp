@@ -156,7 +156,8 @@ py::tuple wrapper_kick_and_drift(
         const int rec_prof,
         const int nturns,
         const int nparts,
-        const bool ftn_out
+        const bool ftn_out,
+        const std::optional<const py::object> callback
 ) {
     d_array input_phi0 = d_array(machine.attr("phi0"));
     d_array input_deltaE0 = d_array(machine.attr("deltaE0"));
@@ -167,7 +168,7 @@ py::tuple wrapper_kick_and_drift(
 
     wrapper_kick_and_drift2(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v,
                             input_phi0, input_deltaE0, input_drift_coef, phi12, hratio, dturns,
-                            rec_prof, nturns, nparts, ftn_out);
+                            rec_prof, nturns, nparts, ftn_out, callback);
 
     return py::make_tuple(input_xp, input_yp);
 }
@@ -189,7 +190,8 @@ py::tuple wrapper_kick_and_drift2(
         const int rec_prof,
         const int nturns,
         const int nparts,
-        const bool ftn_out
+        const bool ftn_out,
+        const std::optional<const py::object> callback
 ) {
     py::buffer_info xp_buffer = input_xp.request();
     py::buffer_info yp_buffer = input_yp.request();
@@ -223,8 +225,17 @@ py::tuple wrapper_kick_and_drift2(
     const double *const deltaE0 = static_cast<double *>(deltaE0_buffer.ptr);
     const double *const drift_coef = static_cast<double *>(drift_coef_buffer.ptr);
 
+    std::function<void(int, int)> cb;
+    if (callback.has_value()) {
+        cb = [&callback](const int progress, const int total) {
+            callback.value()(progress, total);
+        };
+    }
+    else
+        cb = [] (const int progress, const int total) {(void)progress, (void)total;};
+
     kick_and_drift(xp_d, yp_d, denergy, dphi, rf1v, rf2v, phi0, deltaE0, drift_coef,
-                   phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out);
+                   phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out, cb);
 
     delete[] yp_d;
     delete[] xp_d;
@@ -296,7 +307,8 @@ py::tuple wrapper_reconstruct(
         const int n_bins,
         const int n_particles,
         const int n_profiles,
-        const bool verbose
+        const bool verbose,
+        const std::optional<const py::object> callback
 ) {
     py::buffer_info buffer_xp = input_xp.request();
     py::buffer_info buffer_waterfall = waterfall.request();
@@ -312,7 +324,16 @@ py::tuple wrapper_reconstruct(
     for (int i = 0; i < n_particles; i++)
         xp_d[i] = &xp[i * n_profiles];
 
-    reconstruct(weights, xp_d, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose);
+    std::function<void(int, int)> cb;
+    if (callback.has_value()) {
+        cb = [&callback](const int progress, const int total) {
+            callback.value()(progress, total);
+        };
+    }
+    else
+        cb = [] (const int progress, const int total) {(void)progress, (void)total;};
+
+    reconstruct(weights, xp_d, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
 
     py::capsule capsule_weights(weights, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
     py::capsule capsule_discr(discr, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
@@ -405,11 +426,11 @@ PYBIND11_MODULE(libtomo, m) {
           "dphi"_a, "denergy"_a, "drift_coef"_a, "n_particles"_a);
     m.def("kick_and_drift", &wrapper_kick_and_drift, kick_and_drift_docs,
           "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "machine"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false);
+          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
     m.def("kick_and_drift", &wrapper_kick_and_drift2, kick_and_drift_docs,
           "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
           "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false);
+          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
     m.def("project", &wrapper_project, project_docs,
           "flat_rec"_a, "flat_points"_a, "weights"_a,
           "n_particles"_a, "n_profiles"_a, "n_bins"_a);
@@ -418,7 +439,7 @@ PYBIND11_MODULE(libtomo, m) {
           "n_particles"_a, "n_profiles"_a);
     m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
           "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
-          "n_profiles"_a, "verbose"_a = false);
+          "n_profiles"_a, "verbose"_a = false, "callback"_a = py::none());
     m.def("reconstruct_old", &wrapper_reconstruct_old, reconstruct_old_docs,
           "weights"_a, "xp"_a, "flat_profiles"_a, "discr"_a, "n_iter"_a,
           "n_bins"_a, "n_particles"_a, "n_profiles"_a, "verbose"_a = false);

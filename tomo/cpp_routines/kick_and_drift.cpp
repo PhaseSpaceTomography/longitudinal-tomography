@@ -2,6 +2,7 @@
 #include <string>
 #include "sin.h"
 #include <cmath>
+#include "kick_and_drift.h"
 
 using namespace std;
 
@@ -104,7 +105,8 @@ extern "C" void kick_and_drift(
                          const int rec_prof,
                          const int nturns,
                          const int nparts,
-                         const bool ftn_out){
+                         const bool ftn_out,
+                         const std::function<void(int, int)> callback){
     int profile = rec_prof;
     int turn = rec_prof * dturns;
 
@@ -114,6 +116,8 @@ extern "C" void kick_and_drift(
         yp[profile][i] = denergy[i];
     }
 
+    int progress = 0;
+    const int total = nturns;
     // Upwards 
     while(turn < nturns){
 
@@ -144,6 +148,7 @@ extern "C" void kick_and_drift(
                           << ",   0.000% went outside the image width."
                           << std::endl;
         } //if
+        callback(++progress, total);
     } //while
 
     profile = rec_prof;
@@ -188,7 +193,7 @@ extern "C" void kick_and_drift(
                               << ",   0.000% went outside the image width."
                               << std::endl;
             }
-        
+        callback(++progress, total);
         }//while
     }
 

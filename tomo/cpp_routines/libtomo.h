@@ -5,6 +5,7 @@
 #ifndef TOMOGRAPHYV3_LIBTOMO_H
 #define TOMOGRAPHYV3_LIBTOMO_H
 
+#include <optional>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
@@ -29,7 +30,8 @@ py::tuple wrapper_kick_and_drift2(
         int rec_prof,
         int nturns,
         int nparts,
-        bool ftn_out
+        bool ftn_out,
+        const std::optional<const py::object> callback
 );
 
 

@@ -5,12 +5,13 @@
 #ifndef TOMO_RECONSTRUCT_H
 #define TOMO_RECONSTRUCT_H
 
-
+#include <functional>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 #include <stdexcept>
 #include <cmath>
+#include "pybind11/pybind11.h"
 
 // Back projection using flattened arrays
 extern "C" void back_project(double *  weights,
@@ -96,6 +97,7 @@ extern "C" void reconstruct(double * weights,
                             const int nbins,
                             const int npart,
                             const int nprof,
-                            const bool verbose);
+                            const bool verbose,
+                            const std::function<void(int, int)> callback = 0);
 
 #endif //TOMO_RECONSTRUCT_H

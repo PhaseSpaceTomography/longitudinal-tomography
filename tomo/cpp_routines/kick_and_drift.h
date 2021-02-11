@@ -5,6 +5,8 @@
 #ifndef TOMOGRAPHY_KICK_AND_DRIFT_CPP_H
 #define TOMOGRAPHY_KICK_AND_DRIFT_CPP_H
 
+#include <functional>
+
 
 using namespace std;
 
@@ -80,6 +82,8 @@ extern "C" void kick_and_drift(
         const int rec_prof,
         const int nturns,
         const int nparts,
-        const bool ftn_out);
+        const bool ftn_out,
+        const std::function<void(int, int)> callback
+);
 
 #endif

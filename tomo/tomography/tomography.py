@@ -4,6 +4,7 @@
 """
 
 import logging
+import typing as t
 
 import numpy as np
 
@@ -207,7 +208,8 @@ class TomographyCpp(stmo.Tomography):
             self.nparts, self.nprofs, verbose)
         return self.weight
 
-    def run(self, niter: int = 20, verbose: bool = False) -> np.ndarray:
+    def run(self, niter: int = 20, verbose: bool = False,
+            callback: t.Callable = None) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -226,6 +228,11 @@ class TomographyCpp(stmo.Tomography):
             Flag to indicate that the status of the tomography should be
             written to stdout. The output is identical to output
             generated in the original Fortran tomography.
+        callback: Callable
+            Passing a callback with function signature
+            (progress: int, total: int) will allow the tracking loop to call
+            this function at the end of each turn, allowing the python caller
+            to monitor the progress.
 
         Returns
         -------
@@ -245,5 +252,5 @@ class TomographyCpp(stmo.Tomography):
          self.diff,
          self.recreated) = libtomo.reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose)
+            self.nparts, self.nprofs, verbose, callback)
         return self.weight

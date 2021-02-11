@@ -3,6 +3,13 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cmath>
+#include <functional>
+
+#include "pybind11/pybind11.h"
+#include <pybind11/stl.h>
+#include "reconstruct.h"
+
+namespace py = pybind11;
 
 // Back projection using flattened arrays
 extern "C" void back_project(double *  weights,                     // inn/out
@@ -266,7 +273,9 @@ extern "C" void reconstruct(double * weights,             // out
                             const int nbins,
                             const int npart,
                             const int nprof,
-                            const bool verbose){
+                            const bool verbose,
+                            const std::function<void(int, int)> callback
+                            ){
     int i;
 
     // Creating arrays...
@@ -309,6 +318,8 @@ extern "C" void reconstruct(double * weights,             // out
 
         back_project(weights, flat_points, diff_prof, npart, nprof);
         clip(weights, npart, 0.0);
+
+        callback(iteration+1, niter);
     } //end for
 
     // Calculating final discrepancy
@@ -317,6 +328,8 @@ extern "C" void reconstruct(double * weights,             // out
     
     find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
     discr[niter] = discrepancy(diff_prof, nprof, nbins);
+
+    callback(niter, niter);
 
     // Cleaning
     for(i = 0; i < nprof; i++) {
