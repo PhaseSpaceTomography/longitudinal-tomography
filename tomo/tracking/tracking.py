@@ -52,8 +52,8 @@ class Tracking(ParticleTracker):
     def __init__(self, machine: 'Machine'):
         super().__init__(machine)
 
-    def track(self, recprof: int, callback: Callable = None,
-              init_distr: Tuple[float, float] = None) \
+    def track(self, recprof: int, init_distr: Tuple[float, float] = None,
+              callback: Callable = None) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
