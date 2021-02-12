@@ -1,6 +1,10 @@
-//
-// Created by anton on 1/25/21.
-//
+/**
+ * @author Anton Lu (anton.lu@cern.ch)
+ * @file docs.h
+ *
+ * Python docstrings for pybind11 wrappers. Can be viewed on the Python side
+ * using help(libtomo) as with any other python module.
+ */
 
 #ifndef TOMO_DOCS_H
 #define TOMO_DOCS_H

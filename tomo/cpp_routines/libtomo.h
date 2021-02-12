@@ -1,6 +1,9 @@
-//
-// Created by anton on 12/10/20.
-//
+/**
+ * @author Anton Lu (anton.lu@cern.ch)
+ * @file libtomo.h
+ *
+ * Pybind11 wrappers for tomography C++ routines
+ */
 
 #ifndef TOMOGRAPHYV3_LIBTOMO_H
 #define TOMOGRAPHYV3_LIBTOMO_H

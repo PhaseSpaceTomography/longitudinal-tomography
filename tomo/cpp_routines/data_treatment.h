@@ -1,3 +1,8 @@
+/**
+ * @author Anton Lu (anton.lu@cern.ch)
+ * @file data_treatment.h
+ */
+
 #ifndef TOMOGRAPHY_DATA_TREATMENT_H
 #define TOMOGRAPHY_DATA_TREATMENT_H
 

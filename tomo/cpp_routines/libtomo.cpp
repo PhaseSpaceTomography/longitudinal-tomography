@@ -1,6 +1,10 @@
-//
-// Created by anton on 12/10/20.
-//
+/**
+ * @author Anton Lu (anton.lu@cern.ch)
+ * @file libtomo.cpp
+ *
+ * Pybind11 wrappers for tomography C++ routines
+ */
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
