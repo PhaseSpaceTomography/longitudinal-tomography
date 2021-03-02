@@ -5,6 +5,7 @@ import typing as t
 
 from .machine_base import MachineABC
 from .. import assertions as asrt
+from .. import exceptions as ex
 
 
 log = logging.getLogger(__name__)
@@ -30,10 +31,12 @@ class ProgramsMachine(MachineABC):
                  t_end: float = None,
                  vat_now: bool = True,
                  **kwargs):
+        asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
+                            ex.ArrayLengthError,
+                            'Only 1 or 2 harmonics accepted.')
+        kwargs['h_num'] = harmonics[0]
         super().__init__(dturns, mean_orbit_rad, bending_rad, trans_gamma,
                          rest_energy, n_profiles, n_bins, dtbin, **kwargs)
-        asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
-                            extra_text='Only 1 or 2 harmonics accepted.')
 
         self.voltage_raw = voltage_function
         self.phase_raw = phase_function

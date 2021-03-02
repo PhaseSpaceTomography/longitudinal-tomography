@@ -128,7 +128,8 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC)\
         fprime=physics._dphase_low,
         tol=0.0001, maxiter=100,
         args=(bunch_phaselength, machine.vrf1_at_turn, machine.vrf2_at_turn,
-              machine.phi0, machine.h_ratio, machine.phi12, ref_turn))
+              machine.phi0, machine.h_ratio, machine.phi12, ref_turn,
+              machine.machine_ref_frame*machine.dturns))
 
     # Calculates the x coordinate of the synchronous particle given in
     # the phase space coordinate system.

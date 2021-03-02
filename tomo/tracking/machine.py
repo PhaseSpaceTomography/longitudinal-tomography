@@ -22,7 +22,6 @@ _machine_opts_def = {
     'vrf2': 0.0,
     'vrf2dot': 0.0,
     'bdot': 0.0,
-    'h_num': 1,
 }
 
 
@@ -201,7 +200,6 @@ class Machine(MachineABC):
         self.vrf2dot = kwargs_processed['vrf2dot']
         self.b0 = b0
         self.bdot = kwargs_processed['bdot']
-        self.h_num = kwargs_processed['h_num']
 
         self.fitted_synch_part_x = None
         self.bunchlimit_low = None

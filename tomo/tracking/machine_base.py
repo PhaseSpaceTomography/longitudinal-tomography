@@ -12,6 +12,7 @@ _machine_base_defaults = {
     'h_ratio': 1.0,
     'synch_part_x': -1,
     'charge': 1,
+    'h_num': 1,
     'g_coupling': None,
     'zwall_over_n': None,
     'min_dt': None,
@@ -64,6 +65,7 @@ class MachineABC(ABC):
         self.demax: float = processed_kwargs['demax']
         self.phi12: t.Union[float, np.ndarray] = processed_kwargs['phi12']
         self.h_ratio: float = processed_kwargs['h_ratio']
+        self.h_num: int = processed_kwargs['h_num']
         self.q: float = processed_kwargs['charge']
         self.g_coupling: float = processed_kwargs['g_coupling']
         self.zwall_over_n: float = processed_kwargs['zwall_over_n']
