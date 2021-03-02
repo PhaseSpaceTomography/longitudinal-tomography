@@ -125,18 +125,19 @@ class Tracking(ParticleTracker):
 
         recprof = asrt.assert_index_ok(
             recprof, self.machine.nprofiles, wrap_around=True)
+        machine = self.machine
 
         if init_distr is None:
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
             log.info('Creating homogeneous distribution of particles.')
-            self.particles.homogeneous_distribution(self.machine, recprof)
+            self.particles.homogeneous_distribution(machine, recprof)
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
             if self.fortran_flag:
                 print(fortran.write_plotinfo(
-                    self.machine, self.particles, self._profile_charge))
+                    machine, self.particles, self._profile_charge))
 
         else:
             log.info('Using initial particle coordinates set by user.')
@@ -146,8 +147,8 @@ class Tracking(ParticleTracker):
         dphi = coords[0]
         denergy = coords[1]
 
-        rfv1 = self.machine.vrf1_at_turn * self.machine.q
-        rfv2 = self.machine.vrf2_at_turn * self.machine.q
+        rfv1 = machine.vrf1_at_turn * machine.q
+        rfv2 = machine.vrf2_at_turn * machine.q
 
         # Tracking particles
         if self.self_field_flag:
@@ -160,13 +161,16 @@ class Tracking(ParticleTracker):
         else:
             # Tracking without self-fields
             nparts = len(dphi)
-            nturns = self.machine.dturns * (self.machine.nprofiles - 1)
-            xp = np.zeros((self.machine.nprofiles, nparts))
-            yp = np.zeros((self.machine.nprofiles, nparts))
+            nturns = machine.dturns * (machine.nprofiles - 1)
+            xp = np.zeros((machine.nprofiles, nparts))
+            yp = np.zeros((machine.nprofiles, nparts))
 
             # Calling C++ implementation of tracking routine.
             libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-                                   self.machine, recprof, nturns, nparts,
+                                   machine.phi0, machine.deltaE0,
+                                   machine.drift_coef, machine.phi12,
+                                   machine.h_ratio, machine.dturns,
+                                   recprof, nturns, nparts,
                                    self.fortran_flag, callback=callback)
 
         log.info('Tracking completed!')

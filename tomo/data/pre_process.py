@@ -15,6 +15,7 @@ from tomo.utils import physics
 from .profiles import Profiles
 from .. import assertions as asrt
 from ..tracking import Machine
+from ..tracking.machine_base import MachineABC
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
@@ -74,8 +75,8 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
     return rebinned, dtbin
 
 
-@dispatch(np.ndarray, Machine)
-def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
+@dispatch(np.ndarray, MachineABC)
+def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC)\
         -> Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
@@ -123,10 +124,11 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
     # Estimate the synchronous phase.
     x0 = machine.phi0[ref_turn] - bunch_phaselength / 2.0
     phil = optimize.newton(
-        func=physics.phase_low, x0=x0,
-        fprime=physics.dphase_low,
+        func=physics._phase_low, x0=x0,
+        fprime=physics._dphase_low,
         tol=0.0001, maxiter=100,
-        args=(machine, bunch_phaselength, ref_turn))
+        args=(bunch_phaselength, machine.vrf1_at_turn, machine.vrf2_at_turn,
+              machine.phi0, machine.h_ratio, machine.phi12, ref_turn))
 
     # Calculates the x coordinate of the synchronous particle given in
     # the phase space coordinate system.

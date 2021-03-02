@@ -12,66 +12,21 @@ from scipy import optimize, constants
 
 from .. import assertions as asrt
 from ..utils import physics
+from .machine_base import MachineABC
 # from ..data import pre_process
 
 log = logging.getLogger(__name__)
 
 _machine_opts_def = {
-    'demax': -1.E6,
     'vrf1dot': 0.0,
     'vrf2': 0.0,
     'vrf2dot': 0.0,
-    'phi12': 0.0,
-    'h_ratio': 1.0,
+    'bdot': 0.0,
     'h_num': 1,
-    'charge': 1,
-    'g_coupling': None,
-    'zwall_over_n': None,
-    'min_dt': None,
-    'max_dt': None,
-    'self_field_flag': False,
-    'full_pp_flag': False,
-    'pickup_sensitivity': None,
-    'machine_ref_frame': 0,
-    'beam_ref_frame': 0,
-    'snpt': 4,
-    'niter': 20,
-    'filmstart': 0,
-    'filmstop': 1,
-    'filmstep': 1,
-    'output_dir': None,
 }
 
-default_opts = {}
 
-
-def _reset_defaults():
-    default_opts.update({key: _machine_opts_def[key]
-                         for key in _machine_opts_def})
-    for item in tuple(default_opts.keys()):
-        if item not in _machine_opts_def:
-            default_opts.pop(item)
-
-
-_reset_defaults()
-
-
-# Function for asserting input dictionary for machine creator
-def _assert_machine_kwargs(**kwargs):
-    use_params = {}
-
-    for item in default_opts:
-        use_params[item] = default_opts[item]
-
-    for item in kwargs:
-        if item not in default_opts:
-            raise KeyError(f'{item} is not a machine parameter')
-        else:
-            use_params[item] = kwargs[item]
-    return use_params
-
-
-class Machine:
+class Machine(MachineABC):
     """Class holding machine and reconstruction parameters.
 
     This class holds machine parameters and information about the measurements.
@@ -102,7 +57,7 @@ class Machine:
         Time derivative of B-field (considered constant) [T/s].
     trans_gamma: float
         Transitional gamma.
-    rest_energy: float
+    e_rest: float
         Rest energy of accelerated particle [eV/C^2], saved as e_rest.
     nprofiles: int
         Number of measured profiles.
@@ -227,106 +182,33 @@ class Machine:
         the second RF station.
     """
 
-    def __init__(self, dturns, vrf1, mean_orbit_rad, bending_rad,
-                 b0, bdot, trans_gamma, rest_energy, nprofiles, nbins,
-                 synch_part_x, dtbin, **kwargs):
+    def __init__(self, dturns: int, vrf1: float, mean_orbit_rad: float,
+                 bending_rad: float, b0: float, trans_gamma: float,
+                 rest_energy: float, nprofiles: int, nbins: int, dtbin: float,
+                 vat_now: bool = True, **kwargs):
+        super().__init__(dturns, mean_orbit_rad, bending_rad, trans_gamma,
+                         rest_energy, nprofiles, nbins, dtbin, **kwargs)
 
-        kwargs = _assert_machine_kwargs(**kwargs)
+        kwargs_processed = super()._process_kwargs(_machine_opts_def, kwargs)
 
         # TODO: Take rfv info as a single input
         # TODO: Take b-field info as a single input
 
-        if kwargs['min_dt'] is not None:
-            min_dt = kwargs['min_dt']
-        else:
-            min_dt = 0.0
-
-        if kwargs['max_dt'] is not None:
-            max_dt = kwargs['max_dt']
-        else:
-            max_dt = nbins * dtbin
-
         # Machine parameters
-        self.demax = kwargs['demax']
-        self.dturns = dturns
         self.vrf1 = vrf1
-        self.vrf1dot = kwargs['vrf1dot']
-        self.vrf2 = kwargs['vrf2']
-        self.vrf2dot = kwargs['vrf2dot']
-        self.mean_orbit_rad = mean_orbit_rad
-        self.bending_rad = bending_rad
+        self.vrf1dot = kwargs_processed['vrf1dot']
+        self.vrf2 = kwargs_processed['vrf2']
+        self.vrf2dot = kwargs_processed['vrf2dot']
         self.b0 = b0
-        self.bdot = bdot
-        self.phi12 = kwargs['phi12']
-        self.h_ratio = kwargs['h_ratio']
-        self.h_num = kwargs['h_num']
-        self.trans_gamma = trans_gamma
-        self.e_rest = rest_energy
-        self.q = kwargs['charge']
-        self.g_coupling = kwargs['g_coupling']
-        self.zwall_over_n = kwargs['zwall_over_n']
-        self.min_dt = min_dt
-        self.max_dt = max_dt
-        self.nprofiles = nprofiles
-        self.pickup_sensitivity = kwargs['pickup_sensitivity']
-        self.nbins = nbins
-        self.synch_part_x = synch_part_x
-        self.dtbin = dtbin
-
-        # Flags
-        self.self_field_flag = kwargs['self_field_flag']
-        self.full_pp_flag = kwargs['full_pp_flag']
-
-        # Reconstruction parameters
-        self.machine_ref_frame = kwargs['machine_ref_frame']
-        self.beam_ref_frame = kwargs['beam_ref_frame']
-        self.snpt = kwargs['snpt']
-        self.niter = kwargs['niter']
-        self.filmstart = kwargs['filmstart']
-        self.filmstop = kwargs['filmstop']
-        self.filmstep = kwargs['filmstep']
-        self.output_dir = kwargs['output_dir']
-
-        # initialise attributes for later use
-        self.eta0 = None
-        self.drift_coef = None
-        self.omega_rev0 = None
-        self.vrf1_at_turn = None
-        self.vrf2_at_turn = None
-
-        # Used as flag for checking if particles particle tracking
-        # has been done
-        self.dEbin = None
+        self.bdot = kwargs_processed['bdot']
+        self.h_num = kwargs_processed['h_num']
 
         self.fitted_synch_part_x = None
         self.bunchlimit_low = None
         self.bunchlimit_up = None
 
-    @property
-    def nbins(self) -> int:
-        """nbins defined as @property.
-        Updates the position of the y-coordinate of the synchronous
-        particle in the phase space coordinate system when set.
-
-        Parameters
-        ----------
-        nbins: int
-            Number of bins in a profile.
-
-        Returns
-        -------
-        nbins: int
-            Number of bins in a profile.
-        """
-        return self._nbins
-
-    @nbins.setter
-    def nbins(self, in_nbins: int):
-        self._nbins = in_nbins
-        self._find_synch_part_y()
-        log.info(f'synch_part_y was updated when the '
-                 f'number of profile bins changed.\nNew values - '
-                 f'nbins: {self.nbins}, synch_part_y: {self.synch_part_y}')
+        if vat_now:
+            self.values_at_turns()
 
     def values_at_turns(self):
         """Calculating machine values for each turn.
@@ -495,11 +377,6 @@ class Machine:
         self.phi0[i0] = physics.find_synch_phase(
             self, i0, phi_lower, phi_upper)
         return i0
-
-    # Function for finding y coordinate of synchronous particle in the
-    # phase space coordinate system.
-    def _find_synch_part_y(self):
-        self.synch_part_y = self.nbins / 2.0
 
     # Using a linear approximation to calculate the RF voltage for each turn.
     def _rfv_at_turns(self) -> Tuple[np.ndarray, np.ndarray]:

@@ -74,9 +74,9 @@ class TestPhysics(unittest.TestCase):
         machine = mch.Machine(**MACHINE_ARGS)
         correct = -1132.2371121228516
         ans = physics.rf_voltage_at_phase(
-            phi=0.123, vrf1=2500, vrf1dot=0, vrf2=2135, vrf2dot=0,
-            h_ratio=2, phi12=1.324, time_at_turn=[1.3701195948],
-            rf_turn=0)
+            0.123, 2500, 0, 2135, 0,
+            2, 1.324, [1.3701195948],
+            0)
 
         self.assertAlmostEqual(
             ans, correct, msg='Error in calculation drf_voltage')
@@ -194,7 +194,7 @@ class TestPhysics(unittest.TestCase):
         machine.time_at_turn = [1.3701195948153858e-06]
         bunch_phaselength = 3.22312485522767
         correct = 859.1967476555656
-        ans = physics.dphase_low(0.123, machine, bunch_phaselength, None)
+        ans = physics.dphase_low(0.123, machine, bunch_phaselength, 0, None)
 
         self.assertAlmostEqual(ans, correct,
                                msg='dphase_low calculated incorrectly')

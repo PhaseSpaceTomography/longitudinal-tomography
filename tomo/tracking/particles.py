@@ -212,8 +212,7 @@ class Particles(object):
         needed_fieds = ['snpt', 'h_num', 'omega_rev0', 'eta0',
                         'dtbin', 'phi0', 'synch_part_y', 'dturns', 'phi12',
                         'nbins', 'beam_ref_frame', 'full_pp_flag',
-                        'demax', 'vrf2', 'vrf2dot', 'e0', 'vrf1',
-                        'vrf1dot', 'min_dt', 'max_dt', 'time_at_turn']
+                        'demax', 'e0', 'min_dt', 'max_dt', 'time_at_turn']
         asrt.assert_fields(
             machine, 'machine', needed_fieds, expt.MachineParameterError,
             'Did you remember to use machine.values_at_turns()?')

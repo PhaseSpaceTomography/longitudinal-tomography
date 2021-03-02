@@ -135,8 +135,7 @@ class PhaseSpaceInfo:
                               'The specified maximum energy of '
                               'reconstructed phase space is invalid.')
         if self.machine.demax < 0.0:
-            if physics.vrft(self.machine.vrf2,
-                            self.machine.vrf2dot, turn) != 0.0:
+            if self.machine.vrf2_at_turn[turn] != 0.0:
                 energies_low = self._trajectoryheight(
                     phases, phases[0], delta_e_known, turn)
 
@@ -150,8 +149,7 @@ class PhaseSpaceInfo:
                 return (self.machine.beta0[turn]
                         * np.sqrt(self.machine.e0[turn]
                                   * self.machine.q
-                                  * physics.vrft(self.machine.vrf1,
-                                                 self.machine.vrf1dot, turn)
+                                  * self.machine.vrf1_at_turn[turn]
                                   * np.cos(self.machine.phi0[turn])
                                   / (2 * np.pi * self.machine.h_num
                                      * self.machine.eta0[turn]))
@@ -311,24 +309,27 @@ class PhaseSpaceInfo:
     # Trajectory height calculator
     def _trajectoryheight(self, phi: np.ndarray, phi_known: float,
                           delta_e_known: float, turn: int) -> float:
-        cplx_height = 2.0 * self.machine.q / self.machine.drift_coef[turn]
-        cplx_height *= (physics.vrft(self.machine.vrf1,
-                                     self.machine.vrf1dot, turn)
+        machine = self.machine
+        if isinstance(machine.phi12, np.ndarray):
+            phi12 = machine.phi12[turn]
+        else:
+            phi12 = machine.phi12
+
+        cplx_height = 2.0 * machine.q / machine.drift_coef[turn]
+        cplx_height *= (machine.vrf1_at_turn[turn]
                         * (np.cos(phi) - np.cos(phi_known))
-                        + physics.vrft(self.machine.vrf2,
-                                       self.machine.vrf2dot, turn)
-                        * (np.cos(self.machine.h_ratio
-                                  * (phi - self.machine.phi12))
-                           - np.cos(self.machine.h_ratio
-                                    * (phi_known - self.machine.phi12)))
-                        / self.machine.h_ratio
+                        + machine.vrf2_at_turn[turn]
+                        * (np.cos(machine.h_ratio
+                                  * (phi - phi12))
+                           - np.cos(machine.h_ratio
+                                    * (phi_known - phi12)))
+                        / machine.h_ratio
                         + (phi - phi_known)
                         * physics.rf_voltage_at_phase(
-            self.machine.phi0[turn], self.machine.vrf1,
-            self.machine.vrf1dot, self.machine.vrf2,
-            self.machine.vrf2dot, self.machine.h_ratio,
-            self.machine.phi12, self.machine.time_at_turn,
-            turn))
+                            machine.phi0[turn],
+                            machine.vrf1_at_turn[turn],
+                            machine.vrf2_at_turn[turn],
+                            machine.h_ratio, phi12))
         cplx_height += delta_e_known ** 2
 
         if np.size(cplx_height) > 1:

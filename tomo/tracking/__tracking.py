@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from . import particles as pts
 from .machine import Machine
+from .machine_base import MachineABC
 from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
@@ -53,9 +54,9 @@ class ParticleTracker:
         Machine object provided is missing needed fields.
     """
 
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: MachineABC):
 
-        if not isinstance(machine, Machine):
+        if not isinstance(machine, MachineABC):
             err_msg = 'Input argument must be Machine.'
             raise expt.MachineParameterError(err_msg)
 

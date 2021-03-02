@@ -2,12 +2,15 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
-from typing import Tuple, TYPE_CHECKING
+import typing as t
+from numbers import Number
+from collections.abc import Sequence
 
 import numpy as np
+from multipledispatch import dispatch
 from scipy import optimize, constants
 
-if TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from ..tracking.machine import Machine
 
 
@@ -29,8 +32,8 @@ def b_to_e(machine: 'Machine') -> float:
     return np.sqrt((machine.q
                     * machine.b0
                     * machine.bending_rad
-                    * constants.c)**2
-                   + machine.e_rest**2)
+                    * constants.c) ** 2
+                   + machine.e_rest ** 2)
 
 
 def lorentz_beta(machine: 'Machine', rf_turn: int) -> float:
@@ -49,7 +52,7 @@ def lorentz_beta(machine: 'Machine', rf_turn: int) -> float:
         The Lorenz beta factor (v/c) at a given turn.
     """
     return np.sqrt(1.0 - (float(machine.e_rest) /
-                          machine.e0[rf_turn])**2)
+                          machine.e0[rf_turn]) ** 2)
 
 
 def rfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
@@ -75,7 +78,7 @@ def rfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
     q_sign = np.sign([machine.q])
     return (v1 * np.sin(phi)
             - 2 * np.pi * machine.mean_orbit_rad
-                * machine.bending_rad * machine.bdot * q_sign[0])
+            * machine.bending_rad * machine.bdot * q_sign[0])
 
 
 def drfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
@@ -158,15 +161,24 @@ def drf_voltage(phi: float, machine: 'Machine', rf_turn: int) -> float:
                      * (phi - machine.phi12)))
 
 
-def rf_voltage_at_phase(phi, vrf1, vrf1dot, vrf2, vrf2dot,
-                        h_ratio, phi12, time_at_turn, rf_turn):
+@dispatch(Number, Number, Number, Number, Number, Number, Number,
+          (Sequence, np.ndarray), Number)
+def rf_voltage_at_phase(phi: float, vrf1: float, vrf1dot: float, vrf2: float,
+                        vrf2dot: float, h_ratio: float, phi12: float,
+                        time_at_turns: np.ndarray, rf_turn: int):
     """RF voltage formula without calculating the difference in E0.
     """
-    turn_time = time_at_turn[rf_turn]
+    turn_time = time_at_turns[rf_turn]
     v1 = vrft(vrf1, vrf1dot, turn_time)
     v2 = vrft(vrf2, vrf2dot, turn_time)
-    voltage = v1 * np.sin(phi)
-    voltage += v2 * np.sin(h_ratio * (phi - phi12))
+    voltage = rf_voltage_at_phase(phi, v1, v2, h_ratio, phi12)
+    return voltage
+
+
+@dispatch(Number, Number, Number, Number, Number)
+def rf_voltage_at_phase(phi: float, vrf1: float, vrf2: float, h_ratio: float,
+                        phi12: float):
+    voltage = vrf1 * np.sin(phi) + vrf2 * np.sin(h_ratio * (phi - phi12))
     return voltage
 
 
@@ -229,7 +241,7 @@ def find_synch_phase(machine: 'Machine', rf_turn: int,
 
 
 def find_phi_lower_upper(
-        machine: 'Machine', rf_turn: int) -> Tuple[float, float]:
+        machine: 'Machine', rf_turn: int) -> t.Tuple[float, float]:
     """Calculates lower and upper phase of RF voltage
     for use in estimation of phi0.
 
@@ -251,7 +263,7 @@ def find_phi_lower_upper(
     condition = (machine.q
                  * (machine.trans_gamma
                     - (machine.e0[rf_turn]
-                        / float(machine.e_rest)))) > 0
+                       / float(machine.e_rest)))) > 0
     if condition:
         phi_lower = -np.pi
         phi_upper = np.pi
@@ -274,7 +286,7 @@ def phase_slip_factor(machine: 'Machine') -> np.ndarray:
     phase slip factor: ndarray
         1D array of phase slip factors for each turn.
     """
-    return (1.0 - machine.beta0**2) - machine.trans_gamma**(-2)
+    return (1.0 - machine.beta0 ** 2) - machine.trans_gamma ** (-2)
 
 
 def find_dphase(machine: 'Machine') -> np.ndarray:
@@ -292,7 +304,7 @@ def find_dphase(machine: 'Machine') -> np.ndarray:
         1D array holding drift coefficient for each machine turn.
     """
     return (2 * np.pi * machine.h_num * machine.eta0
-            / (machine.e0 * machine.beta0**2))
+            / (machine.e0 * machine.beta0 ** 2))
 
 
 def revolution_freq(machine: 'Machine') -> np.ndarray:
@@ -333,7 +345,7 @@ def calc_self_field_coeffs(machine: 'Machine') -> np.ndarray:
                       - machine.beta0[this_turn])
                      * machine.g_coupling * np.pi * 2.0e-7 * constants.c
                      - machine.zwall_over_n)
-                  / machine.dtbin**2)
+                  / machine.dtbin ** 2)
     return sfc
 
 
@@ -353,25 +365,34 @@ def phase_low(phase: float, machine: 'Machine', bunch_phaselength: float,
     rf_turn: int
         At which RF turn the calculation should happen.
     """
-    v1 = machine.vrf1 * (np.cos(phase + bunch_phaselength) - np.cos(phase))
 
-    v2 = (machine.vrf2
-          * (np.cos(machine.h_ratio
-                    * (phase + bunch_phaselength - machine.phi12))
-             - np.cos(machine.h_ratio * (phase - machine.phi12)))
-          / machine.h_ratio)
+    return _phase_low(phase, bunch_phaselength, machine.vrf1_at_turn,
+                      machine.vrf2_at_turn, machine.phi0, machine.h_ratio,
+                      machine.phi12, rf_turn)
+
+
+def _phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
+               vrf2: np.ndarray, phi0: np.ndarray, h_ratio: float,
+               phi12: t.Union[float, np.ndarray], rf_turn: int):
+    phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
+
+    v1 = vrf1[rf_turn] * (np.cos(phase + bunch_phaselength) - np.cos(phase))
+
+    v2 = (rf_turn
+          * (np.cos(h_ratio
+                    * (phase + bunch_phaselength - phi12))
+             - np.cos(h_ratio * (phase - phi12)))
+          / h_ratio)
 
     v_synch_phase = (bunch_phaselength
-                     * rf_voltage_at_phase(
-                         machine.phi0[rf_turn], machine.vrf1, machine.vrf1dot,
-                         machine.vrf2, machine.vrf2dot, machine.h_ratio,
-                         machine.phi12, machine.time_at_turn, rf_turn))
+                     * rf_voltage_at_phase(phi0[rf_turn], vrf1[rf_turn],
+                                           vrf2[rf_turn], h_ratio, phi12))
 
     return v1 + v2 + v_synch_phase
 
 
 def dphase_low(phase: float, machine: 'Machine',
-               bunch_phaselength: float, *args):
+               bunch_phaselength: float, rf_turn: int, *args):
     """Calculates derivative of the phase_low function.
     The function is needed for estimation of x-coordinate
     of synchronous particle.
@@ -387,9 +408,20 @@ def dphase_low(phase: float, machine: 'Machine',
     args: None
         Not used, arg needed for implementation of Newton-Raphson root finder.
     """
-    return (-1.0 * machine.vrf2
-            * (np.sin(machine.h_ratio
-                      * (phase + bunch_phaselength - machine.phi12))
-                - np.sin(machine.h_ratio * (phase - machine.phi12)))
-            - machine.vrf1
-            * (np.sin(phase + bunch_phaselength) - np.sin(phase)))
+    return _dphase_low(phase, bunch_phaselength, machine.vrf1_at_turn,
+                       machine.vrf2_at_turn, None, machine.h_ratio,
+                       machine.phi12, rf_turn)
+
+
+def _dphase_low(phase: float, bunch_phaselength: float, vrf1: float,
+                vrf2: float, phi0, h_ratio: float, phi12: float, rf_turn: int):
+    phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
+
+    ret = (-1.0 * vrf2[rf_turn]
+           * (np.sin(h_ratio
+                     * (phase + bunch_phaselength - phi12))
+              - np.sin(h_ratio * (phase - phi12)))
+           - vrf1[rf_turn]
+           * (np.sin(phase + bunch_phaselength) - np.sin(phase)))
+
+    return ret
