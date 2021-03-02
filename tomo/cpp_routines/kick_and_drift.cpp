@@ -99,7 +99,7 @@ extern "C" void kick_and_drift(
                          const double * phi0,      // inn
                          const double * deltaE0,   // inn
                          const double * drift_coef,// inn
-                         const double phi12,
+                         const double * phi12,
                          const double hratio,
                          const int dturns,
                          const int rec_prof,
@@ -131,7 +131,7 @@ extern "C" void kick_and_drift(
         #pragma omp parallel for
         for (int i=0; i < nparts; i++)
             denergy[i] += rf1v[turn] * vdt::fast_sin(dphi[i] + phi0[turn])
-                          + rf2v[turn] * vdt::fast_sin(hratio * (dphi[i] + phi0[turn] - phi12)) - deltaE0[turn];
+                          + rf2v[turn] * vdt::fast_sin(hratio * (dphi[i] + phi0[turn] - phi12[turn])) - deltaE0[turn];
 //        kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
 //                hratio, nparts, deltaE0[turn]);
         
@@ -169,7 +169,7 @@ extern "C" void kick_and_drift(
             #pragma omp parallel for
             for (int i=0; i < nparts; i++)
                 denergy[i] -= rf1v[turn] * vdt::fast_sin(dphi[i] + phi0[turn])
-                              + rf2v[turn] * vdt::fast_sin(hratio * (dphi[i] + phi0[turn] - phi12)) - deltaE0[turn];
+                              + rf2v[turn] * vdt::fast_sin(hratio * (dphi[i] + phi0[turn] - phi12[turn])) - deltaE0[turn];
 //            kick_down(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
 //                      phi12, hratio, nparts, deltaE0[turn]);
             turn--;
