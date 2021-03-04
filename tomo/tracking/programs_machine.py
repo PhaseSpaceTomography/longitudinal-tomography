@@ -13,8 +13,41 @@ log = logging.getLogger(__name__)
 
 class ProgramsMachine(MachineABC):
     """
-    Machine class intended to be used with precomputed voltage, momentum, and
-    phase programs
+    An alternative variant of the Machine class that is intended to be used
+    with precomputed voltage, momentum, and phase programs.
+
+    The voltage, momentum and phases are interpolated at each turn from the
+    passed numpy arrays as opposed to linearly extrapolated or considered
+    constant as in the :py:tomo.tracking.Machine:
+
+    See superclass for documentation about inherited class variables.
+
+    Parameters
+    ----------
+    voltage_function: np.ndarray
+        A 2d array of shape (n_harmonics, :) containing the precomputed voltage
+        program. The first row of the array must be the time stamps of the
+        voltages in the second and third rows which contains the voltage
+        amplitudes. 1 or 2 harmonics are supported.
+    phase_program: np.ndarray
+        A 2d array of shape (n_harmonics, :) containing the precomputed phase
+        program. The first row of the array must be the time stamps of the
+        phases in the second and third rows which contains the phase
+        shifts. 1 or 2 harmonics are supported.
+    momentum_program: np.ndarray
+        A 2d array of shape (2, :) containing the precomputed momentum
+        program. The first row of the array must be the time stamps of the
+        momentum in the second row which contains the momentum values.
+    harmonics: list
+        A list of integers where each is the harmonic of an RF station.
+        The number of harmonics must be the same as the passed voltage and
+        phase functions.
+    t_start: float
+        The cTime at which to start tracking. Must withing the time range
+        defined in the voltage, phase and momentum programs.
+    vat_now: bool
+        Calculate values at turns immediately after initialisation.
+
     """
     def __init__(self,
                  dturns: int,
@@ -28,7 +61,6 @@ class ProgramsMachine(MachineABC):
                  n_bins: int,
                  dtbin: float,
                  t_start: float = None,
-                 t_end: float = None,
                  vat_now: bool = True,
                  **kwargs):
         asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
@@ -45,7 +77,6 @@ class ProgramsMachine(MachineABC):
 
         self.circumference = 2 * np.pi * self.mean_orbit_rad
         self.t_start: float = t_start
-        self.t_end: float = t_end
 
         self.flat_bottom = 0
         self.flat_top = 0
@@ -66,7 +97,6 @@ class ProgramsMachine(MachineABC):
         """
         Calculated function values at each turn. The discrete momentum, voltage
         and phase programs are interpolated to each turn.
-
         """
         momentum_time, momentum_function = self._interpolate_momentum(
             self.momentum_raw[0, :],
@@ -78,9 +108,11 @@ class ProgramsMachine(MachineABC):
             self.voltage_raw[0, :],  # voltage time
             self.voltage_raw[1, :]   # voltage values
         )
-        phase1 = np.interp(momentum_time,
-                           self.phase_raw[0, :],
-                           self.phase_raw[1, :])
+        phase1 = np.interp(
+            momentum_time,
+            self.phase_raw[0, :],
+            self.phase_raw[1, :]
+        )
 
         if len(self.harmonics) == 2:
             self.vrf2_at_turn = np.interp(
@@ -99,31 +131,25 @@ class ProgramsMachine(MachineABC):
 
         self.n_turns = len(momentum_time)
         self.h_num = self.harmonics[0]
-        # self.dturns = int(np.round(self.n_turns / self.nprofiles))
 
         momentum = momentum_function
-        self.momentum_time = momentum_time
-        self.momentum_function = momentum_function
         energy = np.sqrt(momentum**2 + self.e_rest**2)
+        deltaE0 = np.diff(energy)
         gamma = np.sqrt(1 + (momentum / self.e_rest) ** 2)
 
-        self.beta0 = np.sqrt(1/(1 + (self.e_rest/momentum)**2))
-        t_rev = np.dot(self.circumference, 1/(self.beta0*c.c))
+        beta0 = np.sqrt(1/(1 + (self.e_rest/momentum)**2))
+        t_rev = np.dot(self.circumference, 1/(beta0*c.c))
         f_rev = 1/t_rev
 
-        self.deltaE0 = np.diff(energy)
-        self.omega_rev0 = 2*np.pi*f_rev
-        self.phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
-        self.time_at_turn = np.cumsum(t_rev)
+        omega_rev0 = 2*np.pi*f_rev
+        phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
 
         momentum_compaction = 1 / self.trans_gamma**2
-        # self.eta0 = momentum_compaction - np.power(gamma, -2.)
-        self.e0 = energy
-        self.eta0 = (1. - self.beta0**2) - self.trans_gamma**(-2)
-        self.drift_coef = (2 * np.pi * self.harmonics[0] * self.eta0
-                           / (energy * self.beta0 ** 2))
+        eta0 = (1. - beta0**2) - self.trans_gamma**(-2)
+        drift_coef = (2 * np.pi * self.h_num * eta0
+                           / (energy * beta0 ** 2))
 
-        denergy = np.append(self.deltaE0, self.deltaE0[-1])
+        denergy = np.append(deltaE0, deltaE0[-1])
         acceleration_ratio = denergy/(self.q*self.vrf1_at_turn)
         acceleration_test = np.where((acceleration_ratio > -1) *
                                      (acceleration_ratio < 1) is False)[0]
@@ -131,15 +157,14 @@ class ProgramsMachine(MachineABC):
         # Validity check on acceleration_ratio
         if acceleration_test.size > 0:
             log.warning('WARNING in calculate_phi_s(): acceleration is not '
-                        'possible (momentum increment is too big or voltage too '
-                        'low) at index {}'.format(acceleration_test))
+                        'possible (momentum increment is too big or voltage '
+                        'too low) at index {}'.format(acceleration_test))
 
         phi_s = np.arcsin(acceleration_ratio)
 
         # Identify where eta swaps sign
-        eta0 = -self.eta0
-        eta0_middle_points = (eta0[1:] + eta0[:-1])/2
-        eta0_middle_points = np.append(eta0_middle_points, eta0[-1])
+        eta0_middle_points = -(eta0[1:] + eta0[:-1])/2
+        eta0_middle_points = np.append(eta0_middle_points, -eta0[-1])
         index = np.where(eta0_middle_points > 0)[0]
         index_below = np.where(eta0_middle_points < 0)[0]
 
@@ -147,10 +172,37 @@ class ProgramsMachine(MachineABC):
         phi_s[index] = (np.heaviside(np.sign(self.q),0) * np.pi - phi_s[index]) % (2*np.pi)
         phi_s[index_below] = (np.heaviside(np.sign(self.q),0) * np.pi + phi_s[index_below]) \
                              % (2*np.pi)
-        self.phi0 = phi_s - np.pi
+        phi0 = phi_s - np.pi
+
+        self.beta0 = beta0
+        self.deltaE0 = deltaE0
+        self.drift_coef = drift_coef
+        self.e0 = energy
+        self.eta0 = eta0
+        self.omega_rev0 = omega_rev0
+        self.phi0 = phi0
+        self.phi12 = phi12
+        self.time_at_turn = np.cumsum(t_rev)
 
     def _interpolate_momentum(self, time: np.ndarray, momentum: np.ndarray):
-        # code stolen from blond
+        """
+        Interpolates momentum at each turn. The interpolated time array is
+        then used to interpolating voltage and phase programs.
+
+        The interpolation code is borrowed from CERN BLonD.
+
+        Parameters
+        ----------
+        time: np.ndarray
+            A 1d array with the time codes for each momentum value.
+        momentum: np.ndarray
+            A 1d array with momentum values, each corresponding to a timestamp.
+
+        Returns
+        -------
+        tuple(np.ndarray, np.ndarray)
+            Interpolated time and momentum at each turn.
+        """
 
         beta_0 = np.sqrt(1 / (1 + (self.e_rest / momentum[0]) ** 2))
         T0 = self.circumference / (beta_0 * c.c)  # Initial revolution period [s]
@@ -170,18 +222,17 @@ class ProgramsMachine(MachineABC):
         time_interp.append(time_interp[-1]
                            + self.circumference / (beta_interp[0] * c.c))
 
-        i = self.flat_bottom
-
         if self.t_start is not None:
             initial_index = np.min(np.where(time >= self.t_start)[0])
         else:
             initial_index = 0
-        if self.t_end is not None:
-            final_index = np.max(np.where(time <= self.t_end)[0])+1
-        else:
-            final_index = len(time)
 
-        for k in range(initial_index, final_index):
+        nturns = self.dturns * self.nprofiles + 100
+        i = self.flat_bottom
+        interpolate_idx = 0
+        turn = 0
+        while turn < nturns:
+            k = interpolate_idx + initial_index
 
             while time_interp[i + 1] <= time[k]:
                 momentum_interp.append(
@@ -197,6 +248,11 @@ class ProgramsMachine(MachineABC):
                     time_interp[i + 1] + self.circumference / (beta_interp[i + 1] * c.c))
 
                 i += 1
+
+                if time_interp[i + 1] > self.t_start:
+                    turn += 1
+
+            interpolate_idx += 1
 
         time_interp.pop()
         time_interp = np.asarray(time_interp)
@@ -222,12 +278,10 @@ class ProgramsMachine(MachineABC):
             initial_index = np.min(np.where(time_interp >= self.t_start)[0])
         else:
             initial_index = 0
-        # if self.t_end is not None:
-        #     final_index = np.max(np.where(time_interp <= self.t_end)[0])+1
-        # else:
-        #     final_index = len(time_interp)
-        final_index = min(self.dturns * self.nprofiles + initial_index,
-                             len(time_interp))
+        final_index = self.dturns * self.nprofiles + initial_index
+        if final_index > len(time_interp):
+            raise ValueError('Not enough data in momentum program to '
+                             f'interpolate {nturns} turns.')
 
         momentum_time = time_interp[initial_index:final_index]
         momentum_function = momentum_interp[initial_index:final_index]

@@ -205,7 +205,7 @@ def vrft(vrf: float, vrf_dot: float, turn_time: float) -> float:
 
 
 def find_synch_phase(machine: 'Machine', rf_turn: int,
-                     phi_lower: float, phi_upper: float):
+                     phi_lower: float, phi_upper: float) -> float:
     """Uses the Newton-Raphson root finder to estimate
     the synchronous phase for a particle on the normal orbit.
 
@@ -350,7 +350,7 @@ def calc_self_field_coeffs(machine: 'Machine') -> np.ndarray:
 
 
 def phase_low(phase: float, machine: 'Machine', bunch_phaselength: float,
-              rf_turn: int):
+              rf_turn: int) -> float:
     """Calculates potential energy at phase.
     Needed for estimation of x-coordinate of synchronous particle.
 
@@ -374,7 +374,7 @@ def phase_low(phase: float, machine: 'Machine', bunch_phaselength: float,
 def _phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
                vrf2: np.ndarray, phi0: np.ndarray, h_ratio: float,
                phi12: t.Union[float, np.ndarray], rf_turn: int,
-               ref_frame: int):
+               ref_frame: int = 0) -> float:
     phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
 
     v1 = vrf1[ref_frame] * (np.cos(phase + bunch_phaselength) - np.cos(phase))
@@ -393,7 +393,7 @@ def _phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
 
 
 def dphase_low(phase: float, machine: 'Machine',
-               bunch_phaselength: float, rf_turn: int, *args):
+               bunch_phaselength: float, rf_turn: int, *args) -> float:
     """Calculates derivative of the phase_low function.
     The function is needed for estimation of x-coordinate
     of synchronous particle.
@@ -416,7 +416,7 @@ def dphase_low(phase: float, machine: 'Machine',
 
 def _dphase_low(phase: float, bunch_phaselength: float, vrf1: float,
                 vrf2: float, phi0, h_ratio: float, phi12: float, rf_turn: int,
-                ref_turn):
+                ref_turn: int = 0) -> float:
     phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
 
     ret = (-1.0 * vrf2[rf_turn]

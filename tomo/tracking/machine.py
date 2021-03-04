@@ -27,15 +27,7 @@ _machine_opts_def = {
 
 class Machine(MachineABC):
     """Class holding machine and reconstruction parameters.
-
-    This class holds machine parameters and information about the measurements.
-    Also, it holds settings for the reconstruction process.
-
-    The Machine class and its values are needed for the original particle
-    tracking routine. Its values are used for calculation of reconstruction
-    area and info concerning the phase space, the distribution of particles,
-    and the tracking itself. In addition to this, the machine object is needed
-    for the generation of :class:`~tomo.data.profiles.Profiles` objects.
+    See superclass for documentation about inherited class variables.
 
     To summarize, the Machine class must be used if a program resembling the
     original Fortran version is to be created.
@@ -72,10 +64,6 @@ class Machine(MachineABC):
 
     Attributes
     ----------
-    demax: float, default=-1.E6
-        Maximum energy of reconstructed phase space.\n
-    dturns: int
-        Number of machine turns between each measurement.
     vrf1: float
         Peak voltage of the first RF system at the machine reference frame.
     vrf2: float, default=0.0
@@ -86,101 +74,13 @@ class Machine(MachineABC):
     vrf2dot: float, default=0.0
         Time derivatives of the voltages of the second RF system
         (considered constant).\n
-    mean_orbit_rad: float
-        Mean orbit radius of machine [m].
-    bending_rad: float
-        Machine bending radius [m].
     b0: float
         B-field at machine reference frame [T].
     bdot: float
         Time derivative of B-field (considered constant) [T/s].
-    phi12: float, default=0.0
-        Phase difference between the two RF systems (considered constant).\n
-    h_ratio: float, default=1.0
-        Ratio of harmonics between the two RF systems.\n
     h_num: int, default=1
         Principle harmonic number.\n
-    trans_gamma: float
-        Transitional gamma.
-    e_rest: float
-        Rest energy of accelerated particle [eV/C^2].
-    q: int, default=1
-        Charge state of accelerated particle.\n
-    g_coupling: float, default=None
-        Space charge coupling coefficient (geometrical coupling coefficient).\n
-    zwall_over_n: float, default=None
-        Magnitude of Zwall/n, reactive impedance.\n
-    min_dt: float, default=None
-        Minimum phase of reconstruction area measured in seconds.\n
-    max_dt: float, default=None
-        Maximum phase of reconstruction area measured in seconds.\n
-    nprofiles: int
-        Number of measured profiles.
-    pickup_sensitivity: float, default=None
-        Effective pick-up sensitivity
-        (in digitizer units per instantaneous Amp).\n
-    nbins: int
-        Number of bins in a profile.
-    synch_part_x: float
-        Synchronous phase given in number of bins, counting
-        from the lower profile bound to the synchronous phase.
-    synch_part_y: float
-        Energy coordinate of synchronous particle in phase space coordinates
-        of bins. The coordinate is set to be one half of the image width
-        (nbins).
-    dtbin: float
-        Size of profile bins [s].
-    dEbin: float
-        Size of profile bins in energy.
-    self_field_flag: boolean, default=False
-        Flag to include self-fields in the tracking.\n
-    full_pp_flag: boolean, default=False
-        If set, all pixels in reconstructed phase space will be tracked.\n
-    machine_ref_frame: int, default=0
-        Frame to which machine parameters are referenced.\n
-    beam_ref_frame: int, default=0
-        Frame to which beam parameters are referenced.\n
-    snpt: int, default=4
-        Square root of particles pr. cell of phase space.\n
-    niter: int, default=20
-        Number of iterations in tomographic reconstruction.\n
-    filmstart: int, default=0
-        First profile to reconstruct.\n
-    filmstop: int, default=1
-        Last profile to reconstruct.\n
-    filmstep: int, default=1
-        Step between profiles to reconstruct.\n
-    output_dir: string, default=None
-        Directory to save output.\n
-    time_at_turn: ndarray
-        1D array holding the time at each turn. Turn zero = 0 [s].
-    phi0: ndarray
-        1D array holding the synchronous phase angle at the end of each turn.
-    e0: ndarray
-        1D array holding the total energy of synchronous
-        particle at the end of each turn.
-    beta0: ndarray
-        1D array holding the Lorenz beta factor (v/c)
-        at the end of each turn.
-    deltaE0: ndarray
-        1D array holding the difference between
-        e0(n) and e0(n-1) for each turn.
-    eta0: ndarray
-        1D array holding the phase slip factor at each turn.
-    drift_coef: ndarray
-        1D array holding coefficient used for calculating difference,
-        from phase n to phase n + 1. Needed by trajectory height
-        calculator, and tracking.
-    omega_rev0: ndarray
-        1D array holding the revolution frequency at each turn.
-    vrf1_at_turn: ndarray
-        1D array holding the peak voltage at each turn for
-        the first RF station.
-    vrf2_at_turn: ndarray
-        1D array holding the peak voltage at each turn for
-        the second RF station.
     """
-
     def __init__(self, dturns: int, vrf1: float, mean_orbit_rad: float,
                  bending_rad: float, b0: float, trans_gamma: float,
                  rest_energy: float, nprofiles: int, nbins: int, dtbin: float,
@@ -209,36 +109,6 @@ class Machine(MachineABC):
             self.values_at_turns()
 
     def values_at_turns(self):
-        """Calculating machine values for each turn.
-
-        The following values are calculated in this function. All are
-        ndarrays of the data type float.
-
-        * time_at_turn
-            Time at each turn. Turn zero = 0 [s].
-        * phi0
-            Synchronous phase angle at the end of each turn.
-        * e0
-            Total energy of synchronous particle at the end of each turn.
-        * beta0
-            Lorentz beta factor (v/c) at the end of each turn.
-        * deltaE0
-            Difference between e0(n) and e0(n-1) for each turn.
-        * eta0
-            Phase slip factor at each turn.
-        * drift_coef
-            Coefficient used for calculating difference,
-            from phase n to phase n + 1.
-            Needed in trajectory height calculator and tracking.
-        * omega_rev0
-            Revolution frequency at each turn.
-        * vrf1_at_turn
-            Peak voltage at each turn for the first RF station.
-        * vrf2_at_turn
-            Peak voltage at each turn for the second RF station.
-
-        The values are saved as fields of the Machine object.
-        """
         asrt.assert_machine_input(self)
         all_turns = (self.nprofiles - 1) * self.dturns
 

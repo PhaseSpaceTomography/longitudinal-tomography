@@ -436,6 +436,33 @@ class TestTLW(unittest.TestCase):
                                        err_msg='Error in '
                                                'reconstructed waterfall.')
 
+    def test_callback(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+
+        denergy = np.array([-115567.32591061])
+        dphi = np.array([0.33178332])
+        nparts = 1
+
+        recprof = 5
+        nturns = machine.dturns * (machine.nprofiles - 1)
+
+        rfv1 = machine.vrf1_at_turn * machine.q
+        rfv2 = machine.vrf2_at_turn * machine.q
+
+        xp = np.zeros((machine.nprofiles, nparts))
+        yp = np.zeros((machine.nprofiles, nparts))
+
+        results = []
+        callback = lambda progress, total: results.append(progress)
+
+        libtomo.kick_and_drift(
+            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof,
+            nturns, nparts, callback=callback)
+
+        correct = np.arange(1, nturns+1).tolist()
+
+        self.assertListEqual(results, correct)
+
     def _load_waterfall(self):
         base_dir = os.path.split(os.path.realpath(__file__))[0]
         base_dir = os.path.split(base_dir)[0]
