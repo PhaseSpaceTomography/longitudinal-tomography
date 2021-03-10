@@ -448,10 +448,10 @@ class TestAssertions(unittest.TestCase):
                 msg='h_ratio with value None should raise an Exception'):
             asrt.assert_machine_input(machine)
 
-        machine.h_ratio = 0
+        machine.h_ratio = -1
         with self.assertRaises(
                 expt.MachineParameterError,
-                msg='h_ratio with value less than one should '
+                msg='h_ratio with value less than zero should '
                     'raise an Exception'):
             asrt.assert_machine_input(machine)
 
