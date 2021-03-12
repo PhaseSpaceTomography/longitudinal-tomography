@@ -42,9 +42,10 @@ class ProgramsMachine(MachineABC):
         A list of integers where each is the harmonic of an RF station.
         The number of harmonics must be the same as the passed voltage and
         phase functions.
-    t_start: float
-        The cTime at which to start tracking. Must withing the time range
-        defined in the voltage, phase and momentum programs.
+    t_ref: float
+        The cTime at which to the machine parameters are referenced.
+        Must withing the time range defined in the voltage, phase and
+        momentum programs.
     vat_now: bool
         Calculate values at turns immediately after initialisation.
 
@@ -60,7 +61,7 @@ class ProgramsMachine(MachineABC):
                  n_profiles: int,
                  n_bins: int,
                  dtbin: float,
-                 t_start: float = None,
+                 t_ref: float = None,
                  vat_now: bool = True,
                  **kwargs):
         asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
@@ -75,19 +76,11 @@ class ProgramsMachine(MachineABC):
         self.momentum_raw = momentum_function
         self.harmonics = harmonics
 
-        self.circumference = 2 * np.pi * self.mean_orbit_rad
-        self.t_start: float = t_start
-
-        self.flat_bottom = 0
-        self.flat_top = 0
+        self.circumference: float = 2 * np.pi * self.mean_orbit_rad
+        self.t_ref = t_ref
 
         # init variables
-        self.momentum_time: np.ndarray = None
         self.momentum_function: np.ndarray = None
-        self.voltage_time: np.ndarray = None
-        self.voltage_function: np.ndarray = None
-        self.phase_function: np.ndarray = None
-        self.phase_time: np.ndarray = None
         self.n_turns: int = None
 
         if vat_now:
@@ -103,6 +96,7 @@ class ProgramsMachine(MachineABC):
             self.momentum_raw[1, :]
         )
 
+        # interpolate first harmonic voltage & phase
         self.vrf1_at_turn = np.interp(
             momentum_time,  # same time steps as momentum program
             self.voltage_raw[0, :],  # voltage time
@@ -114,6 +108,7 @@ class ProgramsMachine(MachineABC):
             self.phase_raw[1, :]
         )
 
+        # interpolate second harmonic voltage & phase if applicable
         if len(self.harmonics) == 2:
             self.vrf2_at_turn = np.interp(
                 momentum_time,
@@ -140,6 +135,7 @@ class ProgramsMachine(MachineABC):
         beta0 = np.sqrt(1/(1 + (self.e_rest/momentum)**2))
         t_rev = np.dot(self.circumference, 1/(beta0*c.c))
         f_rev = 1/t_rev
+        time_at_turn = np.cumsum(t_rev)
 
         omega_rev0 = 2*np.pi*f_rev
         phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
@@ -174,6 +170,8 @@ class ProgramsMachine(MachineABC):
                              % (2*np.pi)
         phi0 = phi_s - np.pi
 
+        self.momentum_function = momentum_function
+
         self.beta0 = beta0
         self.deltaE0 = deltaE0
         self.drift_coef = drift_coef
@@ -182,7 +180,7 @@ class ProgramsMachine(MachineABC):
         self.omega_rev0 = omega_rev0
         self.phi0 = phi0
         self.phi12 = phi12
-        self.time_at_turn = np.cumsum(t_rev)
+        self.time_at_turn = time_at_turn
 
     def _interpolate_momentum(self, time: np.ndarray, momentum: np.ndarray):
         """
@@ -206,33 +204,30 @@ class ProgramsMachine(MachineABC):
 
         beta_0 = np.sqrt(1 / (1 + (self.e_rest / momentum[0]) ** 2))
         T0 = self.circumference / (beta_0 * c.c)  # Initial revolution period [s]
-        shift = time[0] - self.flat_bottom * T0
-        time_interp = shift + T0 * np.arange(0, self.flat_bottom + 1)
-        beta_interp = beta_0 * np.ones(self.flat_bottom + 1)
-        momentum_interp = momentum[0] * np.ones(self.flat_bottom + 1)
+        time_interp = time[0] + T0
+        beta_interp = beta_0
+        momentum_interp = momentum[0]
 
-        time_interp = time_interp.tolist()
-        beta_interp = beta_interp.tolist()
-        momentum_interp = momentum_interp.tolist()
-
-        time_start_ramp = np.max(time[momentum == momentum[0]])
-        time_end_ramp = np.min(time[momentum == momentum[-1]])
+        time_interp = [time_interp]
+        beta_interp = [beta_interp]
+        momentum_interp = [momentum_interp]
 
         # Interpolate data recursively
         time_interp.append(time_interp[-1]
                            + self.circumference / (beta_interp[0] * c.c))
 
-        if self.t_start is not None:
-            initial_index = np.min(np.where(time >= self.t_start)[0])
+        if self.t_ref is not None:
+            initial_index = np.min(np.where(time >= self.t_ref)[0])
         else:
             initial_index = 0
 
-        nturns = self.dturns * self.nprofiles + 100
-        i = self.flat_bottom
-        interpolate_idx = 0
-        turn = 0
+        nturns = self.dturns * self.nprofiles
+        i0 = self.machine_ref_frame * self.dturns
+        i = 0
+        turn = i0
+
+        k = initial_index
         while turn < nturns:
-            k = interpolate_idx + initial_index
 
             while time_interp[i + 1] <= time[k]:
                 momentum_interp.append(
@@ -249,36 +244,24 @@ class ProgramsMachine(MachineABC):
 
                 i += 1
 
-                if time_interp[i + 1] > self.t_start:
+                if time_interp[i + 1] > self.t_ref:
                     turn += 1
 
-            interpolate_idx += 1
+            k += 1
 
         time_interp.pop()
         time_interp = np.asarray(time_interp)
         beta_interp = np.asarray(beta_interp)
         momentum_interp = np.asarray(momentum_interp)
 
-        # Obtain flat top data, extrapolate to constant
-        if self.flat_top > 0:
-            time_interp = np.append(
-                time_interp,
-                time_interp[-1] + self.circumference*np.arange(1, self.flat_top+1)
-                / (beta_interp[-1]*c.c))
-
-            beta_interp = np.append(
-                beta_interp, beta_interp[-1]*np.ones(self.flat_top))
-
-            momentum_interp = np.append(
-                momentum_interp,
-                momentum_interp[-1]*np.ones(self.flat_top))
-
         # Cutting the input momentum on the desired cycle time
-        if self.t_start is not None:
-            initial_index = np.min(np.where(time_interp >= self.t_start)[0])
+        if self.t_ref is not None:
+            initial_index = np.min(np.where(time_interp >= self.t_ref)[0])
+            initial_index -= i0
         else:
             initial_index = 0
-        final_index = self.dturns * self.nprofiles + initial_index
+
+        final_index = initial_index + nturns
         if final_index > len(time_interp):
             raise ValueError('Not enough data in momentum program to '
                              f'interpolate {nturns} turns.')
