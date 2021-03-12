@@ -59,7 +59,9 @@ build-wheels:
 build-sdist:
   image: python:3
   stage: build
-  script: python setup.py sdist
+  script:
+    - pip install build
+    - python -m build -s
   artifacts:
     expire_in: 7 days
     paths:
