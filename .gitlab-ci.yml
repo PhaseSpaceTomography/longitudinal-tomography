@@ -116,5 +116,5 @@ release_sdist_on_tag:
 
 release_wheels_on_tag:
   dependencies:
-    - test-wheels
+    - build-wheels
   extends: .acc_py_release_wheel
