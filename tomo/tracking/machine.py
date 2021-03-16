@@ -124,9 +124,9 @@ class Machine(MachineABC):
                                     + 2 * np.pi * self.mean_orbit_rad
                                     / (self.beta0[i - 1] * constants.c))
 
-            self.phi0[i] = optimize.newton(func=physics.rf_voltage,
+            self.phi0[i] = optimize.newton(func=physics.rf_voltage_mch,
                                            x0=self.phi0[i - 1],
-                                           fprime=physics.drf_voltage,
+                                           fprime=physics.drf_voltage_mch,
                                            tol=0.0001,
                                            maxiter=100,
                                            args=(self, i))
@@ -156,9 +156,9 @@ class Machine(MachineABC):
                                     - 2 * np.pi * self.mean_orbit_rad
                                     / (self.beta0[i] * constants.c))
 
-            self.phi0[i] = optimize.newton(func=physics.rf_voltage,
+            self.phi0[i] = optimize.newton(func=physics.rf_voltage_mch,
                                            x0=self.phi0[i + 1],
-                                           fprime=physics.drf_voltage,
+                                           fprime=physics.drf_voltage_mch,
                                            tol=0.0001,
                                            maxiter=100,
                                            args=(self, i))
@@ -242,7 +242,7 @@ class Machine(MachineABC):
         self.beta0[i0] = physics.lorentz_beta(self, i0)
         phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
         # Synchronous phase of a particle on the nominal orbit
-        self.phi0[i0] = physics.find_synch_phase(
+        self.phi0[i0] = physics.find_synch_phase_mch(
             self, i0, phi_lower, phi_upper)
         return i0
 

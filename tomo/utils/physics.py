@@ -12,9 +12,14 @@ from scipy import optimize, constants
 
 if t.TYPE_CHECKING:
     from ..tracking.machine import Machine
+    from ..tracking.programs_machine import ProgramsMachine
+    from ..tracking.machine_base import MachineABC
 
 
-def b_to_e(machine: 'Machine') -> float:
+arr_or_float = t.Union[np.ndarray, float]
+
+
+def b_to_e(machine: 'MachineABC') -> float:
     """
     Calculates the energy for a particle
     in a circular machine at dipole field B.
@@ -36,7 +41,7 @@ def b_to_e(machine: 'Machine') -> float:
                    + machine.e_rest ** 2)
 
 
-def lorentz_beta(machine: 'Machine', rf_turn: int) -> float:
+def lorentz_beta(machine: 'MachineABC', rf_turn: int) -> float:
     """Calculates Lorentz beta factor (v/c) at a turn.
 
     Parameters
@@ -55,7 +60,8 @@ def lorentz_beta(machine: 'Machine', rf_turn: int) -> float:
                           machine.e0[rf_turn]) ** 2)
 
 
-def rfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
+def rfvolt_rf1(phi: float, v1: float, bdot: float, radius: float,
+               bending_rad: float, charge: float) -> float:
     """Calculates RF voltage1 seen by particle.
     Needed by the Newton root finder to calculate phi0.
 
@@ -73,15 +79,13 @@ def rfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
     voltage: float
         Voltage from RF system 1, as seen by particle.
     """
-    turn_time = machine.time_at_turn[rf_turn]
-    v1 = vrft(machine.vrf1, machine.vrf1dot, turn_time)
-    q_sign = np.sign([machine.q])
+    q_sign = np.sign(charge)
     return (v1 * np.sin(phi)
-            - 2 * np.pi * machine.mean_orbit_rad
-            * machine.bending_rad * machine.bdot * q_sign[0])
+            - 2 * np.pi * radius
+            * bending_rad * bdot * q_sign)
 
 
-def drfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
+def drfvolt_rf1(phi: arr_or_float, v1: arr_or_float) -> arr_or_float:
     """Calculates derivative of RF voltage1 seen by particle.
     Needed by the Newton root finder to calculate phi0.
 
@@ -99,12 +103,40 @@ def drfvolt_rf1(phi: float, machine: 'Machine', rf_turn: int) -> float:
     Derivative of voltage: float
         Time-derivative of voltage from RF system 1, as seen by particle.
     """
-    turn_time = machine.time_at_turn[rf_turn]
-    v1 = vrft(machine.vrf1, machine.vrf1dot, turn_time)
     return v1 * np.cos(phi)
 
 
-def rf_voltage(phi: float, machine: 'Machine', rf_turn: int) -> float:
+def rfvolt_rf1_mch(phi: float, machine: 'Machine', rf_turn: int) -> float:
+    turn_time = machine.time_at_turn[rf_turn]
+    v1 = vrft(machine.vrf1, machine.vrf1dot, turn_time)
+
+    return rfvolt_rf1(phi, v1, machine.bdot, machine.mean_orbit_rad,
+                      machine.bending_rad, machine.q)
+
+
+def drfvolt_rf1_mch(phi: float, machine: 'Machine', rf_turn: int) -> float:
+    turn_time = machine.time_at_turn[rf_turn]
+    v1 = vrft(machine.vrf1, machine.vrf1dot, turn_time)
+    return drfvolt_rf1(phi, v1)
+
+
+def rfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+    v1 = machine.vrf1_at_turn[rf_turn]
+    bdot = machine.bdot[rf_turn]
+
+    return rfvolt_rf1(phi, v1, bdot, machine.mean_orbit_rad,
+                      machine.bending_rad, machine.q)
+
+
+def drfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+    v1 = machine.vrf1_at_turn[rf_turn]
+    return drfvolt_rf1(phi, v1)
+
+
+def rf_voltage(phi: arr_or_float, v1: arr_or_float, v2: arr_or_float,
+               bdot: arr_or_float, h_ratio: float, phi12: arr_or_float,
+               radius: float, bending_rad: float, charge: float) \
+        -> arr_or_float:
     """Calculates RF voltage from both RF systems seen by particle.
     Needed by the Newton root finder to calculate phi0.
 
@@ -122,17 +154,36 @@ def rf_voltage(phi: float, machine: 'Machine', rf_turn: int) -> float:
     voltage: float
         Voltage from both RF systems, as seen by particle.
     """
+    q_sign = np.sign(charge)
+    return (v1 * np.sin(phi)
+            + (v2 * np.sin(h_ratio * (phi - phi12)))
+            - (np.pi * 2 * radius
+               * bending_rad * bdot * q_sign))
+
+
+def rf_voltage_mch(phi: float, machine: 'Machine', rf_turn: int) -> float:
     turn_time = machine.time_at_turn[rf_turn]
-    q_sign = np.sign([machine.q])
     v1 = vrft(machine.vrf1, machine.vrf1dot, turn_time)
     v2 = vrft(machine.vrf2, machine.vrf2dot, turn_time)
-    return (v1 * np.sin(phi)
-            + (v2 * np.sin(machine.h_ratio * (phi - machine.phi12)))
-            - (np.pi * 2 * machine.mean_orbit_rad
-               * machine.bending_rad * machine.bdot * q_sign[0]))
+
+    return rf_voltage(phi, v1, v2, machine.bdot, machine.h_ratio,
+                      machine.phi12, machine.mean_orbit_rad,
+                      machine.bending_rad, machine.q)
 
 
-def drf_voltage(phi: float, machine: 'Machine', rf_turn: int) -> float:
+def rf_voltage_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+    v1 = machine.vrf1_at_turn[rf_turn]
+    v2 = machine.vrf2_at_turn[rf_turn]
+    bdot = machine.bdot[rf_turn]
+    phi12 = machine.phi12[rf_turn]
+
+    return rf_voltage(phi, v1, v2, bdot, machine.h_ratio,
+                      phi12, machine.mean_orbit_rad,
+                      machine.bending_rad, machine.q)
+
+
+def drf_voltage(phi: float, v1: arr_or_float, v2: arr_or_float,
+                h_ratio: float, phi12: arr_or_float) -> arr_or_float:
     """Calculates derivative of RF voltage from both RF systems seen by
     particle.
     Needed by the Newton root finder to calculate phi0.
@@ -151,6 +202,10 @@ def drf_voltage(phi: float, machine: 'Machine', rf_turn: int) -> float:
     Derivative of voltage: float
         Derivative of voltage from both RF systems, as seen by particle.
     """
+    return v1 * np.cos(phi) + h_ratio * v2 * np.cos(h_ratio * (phi - phi12))
+
+
+def drf_voltage_mch(phi: float, machine: 'Machine', rf_turn: int) -> float:
     turn_time = machine.time_at_turn[rf_turn]
     v1 = vrft(machine.vrf1, machine.vrf1dot, turn_time)
     v2 = vrft(machine.vrf2, machine.vrf2dot, turn_time)
@@ -159,6 +214,14 @@ def drf_voltage(phi: float, machine: 'Machine', rf_turn: int) -> float:
             * v2
             * np.cos(machine.h_ratio
                      * (phi - machine.phi12)))
+
+
+def drf_voltage_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+    v1 = machine.vrf1_at_turn[rf_turn]
+    v2 = machine.vrf2_at_turn[rf_turn]
+    phi12 = machine.phi12[rf_turn]
+    return (v1 * np.cos(phi) + machine.h_ratio * v2 * np.cos(machine.h_ratio
+            * (phi - phi12)))
 
 
 @dispatch(Number, Number, Number, Number, Number, Number, Number,
@@ -204,8 +267,8 @@ def vrft(vrf: float, vrf_dot: float, turn_time: float) -> float:
     return vrf + vrf_dot * turn_time
 
 
-def find_synch_phase(machine: 'Machine', rf_turn: int,
-                     phi_lower: float, phi_upper: float) -> float:
+def find_synch_phase_mch(machine: 'Machine', rf_turn: int,
+                         phi_lower: float, phi_upper: float) -> float:
     """Uses the Newton-Raphson root finder to estimate
     the synchronous phase for a particle on the normal orbit.
 
@@ -225,15 +288,15 @@ def find_synch_phase(machine: 'Machine', rf_turn: int,
     synchronous phase: float
         Synchronous phase given in gradients.
     """
-    phi_start = optimize.newton(func=rfvolt_rf1,
+    phi_start = optimize.newton(func=rfvolt_rf1_mch,
                                 x0=(phi_lower + phi_upper) / 2.0,
-                                fprime=drfvolt_rf1,
+                                fprime=drfvolt_rf1_mch,
                                 tol=0.0001,
                                 maxiter=100,
                                 args=(machine, rf_turn))
-    synch_phase = optimize.newton(func=rf_voltage,
+    synch_phase = optimize.newton(func=rf_voltage_mch,
                                   x0=phi_start,
-                                  fprime=drf_voltage,
+                                  fprime=drf_voltage_mch,
                                   tol=0.0001,
                                   maxiter=100,
                                   args=(machine, rf_turn))
@@ -241,13 +304,13 @@ def find_synch_phase(machine: 'Machine', rf_turn: int,
 
 
 def find_phi_lower_upper(
-        machine: 'Machine', rf_turn: int) -> t.Tuple[float, float]:
+        machine: 'MachineABC', rf_turn: int) -> t.Tuple[float, float]:
     """Calculates lower and upper phase of RF voltage
     for use in estimation of phi0.
 
     Parameters
     ----------
-    machine: Machine
+    machine: MachineABC
         Stores machine parameters and reconstruction settings.
     rf_turn: int
         At which RF turn the calculation should happen.
@@ -273,7 +336,7 @@ def find_phi_lower_upper(
     return phi_lower, phi_upper
 
 
-def phase_slip_factor(machine: 'Machine') -> np.ndarray:
+def phase_slip_factor(machine: 'MachineABC') -> np.ndarray:
     """Calculates phase slip factor at each turn.
 
     Parameters
@@ -289,7 +352,7 @@ def phase_slip_factor(machine: 'Machine') -> np.ndarray:
     return (1.0 - machine.beta0 ** 2) - machine.trans_gamma ** (-2)
 
 
-def find_dphase(machine: 'Machine') -> np.ndarray:
+def find_dphase(machine: 'MachineABC') -> np.ndarray:
     """Calculates coefficient needed for drift calculation during tracking.
     The drift coefficient is calculated for each machine turn.
 
@@ -307,7 +370,7 @@ def find_dphase(machine: 'Machine') -> np.ndarray:
             / (machine.e0 * machine.beta0 ** 2))
 
 
-def revolution_freq(machine: 'Machine') -> np.ndarray:
+def revolution_freq(machine: 'MachineABC') -> np.ndarray:
     """Calculate revolution frequency for each turn.
 
     Parameters
@@ -323,7 +386,7 @@ def revolution_freq(machine: 'Machine') -> np.ndarray:
     return machine.beta0 * constants.c / machine.mean_orbit_rad
 
 
-def calc_self_field_coeffs(machine: 'Machine') -> np.ndarray:
+def calc_self_field_coeffs(machine: 'MachineABC') -> np.ndarray:
     """Calculates self-field coefficient for each profile.
     Needed for calculation of self-fields.
 
@@ -349,7 +412,7 @@ def calc_self_field_coeffs(machine: 'Machine') -> np.ndarray:
     return sfc
 
 
-def phase_low(phase: float, machine: 'Machine', bunch_phaselength: float,
+def phase_low_mch(phase: float, machine: 'MachineABC', bunch_phaselength: float,
               rf_turn: int) -> float:
     """Calculates potential energy at phase.
     Needed for estimation of x-coordinate of synchronous particle.
@@ -366,16 +429,17 @@ def phase_low(phase: float, machine: 'Machine', bunch_phaselength: float,
         At which RF turn the calculation should happen.
     """
 
-    return _phase_low(phase, bunch_phaselength, machine.vrf1_at_turn,
-                      machine.vrf2_at_turn, machine.phi0, machine.h_ratio,
-                      machine.phi12, rf_turn, machine.machine_ref_frame)
+    return phase_low(phase, bunch_phaselength, machine.vrf1_at_turn,
+                     machine.vrf2_at_turn, machine.phi0, machine.h_ratio,
+                     machine.phi12, rf_turn, machine.machine_ref_frame)
 
 
-def _phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
+def phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
                vrf2: np.ndarray, phi0: np.ndarray, h_ratio: float,
-               phi12: t.Union[float, np.ndarray], rf_turn: int,
+               phi12: arr_or_float, rf_turn: int,
                ref_frame: int = 0) -> float:
-    phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
+
+    phi12 = phi12[ref_frame] if isinstance(phi12, np.ndarray) else phi12
 
     v1 = vrf1[ref_frame] * (np.cos(phase + bunch_phaselength) - np.cos(phase))
 
@@ -392,8 +456,8 @@ def _phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
     return v1 + v2 + v_synch_phase
 
 
-def dphase_low(phase: float, machine: 'Machine',
-               bunch_phaselength: float, rf_turn: int, *args) -> float:
+def dphase_low_mch(phase: float, machine: 'MachineABC',
+                   bunch_phaselength: float, rf_turn: int, *args) -> float:
     """Calculates derivative of the phase_low function.
     The function is needed for estimation of x-coordinate
     of synchronous particle.
@@ -409,14 +473,14 @@ def dphase_low(phase: float, machine: 'Machine',
     args: None
         Not used, arg needed for implementation of Newton-Raphson root finder.
     """
-    return _dphase_low(phase, bunch_phaselength, machine.vrf1_at_turn,
-                       machine.vrf2_at_turn, None, machine.h_ratio,
+    return dphase_low(phase, bunch_phaselength, machine.vrf1_at_turn,
+                       machine.vrf2_at_turn, machine.h_ratio,
                        machine.phi12, rf_turn)
 
 
-def _dphase_low(phase: float, bunch_phaselength: float, vrf1: float,
-                vrf2: float, phi0, h_ratio: float, phi12: float, rf_turn: int,
-                ref_turn: int = 0) -> float:
+def dphase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
+                vrf2: np.ndarray, h_ratio: float, phi12: arr_or_float,
+                rf_turn: int) -> float:
     phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
 
     ret = (-1.0 * vrf2[rf_turn]

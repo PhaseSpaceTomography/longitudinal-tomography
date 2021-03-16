@@ -2,7 +2,10 @@ import numpy as np
 import scipy.constants as c
 import logging
 import typing as t
+from scipy import optimize
+from scipy import constants as cont
 
+from ..utils import physics
 from .machine_base import MachineABC
 from .. import assertions as asrt
 from .. import exceptions as ex
@@ -81,6 +84,7 @@ class ProgramsMachine(MachineABC):
 
         # init variables
         self.momentum_function: np.ndarray = None
+        self.bdot: np.ndarray = None
         self.n_turns: int = None
 
         if vat_now:
@@ -126,6 +130,7 @@ class ProgramsMachine(MachineABC):
 
         self.n_turns = len(momentum_time)
         self.h_num = self.harmonics[0]
+        i0 = self.machine_ref_frame * self.dturns
 
         momentum = momentum_function
         energy = np.sqrt(momentum**2 + self.e_rest**2)
@@ -145,42 +150,56 @@ class ProgramsMachine(MachineABC):
         drift_coef = (2 * np.pi * self.h_num * eta0
                            / (energy * beta0 ** 2))
 
-        denergy = np.append(deltaE0, deltaE0[-1])
-        acceleration_ratio = denergy/(self.q*self.vrf1_at_turn)
-        acceleration_test = np.where((acceleration_ratio > -1) *
-                                     (acceleration_ratio < 1) is False)[0]
-
-        # Validity check on acceleration_ratio
-        if acceleration_test.size > 0:
-            log.warning('WARNING in calculate_phi_s(): acceleration is not '
-                        'possible (momentum increment is too big or voltage '
-                        'too low) at index {}'.format(acceleration_test))
-
-        phi_s = np.arcsin(acceleration_ratio)
-
-        # Identify where eta swaps sign
-        eta0_middle_points = -(eta0[1:] + eta0[:-1])/2
-        eta0_middle_points = np.append(eta0_middle_points, -eta0[-1])
-        index = np.where(eta0_middle_points > 0)[0]
-        index_below = np.where(eta0_middle_points < 0)[0]
-
-        # Project phi_s in correct range
-        phi_s[index] = (np.heaviside(np.sign(self.q),0) * np.pi - phi_s[index]) % (2*np.pi)
-        phi_s[index_below] = (np.heaviside(np.sign(self.q),0) * np.pi + phi_s[index_below]) \
-                             % (2*np.pi)
-        phi0 = phi_s - np.pi
+        bfield = momentum / (self.bending_rad * self.q) / cont.c
+        bdot = np.gradient(bfield, time_at_turn)
 
         self.momentum_function = momentum_function
 
+        self.bdot = bdot
         self.beta0 = beta0
         self.deltaE0 = deltaE0
         self.drift_coef = drift_coef
         self.e0 = energy
         self.eta0 = eta0
         self.omega_rev0 = omega_rev0
-        self.phi0 = phi0
+        self.phi0 = np.zeros_like(self.vrf1_at_turn)
         self.phi12 = phi12
         self.time_at_turn = time_at_turn
+
+        phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
+
+        try:
+            phi_start = optimize.newton(func=physics.rfvolt_rf1_pmch,
+                                        x0=(phi_lower + phi_upper) / 2.0,
+                                        fprime=physics.drfvolt_rf1_pmch,
+                                        tol=0.0001,
+                                        maxiter=100,
+                                        args=(self, i0))
+            synch_phase = optimize.newton(func=physics.rf_voltage_pmch,
+                                          x0=phi_start,
+                                          fprime=physics.drf_voltage_pmch,
+                                          tol=0.0001,
+                                          maxiter=100,
+                                          args=(self, i0))
+            self.phi0[i0] = synch_phase
+
+            for i in range(i0 + 1, self.n_turns - self.dturns):
+                self.phi0[i] = optimize.newton(func=physics.rf_voltage_pmch,
+                                               x0=self.phi0[i - 1],
+                                               fprime=physics.drf_voltage_pmch,
+                                               tol=0.0001,
+                                               maxiter=100,
+                                               args=(self, i))
+            for i in range(i0 - 1, -1, -1):
+                self.phi0[i] = optimize.newton(func=physics.rf_voltage_pmch,
+                                               x0=self.phi0[i + 1],
+                                               fprime=physics.drf_voltage_pmch,
+                                               tol=0.0001,
+                                               maxiter=100,
+                                               args=(self, i))
+        except RuntimeError:
+            raise ValueError('Could not find synchronous phase for supplied '
+                             'parameters.')
 
     def _interpolate_momentum(self, time: np.ndarray, momentum: np.ndarray):
         """
@@ -204,13 +223,9 @@ class ProgramsMachine(MachineABC):
 
         beta_0 = np.sqrt(1 / (1 + (self.e_rest / momentum[0]) ** 2))
         T0 = self.circumference / (beta_0 * c.c)  # Initial revolution period [s]
-        time_interp = time[0] + T0
-        beta_interp = beta_0
-        momentum_interp = momentum[0]
-
-        time_interp = [time_interp]
-        beta_interp = [beta_interp]
-        momentum_interp = [momentum_interp]
+        time_interp = [time[0] + T0]
+        beta_interp = [beta_0]
+        momentum_interp = [momentum[0]]
 
         # Interpolate data recursively
         time_interp.append(time_interp[-1]
