@@ -64,7 +64,7 @@ class TestPostProcess(unittest.TestCase):
         t_bins, e_bins, phase_space = treat.phase_space(tomo, machine)
 
         rms_dpp = post_process.rms_dpp(phase_space.sum(0), e_bins,
-                                       energy, momentum, mass)
+                                       energy, mass)
         self.assertAlmostEqual(rms_dpp, 0.0003547122166635846)
 
     def test_post_process(self):
@@ -76,8 +76,7 @@ class TestPostProcess(unittest.TestCase):
 
         t_bins, e_bins, phase_space = treat.phase_space(tomo, machine)
         processed_values = post_process.post_process(phase_space, t_bins,
-                                                     e_bins, energy, momentum,
-                                                     mass)
+                                                     e_bins, energy, mass)
 
         correct = {
             'emittance_rms': 0.03297873913189668,
@@ -85,4 +84,5 @@ class TestPostProcess(unittest.TestCase):
             'rms_dp/p': 0.0003547122166635846,
         }
 
-        self.assertDictEqual(processed_values, correct)
+        for k, v in correct.items():
+            self.assertAlmostEqual(v, processed_values[k])

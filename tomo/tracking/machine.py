@@ -124,12 +124,16 @@ class Machine(MachineABC):
                                     + 2 * np.pi * self.mean_orbit_rad
                                     / (self.beta0[i - 1] * constants.c))
 
-            self.phi0[i] = optimize.newton(func=physics.rf_voltage_mch,
-                                           x0=self.phi0[i - 1],
-                                           fprime=physics.drf_voltage_mch,
-                                           tol=0.0001,
-                                           maxiter=100,
-                                           args=(self, i))
+            try:
+                self.phi0[i] = optimize.newton(func=physics.rf_voltage_mch,
+                                               x0=self.phi0[i - 1],
+                                               fprime=physics.drf_voltage_mch,
+                                               tol=0.0001,
+                                               maxiter=100,
+                                               args=(self, i))
+            except RuntimeError:
+                raise ValueError('Could not fit synchronous phase for the '
+                                 'supplied parameters.')
 
             self.e0[i] = (self.e0[i - 1]
                           + self.q
@@ -156,12 +160,16 @@ class Machine(MachineABC):
                                     - 2 * np.pi * self.mean_orbit_rad
                                     / (self.beta0[i] * constants.c))
 
-            self.phi0[i] = optimize.newton(func=physics.rf_voltage_mch,
-                                           x0=self.phi0[i + 1],
-                                           fprime=physics.drf_voltage_mch,
-                                           tol=0.0001,
-                                           maxiter=100,
-                                           args=(self, i))
+            try:
+                self.phi0[i] = optimize.newton(func=physics.rf_voltage_mch,
+                                               x0=self.phi0[i + 1],
+                                               fprime=physics.drf_voltage_mch,
+                                               tol=0.0001,
+                                               maxiter=100,
+                                               args=(self, i))
+            except RuntimeError:
+                raise ValueError('Could not fit synchronous phase for the '
+                                 'supplied parameters.')
 
         # Calculate phase slip factor at each turn
         self.eta0 = physics.phase_slip_factor(self)

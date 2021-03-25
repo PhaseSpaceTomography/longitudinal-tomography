@@ -288,18 +288,23 @@ def find_synch_phase_mch(machine: 'Machine', rf_turn: int,
     synchronous phase: float
         Synchronous phase given in gradients.
     """
-    phi_start = optimize.newton(func=rfvolt_rf1_mch,
-                                x0=(phi_lower + phi_upper) / 2.0,
-                                fprime=drfvolt_rf1_mch,
-                                tol=0.0001,
-                                maxiter=100,
-                                args=(machine, rf_turn))
-    synch_phase = optimize.newton(func=rf_voltage_mch,
-                                  x0=phi_start,
-                                  fprime=drf_voltage_mch,
-                                  tol=0.0001,
-                                  maxiter=100,
-                                  args=(machine, rf_turn))
+    try:
+        phi_start = optimize.newton(func=rfvolt_rf1_mch,
+                                    x0=(phi_lower + phi_upper) / 2.0,
+                                    fprime=drfvolt_rf1_mch,
+                                    tol=0.0001,
+                                    maxiter=100,
+                                    args=(machine, rf_turn))
+        synch_phase = optimize.newton(func=rf_voltage_mch,
+                                      x0=phi_start,
+                                      fprime=drf_voltage_mch,
+                                      tol=0.0001,
+                                      maxiter=100,
+                                      args=(machine, rf_turn))
+    except RuntimeError:
+        raise ValueError('Could not fit synchronous phase for the supplied '
+                         'parameters')
+
     return synch_phase
 
 

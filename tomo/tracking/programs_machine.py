@@ -61,10 +61,10 @@ class ProgramsMachine(MachineABC):
                  harmonics: t.List[int],
                  mean_orbit_rad: float, bending_rad: float,
                  trans_gamma: float, rest_energy: float,
-                 n_profiles: int,
-                 n_bins: int,
+                 nprofiles: int,
+                 nbins: int,
                  dtbin: float,
-                 t_ref: float = None,
+                 t_ref: float,
                  vat_now: bool = True,
                  **kwargs):
         asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
@@ -72,7 +72,7 @@ class ProgramsMachine(MachineABC):
                             'Only 1 or 2 harmonics accepted.')
         kwargs['h_num'] = harmonics[0]
         super().__init__(dturns, mean_orbit_rad, bending_rad, trans_gamma,
-                         rest_energy, n_profiles, n_bins, dtbin, **kwargs)
+                         rest_energy, nprofiles, nbins, dtbin, **kwargs)
 
         self.voltage_raw = voltage_function
         self.phase_raw = phase_function
@@ -141,6 +141,7 @@ class ProgramsMachine(MachineABC):
         t_rev = np.dot(self.circumference, 1/(beta0*c.c))
         f_rev = 1/t_rev
         time_at_turn = np.cumsum(t_rev)
+        time_at_turn -= time_at_turn[i0]
 
         omega_rev0 = 2*np.pi*f_rev
         phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
@@ -183,7 +184,7 @@ class ProgramsMachine(MachineABC):
                                           args=(self, i0))
             self.phi0[i0] = synch_phase
 
-            for i in range(i0 + 1, self.n_turns - self.dturns):
+            for i in range(i0 + 1, self.n_turns):
                 self.phi0[i] = optimize.newton(func=physics.rf_voltage_pmch,
                                                x0=self.phi0[i - 1],
                                                fprime=physics.drf_voltage_pmch,
@@ -236,12 +237,12 @@ class ProgramsMachine(MachineABC):
         else:
             initial_index = 0
 
-        nturns = self.dturns * self.nprofiles
+        nturns = self.dturns * (self.nprofiles - 1) + 1
         i0 = self.machine_ref_frame * self.dturns
         i = 0
         turn = i0
 
-        k = initial_index
+        k = 0
         while turn < nturns:
 
             while time_interp[i + 1] <= time[k]:
@@ -277,7 +278,7 @@ class ProgramsMachine(MachineABC):
             initial_index = 0
 
         final_index = initial_index + nturns
-        if final_index > len(time_interp):
+        if final_index > len(time_interp) + 1:
             raise ValueError('Not enough data in momentum program to '
                              f'interpolate {nturns} turns.')
 

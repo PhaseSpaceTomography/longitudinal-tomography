@@ -6,16 +6,22 @@ from numbers import Number
 from typing import Union, Dict
 
 import numpy as np
+from scipy import constants as cont
 from multipledispatch import dispatch
 from .. import assertions as asrt
+
+
+__all__ = ['post_process', 'rms_dpp', 'emittance_rms',
+           'emittance_90', 'emittance_fractional']
+
+m_p = cont.value('proton mass energy equivalent in MeV') * 1e6
 
 
 # TODO: write function that only takes the weights of the tomo as input
 
 
 def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
-                 e_bins: np.ndarray,
-                 energy: Number, momentum: Number, mass: Number) \
+                 e_bins: np.ndarray, energy: Number, mass: Number) \
         -> Dict[str, Union[float, np.ndarray]]:
     """
     Convenience function that provides an all-on-one post-processing method.
@@ -34,8 +40,6 @@ def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
         A 1 or 2-dimensional vector that represents the bins on the energy axis
     energy : Number
         The energy of the beam at the reconstructed profile
-    momentum : Number
-        The momentum of the beam at the reconstructed profile
     mass : Number
         The rest mass of the particle(s)
 
@@ -58,7 +62,7 @@ def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
     out = {
         'emittance_rms': emittance_rms(t_std, e_std),
         'emittance_90': emittance_90(phase_space, t_bins, e_bins),
-        'rms_dp/p': rms_dpp(e_std, energy, momentum, mass)
+        'rms_dp/p': rms_dpp(e_std, energy, mass)
     }
 
     return out
@@ -187,9 +191,8 @@ def emittance_fractional(histogram: np.ndarray,
     return n_bins * (t_bin_width * e_bin_width)
 
 
-@dispatch(Number, Number, Number, Number)
-def rms_dpp(energy_std: Number, energy: Number, momentum: Number,
-            mass: Number) -> float:
+@dispatch(Number, Number, Number)
+def rms_dpp(energy_std: Number, energy: Number, mass: Number) -> float:
     """
     Calculates the RMS dp/p using the energy projection histogram.
     Provided as a convenience function that first calculates
@@ -214,7 +217,7 @@ def rms_dpp(energy_std: Number, energy: Number, momentum: Number,
     float :
         The RMS dp/p of particle beam
     """
-
+    momentum = np.sqrt(energy**2 - mass**2)
     dp = np.sqrt(np.power(energy + energy_std, 2) - mass ** 2) - momentum
 
     rms_dpp = dp / momentum
@@ -222,10 +225,9 @@ def rms_dpp(energy_std: Number, energy: Number, momentum: Number,
     return rms_dpp
 
 
-@dispatch(np.ndarray, np.ndarray, Number, Number, Number)
+@dispatch(np.ndarray, np.ndarray, Number, Number)
 def rms_dpp(energy_proj: np.ndarray, energy_bins: np.ndarray,
             energy: Number,
-            momentum: Number,
             mass: Number) -> float:
     """
     Calculates the RMS dp/p using the energy projection histogram.
@@ -254,7 +256,7 @@ def rms_dpp(energy_proj: np.ndarray, energy_bins: np.ndarray,
     """
     energy_std = _std_from_histogram(energy_proj, energy_bins)
 
-    return rms_dpp(energy_std, energy, momentum, mass)
+    return rms_dpp(energy_std, energy, mass)
 
 
 def _std_from_histogram(histogram: np.ndarray, bins: np.ndarray) -> float:
