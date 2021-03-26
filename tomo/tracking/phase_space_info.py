@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Tuple
 
 import numpy as np
 
-from ..utils import physics
-from .. import assertions as asrt
 from tomo.exceptions import EnergyBinningError, EnergyLimitsError, \
     PhaseLimitsError, ArrayLengthError
+from .. import assertions as asrt
+from ..utils import physics
 
 if TYPE_CHECKING:
     from .machine import Machine
@@ -229,16 +229,16 @@ class PhaseSpaceInfo:
         for i in range(self.machine.nbins + 1):
             temp_energy = np.floor(self.machine.synch_part_y
                                    + self._trajectoryheight(
-                                       phases[i], phases[0], energy, turn)
+                                    phases[i], phases[0], energy, turn)
                                    / dEbin)
 
             jmax_low[i] = int(temp_energy)
 
             temp_energy = np.floor(self.machine.synch_part_y
                                    + self._trajectoryheight(
-                                       phases[i],
-                                       phases[self.machine.nbins],
-                                       energy, turn)
+                                    phases[i],
+                                    phases[self.machine.nbins],
+                                    energy, turn)
                                    / dEbin)
 
             jmax_up[i] = int(temp_energy)
@@ -326,10 +326,10 @@ class PhaseSpaceInfo:
                         / machine.h_ratio
                         + (phi - phi_known)
                         * physics.rf_voltage_at_phase(
-                            machine.phi0[turn],
-                            machine.vrf1_at_turn[turn],
-                            machine.vrf2_at_turn[turn],
-                            machine.h_ratio, phi12))
+                    machine.phi0[turn],
+                    machine.vrf1_at_turn[turn],
+                    machine.vrf2_at_turn[turn],
+                    machine.h_ratio, phi12))
         cplx_height += delta_e_known ** 2
 
         if np.size(cplx_height) > 1:

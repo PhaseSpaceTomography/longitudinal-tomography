@@ -18,7 +18,9 @@ import logging
 if TYPE_CHECKING:
     from tomo.data.profiles import Profiles
     from tomo.tracking.machine import Machine
-    from tomo.tomography.__tomography import Tomography
+    from tomo.tomography.__tomography import TomographyABC
+
+__all__ = ['rebin', 'fit_synch_part_x', 'phase_space']
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +104,8 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     return pre_process.fit_synch_part_x(profiles)
 
 
-def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0) \
+def phase_space(tomo: 'TomographyABC', machine: 'Machine',
+                reconstr_idx: int = 0) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -110,7 +113,7 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', reconstr_idx: int = 0) \
 
     Parameters
     ----------
-    tomo: Tomography
+    tomo: TomographyABC
         Object holding the information about a tomographic reconstruction.
     machine: Machine
         Object holding information about machine and reconstruction parameters.

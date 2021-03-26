@@ -10,7 +10,6 @@ from scipy import constants as cont
 from multipledispatch import dispatch
 from .. import assertions as asrt
 
-
 __all__ = ['post_process', 'rms_dpp', 'emittance_rms',
            'emittance_90', 'emittance_fractional']
 
@@ -217,7 +216,7 @@ def rms_dpp(energy_std: Number, energy: Number, mass: Number) -> float:
     float :
         The RMS dp/p of particle beam
     """
-    momentum = np.sqrt(energy**2 - mass**2)
+    momentum = np.sqrt(energy ** 2 - mass ** 2)
     dp = np.sqrt(np.power(energy + energy_std, 2) - mass ** 2) - momentum
 
     rms_dpp = dp / momentum

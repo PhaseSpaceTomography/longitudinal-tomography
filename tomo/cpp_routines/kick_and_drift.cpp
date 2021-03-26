@@ -124,17 +124,14 @@ extern "C" void kick_and_drift(
         #pragma omp parallel for
         for (int i = 0; i < nparts; i++)
             dphi[i] -= drift_coef[turn] * denergy[i];
-//        drift_up(dphi, denergy, drift_coef[turn], nparts);
-        
+
         turn++;
 
         #pragma omp parallel for
         for (int i=0; i < nparts; i++)
             denergy[i] += rf1v[turn] * vdt::fast_sin(dphi[i] + phi0[turn])
                           + rf2v[turn] * vdt::fast_sin(hratio * (dphi[i] + phi0[turn] - phi12[turn])) - deltaE0[turn];
-//        kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
-//                hratio, nparts, deltaE0[turn]);
-        
+
         if (turn % dturns == 0){
             profile++;
             #pragma omp parallel for
@@ -170,15 +167,12 @@ extern "C" void kick_and_drift(
             for (int i=0; i < nparts; i++)
                 denergy[i] -= rf1v[turn] * vdt::fast_sin(dphi[i] + phi0[turn])
                               + rf2v[turn] * vdt::fast_sin(hratio * (dphi[i] + phi0[turn] - phi12[turn])) - deltaE0[turn];
-//            kick_down(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
-//                      phi12, hratio, nparts, deltaE0[turn]);
             turn--;
 
             #pragma omp parallel for
             for (int i = 0; i < nparts; i++)
                 dphi[i] += drift_coef[turn] * denergy[i];
-//            drift_down(dphi, denergy, drift_coef[turn], nparts);
-            
+
             if (turn % dturns == 0){
                 profile--;
                 

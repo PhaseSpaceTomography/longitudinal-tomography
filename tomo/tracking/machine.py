@@ -13,7 +13,6 @@ from scipy import optimize, constants
 from .. import assertions as asrt
 from ..utils import physics
 from .machine_base import MachineABC
-# from ..data import pre_process
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +80,7 @@ class Machine(MachineABC):
     h_num: int, default=1
         Principle harmonic number.\n
     """
+
     def __init__(self, dturns: int, vrf1: float, mean_orbit_rad: float,
                  bending_rad: float, b0: float, trans_gamma: float,
                  rest_energy: float, nprofiles: int, nbins: int, dtbin: float,
@@ -138,9 +138,9 @@ class Machine(MachineABC):
             self.e0[i] = (self.e0[i - 1]
                           + self.q
                           * physics.rf_voltage_at_phase(
-                self.phi0[i], self.vrf1, self.vrf1dot,
-                self.vrf2, self.vrf2dot, self.h_ratio,
-                self.phi12, self.time_at_turn, i))
+                        self.phi0[i], self.vrf1, self.vrf1dot,
+                        self.vrf2, self.vrf2dot, self.h_ratio,
+                        self.phi12, self.time_at_turn, i))
 
             self.beta0[i] = np.sqrt(
                 1.0 - (self.e_rest / float(self.e0[i])) ** 2)
@@ -149,9 +149,9 @@ class Machine(MachineABC):
             self.e0[i] = (self.e0[i + 1]
                           - self.q
                           * physics.rf_voltage_at_phase(
-                self.phi0[i + 1], self.vrf1, self.vrf1dot,
-                self.vrf2, self.vrf2dot, self.h_ratio,
-                self.phi12, self.time_at_turn, i + 1))
+                        self.phi0[i + 1], self.vrf1, self.vrf1dot,
+                        self.vrf2, self.vrf2dot, self.h_ratio,
+                        self.phi12, self.time_at_turn, i + 1))
 
             self.beta0[i] = np.sqrt(1.0 - (self.e_rest / self.e0[i]) ** 2)
             self.deltaE0[i] = self.e0[i + 1] - self.e0[i]
@@ -182,10 +182,6 @@ class Machine(MachineABC):
 
         # Calculate RF-voltages at each turn
         self.vrf1_at_turn, self.vrf2_at_turn = self._rfv_at_turns()
-
-    # def fit_synch_part_x(self, waterfall: np.ndarray):
-    #     fit_info = pre_process.fit_synch_part_x(waterfall, self)
-    #     self.load_fitted_synch_part_x_ftn(fit_info)
 
     def load_fitted_synch_part_x_ftn(self,
                                      fit_info: Tuple[float, float, float]):

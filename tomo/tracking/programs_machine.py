@@ -10,7 +10,6 @@ from .machine_base import MachineABC
 from .. import assertions as asrt
 from .. import exceptions as ex
 
-
 log = logging.getLogger(__name__)
 
 
@@ -53,6 +52,7 @@ class ProgramsMachine(MachineABC):
         Calculate values at turns immediately after initialisation.
 
     """
+
     def __init__(self,
                  dturns: int,
                  voltage_function: np.ndarray,
@@ -104,7 +104,7 @@ class ProgramsMachine(MachineABC):
         self.vrf1_at_turn = np.interp(
             momentum_time,  # same time steps as momentum program
             self.voltage_raw[0, :],  # voltage time
-            self.voltage_raw[1, :]   # voltage values
+            self.voltage_raw[1, :]  # voltage values
         )
         phase1 = np.interp(
             momentum_time,
@@ -133,23 +133,22 @@ class ProgramsMachine(MachineABC):
         i0 = self.machine_ref_frame * self.dturns
 
         momentum = momentum_function
-        energy = np.sqrt(momentum**2 + self.e_rest**2)
+        energy = np.sqrt(momentum ** 2 + self.e_rest ** 2)
         deltaE0 = np.diff(energy)
         gamma = np.sqrt(1 + (momentum / self.e_rest) ** 2)
 
-        beta0 = np.sqrt(1/(1 + (self.e_rest/momentum)**2))
-        t_rev = np.dot(self.circumference, 1/(beta0*c.c))
-        f_rev = 1/t_rev
+        beta0 = np.sqrt(1 / (1 + (self.e_rest / momentum) ** 2))
+        t_rev = np.dot(self.circumference, 1 / (beta0 * c.c))
+        f_rev = 1 / t_rev
         time_at_turn = np.cumsum(t_rev)
         time_at_turn -= time_at_turn[i0]
 
-        omega_rev0 = 2*np.pi*f_rev
+        omega_rev0 = 2 * np.pi * f_rev
         phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
 
-        momentum_compaction = 1 / self.trans_gamma**2
-        eta0 = (1. - beta0**2) - self.trans_gamma**(-2)
+        eta0 = (1. - beta0 ** 2) - self.trans_gamma ** (-2)
         drift_coef = (2 * np.pi * self.h_num * eta0
-                           / (energy * beta0 ** 2))
+                      / (energy * beta0 ** 2))
 
         bfield = momentum / (self.bending_rad * self.q) / cont.c
         bdot = np.gradient(bfield, time_at_turn)
@@ -223,7 +222,8 @@ class ProgramsMachine(MachineABC):
         """
 
         beta_0 = np.sqrt(1 / (1 + (self.e_rest / momentum[0]) ** 2))
-        T0 = self.circumference / (beta_0 * c.c)  # Initial revolution period [s]
+        T0 = self.circumference / (
+                    beta_0 * c.c)  # Initial revolution period [s]
         time_interp = [time[0] + T0]
         beta_interp = [beta_0]
         momentum_interp = [momentum[0]]
@@ -231,11 +231,6 @@ class ProgramsMachine(MachineABC):
         # Interpolate data recursively
         time_interp.append(time_interp[-1]
                            + self.circumference / (beta_interp[0] * c.c))
-
-        if self.t_ref is not None:
-            initial_index = np.min(np.where(time >= self.t_ref)[0])
-        else:
-            initial_index = 0
 
         nturns = self.dturns * (self.nprofiles - 1) + 1
         i0 = self.machine_ref_frame * self.dturns
@@ -256,7 +251,8 @@ class ProgramsMachine(MachineABC):
                         1 / (1 + (self.e_rest / momentum_interp[i + 1]) ** 2)))
 
                 time_interp.append(
-                    time_interp[i + 1] + self.circumference / (beta_interp[i + 1] * c.c))
+                    time_interp[i + 1] + self.circumference / (
+                            beta_interp[i + 1] * c.c))
 
                 i += 1
 

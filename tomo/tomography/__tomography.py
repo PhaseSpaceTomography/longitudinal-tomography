@@ -5,15 +5,16 @@
 
 import logging
 
+from abc import ABC, abstractmethod
+import typing as t
 import numpy as np
 
 from tomo import exceptions as expt
 
-
 log = logging.getLogger(__name__)
 
 
-class Tomography:
+class TomographyABC(ABC):
     """Base class for tomography classes.
 
     This class holds tomography utilities and assertions.
@@ -51,18 +52,17 @@ class Tomography:
 
     def __init__(self, waterfall: np.ndarray,
                  x_coords: np.ndarray = None, y_coords: np.ndarray = None):
-        self._waterfall = waterfall.clip(0.0)
-        self._waterfall = self._normalize_profiles(self.waterfall)
+        self._waterfall = self._normalize_profiles(waterfall.clip(0.0))
 
-        self._nprofs = self.waterfall.shape[0]
-        self._nbins = self.waterfall.shape[1]
+        self._nprofs: int = self.waterfall.shape[0]
+        self._nbins: int = self.waterfall.shape[1]
 
         self.xp = x_coords
         self.yp = y_coords
 
         self.recreated = np.zeros(self.waterfall.shape)
-        self.diff = None
-        self.weight = None
+        self.diff: np.ndarray = None
+        self.weight: np.ndarray = None
 
     @property
     def waterfall(self) -> np.ndarray:
@@ -249,9 +249,14 @@ class Tomography:
     # Needed by reciprocal particles function.
     # TODO: removed njit, reimplement in C in the future
     def _count_particles_in_bins(self, ppb: np.ndarray,
-                                 profile_count: np.ndarray,
+                                 profile_count: int,
                                  xp: np.ndarray, nparts: int) -> np.ndarray:
         for i in range(profile_count):
             for j in range(nparts):
                 ppb[xp[j, i], i] += 1
         return ppb
+
+    @abstractmethod
+    def run(self, niter: int = 20, verbose: bool = False,
+            callback: t.Callable = None) -> np.ndarray:
+        pass

@@ -5,7 +5,6 @@ import logging
 
 log = logging.getLogger(__name__)
 
-
 _machine_base_defaults = {
     'demax': -1.E6,
     'phi12': 0.0,
@@ -189,8 +188,7 @@ class MachineABC(ABC):
         1D array holding the peak voltage at each turn for
         the second RF station.
     """
-    """
-    """
+
     def __init__(self, dturns: int, mean_orbit_rad: float, bending_rad: float,
                  trans_gamma: float, rest_energy: float,
                  n_profiles: int, n_bins: int, dtbin: float, **kwargs):
@@ -232,8 +230,8 @@ class MachineABC(ABC):
         self.full_pp_flag: bool = processed_kwargs['full_pp_flag']
 
         # kwargs reconstruction parameters
-        self.machine_ref_frame: float = processed_kwargs['machine_ref_frame']
-        self.beam_ref_frame: float = processed_kwargs['beam_ref_frame']
+        self.machine_ref_frame: int = processed_kwargs['machine_ref_frame']
+        self.beam_ref_frame: int = processed_kwargs['beam_ref_frame']
         self.pickup_sensitivity = processed_kwargs['pickup_sensitivity']
         self.snpt: int = processed_kwargs['snpt']
         self.niter: int = processed_kwargs['niter']

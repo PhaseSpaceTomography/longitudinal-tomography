@@ -8,16 +8,14 @@ import typing as t
 
 import numpy as np
 
-from . import __tomography as stmo
-# from ..cpp_routines import tomolib_wrappers as tlw
+from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
-
 
 log = logging.getLogger(__name__)
 
 
-class TomographyCpp(stmo.Tomography):
+class Tomography(TomographyABC):
     """Class for performing tomographic reconstruction of phase space.
 
     The tomographic routine largely consists of two parts. Projection and
@@ -64,7 +62,6 @@ class TomographyCpp(stmo.Tomography):
     def __init__(self, waterfall: np.ndarray, x_coords: np.ndarray = None,
                  y_coords: np.ndarray = None):
         super().__init__(waterfall, x_coords, y_coords)
-        self.weight = None
 
     def run_hybrid(self, niter=20, verbose=False):
         """Function to perform tomographic reconstruction, implemented
@@ -114,7 +111,7 @@ class TomographyCpp(stmo.Tomography):
         weight = np.zeros(self.nparts)
 
         weight = libtomo.back_project(weight, flat_points, flat_profs,
-                                  self.nparts, self.nprofs)
+                                      self.nparts, self.nprofs)
         weight = weight.clip(0.0)
 
         if verbose:
@@ -150,7 +147,8 @@ class TomographyCpp(stmo.Tomography):
 
     # Project using C++ routine from tomolib_wrappers.
     # Normalizes recreated profiles before returning them.
-    def _project(self, flat_points, weight):
+    def _project(self, flat_points: np.ndarray, weight: np.ndarray) \
+            -> np.ndarray:
         # rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
         #                   weight, self.nparts, self.nprofs, self.nbins)
         rec = libtomo.project(np.zeros(self.recreated.shape), flat_points,
@@ -163,7 +161,7 @@ class TomographyCpp(stmo.Tomography):
         return np.ascontiguousarray(
             super()._create_flat_points()).astype(np.int32)
 
-    def _run_old(self, niter=20, verbose=False):
+    def _run_old(self, niter: int = 20, verbose: bool = False) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -254,3 +252,7 @@ class TomographyCpp(stmo.Tomography):
             self.xp, self.waterfall, niter, self.nbins,
             self.nparts, self.nprofs, verbose, callback)
         return self.weight
+
+
+# for backwards compatibility
+TomographyCpp = Tomography

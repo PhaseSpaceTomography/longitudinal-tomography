@@ -16,7 +16,6 @@ from .. import assertions as asrt, exceptions as expt
 if TYPE_CHECKING:
     from .machine import Machine
 
-
 log = logging.getLogger(__name__)
 
 

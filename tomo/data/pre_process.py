@@ -76,7 +76,7 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
 
 
 @dispatch(np.ndarray, MachineABC)
-def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC)\
+def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
         -> Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
