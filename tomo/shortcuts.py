@@ -1,8 +1,8 @@
-from typing import Tuple
+import typing as t
 import numpy as np
 
 from .tracking import Tracking
-from .tracking import Machine
+from .tracking.machine_base import MachineABC
 from .tracking import particles
 from .tomography import tomography
 
@@ -10,11 +10,12 @@ from .tomography import tomography
 __all__ = ['track', 'tomogram']
 
 
-def track(machine: Machine, reconstruction_idx: int = None) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def track(machine: MachineABC, reconstruction_idx: int = None,
+          callback: t.Callable = None) \
+        -> t.Tuple[np.ndarray, np.ndarray]:
 
     tracker = Tracking(machine)
-    dphi, denergy = tracker.track(reconstruction_idx)
+    dphi, denergy = tracker.track(reconstruction_idx, callback)
     xp, yp = particles.physical_to_coords(dphi, denergy, machine,
                                           tracker.particles.xorigin,
                                           tracker.particles.dEbin)
@@ -24,9 +25,10 @@ def track(machine: Machine, reconstruction_idx: int = None) \
 
 
 def tomogram(waterfall: np.ndarray, xp: np.ndarray, yp: np.ndarray,
-             n_iter: int) -> tomography.Tomography:
+             n_iter: int, callback: t.Callable = None) \
+        -> tomography.Tomography:
 
     tomo = tomography.Tomography(waterfall, xp, yp)
-    tomo.run(niter=n_iter)
+    tomo.run(n_iter, callback)
 
     return tomo
