@@ -15,7 +15,7 @@ def track(machine: MachineABC, reconstruction_idx: int = None,
         -> t.Tuple[np.ndarray, np.ndarray]:
 
     tracker = Tracking(machine)
-    dphi, denergy = tracker.track(reconstruction_idx, callback)
+    dphi, denergy = tracker.track(reconstruction_idx, callback=callback)
     xp, yp = particles.physical_to_coords(dphi, denergy, machine,
                                           tracker.particles.xorigin,
                                           tracker.particles.dEbin)
