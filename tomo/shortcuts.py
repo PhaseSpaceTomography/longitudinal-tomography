@@ -29,6 +29,6 @@ def tomogram(waterfall: np.ndarray, xp: np.ndarray, yp: np.ndarray,
         -> tomography.Tomography:
 
     tomo = tomography.Tomography(waterfall, xp, yp)
-    tomo.run(n_iter, callback)
+    tomo.run(n_iter, callback=callback)
 
     return tomo
