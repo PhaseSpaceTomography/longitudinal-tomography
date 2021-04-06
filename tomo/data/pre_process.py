@@ -5,7 +5,7 @@ The functions here are to be moved over from tomo.data.data_treatment
 
 :Author(s): **Anton Lu**, **Christoffer Hjertø Grindheim**
 """
-from typing import Union, Tuple, List
+import typing as t
 
 import numpy as np
 from multipledispatch import dispatch
@@ -20,7 +20,8 @@ from ..tracking.machine_base import MachineABC
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
           synch_part_x: float = None) \
-        -> Union[Tuple[np.ndarray, float, float], Tuple[np.ndarray, float]]:
+        -> t.Union[t.Tuple[np.ndarray, float, float],
+                   t.Tuple[np.ndarray, float]]:
     """Rebin waterfall from shape (P, X) to (P, Y).
     P is the number of profiles, X is the original number of bins,
     and Y is the number of bins after the re-binning.
@@ -77,7 +78,7 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
 
 @dispatch(np.ndarray, MachineABC)
 def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
-        -> Tuple[np.ndarray, float, float]:
+        -> t.Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -140,7 +141,7 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
 
 
 @dispatch(Profiles)
-def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(profiles: 'Profiles') -> t.Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -171,7 +172,48 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     return fit_synch_part_x(profiles.waterfall, profiles.machine)
 
 
-def cut_waterfall(waterfall: Union[List[np.ndarray], np.ndarray],
+def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
+                    yp: np.ndarray = None) \
+        -> t.Union[np.ndarray, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    """
+    Filters out empty profiles from measured data. Empty profiles are
+    considered just noise. Returned arrays are truncated with the noise frames
+    removed.
+
+    Parameters
+    ----------
+    waterfall: np.ndarray
+        Waterfall array of shape (n_profiles, n_bins)
+    xp: np.ndarray
+        Tracked and binned particles of shape (n_profiles, n_bins)
+    yp: np.ndarray
+        Tracked and binned particles of shape (n_profiles, n_bins)
+
+    Returns
+    -------
+    Truncated arrays with empty profiles removed.
+    """
+    if (xp is None and yp is not None) or (xp is not None and yp is None):
+        raise ValueError('Both xp and yp must be passed.')
+
+    waterfall = waterfall / waterfall.sum()
+
+    bin_sum = waterfall.sum(axis=1)
+
+    threshold = bin_sum.max() - bin_sum.min() - bin_sum.mean()
+    good_frames = bin_sum > threshold
+
+    good_waterfall = waterfall[good_frames, :]
+    if xp is not None:
+        good_xp = xp[good_frames, :]
+        good_yp = yp[good_frames, :]
+
+        return good_waterfall, good_xp, good_yp
+    else:
+        return good_waterfall
+
+
+def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
                   cut_left: int, cut_right: int) -> np.ndarray:
     """
     Cut a waterfall array of shape (n_profiles, n_bins) to shape
@@ -218,7 +260,7 @@ def cut_waterfall(waterfall: Union[List[np.ndarray], np.ndarray],
 
 # Finds foot tangents of profile. Needed to estimate bunch duration
 # when performing a fit to find synch_part_x.
-def _calc_tangentfeet(ref_prof: np.ndarray) -> Tuple[float, float]:
+def _calc_tangentfeet(ref_prof: np.ndarray) -> t.Tuple[float, float]:
     nbins = len(ref_prof)
     index_array = np.arange(nbins) + 0.5
 
@@ -239,7 +281,7 @@ def _calc_tangentfeet(ref_prof: np.ndarray) -> Tuple[float, float]:
 # Returns index of last bins to the left and right of max valued bin,
 # with value over the threshold.
 def _calc_tangentbins(ref_profile: np.ndarray, nbins: int,
-                      threshold_coeff: float = 0.15) -> Tuple[float, float]:
+                      threshold_coeff: float = 0.15) -> t.Tuple[float, float]:
     threshold = threshold_coeff * np.max(ref_profile)
     maxbin = np.argmax(ref_profile)
     for ibin in range(maxbin, 0, -1):
