@@ -56,7 +56,6 @@ class ProgramsMachine(MachineABC):
     def __init__(self,
                  dturns: int,
                  voltage_function: np.ndarray,
-                 phase_function: np.ndarray,
                  momentum_function: np.ndarray,
                  harmonics: t.List[int],
                  mean_orbit_rad: float, bending_rad: float,
@@ -65,19 +64,32 @@ class ProgramsMachine(MachineABC):
                  nbins: int,
                  dtbin: float,
                  t_ref: float,
+                 phase_function: np.ndarray = None,
                  vat_now: bool = True,
                  **kwargs):
         asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
                             ex.ArrayLengthError,
                             'Only 1 or 2 harmonics accepted.')
-        kwargs['h_num'] = harmonics[0]
         super().__init__(dturns, mean_orbit_rad, bending_rad, trans_gamma,
                          rest_energy, nprofiles, nbins, dtbin, **kwargs)
 
         self.voltage_raw = voltage_function
-        self.phase_raw = phase_function
         self.momentum_raw = momentum_function
         self.harmonics = harmonics
+
+        if 'phi12' in kwargs:
+            if phase_function is not None:
+                raise ValueError('You can only pass either phi12 or '
+                                 'phase_function, not both.')
+            self.phase_raw = None
+            self.process_phase = 0
+        elif phase_function is not None:
+            self.phase_raw = phase_function
+            self.process_phase = 1
+        else:
+            log.debug('Neither phi12 nor phase program passed. Must compute '
+                      'phi12 separately.')
+            self.process_phase = 2
 
         self.circumference: float = 2 * np.pi * self.mean_orbit_rad
         self.t_ref = t_ref
@@ -86,6 +98,7 @@ class ProgramsMachine(MachineABC):
         self.momentum_function: np.ndarray = None
         self.bdot: np.ndarray = None
         self.n_turns: int = None
+        self.i0: int = None
 
         if vat_now:
             self.values_at_turns()
@@ -106,11 +119,27 @@ class ProgramsMachine(MachineABC):
             self.voltage_raw[0, :],  # voltage time
             self.voltage_raw[1, :]  # voltage values
         )
-        phase1 = np.interp(
-            momentum_time,
-            self.phase_raw[0, :],
-            self.phase_raw[1, :]
-        )
+
+        if self.process_phase == 1:
+            phase1 = np.interp(
+                momentum_time,
+                self.phase_raw[0, :],
+                self.phase_raw[1, :]
+            )
+        elif self.process_phase == 0:
+            if isinstance(self.phi12, np.ndarray):
+                if self.phi12.size() == 1:
+                    pass
+                elif len(self.phi12.shape) == 2 and self.phi12.shape[1] == 2:  # time and value
+                    self.phi12 = np.interp(momentum_time, *self.phi12)
+                elif len(self.phi12) == len(self.voltage_raw):
+                    self.phi12 = np.interp(momentum_time, self.voltage_raw[0],
+                                           self.phi12)
+                else:
+                    raise ValueError(f'Do not know how to interpolate phi12 '
+                                     f'array of shape {self.phi12.shape}. '
+                                     f'It should either match voltage '
+                                     f'function or provide its own time axis.')
 
         # interpolate second harmonic voltage & phase if applicable
         if len(self.harmonics) == 2:
@@ -120,17 +149,17 @@ class ProgramsMachine(MachineABC):
                 self.voltage_raw[2, :]
             )
             self.h_ratio = self.harmonics[1] / self.harmonics[0]
-            phase2 = np.interp(momentum_time,
-                               self.phase_raw[0, :],
-                               self.phase_raw[2, :])
+
+            if self.process_phase == 1:
+                phase2 = np.interp(momentum_time,
+                                   self.phase_raw[0, :],
+                                   self.phase_raw[2, :])
         else:
             self.vrf2_at_turn = np.zeros_like(self.vrf1_at_turn)
             phase2 = 0
             self.h_ratio = 1
 
         self.n_turns = len(momentum_time)
-        self.h_num = self.harmonics[0]
-        i0 = self.machine_ref_frame * self.dturns
 
         momentum = momentum_function
         energy = np.sqrt(momentum ** 2 + self.e_rest ** 2)
@@ -141,10 +170,13 @@ class ProgramsMachine(MachineABC):
         t_rev = np.dot(self.circumference, 1 / (beta0 * c.c))
         f_rev = 1 / t_rev
         time_at_turn = np.cumsum(t_rev)
-        time_at_turn -= time_at_turn[i0]
+        time_at_turn -= time_at_turn[self.i0]
 
         omega_rev0 = 2 * np.pi * f_rev
-        phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
+        if self.process_phase == 1:
+            self.phi12 = (phase1 - phase2 + np.pi) / self.h_ratio
+        elif self.process_phase == 2:
+            self.phi12 = None
 
         eta0 = (1. - beta0 ** 2) - self.trans_gamma ** (-2)
         drift_coef = (2 * np.pi * self.h_num * eta0
@@ -163,10 +195,47 @@ class ProgramsMachine(MachineABC):
         self.eta0 = eta0
         self.omega_rev0 = omega_rev0
         self.phi0 = np.zeros_like(self.vrf1_at_turn)
-        self.phi12 = phi12
         self.time_at_turn = time_at_turn
 
-        phi_lower, phi_upper = physics.find_phi_lower_upper(self, i0)
+        if self.process_phase != 2:
+            self.find_synchronous_phase()
+
+    def calc_phi12(self, c04mode: int):
+        """
+        Calculates the phase difference between the two RF stations as seen
+        by the particle.
+
+        N.B. Do not forget to run find_synchronous_phase after this!
+
+        Parameters
+        ----------
+        c04mode: int
+            0, 1, or 2, representing
+            * Bunch shortening mode
+            * Bunch lengthening mode
+            * h2 + 1 mode
+            respectively
+        """
+        log.info(f'Calculating phi12 and overwriting previously calculated '
+                 f'values.')
+
+        self.phi12 = np.arcsin(2 * np.pi * self.bending_rad *
+                               self.mean_orbit_rad *
+                               self.bdot / self.vrf1_at_turn) + np.pi / 2
+
+        if c04mode == 2:
+            self.phi12 -= np.pi
+
+    def find_synchronous_phase(self):
+
+        if self.phi12 is None:
+            raise ValueError('phi12 is None. You must pass a phase program, '
+                             'phi12, or call the calc_phi12 method to '
+                             'calculate phi12.')
+
+        phi_lower, phi_upper = physics.find_phi_lower_upper(self, self.i0)
+
+        self.phi0 = np.zeros_like(self.vrf1_at_turn)
 
         try:
             phi_start = optimize.newton(func=physics.rfvolt_rf1_pmch,
@@ -174,23 +243,23 @@ class ProgramsMachine(MachineABC):
                                         fprime=physics.drfvolt_rf1_pmch,
                                         tol=0.0001,
                                         maxiter=100,
-                                        args=(self, i0))
+                                        args=(self, self.i0))
             synch_phase = optimize.newton(func=physics.rf_voltage_pmch,
                                           x0=phi_start,
                                           fprime=physics.drf_voltage_pmch,
                                           tol=0.0001,
                                           maxiter=100,
-                                          args=(self, i0))
-            self.phi0[i0] = synch_phase
+                                          args=(self, self.i0))
+            self.phi0[self.i0] = synch_phase
 
-            for i in range(i0 + 1, self.n_turns):
+            for i in range(self.i0 + 1, self.n_turns):
                 self.phi0[i] = optimize.newton(func=physics.rf_voltage_pmch,
                                                x0=self.phi0[i - 1],
                                                fprime=physics.drf_voltage_pmch,
                                                tol=0.0001,
                                                maxiter=100,
                                                args=(self, i))
-            for i in range(i0 - 1, -1, -1):
+            for i in range(self.i0 - 1, -1, -1):
                 self.phi0[i] = optimize.newton(func=physics.rf_voltage_pmch,
                                                x0=self.phi0[i + 1],
                                                fprime=physics.drf_voltage_pmch,
@@ -233,9 +302,9 @@ class ProgramsMachine(MachineABC):
                            + self.circumference / (beta_interp[0] * c.c))
 
         nturns = self.dturns * (self.nprofiles - 1) + 1
-        i0 = self.machine_ref_frame * self.dturns
+        self.i0 = self.machine_ref_frame * self.dturns
         i = 0
-        turn = i0
+        turn = self.i0
 
         k = 0
         while turn < nturns:
@@ -269,7 +338,7 @@ class ProgramsMachine(MachineABC):
         # Cutting the input momentum on the desired cycle time
         if self.t_ref is not None:
             initial_index = np.min(np.where(time_interp >= self.t_ref)[0])
-            initial_index -= i0
+            initial_index -= self.i0
         else:
             initial_index = 0
 
@@ -282,3 +351,4 @@ class ProgramsMachine(MachineABC):
         momentum_function = momentum_interp[initial_index:final_index]
 
         return momentum_time, momentum_function
+

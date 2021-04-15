@@ -13,7 +13,8 @@ from .. import commons
 
 MACHINE_ARGS = commons.get_machine_args()
 P_MACHINE_ARGS = MACHINE_ARGS.copy()
-to_remove = ('vrf1', 'vrf2', 'vrf1dot', 'vrf2dot', 'b0', 'bdot', 'dturns')
+to_remove = ('vrf1', 'vrf2', 'vrf1dot', 'vrf2dot', 'b0', 'bdot', 'dturns',
+             'phi12')
 for elem in to_remove:
     P_MACHINE_ARGS.pop(elem)
 P_MACHINE_ARGS['t_ref'] = 0.276
@@ -22,8 +23,9 @@ P_MACHINE_ARGS['t_ref'] = 0.276
 class TestProgramsMachine(unittest.TestCase):
 
     def test_values_at_turns_correct_length(self):
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **P_MACHINE_ARGS)
 
         self.assertEqual(1193, len(machine.time_at_turn),
@@ -52,8 +54,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [-1.6129550637329442e-05, -1.5121453722496352e-05,
@@ -83,8 +86,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [6232957.307404246, 6232958.474517781, 6232959.641630856,
@@ -110,8 +114,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [0.012957336821816726, 0.013049368308642274,
@@ -143,8 +148,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [1.419505511043395e-08, 1.4195046668049025e-08,
@@ -176,8 +182,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [76.12663292884827, 76.12663292884827, 76.12663269042969,
@@ -204,8 +211,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [0.5197726911632519, 0.5197727884900445, 0.5197728858167987,
@@ -231,8 +239,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [0.6703479497588644, 0.670347848583237, 0.6703477474076307,
@@ -259,8 +268,9 @@ class TestProgramsMachine(unittest.TestCase):
         args['nprofiles'] = 5
         args['machine_ref_frame'] = 2
 
-        machine = ProgramsMachine(8, voltage_program, phase_program,
+        machine = ProgramsMachine(8, voltage_program,
                                   momentum_program, [1, 2],
+                                  phase_function=phase_program,
                                   **args)
 
         correct = [1098287788.7333486, 1098287864.8599815, 1098287940.9866145,
