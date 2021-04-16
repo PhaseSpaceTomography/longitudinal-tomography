@@ -20,7 +20,7 @@ m_p = cont.value('proton mass energy equivalent in MeV') * 1e6
 
 
 def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
-                 e_bins: np.ndarray, energy: Number, mass: Number) \
+                 e_bins: np.ndarray, energy: Number, mass: Number = m_p) \
         -> Dict[str, Union[float, np.ndarray]]:
     """
     Convenience function that provides an all-on-one post-processing method.
