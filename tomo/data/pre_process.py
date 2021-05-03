@@ -173,8 +173,13 @@ def fit_synch_part_x(profiles: 'Profiles') -> t.Tuple[np.ndarray, float, float]:
 
 
 def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
-                    yp: np.ndarray = None) \
-        -> t.Union[np.ndarray, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+                    yp: np.ndarray = None, rec_prof: int = None) \
+        -> t.Union[
+            np.ndarray,
+            t.Tuple[np.ndarray, np.ndarray],
+            t.Tuple[np.ndarray, np.ndarray, np.ndarray],
+            t.Tuple[np.ndarray, np.ndarray, int],
+            t.Tuple[np.ndarray, int]]:
     """
     Filters out empty profiles from measured data. Empty profiles are
     considered just noise. Returned arrays are truncated with the noise frames
@@ -188,10 +193,14 @@ def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
         Tracked and binned particles of shape (n_profiles, n_bins)
     yp: np.ndarray
         Tracked and binned particles of shape (n_profiles, n_bins)
+    rec_prof: int
+        Reconstruction profile. The profile will be shifted by the number of
+        removed profiles.
 
     Returns
     -------
-    Truncated arrays with empty profiles removed.
+        Variable number of truncated arrays with empty profiles removed,
+        depending on the number of inputs.
     """
     if (xp is None and yp is not None) or (xp is not None and yp is None):
         raise ValueError('Both xp and yp must be passed.')
@@ -204,13 +213,28 @@ def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
     good_frames = bin_sum > threshold
 
     good_waterfall = waterfall[good_frames, :]
+
+    output = [good_waterfall]
     if xp is not None:
         good_xp = xp[good_frames, :]
+
+        output.append(good_xp)
+    if yp is not None:
         good_yp = yp[good_frames, :]
 
-        return good_waterfall, good_xp, good_yp
-    else:
-        return good_waterfall
+        output.append(good_yp)
+    if rec_prof is not None:
+        shift = len(waterfall) - len(good_waterfall)
+        shifted_rec_prof = rec_prof - shift
+
+        if shifted_rec_prof < 0:
+            raise ValueError('Shift of rec_prof will make it negative. '
+                             f'rec_prof ({rec_prof}) should be greater or '
+                             f'equal to the shift ({shifted_rec_prof}).')
+
+        output.append(shifted_rec_prof)
+
+    return tuple(output)
 
 
 def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
