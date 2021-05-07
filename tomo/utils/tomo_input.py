@@ -16,6 +16,7 @@ from ..data.profiles import Profiles
 from ..tracking.machine import Machine
 
 # Some constants for input files containing machine parameters.
+from ..tracking.machine_base import MachineABC
 
 PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12
@@ -437,7 +438,7 @@ def _min_max_dt(nbins: int, input_array: t.Sequence) -> t.Tuple[float, float]:
     return min_dt, max_dt
 
 
-def raw_data_to_profiles(waterfall: np.ndarray, machine: Machine, rbn: int,
+def raw_data_to_profiles(waterfall: np.ndarray, machine: MachineABC, rbn: int,
                          sampling_time: float,
                          synch_part_x: float = None) -> Profiles:
     """Converts from waterfall of untreated data, to waterfall

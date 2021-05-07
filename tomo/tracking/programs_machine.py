@@ -221,7 +221,7 @@ class ProgramsMachine(MachineABC):
 
         self.phi12 = np.arcsin(2 * np.pi * self.bending_rad *
                                self.mean_orbit_rad *
-                               self.bdot / self.vrf1_at_turn) + np.pi / 2
+                               self.bdot / self.vrf1_at_turn) + np.pi / self.h_ratio
 
         if c04mode == 2:
             self.phi12 -= np.pi

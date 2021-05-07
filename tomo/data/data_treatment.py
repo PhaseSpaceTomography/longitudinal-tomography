@@ -16,9 +16,10 @@ from . import pre_process
 import logging
 
 if TYPE_CHECKING:
-    from tomo.data.profiles import Profiles
-    from tomo.tracking.machine import Machine
-    from tomo.tomography.__tomography import TomographyABC
+    from .profiles import Profiles
+    from ..tracking.machine import Machine
+    from ..tracking.machine_base import MachineABC
+    from ..tomography.__tomography import TomographyABC
 
 __all__ = ['rebin', 'fit_synch_part_x', 'phase_space']
 
@@ -104,7 +105,7 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     return pre_process.fit_synch_part_x(profiles)
 
 
-def phase_space(tomo: 'TomographyABC', machine: 'Machine',
+def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
                 reconstr_idx: int = 0) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a

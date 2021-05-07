@@ -5,17 +5,21 @@ The functions here are to be moved over from tomo.data.data_treatment
 
 :Author(s): **Anton Lu**, **Christoffer Hjertø Grindheim**
 """
+import logging
 import typing as t
 
 import numpy as np
 from multipledispatch import dispatch
 from scipy import optimize
 
-from tomo.utils import physics
+from ..utils import physics
 from .profiles import Profiles
 from .. import assertions as asrt
 from ..tracking import Machine
 from ..tracking.machine_base import MachineABC
+
+
+log = logging.getLogger(__name__)
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
@@ -172,69 +176,36 @@ def fit_synch_part_x(profiles: 'Profiles') -> t.Tuple[np.ndarray, float, float]:
     return fit_synch_part_x(profiles.waterfall, profiles.machine)
 
 
-def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
-                    yp: np.ndarray = None, rec_prof: int = None) \
-        -> t.Union[
-            np.ndarray,
-            t.Tuple[np.ndarray, np.ndarray],
-            t.Tuple[np.ndarray, np.ndarray, np.ndarray],
-            t.Tuple[np.ndarray, np.ndarray, int],
-            t.Tuple[np.ndarray, int]]:
-    """
-    Filters out empty profiles from measured data. Empty profiles are
-    considered just noise. Returned arrays are truncated with the noise frames
-    removed.
+def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) -> \
+        t.Tuple[t.Union[float, np.ndarray], t.Union[float, np.ndarray]]:
+    if isinstance(waterfall, tuple) or isinstance(waterfall, list):
+        waterfall = np.array(waterfall).real
 
-    Parameters
-    ----------
-    waterfall: np.ndarray
-        Waterfall array of shape (n_profiles, n_bins)
-    xp: np.ndarray
-        Tracked and binned particles of shape (n_profiles, n_bins)
-    yp: np.ndarray
-        Tracked and binned particles of shape (n_profiles, n_bins)
-    rec_prof: int
-        Reconstruction profile. The profile will be shifted by the number of
-        removed profiles.
+    n_bins = len(waterfall[0])
+    diff = np.sum(np.abs(waterfall[:, 1:] - waterfall[:, :-1]), axis=0)
+    diff -= diff.min()
 
-    Returns
-    -------
-        Variable number of truncated arrays with empty profiles removed,
-        depending on the number of inputs.
-    """
-    if (xp is None and yp is not None) or (xp is not None and yp is None):
-        raise ValueError('Both xp and yp must be passed.')
+    if threshold is None:
+        threshold = diff.max() * 0.3
 
-    waterfall = waterfall / waterfall.sum()
+    # filters out noise
+    actual_waterfall = diff > threshold
 
-    bin_sum = waterfall.sum(axis=1)
+    cut_left = np.argmax(actual_waterfall)
+    cut_right = n_bins \
+                - np.argmax(actual_waterfall[::-1]) + 1
 
-    threshold = bin_sum.max() - bin_sum.min() - bin_sum.mean()
-    good_frames = bin_sum > threshold
+    if cut_left > margin:
+        cut_left -= margin
+    else:
+        cut_left = 0
 
-    good_waterfall = waterfall[good_frames, :]
+    if n_bins - cut_right > margin:
+        cut_right += margin
+    else:
+        cut_right = n_bins
 
-    output = [good_waterfall]
-    if xp is not None:
-        good_xp = xp[good_frames, :]
-
-        output.append(good_xp)
-    if yp is not None:
-        good_yp = yp[good_frames, :]
-
-        output.append(good_yp)
-    if rec_prof is not None:
-        shift = len(waterfall) - len(good_waterfall)
-        shifted_rec_prof = rec_prof - shift
-
-        if shifted_rec_prof < 0:
-            raise ValueError('Shift of rec_prof will make it negative. '
-                             f'rec_prof ({rec_prof}) should be greater or '
-                             f'equal to the shift ({shifted_rec_prof}).')
-
-        output.append(shifted_rec_prof)
-
-    return tuple(output)
+    return int(cut_left), int(cut_right)
 
 
 def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
@@ -280,6 +251,71 @@ def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
 
     waterfall = waterfall[:, cut_left:cut_right]
     return waterfall
+
+
+def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
+                    yp: np.ndarray = None, rec_prof: int = None) \
+        -> t.Union[
+            np.ndarray,
+            t.Tuple[np.ndarray, np.ndarray],
+            t.Tuple[np.ndarray, np.ndarray, np.ndarray],
+            t.Tuple[np.ndarray, np.ndarray, int],
+            t.Tuple[np.ndarray, int]]:
+    """
+    Filters out empty profiles from measured data. Empty profiles are
+    considered just noise. Returned arrays are truncated with the noise frames
+    removed.
+
+    Parameters
+    ----------
+    waterfall: np.ndarray
+        Waterfall array of shape (n_profiles, n_bins)
+    xp: np.ndarray
+        Tracked and binned particles of shape (n_profiles, n_bins)
+    yp: np.ndarray
+        Tracked and binned particles of shape (n_profiles, n_bins)
+    rec_prof: int
+        Reconstruction profile. The profile will be shifted by the number of
+        removed profiles.
+
+    Returns
+    -------
+        Variable number of truncated arrays with empty profiles removed,
+        depending on the number of inputs.
+    """
+    if (xp is None and yp is not None) or (xp is not None and yp is None):
+        raise ValueError('Both xp and yp must be passed.')
+
+    waterfall = waterfall / waterfall.sum()
+
+    bin_sum = waterfall.sum(axis=1)
+
+    threshold = bin_sum.max() - bin_sum.min() - bin_sum.mean()
+    good_frames = bin_sum > threshold
+
+    good_waterfall = waterfall[good_frames, :]
+
+    output: t.List[t.Union[np.ndarray, int]] = [good_waterfall]
+    if xp is not None:
+        good_xp = xp[good_frames, :]
+
+        output.append(good_xp)
+    if yp is not None:
+        good_yp = yp[good_frames, :]
+
+        output.append(good_yp)
+    if rec_prof is not None:
+        shift = len(waterfall) - len(good_waterfall)
+        shifted_rec_prof = rec_prof - shift
+
+        if shifted_rec_prof < 0:
+            raise ValueError('Shift of rec_prof will make it negative. '
+                             f'rec_prof ({rec_prof}) should be greater or '
+                             f'equal to the shift ({shifted_rec_prof}).')
+
+        output.append(shifted_rec_prof)
+
+    return tuple(output)
 
 
 # Finds foot tangents of profile. Needed to estimate bunch duration
