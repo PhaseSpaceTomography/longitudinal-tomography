@@ -1,6 +1,6 @@
 """Module containing the Tracking class.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 from typing import Tuple, TYPE_CHECKING, Callable
 
@@ -13,6 +13,7 @@ from ..cpp_routines import libtomo
 from ..compat import fortran
 
 if TYPE_CHECKING:
+    from .machine_base import MachineABC
     from .machine import Machine
 
 log = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: 'Machine'):
+    def __init__(self, machine: 'MachineABC'):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,

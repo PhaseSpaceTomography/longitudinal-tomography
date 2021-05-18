@@ -1,7 +1,7 @@
 """Module containing functions for handling input from
 Fortran style text files.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 import os
 import sys
@@ -9,7 +9,7 @@ import typing as t
 
 import numpy as np
 
-from tomo.compat import fortran
+from ..compat import fortran
 from .. import assertions as asrt, exceptions as expt
 from ..data import pre_process
 from ..data.profiles import Profiles
@@ -182,8 +182,7 @@ class Frames:
 
         # Skips bins at start and end of time frames.
         if self.skip_bins_end > 0:
-            waterfall = waterfall[:, self.skip_bins_start:
-                                     -self.skip_bins_end]
+            waterfall = waterfall[:, self.skip_bins_start:-self.skip_bins_end]
         else:
             waterfall = waterfall[:, self.skip_bins_start:]
         return waterfall

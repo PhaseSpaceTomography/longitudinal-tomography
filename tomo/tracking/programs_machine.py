@@ -1,3 +1,7 @@
+"""Module containing the ProgramsMachine class
+
+:Author(s): **Anton Lu**
+"""
 import numpy as np
 import scipy.constants as c
 import logging
@@ -130,7 +134,7 @@ class ProgramsMachine(MachineABC):
             if isinstance(self.phi12, np.ndarray):
                 if self.phi12.size() == 1:
                     pass
-                elif len(self.phi12.shape) == 2 and self.phi12.shape[1] == 2:  # time and value
+                elif len(self.phi12.shape) == 2 and self.phi12.shape[1] == 2:
                     self.phi12 = np.interp(momentum_time, *self.phi12)
                 elif len(self.phi12) == len(self.voltage_raw):
                     self.phi12 = np.interp(momentum_time, self.voltage_raw[0],
@@ -221,7 +225,8 @@ class ProgramsMachine(MachineABC):
 
         self.phi12 = np.arcsin(2 * np.pi * self.bending_rad *
                                self.mean_orbit_rad *
-                               self.bdot / self.vrf1_at_turn) + np.pi / self.h_ratio
+                               self.bdot / self.vrf1_at_turn) \
+            + np.pi / self.h_ratio
 
         if c04mode == 2:
             self.phi12 -= np.pi
@@ -292,7 +297,7 @@ class ProgramsMachine(MachineABC):
 
         beta_0 = np.sqrt(1 / (1 + (self.e_rest / momentum[0]) ** 2))
         T0 = self.circumference / (
-                    beta_0 * c.c)  # Initial revolution period [s]
+                beta_0 * c.c)  # Initial revolution period [s]
         time_interp = [time[0] + T0]
         beta_interp = [beta_0]
         momentum_interp = [momentum[0]]
@@ -351,4 +356,3 @@ class ProgramsMachine(MachineABC):
         momentum_function = momentum_interp[initial_index:final_index]
 
         return momentum_time, momentum_function
-

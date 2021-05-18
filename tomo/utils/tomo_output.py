@@ -3,12 +3,11 @@
 Every function ending on 'ftn' creates an
 output equal original Fortran program.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from warnings import warn
 
 from ..cpp_routines import libtomo
 from ..compat import fortran

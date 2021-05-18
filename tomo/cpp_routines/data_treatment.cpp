@@ -25,7 +25,7 @@ double *make_phase_space(const int *const xp, const int *const yp, const double 
     for (int i = 0; i < n_particles; i++) {
         int index = yp[i] + xp[i] * n_bins;
         if (index >= n_bins2)
-            throw std::runtime_error("Index out of bounds");
+            throw std::out_of_range("Index out of bounds");
         phase_space[index] += weight[i];
     }
 

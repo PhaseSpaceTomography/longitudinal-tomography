@@ -1,6 +1,12 @@
-//
-// Created by anton on 12/17/20.
-//
+/**
+ * @file reconstruct.h
+ *
+ * @author Anton Lu
+ * Contact: anton.lu@cern.ch
+ *
+ * Functions in pure C/C++ that handles phase space reconstruction.
+ * Meant to be called by a Python/C++ wrapper.
+ */
 
 #ifndef TOMO_RECONSTRUCT_H
 #define TOMO_RECONSTRUCT_H

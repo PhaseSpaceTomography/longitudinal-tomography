@@ -1,3 +1,7 @@
+"""Module containing the abstract machine class
+
+:Author(s): **Anton Lu**
+"""
 import typing as t
 from abc import ABC, abstractmethod
 import numpy as np
@@ -278,7 +282,7 @@ class MachineABC(ABC):
     @nbins.setter
     def nbins(self, in_nbins: int):
         self._nbins = in_nbins
-        self.synch_part_y = self._nbins / 2.0
+        self._find_synch_part_y()
         log.debug(f'synch_part_y was updated when the '
                   f'number of profile bins changed.\nNew values - '
                   f'nbins: {self._nbins}, synch_part_y: {self.synch_part_y}')
@@ -332,3 +336,8 @@ class MachineABC(ABC):
         The values are saved as fields of the Machine object.
         """
         pass
+
+    # Function for finding y coordinate of synchronous particle in the
+    # phase space coordinate system.
+    def _find_synch_part_y(self):
+        self.synch_part_y = self.nbins / 2.0

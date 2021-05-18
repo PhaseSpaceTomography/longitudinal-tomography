@@ -6,7 +6,7 @@ class TomoException(Exception):
 # ================
 
 
-class UnequalArrayShapes(TomoException):
+class UnequalArrayShapes(TomoException, ValueError):
     pass
 
 # ====================
@@ -22,11 +22,11 @@ class ValuesOutOfBrackets(TomoException):
     pass
 
 
-class ArrayLengthError(TomoException):
+class ArrayLengthError(TomoException, ValueError):
     pass
 
 
-class ArrayElementsNotEqualError(TomoException):
+class ArrayElementsNotEqualError(TomoException, ValueError):
     pass
 
 # ===========================
@@ -38,11 +38,11 @@ class InputError(TomoException):
     pass
 
 
-class MachineParameterError(TomoException):
+class MachineParameterError(TomoException, ValueError):
     pass
 
 
-class SpaceChargeParameterError(TomoException):
+class SpaceChargeParameterError(TomoException, ValueError):
     pass
 
 
@@ -50,7 +50,7 @@ class RawDataImportError(TomoException):
     pass
 
 
-class ArgumentError(TomoException):
+class ArgumentError(TomoException, ValueError):
     pass
 
 
@@ -62,23 +62,23 @@ class NegativeIndexError(IndexError):
 # ===========================
 
 
-class RebinningError(TomoException):
+class RebinningError(TomoException, RuntimeError):
     pass
 
 
-class WaterfallReducedToZero(TomoException):
+class WaterfallReducedToZero(TomoException, RuntimeError):
     pass
 
 
-class FilteredProfilesError(TomoException):
+class FilteredProfilesError(TomoException, ValueError):
     pass
 
 
-class WaterfallError(TomoException):
+class WaterfallError(TomoException, ValueError):
     pass
 
 
-class ProfileChargeNotCalculated(TomoException):
+class ProfileChargeNotCalculated(TomoException, ValueError):
     pass
 
 # ============================
@@ -86,15 +86,15 @@ class ProfileChargeNotCalculated(TomoException):
 # ============================
 
 
-class EnergyBinningError(TomoException):
+class EnergyBinningError(TomoException, ValueError):
     pass
 
 
-class EnergyLimitsError(TomoException):
+class EnergyLimitsError(TomoException, ValueError):
     pass
 
 
-class PhaseLimitsError(TomoException):
+class PhaseLimitsError(TomoException, ValueError):
     pass
 
 
@@ -106,11 +106,11 @@ class MapCreationError(TomoException):
 # PARTICLE TRACKING EXCEPTIONS
 # ============================
 
-class InvalidParticleError(TomoException):
+class InvalidParticleError(TomoException, ValueError):
     pass
 
 
-class TrackingError(TomoException):
+class TrackingError(TomoException, RuntimeError):
     pass
 
 
@@ -122,17 +122,17 @@ class SelfFieldTrackingError(TomoException):
 # ============================
 
 
-class PhaseSpaceReducedToZeroes(TomoException):
+class PhaseSpaceReducedToZeroes(TomoException, RuntimeError):
     pass
 
 
-class XPOutOfImageWidthError(TomoException):
+class XPOutOfImageWidthError(TomoException, ValueError):
     pass
 
 
-class CoordinateImportError(TomoException):
+class CoordinateImportError(TomoException, ValueError):
     pass
 
 
-class CoordinateError(TomoException):
+class CoordinateError(TomoException, ValueError):
     pass

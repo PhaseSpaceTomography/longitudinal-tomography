@@ -1,7 +1,11 @@
-//
-// Created by anton on 10/13/20.
-//
-
+/**
+ * @file kick_and_drift.h
+ *
+ * @author Anton Lu (anton.lu@cern.ch)
+ *
+ * Headers for kick_and_drift code for the convenience of not having to
+ * put the function definitions in proper order.
+ */
 #ifndef TOMOGRAPHY_KICK_AND_DRIFT_CPP_H
 #define TOMOGRAPHY_KICK_AND_DRIFT_CPP_H
 

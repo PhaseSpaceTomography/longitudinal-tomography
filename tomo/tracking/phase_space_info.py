@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Tuple
 
 import numpy as np
 
-from tomo.exceptions import EnergyBinningError, EnergyLimitsError, \
+from ..exceptions import EnergyBinningError, EnergyLimitsError, \
     PhaseLimitsError, ArrayLengthError
 from .. import assertions as asrt
 from ..utils import physics

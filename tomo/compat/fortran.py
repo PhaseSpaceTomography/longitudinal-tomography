@@ -5,6 +5,8 @@ removed in the rest of the package as well).
 
 The intention of this package is to provide Fortran I/O compatibility with the
 tomoscope until it is deprecated.
+
+:Author(s): **Anton Lu**
 """
 
 import logging

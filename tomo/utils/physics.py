@@ -1,6 +1,6 @@
 """Module containing fundamental physics formulas.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 import typing as t
 from numbers import Number
@@ -128,7 +128,8 @@ def drfvolt_rf1_mch(phi: float, machine: 'Machine', rf_turn: int) -> float:
     return drfvolt_rf1(phi, v1)
 
 
-def rfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+def rfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) \
+        -> float:
     """Objective function used in phi0 Newton optimization"""
     v1 = machine.vrf1_at_turn[rf_turn]
     bdot = machine.bdot[rf_turn]
@@ -137,7 +138,8 @@ def rfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> flo
                       machine.bending_rad, machine.q)
 
 
-def drfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+def drfvolt_rf1_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) \
+        -> float:
     """Objective function used in phi0 Newton optimization"""
     v1 = machine.vrf1_at_turn[rf_turn]
     return drfvolt_rf1(phi, v1)
@@ -197,7 +199,8 @@ def rf_voltage_mch(phi: float, machine: 'Machine', rf_turn: int) -> float:
                       machine.bending_rad, machine.q)
 
 
-def rf_voltage_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) -> float:
+def rf_voltage_pmch(phi: float, machine: 'ProgramsMachine', rf_turn: int) \
+        -> float:
     """Objective function used in phi0 Newton optimization"""
     v1 = machine.vrf1_at_turn[rf_turn]
     v2 = machine.vrf2_at_turn[rf_turn]
@@ -485,7 +488,8 @@ def phase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
         Frame to which machine parameters are referenced.
     """
 
-    phi12 = phi12[ref_frame] if isinstance(phi12, np.ndarray) else phi12
+    phi12 = phi12[ref_frame] if isinstance(phi12, np.ndarray) \
+        or isinstance(phi12, Sequence) else phi12
 
     v1 = vrf1[ref_frame] * (np.cos(phase + bunch_phaselength) - np.cos(phase))
 
@@ -549,8 +553,8 @@ def dphase_low_mch(phase: float, machine: 'MachineABC',
 
 
 def dphase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
-                vrf2: np.ndarray, h_ratio: float, phi12: arr_or_float,
-                rf_turn: int) -> float:
+               vrf2: np.ndarray, h_ratio: float, phi12: arr_or_float,
+               rf_turn: int) -> float:
     """Calculates derivative of the phase_low function.
     The function is needed for estimation of x-coordinate
     of synchronous particle.
@@ -575,7 +579,8 @@ def dphase_low(phase: float, bunch_phaselength: float, vrf1: np.ndarray,
     rf_turn: int
         Which turn to do the calculation at.
     """
-    phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) else phi12
+    phi12 = phi12[rf_turn] if isinstance(phi12, np.ndarray) or \
+        isinstance(phi12, Sequence) else phi12
 
     ret = (-1.0 * vrf2[rf_turn]
            * (np.sin(h_ratio

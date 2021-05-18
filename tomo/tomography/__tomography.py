@@ -1,6 +1,6 @@
 """Module containing the Tomography super class
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 
 import logging
@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 import typing as t
 import numpy as np
 
-from tomo import exceptions as expt
+from .. import exceptions as expt
 
 log = logging.getLogger(__name__)
 

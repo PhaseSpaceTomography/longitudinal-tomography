@@ -1,7 +1,7 @@
 """Module containing function for full Fortran
 style tomographic reconstruction.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 
 import logging

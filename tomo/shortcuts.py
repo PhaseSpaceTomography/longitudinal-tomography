@@ -1,3 +1,8 @@
+"""
+Macro functions provided for convenience
+
+:Author(s): **Anton Lu**
+"""
 import typing as t
 import numpy as np
 

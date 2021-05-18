@@ -1,6 +1,6 @@
 """Module containing functions for treatment of data.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 
 from typing import Tuple, TYPE_CHECKING, Union

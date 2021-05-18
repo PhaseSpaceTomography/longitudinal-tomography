@@ -1,9 +1,13 @@
+"""
+Tomoscope specific codes
+
+:Author(s): **Anton Lu**
+"""
 import logging
 from os import path
 
 import numpy as np
 
-from ..data import data_treatment as dtreat
 from ..utils import tomo_output as tomoout
 
 

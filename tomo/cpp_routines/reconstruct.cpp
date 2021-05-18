@@ -1,3 +1,13 @@
+/**
+ * @file reconstruct.cpp
+ *
+ * @author Anton Lu
+ * Contact: anton.lu@cern.ch
+ *
+ * Functions in pure C/C++ that handles phase space reconstruction.
+ * Meant to be called by a Python/C++ wrapper.
+ */
+
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -8,8 +18,6 @@
 #include "pybind11/pybind11.h"
 #include <pybind11/stl.h>
 #include "reconstruct.h"
-
-namespace py = pybind11;
 
 // Back projection using flattened arrays
 extern "C" void back_project(double *  weights,                     // inn/out

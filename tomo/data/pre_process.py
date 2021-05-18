@@ -145,7 +145,7 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
 
 
 @dispatch(Profiles)
-def fit_synch_part_x(profiles: 'Profiles') -> t.Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(profiles: Profiles) -> t.Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -176,8 +176,8 @@ def fit_synch_part_x(profiles: 'Profiles') -> t.Tuple[np.ndarray, float, float]:
     return fit_synch_part_x(profiles.waterfall, profiles.machine)
 
 
-def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) -> \
-        t.Tuple[t.Union[float, np.ndarray], t.Union[float, np.ndarray]]:
+def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) \
+        -> t.Tuple[t.Union[float, np.ndarray], t.Union[float, np.ndarray]]:
     if isinstance(waterfall, tuple) or isinstance(waterfall, list):
         waterfall = np.array(waterfall).real
 
@@ -192,8 +192,7 @@ def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) -> 
     actual_waterfall = diff > threshold
 
     cut_left = np.argmax(actual_waterfall)
-    cut_right = n_bins \
-                - np.argmax(actual_waterfall[::-1]) + 1
+    cut_right = n_bins - np.argmax(actual_waterfall[::-1]) + 1
 
     if cut_left > margin:
         cut_left -= margin
@@ -284,7 +283,8 @@ def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
         depending on the number of inputs.
     """
     if (xp is None and yp is not None) or (xp is not None and yp is None):
-        raise ValueError('Both xp and yp must be passed.')
+        raise ValueError('Either both or neither of xp and yp should '
+                         'be passed.')
 
     waterfall = waterfall / waterfall.sum()
 
