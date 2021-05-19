@@ -5,6 +5,8 @@ removed in the rest of the package as well).
 
 The intention of this package is to provide Fortran I/O compatibility with the
 tomoscope until it is deprecated.
+
+:Author(s): **Anton Lu**
 """
 
 import logging
@@ -45,7 +47,7 @@ def save_profile(profiles: np.ndarray, recprof: int, output_dir: str):
     file_path = os.path.join(output_dir, f'profile{recprof + 1:03d}.data')
     with open(file_path, 'w') as f:
         for element in out_profile:
-            f.write(f' {element:0.7E}\r\n')
+            f.write(f' {element:0.7E}\n')
 
 
 def save_self_volt_profile(self_fields: np.ndarray, output_dir: str):
@@ -62,7 +64,7 @@ def save_self_volt_profile(self_fields: np.ndarray, output_dir: str):
     file_path = os.path.join(output_dir, 'vself.data')
     with open(file_path, 'w') as f:
         for element in out_profile:
-            f.write(f' {element:0.7E}\r\n')
+            f.write(f' {element:0.7E}\n')
 
 
 # --------------------------------------------------------------- #
@@ -86,7 +88,7 @@ def save_phase_space(image: np.ndarray, recprof: int, output_path: str):
     file_path = os.path.join(output_path, f'image{recprof + 1:03d}.data')
     with open(file_path, 'w') as f:
         for element in image:
-            f.write(f'  {element:0.7E}\r\n')
+            f.write(f'  {element:0.7E}\n')
 
 
 # --------------------------------------------------------------- #

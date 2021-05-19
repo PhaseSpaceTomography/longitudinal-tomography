@@ -1,1 +1,1 @@
-from .tomography import TomographyCpp
+from .tomography import Tomography, TomographyCpp

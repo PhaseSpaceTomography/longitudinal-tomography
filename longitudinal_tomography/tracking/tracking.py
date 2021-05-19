@@ -1,18 +1,19 @@
 """Module containing the Tracking class.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING, Callable
 
 import numpy as np
 import logging
 
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
-from ..cpp_routines import tomolib_wrappers as tlw
+from ..cpp_routines import libtomo
 from ..compat import fortran
 
 if TYPE_CHECKING:
+    from .machine_base import MachineABC
     from .machine import Machine
 
 log = logging.getLogger(__name__)
@@ -49,11 +50,11 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: 'Machine'):
+    def __init__(self, machine: 'MachineABC'):
         super().__init__(machine)
 
-    def track(self, recprof: int,
-              init_distr: Tuple[float, float] = None) \
+    def track(self, recprof: int, init_distr: Tuple[float, float] = None,
+              callback: Callable = None) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -96,6 +97,11 @@ class Tracking(ParticleTracker):
             coordinates (dphi, denergy). dphi is the phase difference
             from the synchronous particle [rad]. denergy is the difference
             in energy from the synchronous particle [eV].
+        callback: Callable
+            Passing a callback with function signature
+            (progress: int, total: int) will allow the tracking loop to call
+            this function at the end of each turn, allowing the python caller
+            to monitor the progress.
 
         Returns
         -------
@@ -120,18 +126,19 @@ class Tracking(ParticleTracker):
 
         recprof = asrt.assert_index_ok(
             recprof, self.machine.nprofiles, wrap_around=True)
+        machine = self.machine
 
         if init_distr is None:
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
             log.info('Creating homogeneous distribution of particles.')
-            self.particles.homogeneous_distribution(self.machine, recprof)
+            self.particles.homogeneous_distribution(machine, recprof)
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
             if self.fortran_flag:
                 print(fortran.write_plotinfo(
-                    self.machine, self.particles, self._profile_charge))
+                    machine, self.particles, self._profile_charge))
 
         else:
             log.info('Using initial particle coordinates set by user.')
@@ -141,8 +148,8 @@ class Tracking(ParticleTracker):
         dphi = coords[0]
         denergy = coords[1]
 
-        rfv1 = self.machine.vrf1_at_turn * self.machine.q
-        rfv2 = self.machine.vrf2_at_turn * self.machine.q
+        rfv1 = machine.vrf1_at_turn * machine.q
+        rfv2 = machine.vrf2_at_turn * machine.q
 
         # Tracking particles
         if self.self_field_flag:
@@ -155,15 +162,17 @@ class Tracking(ParticleTracker):
         else:
             # Tracking without self-fields
             nparts = len(dphi)
-            nturns = self.machine.dturns * (self.machine.nprofiles - 1)
-            xp = np.zeros((self.machine.nprofiles, nparts))
-            yp = np.zeros((self.machine.nprofiles, nparts))
+            nturns = machine.dturns * (machine.nprofiles - 1)
+            xp = np.zeros((machine.nprofiles, nparts))
+            yp = np.zeros((machine.nprofiles, nparts))
 
             # Calling C++ implementation of tracking routine.
-            xp, yp = tlw.kick_and_drift(
-                xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                nturns, nparts, machine=self.machine,
-                ftn_out=self.fortran_flag)
+            libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
+                                   machine.phi0, machine.deltaE0,
+                                   machine.drift_coef, machine.phi12,
+                                   machine.h_ratio, machine.dturns,
+                                   recprof, nturns, nparts,
+                                   self.fortran_flag, callback=callback)
 
         log.info('Tracking completed!')
         return xp, yp
@@ -218,12 +227,12 @@ class Tracking(ParticleTracker):
         # Tracking 'upwards'
         while turn < self.nturns:
             # Calculating change in phase for each particle at a turn
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn)
             turn += 1
             # Calculating change in energy for each particle at a turn
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn)
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                                   nparts, turn)
 
             if turn % self.machine.dturns == 0:
                 profile += 1
@@ -241,12 +250,12 @@ class Tracking(ParticleTracker):
         # Tracking 'downwards'
         while turn > 0:
             # Calculating change in energy for each particle at a turn
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn, up=False)
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                                   nparts, turn, up=False)
             turn -= 1
             # Calculating change in phase for each particle at a turn
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn, up=False)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn, up=False)
 
             if turn % self.machine.dturns == 0:
                 profile -= 1
@@ -327,8 +336,8 @@ class Tracking(ParticleTracker):
         if self.fortran_flag:
             fortran.print_tracking_status(rec_prof, profile)
         while turn < self.nturns:
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn)
 
             turn += 1
 
@@ -340,8 +349,8 @@ class Tracking(ParticleTracker):
                                        self._phiwrap)
             selfvolt = self._vself[profile, temp_xp.astype(int) - 1]
 
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn)
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                                   nparts, turn)
             denergy += selfvolt * self.machine.q
 
             if turn % self.machine.dturns == 0:
@@ -361,15 +370,15 @@ class Tracking(ParticleTracker):
         while turn > 0:
             selfvolt = self._vself[profile, temp_xp.astype(int)]
 
-            denergy = tlw.kick(self.machine, denergy, dphi, rf1v, rf2v,
-                               nparts, turn, up=False)
+            denergy = libtomo.kick(self.machine, denergy, dphi, rf1v, rf2v,
+                                   nparts, turn, up=False)
 
             denergy += selfvolt * self.machine.q
 
             turn -= 1
 
-            dphi = tlw.drift(denergy, dphi, self.machine.drift_coef,
-                             nparts, turn, up=False)
+            dphi = libtomo.drift(denergy, dphi, self.machine.drift_coef,
+                                 nparts, turn, up=False)
 
             temp_xp = self._calc_xp_sf(
                 dphi, self.machine.phi0[turn], self.particles.xorigin,

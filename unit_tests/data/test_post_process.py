@@ -21,7 +21,7 @@ class TestPostProcess(unittest.TestCase):
 
         emittance_rms = post_process.emittance_rms(phase_space, t_bins, e_bins)
 
-        self.assertAlmostEqual(emittance_rms, 0.03297873913189668)
+        self.assertAlmostEqual(emittance_rms, 0.06802901508017638)
 
     def test_emittance_90(self):
         tomo, machine = commons.get_tomography_params()
@@ -30,7 +30,7 @@ class TestPostProcess(unittest.TestCase):
 
         emittance_90 = post_process.emittance_90(phase_space, t_bins, e_bins)
 
-        self.assertAlmostEqual(emittance_90, 0.1581675994980109)
+        self.assertAlmostEqual(emittance_90, 0.269939386246181)
 
     def test_emittance_fractional(self):
         tomo, machine = commons.get_tomography_params()
@@ -40,7 +40,7 @@ class TestPostProcess(unittest.TestCase):
         emittance = post_process.emittance_fractional(phase_space, t_bins,
                                                       e_bins, fraction=80)
 
-        self.assertAlmostEqual(emittance, 0.1009879684327988)
+        self.assertAlmostEqual(emittance, 0.2183279430331099)
 
     def test_emittance_fractional_bounds(self):
         tomo, machine = commons.get_tomography_params()
@@ -64,8 +64,8 @@ class TestPostProcess(unittest.TestCase):
         t_bins, e_bins, phase_space = treat.phase_space(tomo, machine)
 
         rms_dpp = post_process.rms_dpp(phase_space.sum(0), e_bins,
-                                       energy, momentum, mass)
-        self.assertAlmostEqual(rms_dpp, 0.0003547122166635846)
+                                       energy, mass)
+        self.assertAlmostEqual(rms_dpp, 0.0005028782274293471)
 
     def test_post_process(self):
         tomo, machine = commons.get_tomography_params()
@@ -76,13 +76,13 @@ class TestPostProcess(unittest.TestCase):
 
         t_bins, e_bins, phase_space = treat.phase_space(tomo, machine)
         processed_values = post_process.post_process(phase_space, t_bins,
-                                                     e_bins, energy, momentum,
-                                                     mass)
+                                                     e_bins, energy, mass)
 
         correct = {
-            'emittance_rms': 0.03297873913189668,
-            'emittance_90': 0.1581675994980109,
-            'rms_dp/p': 0.0003547122166635846,
+            'emittance_rms': 0.06802901508017638,
+            'emittance_90': 0.269939386246181,
+            'rms_dp/p': 0.0005028782274293471,
         }
 
-        self.assertDictEqual(processed_values, correct)
+        for k, v in correct.items():
+            self.assertAlmostEqual(v, processed_values[k])

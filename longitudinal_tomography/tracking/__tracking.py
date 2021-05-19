@@ -1,17 +1,20 @@
 """Module containing ParticleTracker class,
 a super class for particle trackers.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
-import logging as log
+import logging
 from typing import TYPE_CHECKING
 
 from . import particles as pts
-from .machine import Machine
+from .machine_base import MachineABC
 from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
     from ..data.profiles import Profiles
+
+
+log = logging.getLogger(__name__)
 
 
 class ParticleTracker:
@@ -22,13 +25,13 @@ class ParticleTracker:
 
     Parameters
     ----------
-    machine: Machine
+    machine: MachineABC
         Holds all information needed for particle tracking and generating
         the particle distribution.
 
     Attributes
     ----------
-    machine: Machine
+    machine: MachineABC
         Holds all information needed for particle tracking and generation of
         the particle distribution.
     particles: Particles
@@ -50,9 +53,9 @@ class ParticleTracker:
         Machine object provided is missing needed fields.
     """
 
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: MachineABC):
 
-        if not isinstance(machine, Machine):
+        if not isinstance(machine, MachineABC):
             err_msg = 'Input argument must be Machine.'
             raise expt.MachineParameterError(err_msg)
 
@@ -162,7 +165,7 @@ class ParticleTracker:
     # Checks that the given machine object includes the necessary
     # variables to perform the tracking.
     # Does not check parameters for calculating using self-fields.
-    def _assert_machine(self, machine: Machine):
+    def _assert_machine(self, machine: MachineABC):
         needed_fieds = ['vrf1_at_turn', 'vrf2_at_turn', 'q',
                         'nprofiles', 'drift_coef', 'dturns', 'phi0',
                         'phi12', 'h_ratio', 'deltaE0', 'synch_part_x']

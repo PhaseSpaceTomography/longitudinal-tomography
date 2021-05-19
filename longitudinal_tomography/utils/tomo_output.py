@@ -3,13 +3,13 @@
 Every function ending on 'ftn' creates an
 output equal original Fortran program.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from warnings import warn
 
+from ..cpp_routines import libtomo
 from ..compat import fortran
 
 
@@ -92,11 +92,9 @@ def create_phase_space_image(
         phase space image has the same format as from the original program.
     """
 
-    phase_space = np.zeros((n_bins, n_bins))
-
-    # Creating n_bins x n_bins phase-space image
-    for x, y, w in zip(xp[:, recprof], yp[:, recprof], weight):
-        phase_space[x, y] += w
+    phase_space = libtomo.make_phase_space(xp[:, recprof].astype(np.int32),
+                                           yp[:, recprof].astype(np.int32),
+                                           weight, n_bins)
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
@@ -109,7 +107,8 @@ def create_phase_space_image(
 #                         END PRODUCT                             #
 # --------------------------------------------------------------- #
 
-def show(image: np.ndarray, diff: np.ndarray, recprof: np.ndarray):
+def show(image: np.ndarray, diff: np.ndarray, rec_prof: np.ndarray,
+         figure: plt.figure = None):
     """Nice presentation of reconstruction.
 
     Parameters
@@ -119,17 +118,20 @@ def show(image: np.ndarray, diff: np.ndarray, recprof: np.ndarray):
         Shape: (N, N), where N is the number of profile bins.
     diff: ndarray
         1D array containing discrepancies for each iteration of reconstruction.
-    recprof: ndarray
+    rec_prof: ndarray
         1D array containing the measured profile to be reconstructed.
     """
 
     # Normalizing recprof:
-    recprof[:] /= np.sum(recprof)
+    rec_prof[:] /= np.sum(rec_prof)
 
     # Creating plot
     gs = gridspec.GridSpec(4, 4)
 
-    fig = plt.figure()
+    if figure is not None:
+        fig = figure
+    else:
+        fig = plt.figure()
 
     img = fig.add_subplot(gs[1:, :3])
     profs1 = fig.add_subplot(gs[0, :3])
@@ -140,7 +142,7 @@ def show(image: np.ndarray, diff: np.ndarray, recprof: np.ndarray):
                       interpolation='nearest', cmap='hot')
 
     profs1.plot(np.sum(image, axis=1), label='reconstructed', zorder=5)
-    profs1.plot(recprof, label='measured', zorder=0)
+    profs1.plot(rec_prof, label='measured', zorder=0)
     profs1.legend()
 
     profs2.plot(np.sum(image, axis=0),
@@ -157,6 +159,8 @@ def show(image: np.ndarray, diff: np.ndarray, recprof: np.ndarray):
     convg.set_xticks(np.arange(len(diff)))
     convg.set_xticklabels([])
 
-    plt.gcf().set_size_inches(8, 8)
-    plt.tight_layout()
-    plt.show()
+    if figure is None:
+        fig.set_size_inches(8, 8)
+        fig.tight_layout()
+
+        plt.show()

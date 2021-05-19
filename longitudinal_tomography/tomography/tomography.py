@@ -1,18 +1,21 @@
 """Module containing the TomographyCpp class
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 
-import logging as log
+import logging
+import typing as t
 
 import numpy as np
 
-from . import __tomography as stmo
-from ..cpp_routines import tomolib_wrappers as tlw
+from .__tomography import TomographyABC
+from ..cpp_routines import libtomo
 from .. import exceptions as expt
 
+log = logging.getLogger(__name__)
 
-class TomographyCpp(stmo.Tomography):
+
+class Tomography(TomographyABC):
     """Class for performing tomographic reconstruction of phase space.
 
     The tomographic routine largely consists of two parts. Projection and
@@ -59,7 +62,6 @@ class TomographyCpp(stmo.Tomography):
     def __init__(self, waterfall: np.ndarray, x_coords: np.ndarray = None,
                  y_coords: np.ndarray = None):
         super().__init__(waterfall, x_coords, y_coords)
-        self.weight = None
 
     def run_hybrid(self, niter=20, verbose=False):
         """Function to perform tomographic reconstruction, implemented
@@ -108,8 +110,8 @@ class TomographyCpp(stmo.Tomography):
             self.waterfall.flatten()).astype(np.float64)
         weight = np.zeros(self.nparts)
 
-        weight = tlw.back_project(weight, flat_points, flat_profs,
-                                  self.nparts, self.nprofs)
+        weight = libtomo.back_project(weight, flat_points, flat_profs,
+                                      self.nparts, self.nprofs)
         weight = weight.clip(0.0)
 
         if verbose:
@@ -127,7 +129,7 @@ class TomographyCpp(stmo.Tomography):
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts.T
 
-            weight = tlw.back_project(
+            weight = libtomo.back_project(
                 weight, flat_points, diff_waterfall.flatten(),
                 self.nparts, self.nprofs)
             weight = weight.clip(0.0)
@@ -145,9 +147,12 @@ class TomographyCpp(stmo.Tomography):
 
     # Project using C++ routine from tomolib_wrappers.
     # Normalizes recreated profiles before returning them.
-    def _project(self, flat_points, weight):
-        rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
-                          weight, self.nparts, self.nprofs, self.nbins)
+    def _project(self, flat_points: np.ndarray, weight: np.ndarray) \
+            -> np.ndarray:
+        # rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
+        #                   weight, self.nparts, self.nprofs, self.nbins)
+        rec = libtomo.project(np.zeros(self.recreated.shape), flat_points,
+                              weight, self.nparts, self.nprofs, self.nbins)
         rec = self._normalize_profiles(rec)
         return rec
 
@@ -156,7 +161,7 @@ class TomographyCpp(stmo.Tomography):
         return np.ascontiguousarray(
             super()._create_flat_points()).astype(np.int32)
 
-    def _run_old(self, niter=20, verbose=False):
+    def _run_old(self, niter: int = 20, verbose: bool = False) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -195,13 +200,14 @@ class TomographyCpp(stmo.Tomography):
             self.waterfall.flatten().astype(np.float64))
 
         (self.weight,
-         self.diff) = tlw._old_reconstruct(
+         self.diff) = libtomo.reconstruct_old(
             weight, self.xp, flat_profiles,
             self.diff, niter, self.nbins,
             self.nparts, self.nprofs, verbose)
         return self.weight
 
-    def run(self, niter: int = 20, verbose: bool = False) -> np.ndarray:
+    def run(self, niter: int = 20, verbose: bool = False,
+            callback: t.Callable = None) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -220,6 +226,11 @@ class TomographyCpp(stmo.Tomography):
             Flag to indicate that the status of the tomography should be
             written to stdout. The output is identical to output
             generated in the original Fortran tomography.
+        callback: Callable
+            Passing a callback with function signature
+            (progress: int, total: int) will allow the tracking loop to call
+            this function at the end of each turn, allowing the python caller
+            to monitor the progress.
 
         Returns
         -------
@@ -237,7 +248,11 @@ class TomographyCpp(stmo.Tomography):
 
         (self.weight,
          self.diff,
-         self.recreated) = tlw.reconstruct(
+         self.recreated) = libtomo.reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose)
+            self.nparts, self.nprofs, verbose, callback)
         return self.weight
+
+
+# for backwards compatibility
+TomographyCpp = Tomography

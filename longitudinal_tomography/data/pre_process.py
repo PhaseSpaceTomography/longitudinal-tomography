@@ -5,21 +5,27 @@ The functions here are to be moved over from longitudinal_tomography.data.data_t
 
 :Author(s): **Anton Lu**, **Christoffer Hjertø Grindheim**
 """
-from typing import Union, Tuple, List
+import logging
+import typing as t
 
 import numpy as np
 from multipledispatch import dispatch
 from scipy import optimize
 
-from longitudinal_tomography.utils import physics
+from ..utils import physics
 from .profiles import Profiles
 from .. import assertions as asrt
 from ..tracking import Machine
+from ..tracking.machine_base import MachineABC
+
+
+log = logging.getLogger(__name__)
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
           synch_part_x: float = None) \
-        -> Union[Tuple[np.ndarray, float, float], Tuple[np.ndarray, float]]:
+        -> t.Union[t.Tuple[np.ndarray, float, float],
+                   t.Tuple[np.ndarray, float]]:
     """Rebin waterfall from shape (P, X) to (P, Y).
     P is the number of profiles, X is the original number of bins,
     and Y is the number of bins after the re-binning.
@@ -74,9 +80,9 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
     return rebinned, dtbin
 
 
-@dispatch(np.ndarray, Machine)
-def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
-        -> Tuple[np.ndarray, float, float]:
+@dispatch(np.ndarray, MachineABC)
+def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
+        -> t.Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -123,8 +129,8 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
     # Estimate the synchronous phase.
     x0 = machine.phi0[ref_turn] - bunch_phaselength / 2.0
     phil = optimize.newton(
-        func=physics.phase_low, x0=x0,
-        fprime=physics.dphase_low,
+        func=physics.phase_low_mch, x0=x0,
+        fprime=physics.dphase_low_mch,
         tol=0.0001, maxiter=100,
         args=(machine, bunch_phaselength, ref_turn))
 
@@ -139,7 +145,7 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: Machine)\
 
 
 @dispatch(Profiles)
-def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(profiles: Profiles) -> t.Tuple[np.ndarray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -170,7 +176,38 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
     return fit_synch_part_x(profiles.waterfall, profiles.machine)
 
 
-def cut_waterfall(waterfall: Union[List[np.ndarray], np.ndarray],
+def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) \
+        -> t.Tuple[t.Union[float, np.ndarray], t.Union[float, np.ndarray]]:
+    if isinstance(waterfall, tuple) or isinstance(waterfall, list):
+        waterfall = np.array(waterfall).real
+
+    n_bins = len(waterfall[0])
+    diff = np.sum(np.abs(waterfall[:, 1:] - waterfall[:, :-1]), axis=0)
+    diff -= diff.min()
+
+    if threshold is None:
+        threshold = diff.max() * 0.3
+
+    # filters out noise
+    actual_waterfall = diff > threshold
+
+    cut_left = np.argmax(actual_waterfall)
+    cut_right = n_bins - np.argmax(actual_waterfall[::-1]) + 1
+
+    if cut_left > margin:
+        cut_left -= margin
+    else:
+        cut_left = 0
+
+    if n_bins - cut_right > margin:
+        cut_right += margin
+    else:
+        cut_right = n_bins
+
+    return int(cut_left), int(cut_right)
+
+
+def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
                   cut_left: int, cut_right: int) -> np.ndarray:
     """
     Cut a waterfall array of shape (n_profiles, n_bins) to shape
@@ -215,9 +252,75 @@ def cut_waterfall(waterfall: Union[List[np.ndarray], np.ndarray],
     return waterfall
 
 
+def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
+                    yp: np.ndarray = None, rec_prof: int = None) \
+        -> t.Union[
+            np.ndarray,
+            t.Tuple[np.ndarray, np.ndarray],
+            t.Tuple[np.ndarray, np.ndarray, np.ndarray],
+            t.Tuple[np.ndarray, np.ndarray, int],
+            t.Tuple[np.ndarray, int]]:
+    """
+    Filters out empty profiles from measured data. Empty profiles are
+    considered just noise. Returned arrays are truncated with the noise frames
+    removed.
+
+    Parameters
+    ----------
+    waterfall: np.ndarray
+        Waterfall array of shape (n_profiles, n_bins)
+    xp: np.ndarray
+        Tracked and binned particles of shape (n_profiles, n_bins)
+    yp: np.ndarray
+        Tracked and binned particles of shape (n_profiles, n_bins)
+    rec_prof: int
+        Reconstruction profile. The profile will be shifted by the number of
+        removed profiles.
+
+    Returns
+    -------
+        Variable number of truncated arrays with empty profiles removed,
+        depending on the number of inputs.
+    """
+    if (xp is None and yp is not None) or (xp is not None and yp is None):
+        raise ValueError('Either both or neither of xp and yp should '
+                         'be passed.')
+
+    waterfall = waterfall / waterfall.sum()
+
+    bin_sum = waterfall.sum(axis=1)
+
+    threshold = bin_sum.max() - bin_sum.min() - bin_sum.mean()
+    good_frames = bin_sum > threshold
+
+    good_waterfall = waterfall[good_frames, :]
+
+    output: t.List[t.Union[np.ndarray, int]] = [good_waterfall]
+    if xp is not None:
+        good_xp = xp[good_frames, :]
+
+        output.append(good_xp)
+    if yp is not None:
+        good_yp = yp[good_frames, :]
+
+        output.append(good_yp)
+    if rec_prof is not None:
+        shift = len(waterfall) - len(good_waterfall)
+        shifted_rec_prof = rec_prof - shift
+
+        if shifted_rec_prof < 0:
+            raise ValueError('Shift of rec_prof will make it negative. '
+                             f'rec_prof ({rec_prof}) should be greater or '
+                             f'equal to the shift ({shifted_rec_prof}).')
+
+        output.append(shifted_rec_prof)
+
+    return tuple(output)
+
+
 # Finds foot tangents of profile. Needed to estimate bunch duration
 # when performing a fit to find synch_part_x.
-def _calc_tangentfeet(ref_prof: np.ndarray) -> Tuple[float, float]:
+def _calc_tangentfeet(ref_prof: np.ndarray) -> t.Tuple[float, float]:
     nbins = len(ref_prof)
     index_array = np.arange(nbins) + 0.5
 
@@ -238,7 +341,7 @@ def _calc_tangentfeet(ref_prof: np.ndarray) -> Tuple[float, float]:
 # Returns index of last bins to the left and right of max valued bin,
 # with value over the threshold.
 def _calc_tangentbins(ref_profile: np.ndarray, nbins: int,
-                      threshold_coeff: float = 0.15) -> Tuple[float, float]:
+                      threshold_coeff: float = 0.15) -> t.Tuple[float, float]:
     threshold = threshold_coeff * np.max(ref_profile)
     maxbin = np.argmax(ref_profile)
     for ibin in range(maxbin, 0, -1):

@@ -1,6 +1,6 @@
 """Module containing functions for treatment of data.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 
 from typing import Tuple, TYPE_CHECKING, Union
@@ -8,14 +8,22 @@ from warnings import warn
 
 import numpy as np
 
-from longitudinal_tomography import exceptions as expt
-from longitudinal_tomography.utils import physics
+from .. import exceptions as expt
+from ..utils import physics
+from ..cpp_routines import libtomo
 from . import pre_process
 
+import logging
+
 if TYPE_CHECKING:
-    from longitudinal_tomography.data.profiles import Profiles
-    from longitudinal_tomography.tracking.machine import Machine
-    from longitudinal_tomography.tomography.__tomography import Tomography
+    from .profiles import Profiles
+    from ..tracking.machine import Machine
+    from ..tracking.machine_base import MachineABC
+    from ..tomography.__tomography import TomographyABC
+
+__all__ = ['rebin', 'fit_synch_part_x', 'phase_space']
+
+log = logging.getLogger(__name__)
 
 
 def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
@@ -58,7 +66,8 @@ def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
         new x-coordinate of the synchronous particle in bins will be returned.
         Otherwise, None will be returned.
     """
-#    warn('The rebin function has been moved to longitudinal_tomography.data.pre_process')
+    # warn('The rebin function has been moved to '
+    #      'longitudinal_tomography.data.pre_process')
     return pre_process.rebin(waterfall, rbn, dtbin, synch_part_x)
 
 
@@ -92,12 +101,13 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
         function in order to write the original output format.
 
     """
-#    warn('The fit_synch_part_x function has moved to '
-#         'longitudinal_tomography.data.pre_process')
+    # warn('The fit_synch_part_x function has moved to '
+    #      'longitudinal_tomography.data.pre_process')
     return pre_process.fit_synch_part_x(profiles)
 
 
-def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
+def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
+                reconstr_idx: int = 0) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -105,11 +115,11 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
 
     Parameters
     ----------
-    tomo: Tomography
+    tomo: TomographyABC
         Object holding the information about a tomographic reconstruction.
     machine: Machine
         Object holding information about machine and reconstruction parameters.
-    profile: int
+    reconstr_idx: int
         Index of profile to be reconstructed.
 
     Returns
@@ -132,8 +142,9 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
         raise expt.InputError("""phase_space function requires automatic
                               phase space generation to have been used""")
 
-    density = _make_phase_space(tomo.xp[:, profile], tomo.yp[:, profile],
-                                tomo.weight, machine.nbins)
+    density = libtomo.make_phase_space(tomo.xp[:, reconstr_idx],
+                                       tomo.yp[:, reconstr_idx],
+                                       tomo.weight, machine.nbins)
 
     t_cent = machine.synch_part_x
     E_cent = machine.synch_part_y
@@ -148,15 +159,16 @@ def phase_space(tomo: 'Tomography', machine: 'Machine', profile: int = 0) \
 # particle
 def _make_phase_space(xp: np.ndarray, yp: np.ndarray, weights: np.ndarray,
                       nbins: int) -> np.ndarray:
-    phase_space = np.zeros([nbins, nbins])
-
-    for x, y, w in zip(xp, yp, weights):
-        phase_space[x, y] += w
-
-    return phase_space
+    log.warning('tomo.data.data_treatment._make_phase_space has moved to '
+                'the C++ library at '
+                'tomo.cpp_routines.libtomo.make_phase_space. '
+                'This function is provided for backwards compatibility '
+                'and can be removed without further notice.')
+    return libtomo.make_phase_space(xp, yp, weights, nbins)
 
 
 def calc_baseline_ftn(*args):
-#    warn('This function has moved to longitudinal_tomography.compat.fortran.')
+    # warn('This function has moved to '
+    #      'longitudinal_tomography.compat.fortran.')
     from longitudinal_tomography.compat.fortran import calc_baseline
     return calc_baseline(*args)

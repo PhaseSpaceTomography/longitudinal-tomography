@@ -10,9 +10,8 @@ import numpy as np
 import numpy.testing as nptest
 
 from .. import commons
-import longitudinal_tomography.cpp_routines.tomolib_wrappers as tlw
 import longitudinal_tomography.tracking.machine as mch
-from longitudinal_tomography import exceptions as expt
+from tomo.cpp_routines import libtomo
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
@@ -34,8 +33,8 @@ class TestTLW(unittest.TestCase):
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
 
-        new_denergy = tlw.kick(machine, denergy, dphi,
-                               rfv1, rfv2, npart, turn, up=True)
+        new_denergy = libtomo.kick(machine, denergy, dphi,
+                                   rfv1, rfv2, npart, turn, up=True)
 
         correct_energy = -113495.65825924404
         self.assertAlmostEqual(
@@ -56,8 +55,8 @@ class TestTLW(unittest.TestCase):
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
 
-        new_denergy = tlw.kick(machine, denergy, dphi,
-                               rfv1, rfv2, npart, turn, up=False)
+        new_denergy = libtomo.kick(machine, denergy, dphi,
+                                   rfv1, rfv2, npart, turn, False)
 
         correct_energy = -116610.12118255378
         self.assertAlmostEqual(
@@ -74,8 +73,8 @@ class TestTLW(unittest.TestCase):
         nparts = 1
         turn = 0
 
-        new_dphi = tlw.drift(denergy, dphi, machine.drift_coef,
-                             nparts, turn, up=True)
+        new_dphi = libtomo.drift(denergy, dphi, machine.drift_coef,
+                                 nparts, turn, up=True)
 
         correct_dphi = 0.3356669466375665
         self.assertAlmostEqual(
@@ -92,8 +91,8 @@ class TestTLW(unittest.TestCase):
         nparts = 1
         turn = (machine.nprofiles - 1) * machine.dturns
 
-        new_dphi = tlw.drift(denergy, dphi, machine.drift_coef,
-                             nparts, turn, up=False)
+        new_dphi = libtomo.drift(denergy, dphi, machine.drift_coef,
+                                 nparts, turn, up=False)
 
         correct_dphi = 0.3279023169434031
         self.assertAlmostEqual(
@@ -118,9 +117,9 @@ class TestTLW(unittest.TestCase):
         xp = np.zeros((machine.nprofiles, nparts))
         yp = np.zeros((machine.nprofiles, nparts))
 
-        xp, yp = tlw.kick_and_drift(
-            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-            nturns, nparts, machine=machine)
+        xp, yp = libtomo.kick_and_drift(
+            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof,
+            nturns, nparts)
 
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
                                [0.291644], [0.31200651], [0.33178332],
@@ -164,10 +163,9 @@ class TestTLW(unittest.TestCase):
         h_ratio = machine.h_ratio
         dturns = machine.dturns
 
-        xp, yp = tlw.kick_and_drift(
-            xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-            nturns, nparts, phi0, deltaE0, omega_rev0,
-            drift_coef, phi12, h_ratio, dturns)
+        xp, yp = libtomo.kick_and_drift(
+            xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef,
+            phi12, h_ratio, dturns, recprof, nturns, nparts, False)
 
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
                                [0.291644], [0.31200651], [0.33178332],
@@ -210,23 +208,21 @@ class TestTLW(unittest.TestCase):
         phi12 = machine.phi12
         h_ratio = machine.h_ratio
 
-        with self.assertRaises(expt.InputError,
+        with self.assertRaises(TypeError,
                                msg='Too few arrays should '
                                    'raise an exception'):
-            xp, yp = tlw.kick_and_drift(
-                xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                nturns, nparts, phi0, deltaE0, omega_rev0,
-                drift_coef, phi12, h_ratio)
+            xp, yp = libtomo.kick_and_drift(
+                xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef,
+                phi12, h_ratio, recprof, nturns, nparts)
 
         dturns = machine.dturns
         some_useless_var = None
-        with self.assertRaises(expt.InputError,
+        with self.assertRaises(TypeError,
                                msg='Too many arrays should '
                                    'raise an exception'):
-            xp, yp = tlw.kick_and_drift(
-                xp, yp, denergy, dphi, rfv1, rfv2, recprof,
-                nturns, nparts, phi0, deltaE0, omega_rev0,
-                drift_coef, phi12, h_ratio)
+            xp, yp = libtomo.kick_and_drift(
+                xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef,
+                phi12, h_ratio, some_useless_var, dturns, recprof, nturns, nparts)
 
     def test_back_project(self):
         waterfall = self._load_waterfall()
@@ -249,7 +245,7 @@ class TestTLW(unittest.TestCase):
             flat_points[:, i] += nbins * i
         flat_points = np.ascontiguousarray(flat_points).astype(np.int32)
 
-        tlw.back_project(weights, flat_points, flat_profs, nparts, nprofs)
+        libtomo.back_project(weights, flat_points, flat_profs, nparts, nprofs)
 
         cweights = np.array([0.79054276, 0.80812089, 0.81983964, 0.83468339,
                              0.84327714, 0.84679276, 0.85187089, 0.85187089,
@@ -296,7 +292,7 @@ class TestTLW(unittest.TestCase):
             flat_points[:, i] += nbins * i
         flat_points = np.ascontiguousarray(flat_points).astype(np.int32)
 
-        rec = tlw.project(np.zeros(waterfall_shape), flat_points,
+        rec = libtomo.project(np.zeros(waterfall_shape), flat_points,
                           weights, nparts, nprofs, nbins)
 
         correct = [0.79054276, 0.80812089, 0.81983964, 0.83468339,
@@ -343,7 +339,7 @@ class TestTLW(unittest.TestCase):
         flat_profs = np.ascontiguousarray(
             waterfall.flatten()).astype(np.float64)
 
-        weights, discr = tlw._old_reconstruct(
+        weights, discr = libtomo.reconstruct_old(
             weights, xp, flat_profs, discr, niter,
             nbins, nparts, nprofs, verbose=False)
 
@@ -386,7 +382,7 @@ class TestTLW(unittest.TestCase):
 
         (weights,
          discr,
-         recreated) = tlw.reconstruct(
+         recreated) = libtomo.reconstruct(
             xp, waterfall, niter,
             nbins, nparts, nprofs,
             verbose=False)
@@ -437,6 +433,33 @@ class TestTLW(unittest.TestCase):
             nptest.assert_almost_equal(recreated[i], correct_rec,
                                        err_msg='Error in '
                                                'reconstructed waterfall.')
+
+    def test_callback(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+
+        denergy = np.array([-115567.32591061])
+        dphi = np.array([0.33178332])
+        nparts = 1
+
+        recprof = 5
+        nturns = machine.dturns * (machine.nprofiles - 1)
+
+        rfv1 = machine.vrf1_at_turn * machine.q
+        rfv2 = machine.vrf2_at_turn * machine.q
+
+        xp = np.zeros((machine.nprofiles, nparts))
+        yp = np.zeros((machine.nprofiles, nparts))
+
+        results = []
+        callback = lambda progress, total: results.append(progress)
+
+        libtomo.kick_and_drift(
+            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof,
+            nturns, nparts, callback=callback)
+
+        correct = np.arange(1, nturns+1).tolist()
+
+        self.assertListEqual(results, correct)
 
     def _load_waterfall(self):
         base_dir = os.path.split(os.path.realpath(__file__))[0]

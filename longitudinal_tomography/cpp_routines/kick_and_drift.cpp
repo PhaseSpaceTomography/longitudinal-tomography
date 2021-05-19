@@ -1,7 +1,18 @@
+/**
+ * @file kick_and_drift.cpp
+ *
+ * @author Anton Lu
+ * Contact: anton.lu@cern.ch
+ *
+ * Functions in pure C/C++ that handles particle tracking (kicking and
+ * drifting). Meant to be called by a Python/C++ wrapper.
+ */
+
 #include <iostream>
 #include <string>
 #include "sin.h"
 #include <cmath>
+#include "kick_and_drift.h"
 
 using namespace std;
 
@@ -9,8 +20,8 @@ using namespace std;
 // Uses BLonD fast_sin function.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void kick_up(const double * __restrict__ dphi,
-                        double * __restrict__ denergy,
+extern "C" void kick_up(const double * dphi,
+                        double * denergy,
                         const double rfv1,
                         const double rfv2,
                         const double phi0,
@@ -25,8 +36,8 @@ extern "C" void kick_up(const double * __restrict__ dphi,
                      + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
 }
 
-extern "C" void kick_down(const double * __restrict__ dphi,
-                          double * __restrict__ denergy,
+extern "C" void kick_down(const double * dphi,
+                          double * denergy,
                           const double rfv1,
                           const double rfv2,
                           const double phi0,
@@ -45,8 +56,8 @@ extern "C" void kick_down(const double * __restrict__ dphi,
 // Calculates the difference in phase between two macine turns.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void drift_up(double * __restrict__ dphi,
-                         const double * __restrict__ denergy,
+extern "C" void drift_up(double * dphi,
+                         const double * denergy,
                          const double drift_coef,
                          const int nr_particles){
     #pragma omp parallel for
@@ -54,8 +65,8 @@ extern "C" void drift_up(double * __restrict__ dphi,
         dphi[i] -= drift_coef * denergy[i];
 }
 
-extern "C" void drift_down(double * __restrict__ dphi,
-                           const double * __restrict__ denergy,
+extern "C" void drift_down(double * dphi,
+                           const double * denergy,
                            const double drift_coef,
                            const int nr_particles){
 
@@ -68,10 +79,10 @@ extern "C" void drift_down(double * __restrict__ dphi,
 // Calculates X and Y coordinates for particles based on a given
 //  phase and energy.
 // Can be called directly from python.
-extern "C" void calc_xp_and_yp(double ** __restrict__ xp,           // inn/out
-                               double ** __restrict__ yp,           // inn/out
-                               const double * __restrict__ denergy, // inn
-                               const double * __restrict__ dphi,    // inn
+extern "C" void calc_xp_and_yp(double ** xp,           // inn/out
+                               double ** yp,           // inn/out
+                               const double * denergy, // inn
+                               const double * dphi,    // inn
                                const double phi0,
                                const double hnum,
                                const double omega_rev0,
@@ -89,23 +100,23 @@ extern "C" void calc_xp_and_yp(double ** __restrict__ xp,           // inn/out
 }
 
 extern "C" void kick_and_drift(
-                         double ** __restrict__ xp,             // inn/out
-                         double ** __restrict__ yp,             // inn/out
-                         double * __restrict__ denergy,         // inn
-                         double * __restrict__ dphi,            // inn
-                         const double * __restrict__ rf1v,      // inn
-                         const double * __restrict__ rf2v,      // inn
-                         const double * __restrict__ phi0,      // inn
-                         const double * __restrict__ deltaE0,   // inn
-                         const double * __restrict__ omega_rev0,// inn
-                         const double * __restrict__ drift_coef,// inn
-                         const double phi12,
+                         double ** xp,             // inn/out
+                         double ** yp,             // inn/out
+                         double * denergy,         // inn
+                         double * dphi,            // inn
+                         const double * rf1v,      // inn
+                         const double * rf2v,      // inn
+                         const double * phi0,      // inn
+                         const double * deltaE0,   // inn
+                         const double * drift_coef,// inn
+                         const double * phi12,
                          const double hratio,
                          const int dturns,
                          const int rec_prof,
                          const int nturns,
                          const int nparts,
-                         const bool ftn_out){
+                         const bool ftn_out,
+                         const std::function<void(int, int)> callback){
     int profile = rec_prof;
     int turn = rec_prof * dturns;
 
@@ -115,15 +126,17 @@ extern "C" void kick_and_drift(
         yp[profile][i] = denergy[i];
     }
 
+    int progress = 0;
+    const int total = nturns;
     // Upwards 
     while(turn < nturns){
         drift_up(dphi, denergy, drift_coef[turn], nparts);
-        
+
         turn++;
-        
-        kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12,
+
+        kick_up(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
                 hratio, nparts, deltaE0[turn]);
-        
+
         if (turn % dturns == 0){
             profile++;
             #pragma omp parallel for
@@ -137,6 +150,7 @@ extern "C" void kick_and_drift(
                           << ",   0.000% went outside the image width."
                           << std::endl;
         } //if
+        callback(++progress, total);
     } //while
 
     profile = rec_prof;
@@ -154,11 +168,11 @@ extern "C" void kick_and_drift(
         // Downwards
         while(turn > 0){
             kick_down(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
-                      phi12, hratio, nparts, deltaE0[turn]);
+                      phi12[turn], hratio, nparts, deltaE0[turn]);
             turn--;
-            
+
             drift_down(dphi, denergy, drift_coef[turn], nparts);
-            
+
             if (turn % dturns == 0){
                 profile--;
                 
@@ -173,8 +187,7 @@ extern "C" void kick_and_drift(
                               << ",   0.000% went outside the image width."
                               << std::endl;
             }
-        
+        callback(++progress, total);
         }//while
     }
-
 }//end func
