@@ -203,7 +203,8 @@ ftn_out: boolean, optional, default=False
 
     if machine is not None:
         return libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-                                      machine, rec_prof, nturns, nparts, ftn_out)
+                                      machine, rec_prof, nturns, nparts,
+                                      ftn_out)
     elif all([x is not None for x in machine_args]):
         return libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
                                       phi0, deltaE0, drift_coef, phi12,
@@ -252,7 +253,8 @@ def back_project(weights: np.ndarray, flat_points: np.ndarray,
                 'function and return signature. This function is '
                 'provided for backwards compatibility and can be '
                 'removed without further notice.')
-    return libtomo.back_project(weights, flat_points, flat_profiles, nparts, nprofs)
+    return libtomo.back_project(weights, flat_points, flat_profiles, nparts,
+                                nprofs)
 
 
 def project(recreated: np.ndarray, flat_points: np.ndarray,
@@ -289,7 +291,8 @@ def project(recreated: np.ndarray, flat_points: np.ndarray,
                 'function and return signature. This function is '
                 'provided for backwards compatibility and can be '
                 'removed without further notice.')
-    return libtomo.project(recreated, flat_points, weights, nparts, nprofs, nbins)
+    return libtomo.project(recreated, flat_points, weights, nparts, nprofs,
+                           nbins)
 
 
 # < to be removed when new version is proven to be working correctly >
@@ -389,4 +392,5 @@ def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
                 'function and return signature. This function is '
                 'provided for backwards compatibility and can be '
                 'removed without further notice.')
-    return libtomo.reconstruct(xp, waterfall, niter, nbins, npart, nprof, verbose)
+    return libtomo.reconstruct(xp, waterfall, niter, nbins, npart, nprof,
+                               verbose)

@@ -183,7 +183,8 @@ class TestPhysics(unittest.TestCase):
         machine.time_at_turn = [1.3701195948153858e-06]
         bunch_phaselength = 3.22312485522767
         correct = -1883.316491755506
-        ans = physics.phase_low_mch(0.123, machine, bunch_phaselength, rf_turn=0)
+        ans = physics.phase_low_mch(0.123, machine, bunch_phaselength,
+                                    rf_turn=0)
 
         self.assertAlmostEqual(ans, correct,
                                msg='Phase_low calculated incorrectly')
@@ -194,7 +195,8 @@ class TestPhysics(unittest.TestCase):
         machine.time_at_turn = [1.3701195948153858e-06]
         bunch_phaselength = 3.22312485522767
         correct = 859.1967476555656
-        ans = physics.dphase_low_mch(0.123, machine, bunch_phaselength, 0, None)
+        ans = physics.dphase_low_mch(0.123, machine, bunch_phaselength, 0,
+                                     None)
 
         self.assertAlmostEqual(ans, correct,
                                msg='dphase_low calculated incorrectly')

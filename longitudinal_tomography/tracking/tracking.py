@@ -275,7 +275,8 @@ class Tracking(ParticleTracker):
         Routine for tracking, with self-fields, a distribution of
         particles for N turns. N is given by *tracking.nturns*.
 
-        Used by the function :py:meth:`longitudinal_tomography.tracking.tracking.Tracking.track`
+        Used by the function
+        :py:meth:`longitudinal_tomography.tracking.tracking.Tracking.track`
         to track using self-fields.
 
         Returns the coordinates of the particles as phase space coordinates

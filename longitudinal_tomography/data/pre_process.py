@@ -1,7 +1,8 @@
 """
 Module containing functions for pre-processing raw data
 
-The functions here are to be moved over from longitudinal_tomography.data.data_treatment
+The functions here are to be moved over from
+longitudinal_tomography.data.data_treatment
 
 :Author(s): **Anton Lu**, **Christoffer Hjertø Grindheim**
 """
@@ -104,11 +105,13 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
         particle given in bin numbers.
     lower bunch limit
         Estimation of the lower bunch limit in bin numbers.
-        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
+        Needed for
+        :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
     upper bunch limit
         Estimation of the upper bunch limit in bin numbers.
-        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
+        Needed for
+        :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
 
     """
@@ -165,11 +168,13 @@ def fit_synch_part_x(profiles: Profiles) -> t.Tuple[np.ndarray, float, float]:
         particle given in bin numbers.
     lower bunch limit
         Estimation of the lower bunch limit in bin numbers.
-        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
+        Needed for
+        :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
     upper bunch limit
         Estimation of the upper bunch limit in bin numbers.
-        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
+        Needed for
+        :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
 
     """

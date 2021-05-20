@@ -93,11 +93,13 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
         particle given in bin numbers.
     lower bunch limit
         Estimation of the lower bunch limit in bin numbers.
-        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
+        Needed for
+        :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
     upper bunch limit
         Estimation of the upper bunch limit in bin numbers.
-        Needed for :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
+        Needed for
+        :func:`longitudinal_tomography.utils.tomo_output.write_plotinfo_ftn`
         function in order to write the original output format.
 
     """

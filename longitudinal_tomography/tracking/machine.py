@@ -34,7 +34,8 @@ class Machine(MachineABC):
     tracking routine. Its values are used for calculation of reconstruction
     area and info concerning the phase space, the distribution of particles,
     and the tracking itself. In addition to this, the machine object is needed
-    for the generation of :class:`~longitudinal_tomography.data.profiles.Profiles` objects.
+    for the generation of
+    :class:`~longitudinal_tomography.data.profiles.Profiles` objects.
 
     See superclass for documentation about inherited class variables.
 
@@ -197,16 +198,19 @@ class Machine(MachineABC):
                                      fit_info: Tuple[float, float, float]):
         """Function for setting the synch_part_x if a fit has been performed.
         Saves parameters retrieved from the fitting routine
-        needed by the :func:`longitudinal_tomography.compat.fortran.write_plotinfo`
-        function in the :mod:`longitudinal_tomography.utils.tomo_output`. All needed info
+        needed by the
+        :func:`longitudinal_tomography.compat.fortran.write_plotinfo`
+        function in the
+        :mod:`longitudinal_tomography.utils.tomo_output`. All needed info
         will be returned from the
-        :func:`longitudinal_tomography.data.data_treatment.fit_synch_part_x` function.
+        :func:`longitudinal_tomography.data.data_treatment.fit_synch_part_x`
+        function.
 
         Sets the following fields:
 
         * fitted_synch_part_x
-            The new x-coordinate of the synchronous particle
-            (needed for :func:`longitudinal_tomography.cimpat.fortran.write_plotinfo`).
+            The new x-coordinate of the synchronous particle (needed for
+            :func:`longitudinal_tomography.compat.fortran.write_plotinfo`).
         * bunchlimit_low
             Lower phase of bunch (needed for
             :func:`longitudinal_tomography.compat.fortran.write_plotinfo`).
@@ -223,9 +227,9 @@ class Machine(MachineABC):
             (F, L, U), where F is the fitted value of the synchronous particle,
             L is the lower bunch limit, and U is the upper bunch limit. All
             of the values should be given in bins. The info needed by the
-            :func:`longitudinal_tomography.compat.fortran.write_plotinfo` function
-            if a fit has been performed, and the a Fortran style output is
-            to be given during the particle tracking.
+            :func:`longitudinal_tomography.compat.fortran.write_plotinfo`
+            function if a fit has been performed, and the a Fortran style
+            output is to be given during the particle tracking.
         """
         log.info('Saving fitted synch_part_x to machine object.')
         self.fitted_synch_part_x = fit_info[0]
