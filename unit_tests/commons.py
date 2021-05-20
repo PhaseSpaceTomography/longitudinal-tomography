@@ -1,5 +1,4 @@
 import re
-import longitudinal_tomography.utils.tomo_input as tomoin
 import typing as t
 from copy import deepcopy
 from os import path
@@ -7,12 +6,12 @@ from os import path
 import numpy as np
 import yaml
 
-import tomo.shortcuts as shortcuts
-import tomo.utils.tomo_input as tomoin
-from tomo.data.profiles import Profiles
-from tomo.tomography import Tomography
-from tomo.tracking import Machine
-from tomo.utils.tomo_input import Frames
+import longitudinal_tomography.shortcuts as shortcuts
+import longitudinal_tomography.utils.tomo_input as tomoin
+from longitudinal_tomography.data.profiles import Profiles
+from longitudinal_tomography.tomography import Tomography
+from longitudinal_tomography.tracking import Machine
+from longitudinal_tomography.utils.tomo_input import Frames
 
 _tomo: Tomography = None
 _waterfall: np.ndarray = None

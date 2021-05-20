@@ -2,7 +2,7 @@ major_version = 3
 minor_version = 4
 patch_level = 0
 
-dev_version = 0
+dev_version = -1
 
 __version__ = '{}.{}'.format(
     major_version,
