@@ -16,9 +16,6 @@ __all__ = ['post_process', 'rms_dpp', 'emittance_rms',
 m_p = cont.value('proton mass energy equivalent in MeV') * 1e6
 
 
-# TODO: write function that only takes the weights of the longitudinal_tomography as input
-
-
 def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
                  e_bins: np.ndarray, energy: Number, mass: Number = m_p) \
         -> Dict[str, Union[float, np.ndarray]]:

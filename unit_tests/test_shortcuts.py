@@ -8,8 +8,8 @@ import unittest
 import numpy as np
 import numpy.testing as nptest
 
-import tomo.tracking.machine as mch
-import tomo.shortcuts as shortcuts
+import longitudinal_tomography.tracking.machine as mch
+import longitudinal_tomography.shortcuts as shortcuts
 from . import commons
 
 

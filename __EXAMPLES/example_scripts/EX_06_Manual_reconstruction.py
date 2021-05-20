@@ -118,14 +118,14 @@ rec_wf = np.zeros(waterfall.shape)
 
 # Initial estimation of weight factors using (flattened) measured profiles.
 weight = libtomo.back_project(weight, flat_points, flat_profs,
-                          nparts, nprofs)
+                              nparts, nprofs)
 weight = weight.clip(0.0)
 
 diff = []
 for i in range(niterations):
     # Projection from phase space to time projections
     rec_wf = libtomo.project(rec_wf, flat_points, weight, nparts,
-                         nprofs, nbins)
+                             nprofs, nbins)
 
     # Normalizing reconstructed waterfall
     rec_wf /= np.sum(rec_wf, axis=1)[:, None]
@@ -141,7 +141,7 @@ for i in range(niterations):
 
     # Back projecting using the difference between measured and rec. waterfall
     weight = libtomo.back_project(weight, flat_points, dwaterfall.flatten(),
-                              nparts, nprofs)
+                                  nparts, nprofs)
     weight = weight.clip(0.0)
 
     print(f'Iteration: {i:3d}, discrepancy: {diff[-1]:3E}')

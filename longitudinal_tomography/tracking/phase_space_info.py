@@ -61,8 +61,9 @@ class PhaseSpaceInfo:
         The area within the limits of i and j will be the phase space
         reconstruction area. This is where the particles will be populated.
         By setting the `full_pp_flag` in the provided
-        :class:`~longitudinal_tomography.tracking.machine.Machine` object to True,
-        the reconstruction area will be set to all of the phase space image.
+        :class:`~longitudinal_tomography.tracking.machine.Machine`
+        object to True, the reconstruction area will be set to all of the
+        phase space image.
 
         This function gives a value to all attributes of the class.
 

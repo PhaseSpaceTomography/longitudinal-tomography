@@ -109,7 +109,8 @@ class TestTomographyCpp(unittest.TestCase):
 
         with self.assertRaises(expt.CoordinateError,
                                msg='Calling the run function, with '
-                                   'longitudinal_tomography.xp=None should raise an Exception'):
+                                   'longitudinal_tomography.xp=None '
+                                   'should raise an Exception'):
             tomo.run()
 
     def test_run_correct_weights(self):
@@ -211,7 +212,8 @@ class TestTomographyCpp(unittest.TestCase):
 
         with self.assertRaises(expt.CoordinateError,
                                msg='Calling the run_hybrid function, with '
-                                   'longitudinal_tomography.xp=None should raise an Exception'):
+                                   'longitudinal_tomography.xp=None should '
+                                   'raise an Exception'):
             tomo.run_hybrid()
 
     def test_run_hybrid_correct(self):

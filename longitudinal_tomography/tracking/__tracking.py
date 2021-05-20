@@ -49,7 +49,8 @@ class ParticleTracker:
     Raises
     ------
     MachineParameterError: Exception
-        Input argument is not :class:`~longitudinal_tomography.tracking.machine.Machine`, or the
+        Input argument is not
+        :class:`~longitudinal_tomography.tracking.machine.Machine`, or the
         Machine object provided is missing needed fields.
     """
 
