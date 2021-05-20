@@ -8,7 +8,7 @@ import unittest
 
 import numpy as np
 
-from tomo.tracking import ProgramsMachine
+from longitudinal_tomography.tracking import ProgramsMachine
 from .. import commons
 
 MACHINE_ARGS = commons.get_machine_args()

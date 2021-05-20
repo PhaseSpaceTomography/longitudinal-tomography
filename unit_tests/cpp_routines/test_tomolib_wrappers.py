@@ -11,7 +11,7 @@ import numpy.testing as nptest
 
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
-from tomo.cpp_routines import libtomo
+from longitudinal_tomography.cpp_routines import libtomo
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
