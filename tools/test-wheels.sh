@@ -8,8 +8,8 @@ echo "Testing install of longitudinal_tomography wheels for version $VERSION"
 
 # Install packages and test
 for PYBIN in /opt/python/*/bin/; do
-    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* ]]; then
-      # skip python2 and python3.5
+    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* || "$PYBIN" == *310* ]]; then
+      # skip unsupported python versions
       continue
     fi
     if [[ -z $CI_COMMIT_TAG ]]; then
