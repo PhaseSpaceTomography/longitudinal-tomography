@@ -12,8 +12,8 @@ function repair_wheel {
 
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
-    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* ]]; then
-      # skip python2 & python3.5
+    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* || "$PYBIN" == *310* ]]; then
+      # skip unsupported python versions
       continue
     fi
     "${PYBIN}/pip" wheel . --no-deps -w build

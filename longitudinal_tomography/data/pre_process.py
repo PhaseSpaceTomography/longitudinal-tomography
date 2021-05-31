@@ -275,9 +275,9 @@ def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
     waterfall: np.ndarray
         Waterfall array of shape (n_profiles, n_bins)
     xp: np.ndarray
-        Tracked and binned particles of shape (n_profiles, n_bins)
+        Tracked and binned particles of shape (n_particles, n_bins)
     yp: np.ndarray
-        Tracked and binned particles of shape (n_profiles, n_bins)
+        Tracked and binned particles of shape (n_particles, n_bins)
     rec_prof: int
         Reconstruction profile. The profile will be shifted by the number of
         removed profiles.
@@ -302,11 +302,11 @@ def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
 
     output: t.List[t.Union[np.ndarray, int]] = [good_waterfall]
     if xp is not None:
-        good_xp = xp[good_frames, :]
+        good_xp = xp[:, good_frames]
 
         output.append(good_xp)
     if yp is not None:
-        good_yp = yp[good_frames, :]
+        good_yp = yp[:, good_frames]
 
         output.append(good_yp)
     if rec_prof is not None:
