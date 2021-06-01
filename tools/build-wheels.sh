@@ -12,7 +12,7 @@ function repair_wheel {
 
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
-    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* || "$PYBIN" == *310* ]]; then
+    if [[ "$PYBIN" == *cp2* || "$PYBIN" == *cp35* ]]; then
       # skip unsupported python versions
       continue
     fi
