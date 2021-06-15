@@ -275,9 +275,9 @@ def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
     waterfall: np.ndarray
         Waterfall array of shape (n_profiles, n_bins)
     xp: np.ndarray
-        Tracked and binned particles of shape (n_particles, n_bins)
+        Tracked and binned particles of shape (n_particles, n_profiles)
     yp: np.ndarray
-        Tracked and binned particles of shape (n_particles, n_bins)
+        Tracked and binned particles of shape (n_particles, n_profiles)
     rec_prof: int
         Reconstruction profile. The profile will be shifted by the number of
         removed profiles.
