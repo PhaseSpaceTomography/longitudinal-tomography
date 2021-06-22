@@ -386,39 +386,6 @@ py::tuple wrapper_reconstruct(
 }
 
 
-py::tuple wrapper_reconstruct_old(
-        const d_array &weights,
-        const i_array &xp,
-        const d_array &flat_profiles,
-        const d_array &discr,
-        const int n_iter,
-        const int n_bins,
-        const int n_particles,
-        const int n_profiles,
-        const bool verbose
-) {
-    py::buffer_info buffer_weights = weights.request();
-    py::buffer_info buffer_xp = xp.request();
-    py::buffer_info buffer_flat_profiles = flat_profiles.request();
-    py::buffer_info buffer_discr = discr.request();
-
-    auto *const arr_weights = static_cast<double *>(buffer_weights.ptr);
-    const int *const arr_xp = static_cast<int *>(buffer_xp.ptr);
-    auto *const arr_flat_profs = static_cast<double *>(buffer_flat_profiles.ptr);
-    auto *const arr_discr = static_cast<double *>(buffer_discr.ptr);
-
-    const int **const xp_d = new const int *[n_particles];
-    for (int i = 0; i < n_particles; i++)
-        xp_d[i] = &arr_xp[i * n_profiles];
-
-    old_reconstruct(arr_weights, xp_d, arr_flat_profs, arr_discr, n_iter, n_bins, n_particles, n_profiles, verbose);
-
-    delete[] xp_d;
-
-    return py::make_tuple(weights, discr);
-}
-
-
 py::array_t<double> wrapper_make_phase_space(
         const i_array &input_xp,
         const i_array &input_yp,
@@ -506,10 +473,6 @@ PYBIND11_MODULE(libtomo, m) {
     m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
           "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
           "n_profiles"_a, "verbose"_a = false, "callback"_a = py::none());
-
-    m.def("reconstruct_old", &wrapper_reconstruct_old, reconstruct_old_docs,
-          "weights"_a, "xp"_a, "flat_profiles"_a, "discr"_a, "n_iter"_a,
-          "n_bins"_a, "n_particles"_a, "n_profiles"_a, "verbose"_a = false);
 
     m.def("make_phase_space", &wrapper_make_phase_space, make_phase_space_docs,
           "xp"_a, "yp"_a, "weights"_a, "n_bins"_a);

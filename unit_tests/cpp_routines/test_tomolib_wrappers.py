@@ -320,54 +320,6 @@ class TestTLW(unittest.TestCase):
             rec, correct,
             err_msg='Error in recreated profile data after projection')
 
-    def test_old_reconstruct_correct(self):
-        nprofs = 10
-        nparts = 50
-        nbins = 100
-        niter = 1
-
-        weights = np.zeros(nparts)
-        discr = np.zeros(niter+1)
-
-        xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
-        xp = xp.T
-
-        xp = np.ascontiguousarray(xp).astype(np.int32)
-
-        waterfall = self._load_waterfall()
-        waterfall = waterfall[:nprofs]
-        waterfall = waterfall[:, 70:170]
-        flat_profs = np.ascontiguousarray(
-            waterfall.flatten()).astype(np.float64)
-
-        weights, discr = libtomo.reconstruct_old(
-            weights, xp, flat_profs, discr, niter,
-            nbins, nparts, nprofs, verbose=False)
-
-        correct_w = np.array([1.40130575, 1.4324645, 1.45323701, 1.47954884,
-                              1.49478201, 1.50101376, 1.51001518, 1.51001518,
-                              1.50932276, 1.51209243, 1.51209243, 1.49962893,
-                              1.49685926, 1.49339718, 1.48993509, 1.48785784,
-                              1.49616684, 1.48508818, 1.49339718, 1.50309101,
-                              1.49755168, 1.51416968, 1.53009527, 1.55156019,
-                              1.5605616,  1.57717961, 1.59587486, 1.60833836,
-                              1.62495636, 1.63949711, 1.64988337, 1.66511653,
-                              1.66234687, 1.67273312, 1.66996345, 1.66234687,
-                              1.65403787, 1.65196062, 1.64503645, 1.64018953,
-                              1.6263412,  1.61526253, 1.61249286, 1.60279903,
-                              1.59033552, 1.57994927, 1.58064169, 1.57371752,
-                              1.5647161,  1.5647161])
-
-        correct_discr = np.array([0.0745208, 0.0745208])
-
-        nptest.assert_almost_equal(
-            weights, correct_w,
-            err_msg='Error in weights after reconstruction.')
-
-        nptest.assert_almost_equal(
-            discr, correct_discr,
-            err_msg='Error in calculated discrepancies after reconstruction.')
-
     def test_reconstruct_correct(self):
         nprofs = 10
         nparts = 50
