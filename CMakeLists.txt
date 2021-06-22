@@ -32,21 +32,15 @@ endif ()
 include_directories(${Python_INCLUDE_DIRS})
 include_directories(${PYBIND11_INCLUDE_DIR})
 
-add_library(tomo SHARED
-        tomo/cpp_routines/libtomo.cpp
-        tomo/cpp_routines/kick_and_drift.cpp
-        tomo/cpp_routines/reconstruct.cpp
-        tomo/cpp_routines/data_treatment.cpp)
+add_library(libtomo SHARED
+        longitudinal_tomography/cpp_routines/libtomo.cpp
+        longitudinal_tomography/cpp_routines/kick_and_drift.cpp
+        longitudinal_tomography/cpp_routines/reconstruct.cpp
+        longitudinal_tomography/cpp_routines/data_treatment.cpp)
 
-target_link_libraries(tomo ${Python_LIBRARIES})
+target_link_libraries(libtomo ${Python_LIBRARIES})
 
-set_target_properties(tomo
+set_target_properties(libtomo
         PROPERTIES
         PREFIX ""
         OUTPUT_NAME "libtomo")
-
-add_executable(placeholder
-        tomo/cpp_routines/libtomo.cpp
-        tomo/cpp_routines/kick_and_drift.cpp
-        tomo/cpp_routines/reconstruct.cpp
-        tomo/cpp_routines/data_treatment.cpp)

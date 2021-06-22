@@ -172,8 +172,8 @@ py::tuple wrapper_kick_and_drift_machine(
     const int dturns = py::int_(machine.attr("dturns"));
 
     wrapper_kick_and_drift_scalar(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v,
-                            input_phi0, input_deltaE0, input_drift_coef, phi12, hratio, dturns,
-                            rec_prof, nturns, nparts, ftn_out, callback);
+                                  input_phi0, input_deltaE0, input_drift_coef, phi12, hratio, dturns,
+                                  rec_prof, nturns, nparts, ftn_out, callback);
 
     return py::make_tuple(input_xp, input_yp);
 }
@@ -198,14 +198,16 @@ py::tuple wrapper_kick_and_drift_scalar(
         const bool ftn_out,
         const std::optional<const py::object> callback
 ) {
-    double * ptr_phi12 = new double[nturns];
+    double *ptr_phi12 = new double[nturns];
     std::fill_n(ptr_phi12, nturns, phi12);
 
-    py::capsule capsule(ptr_phi12, [] (void* p) {delete[] reinterpret_cast<double*>(p);});
+    py::capsule capsule(ptr_phi12, [](void *p) { delete[] reinterpret_cast<double *>(p); });
     d_array arr_phi12({nturns}, ptr_phi12, capsule);
 
-    wrapper_kick_and_drift_array(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v, input_phi0, input_deltaE0,
-                         input_drift_coef, arr_phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out, callback);
+    wrapper_kick_and_drift_array(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v, input_phi0,
+                                 input_deltaE0,
+                                 input_drift_coef, arr_phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out,
+                                 callback);
 
     return py::make_tuple(input_xp, input_yp);
 }
@@ -267,9 +269,8 @@ py::tuple wrapper_kick_and_drift_array(
         cb = [&callback](const int progress, const int total) {
             callback.value()(progress, total);
         };
-    }
-    else
-        cb = [] (const int progress, const int total) {(void)progress, (void)total;};
+    } else
+        cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
     kick_and_drift(xp_d, yp_d, denergy, dphi, rf1v, rf2v, phi0, deltaE0, drift_coef,
                    phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out, cb);
@@ -366,15 +367,14 @@ py::tuple wrapper_reconstruct(
         cb = [&callback](const int progress, const int total) {
             callback.value()(progress, total);
         };
-    }
-    else
-        cb = [] (const int progress, const int total) {(void)progress, (void)total;};
+    } else
+        cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
     reconstruct(weights, xp_d, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
 
-    py::capsule capsule_weights(weights, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
-    py::capsule capsule_discr(discr, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
-    py::capsule capsule_recreated(recreated, [] (void *p) {delete[] reinterpret_cast<double*>(p);});
+    py::capsule capsule_weights(weights, [](void *p) { delete[] reinterpret_cast<double *>(p); });
+    py::capsule capsule_discr(discr, [](void *p) { delete[] reinterpret_cast<double *>(p); });
+    py::capsule capsule_recreated(recreated, [](void *p) { delete[] reinterpret_cast<double *>(p); });
 
     py::array_t<double> arr_weights = py::array_t<double>({n_particles}, weights, capsule_weights);
     py::array_t<double> arr_discr = py::array_t<double>({n_iter + 1}, discr, capsule_discr);
@@ -436,7 +436,7 @@ py::array_t<double> wrapper_make_phase_space(
     auto *const weights = static_cast<double *>(buffer_weight.ptr);
 
     double *phase_space = make_phase_space(xp, yp, weights, n_particles, n_bins);
-    py::capsule capsule(phase_space, [] (void* p) {delete[] reinterpret_cast<double*>(p);});
+    py::capsule capsule(phase_space, [](void *p) { delete[] reinterpret_cast<double *>(p); });
 
     return py::array_t<double>({n_bins, n_bins}, phase_space, capsule);
 }
@@ -474,23 +474,23 @@ PYBIND11_MODULE(libtomo, m) {
           "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
 
     m.def("kick_and_drift",
-          py::overload_cast<const d_array&, const d_array&, const d_array&, const d_array&,
-                            const d_array&, const d_array&, const d_array&, const d_array&,
-                            const d_array&, const double, const double, const int,
-                            const int, const int, const int, const bool,
-                            const std::optional<const py::object>
-                            >(&wrapper_kick_and_drift_scalar), kick_and_drift_docs,
+          py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
+                  const d_array &, const d_array &, const d_array &, const d_array &,
+                  const d_array &, const double, const double, const int,
+                  const int, const int, const int, const bool,
+                  const std::optional<const py::object>
+          >(&wrapper_kick_and_drift_scalar), kick_and_drift_docs,
           "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
           "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
           "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
 
     m.def("kick_and_drift",
-          py::overload_cast<const d_array&, const d_array&, const d_array&, const d_array&,
-                            const d_array&, const d_array&, const d_array&, const d_array&,
-                            const d_array&, const d_array&, const double, const int,
-                            const int, const int, const int, const bool,
-                            const std::optional<const py::object>
-                            >(wrapper_kick_and_drift_array), kick_and_drift_docs,
+          py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
+                  const d_array &, const d_array &, const d_array &, const d_array &,
+                  const d_array &, const d_array &, const double, const int,
+                  const int, const int, const int, const bool,
+                  const std::optional<const py::object>
+          >(wrapper_kick_and_drift_array), kick_and_drift_docs,
           "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
           "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
           "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
