@@ -44,3 +44,6 @@ set_target_properties(libtomo
         PROPERTIES
         PREFIX ""
         OUTPUT_NAME "libtomo")
+
+install(TARGETS libtomo
+        LIBRARY DESTINATION longitudinal_tomography/cpp_routines)
