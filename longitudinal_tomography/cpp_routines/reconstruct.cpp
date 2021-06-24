@@ -21,23 +21,23 @@
 
 // Back projection using flattened arrays
 extern "C" void back_project(double *weights,                     // inn/out
-                             int **flat_points,       // inn
+                             int *flat_points,       // inn
                              const double *flat_profiles,         // inn
                              const int npart, const int nprof) {     // inn
 #pragma omp parallel for
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
-            weights[i] += flat_profiles[flat_points[i][j]];
+            weights[i] += flat_profiles[flat_points[i * nprof + j]];
 }
 
 // Projections using flattened arrays
 extern "C" void project(double *flat_rec,                     // inn/out
-                        int **flat_points,        // inn
+                        int *flat_points,        // inn
                         const double *weights,   // inn
                         const int npart, const int nprof) {      // inn
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
-            flat_rec[flat_points[i][j]] += weights[i];
+            flat_rec[flat_points[i * nprof + j]] += weights[i];
 }
 
 void normalize(double *flat_rec, // inn/out
@@ -101,14 +101,14 @@ double discrepancy(const double *diff_prof,   // inn
 }
 
 void compensate_particle_amount(double *diff_prof,        // inn/out
-                                double **rparts,          // inn
+                                double *rparts,          // inn
                                 const int nprof,
                                 const int nbins) {
     int flat_index = 0, i, j;
     for (i = 0; i < nprof; i++)
         for (j = 0; j < nbins; j++) {
             flat_index = i * nbins + j;
-            diff_prof[flat_index] *= rparts[i][j];
+            diff_prof[flat_index] *= rparts[i * nbins + j];
         }
 }
 
@@ -124,68 +124,71 @@ double max_2d(double **arr,  // inn
     return max_bin_val;
 }
 
-void count_particles_in_bin(double **rparts,      // out
-                            const int **xp,       // inn
+double max_1d(double *arr, const int length) {
+    double max_bin_val = 0;
+    for (int i = 0; i < length; i++)
+        if (max_bin_val < arr[i])
+            max_bin_val = arr[i];
+    return max_bin_val;
+}
+
+void count_particles_in_bin(double *rparts,      // out
+                            const int *xp,       // inn
                             const int nprof,
                             const int npart) {
-    int index, i, j;
+    int bin, i, j;
     for (i = 0; i < npart; i++)
         for (j = 0; j < nprof; j++) {
-            index = xp[i][j];
-            rparts[j][index] += 1;
+            bin = xp[i * nprof + j];
+            rparts[bin * nprof + j] += 1;
         }
 }
 
-void reciprocal_particles(double **rparts,   // out
-                          const int **xp,     // inn
+void reciprocal_particles(double *rparts,   // out
+                          const int *xp,     // inn
                           const int nbins,
                           const int nprof,
                           const int npart) {
+    const int all_bins = nprof * nbins;
     int i, j;
-
-    // initiating rparts to 0
-#pragma omp parallel for
-    for (i = 0; i < nprof; i++)
-        for (j = 0; j < nbins; j++)
-            rparts[i][j] = 0.0;
 
     count_particles_in_bin(rparts, xp, nprof, npart);
 
-    int max_bin_val = max_2d(rparts, nbins, nprof);
+    int max_bin_val = max_1d(rparts, all_bins);
 
     // Setting 0's to 1's to avoid zero division
 #pragma omp parallel for
-    for (i = 0; i < nprof; i++)
-        for (j = 0; j < nbins; j++)
-            if (rparts[i][j] == 0.0)
-                rparts[i][j] = 1.0;
+    for (i = 0; i < all_bins; i++)
+        if (rparts[i] == 0.0)
+            rparts[i] = 1.0;
 
     // Creating reciprocal
+    int idx;
 #pragma omp parallel for
     for (i = 0; i < nprof; i++)
-        for (j = 0; j < nbins; j++)
-            rparts[i][j] = (double) max_bin_val / rparts[i][j];
+        for (j = 0; j < nbins; j++) {
+            idx = i * nbins + j;
+            rparts[idx] = (double) max_bin_val / rparts[idx];
+        }
 }
 
-void create_flat_points(const int **xp,       //inn
-                        int **flat_points,    //out
+void create_flat_points(const int *xp,       //inn
+                        int *flat_points,    //out
                         const int npart,
                         const int nprof,
                         const int nbins) {
     int i, j;
     // Initiating to the value of xp
-    for (i = 0; i < npart; i++)
-        for (j = 0; j < nprof; j++)
-            flat_points[i][j] = xp[i][j];
+    std::memcpy(flat_points, xp, npart * nprof * sizeof(int));
 
     for (i = 0; i < npart; i++)
         for (j = 0; j < nprof; j++)
-            flat_points[i][j] += nbins * j;
+            flat_points[i * nprof + j] += nbins * j;
 }
 
 
 extern "C" void reconstruct(double *weights,             // out
-                            const int **xp,              // inn
+                            const int *xp,              // inn
                             const double *flat_profiles, // inn
                             double *flat_rec,            // Out
                             double *discr,               // out
@@ -196,71 +199,67 @@ extern "C" void reconstruct(double *weights,             // out
                             const bool verbose,
                             const std::function<void(int, int)> callback
 ) {
-    int i;
-
     // Creating arrays...
     int all_bins = nprof * nbins;
-    double *diff_prof = new double[all_bins];
+    double *diff_prof = new double[all_bins]();
 
-    double **rparts = new double *[nprof];
-    for (i = 0; i < nprof; i++)
-        rparts[i] = new double[nbins];
+    double *rparts = new double[nprof * nbins]();
 
-    int **flat_points = new int *[npart];
-    for (i = 0; i < npart; i++)
-        flat_points[i] = new int[nprof];
+    int *flat_points = new int[npart * nprof]();
 
+    auto finally = [diff_prof, flat_points, rparts]() {
+        delete[] diff_prof;
+        delete[] rparts;
+        delete[] flat_points;
+    };
 
     // Actual functionality
 
-    reciprocal_particles(rparts, xp, nbins, nprof, npart);
+    try {
+        reciprocal_particles(rparts, xp, nbins, nprof, npart);
 
-    create_flat_points(xp, flat_points, npart, nprof, nbins);
+        create_flat_points(xp, flat_points, npart, nprof, nbins);
 
-    back_project(weights, flat_points, flat_profiles, npart, nprof);
-    clip(weights, npart, 0.0);
+        back_project(weights, flat_points, flat_profiles, npart, nprof);
+        clip(weights, npart, 0.0);
 
-    if (verbose)
-        std::cout << " Iterating..." << std::endl;
-
-    for (int iteration = 0; iteration < niter; iteration++) {
         if (verbose)
-            std::cout << std::setw(3) << iteration + 1 << std::endl;
+            std::cout << " Iterating..." << std::endl;
 
+        for (int iteration = 0; iteration < niter; iteration++) {
+            if (verbose)
+                std::cout << std::setw(3) << iteration + 1 << std::endl;
+
+            project(flat_rec, flat_points, weights, npart, nprof);
+            normalize(flat_rec, nprof, nbins);
+
+            find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
+
+            discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+
+            compensate_particle_amount(diff_prof, rparts, nprof, nbins);
+
+            back_project(weights, flat_points, diff_prof, npart, nprof);
+            clip(weights, npart, 0.0);
+
+            callback(iteration + 1, niter);
+        } //end for
+
+        // Calculating final discrepancy
         project(flat_rec, flat_points, weights, npart, nprof);
         normalize(flat_rec, nprof, nbins);
 
         find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
+        discr[niter] = discrepancy(diff_prof, nprof, nbins);
 
-        discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+        callback(niter, niter);
+    } catch (const std::exception &e) {
+        finally();
 
-        compensate_particle_amount(diff_prof, rparts, nprof, nbins);
-
-        back_project(weights, flat_points, diff_prof, npart, nprof);
-        clip(weights, npart, 0.0);
-
-        callback(iteration + 1, niter);
-    } //end for
-
-    // Calculating final discrepancy
-    project(flat_rec, flat_points, weights, npart, nprof);
-    normalize(flat_rec, nprof, nbins);
-
-    find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
-    discr[niter] = discrepancy(diff_prof, nprof, nbins);
-
-    callback(niter, niter);
-
-    // Cleaning
-    for (i = 0; i < nprof; i++) {
-        delete[] rparts[i];
+        throw e;
     }
-    for (i = 0; i < npart; i++) {
-        delete[] flat_points[i];
-    }
-    delete[] rparts;
-    delete[] flat_points;
-    delete[] diff_prof;
+
+    finally();
 
     if (verbose)
         std::cout << " Done!" << std::endl;

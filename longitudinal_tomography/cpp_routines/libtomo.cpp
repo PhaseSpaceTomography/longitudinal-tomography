@@ -295,15 +295,9 @@ d_array wrapper_back_project(
     auto *weights = static_cast<double *>(buffer_weights.ptr);
     auto *flat_points = static_cast<int *>(buffer_flat_points.ptr);
 
-    int **const flat_points_d = new int *[n_particles];
-    for (int i = 0; i < n_particles; i++)
-        flat_points_d[i] = &flat_points[i * n_profiles];
-
     auto *const flat_profiles = static_cast<double *>(buffer_flat_profiles.ptr);
 
-    back_project(weights, flat_points_d, flat_profiles, n_particles, n_profiles);
-
-    delete[] flat_points_d;
+    back_project(weights, flat_points, flat_profiles, n_particles, n_profiles);
 
     return input_weights;
 }
@@ -325,13 +319,8 @@ d_array wrapper_project(
     auto *flat_points = static_cast<int *>(buffer_flat_points.ptr);
     auto *const flat_rec = static_cast<double *>(buffer_flat_rec.ptr);
 
-    int **const flat_points_d = new int *[n_particles];
-    for (int i = 0; i < n_particles; i++)
-        flat_points_d[i] = &flat_points[i * n_profiles];
+    project(flat_rec, flat_points, weights, n_particles, n_profiles);
 
-    project(flat_rec, flat_points_d, weights, n_particles, n_profiles);
-
-    delete[] flat_points_d;
     buffer_flat_rec.shape = std::vector<ssize_t>{n_profiles, n_bins};
 
     return input_flat_rec;
@@ -358,10 +347,6 @@ py::tuple wrapper_reconstruct(
 
     const int *const xp = static_cast<int *>(buffer_xp.ptr);
 
-    const int **const xp_d = new const int *[n_particles];
-    for (int i = 0; i < n_particles; i++)
-        xp_d[i] = &xp[i * n_profiles];
-
     std::function<void(int, int)> cb;
     if (callback.has_value()) {
         cb = [&callback](const int progress, const int total) {
@@ -370,7 +355,7 @@ py::tuple wrapper_reconstruct(
     } else
         cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
-    reconstruct(weights, xp_d, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
+    reconstruct(weights, xp, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
 
     py::capsule capsule_weights(weights, [](void *p) { delete[] reinterpret_cast<double *>(p); });
     py::capsule capsule_discr(discr, [](void *p) { delete[] reinterpret_cast<double *>(p); });
@@ -379,8 +364,6 @@ py::tuple wrapper_reconstruct(
     py::array_t<double> arr_weights = py::array_t<double>({n_particles}, weights, capsule_weights);
     py::array_t<double> arr_discr = py::array_t<double>({n_iter + 1}, discr, capsule_discr);
     py::array_t<double> arr_recreated = py::array_t<double>({n_profiles, n_bins}, recreated, capsule_recreated);
-
-    delete[] xp_d;
 
     return py::make_tuple(arr_weights, arr_discr, arr_recreated);
 }
