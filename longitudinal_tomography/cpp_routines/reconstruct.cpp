@@ -58,16 +58,10 @@ void normalize(double *flat_rec, // inn/out
 void clip(double *array, // inn/out
           const int length,
           const double clip_val) {
-    bool positive_flag = false;
 #pragma omp parallel for
     for (int i = 0; i < length; i++)
         if (array[i] < clip_val)
             array[i] = clip_val;
-        else if (!positive_flag)
-            positive_flag = true;
-
-    if (!positive_flag)
-        throw std::runtime_error("All of phase space got reduced to zeroes");
 }
 
 
@@ -97,11 +91,11 @@ void compensate_particle_amount(double *diff_prof,        // inn/out
                                 double *rparts,          // inn
                                 const int nprof,
                                 const int nbins) {
-    int flat_index = 0, i, j;
-    for (i = 0; i < nprof; i++)
-        for (j = 0; j < nbins; j++) {
-            flat_index = i * nbins + j;
-            diff_prof[flat_index] *= rparts[flat_index];
+#pragma omp parallel for
+    for (int i = 0; i < nprof; i++)
+        for (int j = 0; j < nbins; j++) {
+            int idx = i * nbins + j;
+            diff_prof[idx] *= rparts[idx];
         }
 }
 
@@ -122,6 +116,14 @@ double max_1d(double *arr, const int length) {
         if (max_bin_val < arr[i])
             max_bin_val = arr[i];
     return max_bin_val;
+}
+
+
+double sum(double *arr, const int length) {
+    double sum = 0;
+    for (int i = 0; i < length; i++)
+        sum += arr[i];
+    return sum;
 }
 
 void count_particles_in_bin(double *rparts,      // out
@@ -149,14 +151,14 @@ void reciprocal_particles(double *rparts,   // out
     int max_bin_val = max_1d(rparts, all_bins);
 
     // Setting 0's to 1's to avoid zero division
-//#pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < all_bins; i++)
         if (rparts[i] == 0.0)
             rparts[i] = 1.0;
 
     // Creating reciprocal
     int idx;
-//#pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < nprof; i++)
         for (int j = 0; j < nbins; j++) {
             idx = i * nbins + j;
@@ -194,11 +196,11 @@ extern "C" void reconstruct(double *weights,             // out
     int all_bins = nprof * nbins;
     double *diff_prof = new double[all_bins]();
 
-    double *rparts = new double[nprof * nbins]();
+    double *rparts = new double[all_bins]();
 
     int *flat_points = new int[npart * nprof]();
 
-    auto finally = [diff_prof, flat_points, rparts]() {
+    auto cleanup = [diff_prof, flat_points, rparts]() {
         delete[] diff_prof;
         delete[] rparts;
         delete[] flat_points;
@@ -213,6 +215,9 @@ extern "C" void reconstruct(double *weights,             // out
 
         back_project(weights, flat_points, flat_profiles, npart, nprof);
         clip(weights, npart, 0.0);
+
+        if (sum(weights, npart) <= 0.)
+            throw std::runtime_error("All of phase space got reduced to zeroes");
 
         if (verbose)
             std::cout << " Iterating..." << std::endl;
@@ -233,6 +238,9 @@ extern "C" void reconstruct(double *weights,             // out
             back_project(weights, flat_points, diff_prof, npart, nprof);
             clip(weights, npart, 0.0);
 
+            if (sum(weights, npart) <= 0.)
+                throw std::runtime_error("All of phase space got reduced to zeroes");
+
             callback(iteration + 1, niter);
         } //end for
 
@@ -245,12 +253,12 @@ extern "C" void reconstruct(double *weights,             // out
 
         callback(niter, niter);
     } catch (const std::exception &e) {
-        finally();
+        cleanup();
 
         throw e;
     }
 
-    finally();
+    cleanup();
 
     if (verbose)
         std::cout << " Done!" << std::endl;
