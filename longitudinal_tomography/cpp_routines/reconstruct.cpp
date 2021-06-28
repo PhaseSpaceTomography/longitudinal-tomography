@@ -10,13 +10,10 @@
 
 #include <iostream>
 #include <iomanip>
-#include <algorithm>
 #include <stdexcept>
 #include <cmath>
 #include <functional>
 
-#include "pybind11/pybind11.h"
-#include <pybind11/stl.h>
 #include "reconstruct.h"
 
 // Back projection using flattened arrays
@@ -43,15 +40,13 @@ extern "C" void project(double *flat_rec,                     // inn/out
 void normalize(double *flat_rec, // inn/out
                const int nprof,
                const int nbins) {
-    int i, j;
-
     double sum_waterfall = 0.0;
 #pragma omp parallel for reduction(+ : sum_waterfall)
-    for (i = 0; i < nprof; i++) {
+    for (int i = 0; i < nprof; i++) {
         double sum_profile = 0;
-        for (j = 0; j < nbins; j++)
+        for (int j = 0; j < nbins; j++)
             sum_profile += flat_rec[i * nbins + j];
-        for (j = 0; j < nbins; j++)
+        for (int j = 0; j < nbins; j++)
             flat_rec[i * nbins + j] /= sum_profile;
         sum_waterfall += sum_profile;
     }
@@ -64,10 +59,8 @@ void clip(double *array, // inn/out
           const int length,
           const double clip_val) {
     bool positive_flag = false;
-    int i;
-
 #pragma omp parallel for
-    for (i = 0; i < length; i++)
+    for (int i = 0; i < length; i++)
         if (array[i] < clip_val)
             array[i] = clip_val;
         else if (!positive_flag)
@@ -108,7 +101,7 @@ void compensate_particle_amount(double *diff_prof,        // inn/out
     for (i = 0; i < nprof; i++)
         for (j = 0; j < nbins; j++) {
             flat_index = i * nbins + j;
-            diff_prof[flat_index] *= rparts[i * nbins + j];
+            diff_prof[flat_index] *= rparts[flat_index];
         }
 }
 
@@ -116,9 +109,8 @@ double max_2d(double **arr,  // inn
               const int x_axis,
               const int y_axis) {
     double max_bin_val = 0;
-    int i, j;
-    for (i = 0; i < y_axis; i++)
-        for (j = 0; j < x_axis; j++)
+    for (int i = 0; i < y_axis; i++)
+        for (int j = 0; j < x_axis; j++)
             if (max_bin_val < arr[i][j])
                 max_bin_val = arr[i][j];
     return max_bin_val;
@@ -135,12 +127,13 @@ double max_1d(double *arr, const int length) {
 void count_particles_in_bin(double *rparts,      // out
                             const int *xp,       // inn
                             const int nprof,
-                            const int npart) {
-    int bin, i, j;
-    for (i = 0; i < npart; i++)
-        for (j = 0; j < nprof; j++) {
+                            const int npart,
+                            const int nbins) {
+    int bin;
+    for (int i = 0; i < npart; i++)
+        for (int j = 0; j < nprof; j++) {
             bin = xp[i * nprof + j];
-            rparts[bin * nprof + j] += 1;
+            rparts[j * nbins + bin] += 1;
         }
 }
 
@@ -150,23 +143,22 @@ void reciprocal_particles(double *rparts,   // out
                           const int nprof,
                           const int npart) {
     const int all_bins = nprof * nbins;
-    int i, j;
 
-    count_particles_in_bin(rparts, xp, nprof, npart);
+    count_particles_in_bin(rparts, xp, nprof, npart, nbins);
 
     int max_bin_val = max_1d(rparts, all_bins);
 
     // Setting 0's to 1's to avoid zero division
-#pragma omp parallel for
-    for (i = 0; i < all_bins; i++)
+//#pragma omp parallel for
+    for (int i = 0; i < all_bins; i++)
         if (rparts[i] == 0.0)
             rparts[i] = 1.0;
 
     // Creating reciprocal
     int idx;
-#pragma omp parallel for
-    for (i = 0; i < nprof; i++)
-        for (j = 0; j < nbins; j++) {
+//#pragma omp parallel for
+    for (int i = 0; i < nprof; i++)
+        for (int j = 0; j < nbins; j++) {
             idx = i * nbins + j;
             rparts[idx] = (double) max_bin_val / rparts[idx];
         }
@@ -177,12 +169,11 @@ void create_flat_points(const int *xp,       //inn
                         const int npart,
                         const int nprof,
                         const int nbins) {
-    int i, j;
     // Initiating to the value of xp
     std::memcpy(flat_points, xp, npart * nprof * sizeof(int));
 
-    for (i = 0; i < npart; i++)
-        for (j = 0; j < nprof; j++)
+    for (int i = 0; i < npart; i++)
+        for (int j = 0; j < nprof; j++)
             flat_points[i * nprof + j] += nbins * j;
 }
 

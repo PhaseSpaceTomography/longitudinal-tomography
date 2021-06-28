@@ -63,7 +63,8 @@ double max_1d(double *arr, const int length);
 void count_particles_in_bin(double *rparts,
                             const int *xp,
                             const int nprof,
-                            const int npart);
+                            const int npart,
+                            const int nbins);
 
 void reciprocal_particles(double *rparts,
                           const int *xp,
