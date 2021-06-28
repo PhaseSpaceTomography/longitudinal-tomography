@@ -1,4 +1,5 @@
 import re
+import time
 import typing as t
 from copy import deepcopy
 from os import path
@@ -14,6 +15,7 @@ from longitudinal_tomography.tracking import Machine
 from longitudinal_tomography.utils.tomo_input import Frames
 
 _tomo: Tomography = None
+_processing_tomo = False
 _waterfall: np.ndarray = None
 _machine: Machine = None
 _frames: Frames = None
@@ -48,16 +50,20 @@ def load_data() -> t.Tuple[Machine, Frames, Profiles]:
 
 
 def get_tomography_params() -> t.Tuple[Tomography, Machine]:
-    global _tomo
-    if _tomo is not None:
+    global _tomo, _processing_tomo
+    if _tomo is not None or _processing_tomo:
+        while _processing_tomo:
+            time.sleep(0.1)
         return deepcopy(_tomo), deepcopy(_machine)
     if _machine is None:
         load_data()
 
+    _processing_tomo = True
     xp, yp = shortcuts.track(_machine, 0)
     tomo = shortcuts.tomogram(_profiles.waterfall, xp, yp, 2)
 
     _tomo = tomo
+    _processing_tomo = False
     return deepcopy(tomo), deepcopy(_machine)
 
 
