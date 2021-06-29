@@ -255,7 +255,7 @@ extern "C" void reconstruct(double *weights,             // out
     } catch (const std::exception &e) {
         cleanup();
 
-        throw e;
+        throw;
     }
 
     cleanup();

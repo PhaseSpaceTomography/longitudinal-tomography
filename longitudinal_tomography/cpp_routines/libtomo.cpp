@@ -255,6 +255,11 @@ py::tuple wrapper_kick_and_drift_array(
     for (int i = 0; i < n_profiles; i++)
         yp_d[i] = &yp[i * nparts];
 
+    auto cleanup = [xp_d, yp_d]() {
+        delete[] xp_d;
+        delete[] yp_d;
+    };
+
     auto *const denergy = static_cast<double *>(denergy_buffer.ptr);
     auto *const dphi = static_cast<double *>(dphi_buffer.ptr);
     const double *const rf1v = static_cast<double *>(rf1v_buffer.ptr);
@@ -272,11 +277,15 @@ py::tuple wrapper_kick_and_drift_array(
     } else
         cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
-    kick_and_drift(xp_d, yp_d, denergy, dphi, rf1v, rf2v, phi0, deltaE0, drift_coef,
-                   phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out, cb);
+    try {
+        kick_and_drift(xp_d, yp_d, denergy, dphi, rf1v, rf2v, phi0, deltaE0, drift_coef,
+                       phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out, cb);
+    } catch (const std::exception &e) {
+        cleanup();
+        throw;
+    }
 
-    delete[] yp_d;
-    delete[] xp_d;
+    cleanup();
 
     return py::make_tuple(input_xp, input_yp);
 }
@@ -355,7 +364,15 @@ py::tuple wrapper_reconstruct(
     } else
         cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
-    reconstruct(weights, xp, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
+    try {
+        reconstruct(weights, xp, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
+    } catch (const std::exception &e) {
+        delete[] weights;
+        delete[] discr;
+        delete[] recreated;
+
+        throw;
+    }
 
     py::capsule capsule_weights(weights, [](void *p) { delete[] reinterpret_cast<double *>(p); });
     py::capsule capsule_discr(discr, [](void *p) { delete[] reinterpret_cast<double *>(p); });
@@ -392,71 +409,89 @@ py::array_t<double> wrapper_make_phase_space(
 }
 
 
-
 // wrap as Python module
-PYBIND11_MODULE(libtomo, m) {
-    m.doc() = "pybind11 tomo plugin";
+PYBIND11_MODULE(libtomo, m
+) {
+m.
 
-    m.def("kick", &wrapper_kick, kick_docs,
-          "machine"_a, "denergy"_a, "dphi"_a,
-          "rfv1"_a, "rfv2"_a, "npart"_a, "turn"_a, "up"_a = true);
+doc() = "pybind11 tomo plugin";
 
-    m.def("drift", &wrapper_drift, drift_docs,
-          "denergy"_a, "dphi"_a, "drift_coef"_a, "npart"_a, "turn"_a,
-          "up"_a = true);
+m.def("kick", &wrapper_kick, kick_docs,
+"machine"_a, "denergy"_a, "dphi"_a,
+"rfv1"_a, "rfv2"_a, "npart"_a, "turn"_a, "up"_a = true);
 
-    m.def("kick_up", &wrapper_kick_up, "Tomography kick up",
-          "dphi"_a, "denergy"_a, "rfv1"_a, "rfv2"_a,
-          "phi0"_a, "phi12"_a, "h_ratio"_a, "n_particles"_a, "acc_kick"_a);
+m.def("drift", &wrapper_drift, drift_docs,
+"denergy"_a, "dphi"_a, "drift_coef"_a, "npart"_a, "turn"_a,
+"up"_a = true);
 
-    m.def("kick_down", &wrapper_kick_down, "Tomography kick down",
-          "dphi"_a, "denergy"_a, "rfv1"_a, "rfv2"_a,
-          "phi0"_a, "phi12"_a, "h_ratio"_a, "n_particles"_a, "acc_kick"_a);
+m.def("kick_up", &wrapper_kick_up, "Tomography kick up",
+"dphi"_a, "denergy"_a, "rfv1"_a, "rfv2"_a,
+"phi0"_a, "phi12"_a, "h_ratio"_a, "n_particles"_a, "acc_kick"_a);
 
-    m.def("drift_up", &wrapper_drift_up, "Tomography drift up",
-          "dphi"_a, "denergy"_a, "drift_coef"_a, "n_particles"_a);
+m.def("kick_down", &wrapper_kick_down, "Tomography kick down",
+"dphi"_a, "denergy"_a, "rfv1"_a, "rfv2"_a,
+"phi0"_a, "phi12"_a, "h_ratio"_a, "n_particles"_a, "acc_kick"_a);
 
-    m.def("drift_down", &wrapper_drift_down, "Tomography drift down",
-          "dphi"_a, "denergy"_a, "drift_coef"_a, "n_particles"_a);
+m.def("drift_up", &wrapper_drift_up, "Tomography drift up",
+"dphi"_a, "denergy"_a, "drift_coef"_a, "n_particles"_a);
 
-    m.def("kick_and_drift", &wrapper_kick_and_drift_machine, kick_and_drift_docs,
-          "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "machine"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
+m.def("drift_down", &wrapper_drift_down, "Tomography drift down",
+"dphi"_a, "denergy"_a, "drift_coef"_a, "n_particles"_a);
 
-    m.def("kick_and_drift",
-          py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
-                  const d_array &, const d_array &, const d_array &, const d_array &,
-                  const d_array &, const double, const double, const int,
-                  const int, const int, const int, const bool,
-                  const std::optional<const py::object>
-          >(&wrapper_kick_and_drift_scalar), kick_and_drift_docs,
-          "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
-          "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
+m.def("kick_and_drift", &wrapper_kick_and_drift_machine, kick_and_drift_docs,
+"xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "machine"_a,
+"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a =
 
-    m.def("kick_and_drift",
-          py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
-                  const d_array &, const d_array &, const d_array &, const d_array &,
-                  const d_array &, const d_array &, const double, const int,
-                  const int, const int, const int, const bool,
-                  const std::optional<const py::object>
-          >(wrapper_kick_and_drift_array), kick_and_drift_docs,
-          "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
-          "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-          "rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none());
+py::none()
 
-    m.def("project", &wrapper_project, project_docs,
-          "flat_rec"_a, "flat_points"_a, "weights"_a,
-          "n_particles"_a, "n_profiles"_a, "n_bins"_a);
+);
 
-    m.def("back_project", &wrapper_back_project, back_project_docs,
-          "weights"_a, "flat_points"_a, "flat_profiles"_a,
-          "n_particles"_a, "n_profiles"_a);
+m.def("kick_and_drift",
+py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
+        const d_array &, const d_array &, const d_array &, const d_array &,
+        const d_array &, const double, const double, const int,
+        const int, const int, const int, const bool,
+        const std::optional<const py::object>
+>(&wrapper_kick_and_drift_scalar), kick_and_drift_docs,
+"xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
+"deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
+"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a =
 
-    m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
-          "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
-          "n_profiles"_a, "verbose"_a = false, "callback"_a = py::none());
+py::none()
 
-    m.def("make_phase_space", &wrapper_make_phase_space, make_phase_space_docs,
-          "xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
+);
+
+m.def("kick_and_drift",
+py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
+        const d_array &, const d_array &, const d_array &, const d_array &,
+        const d_array &, const d_array &, const double, const int,
+        const int, const int, const int, const bool,
+        const std::optional<const py::object>
+>(wrapper_kick_and_drift_array), kick_and_drift_docs,
+"xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
+"deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
+"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a =
+
+py::none()
+
+);
+
+m.def("project", &wrapper_project, project_docs,
+"flat_rec"_a, "flat_points"_a, "weights"_a,
+"n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("back_project", &wrapper_back_project, back_project_docs,
+"weights"_a, "flat_points"_a, "flat_profiles"_a,
+"n_particles"_a, "n_profiles"_a);
+
+m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
+"xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
+"n_profiles"_a, "verbose"_a = false, "callback"_a =
+
+py::none()
+
+);
+
+m.def("make_phase_space", &wrapper_make_phase_space, make_phase_space_docs,
+"xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
 }
