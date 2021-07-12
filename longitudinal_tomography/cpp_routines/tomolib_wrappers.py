@@ -295,60 +295,6 @@ def project(recreated: np.ndarray, flat_points: np.ndarray,
                            nbins)
 
 
-# < to be removed when new version is proven to be working correctly >
-def _old_reconstruct(weights: np.ndarray, xp: np.ndarray,
-                     flat_profiles: np.ndarray, discr: np.ndarray,
-                     niter: int, nbins: int, npart: int, nprof: int,
-                     verbose: bool):
-    """Wrapper for full reconstruction in C++.
-    Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
-
-    Well tested, but do not return reconstructed waterfall.
-    Kept for reference.
-
-    Parameters
-    ----------
-    weights: ndarray
-        1D array containing the weight of each particle initiated to zeroes.
-    xp: ndarray
-        2D array containing the coordinate of each particle
-        at each time frame. Coordinates should given be as integers of
-        the phase space coordinate system. shape: (nparts, nprofiles).
-    flat_profiles: ndarray
-        1D array containing flattened waterfall.
-    discr: ndarray
-        Array large enough to hold the discrepancy for each iteration of the
-        reconstruction process + 1.
-    niter: int
-        Number of iterations in the reconstruction process.
-    nbins: int
-        Number of bins in a profile.
-    npart: int
-        Number of tracked particles.
-    nprof: int
-        Number of profiles.
-    verbose: boolean
-        Flag to indicate that the tomography routine should broadcast its
-        status to stdout. The output is identical to the output
-        from the Fortran version.
-
-    Returns
-    -------
-    weights: ndarray
-        1D array containing the final weight of each particle.
-    discr: ndarray
-        1D array containing discrepancy at each
-        iteration of the reconstruction.
-    """
-    log.warning('tomo.cpp_routines.tomolib_wrappers._old reconstruct has'
-                'moved to tomo.cpp_routines.libtomo.reconstruct_old with '
-                'the same function and return signature. This function is '
-                'provided for backwards compatibility and can be '
-                'removed without further notice.')
-    return libtomo.reconstruct_old(weights, xp, flat_profiles, discr, niter,
-                                   nbins, npart, nprof, verbose)
-
-
 def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
                 npart: int, nprof: int, verbose: bool):
     """Wrapper for full reconstruction in C++.
