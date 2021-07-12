@@ -19,6 +19,8 @@ Fixes
 * Cleanup of :code:`MANIFEST.in`.
 * Updated ``README`` with full installation instructions.
 * Fix Example 00 that broke after updating the tomoscope interface.
+* Fixed an issue in the normalize function of reconstruct.cpp that would cause extension compiled with debug symbols (-g) to have inconsistent normalization results due to a race condition.
+* Fixed an issue where locally allocated memory in the reconstruct function would not be freed if an exception was thrown mid-function.
 
 ------------
 New Features
@@ -52,6 +54,7 @@ Other Changes
         * The :code:`setup.py` has been updated for the necessary compilation. The compilation should now be natively supported on all operating systems.
         * The :code:`__restrict__` specifier has been removed to allow for compilation using MSVC on Windows.
         * Add project :code:`CMakeLists.txt` that may be used as project file in CLion, but does currently not correctly install the extension.
+
 * The calculation of `rms dp/p` no longer requires passing the momentum value as this can be calculated using the energy and mass.
 
 ------------
