@@ -566,13 +566,13 @@ def assert_machine_input(machine: 'Machine'):
     # Machine parameter assertion
     assert_var_not_none(
         machine.h_num, 'Harmonic number', expt.MachineParameterError)
-    assert_greater_or_equal(
-        machine.h_num, 'Harmonic number', 1, expt.MachineParameterError)
+    assert_greater(
+        machine.h_num, 'Harmonic number', 0, expt.MachineParameterError)
 
     assert_var_not_none(machine.h_ratio, 'Harmonic ratio',
                         expt.MachineParameterError)
     assert_greater_or_equal(machine.h_ratio, 'Harmonic ratio',
-                            1, expt.MachineParameterError)
+                            0, expt.MachineParameterError)
 
     assert_var_not_none(machine.b0, 'B field (B0)', expt.MachineParameterError)
     assert_greater(machine.b0, 'B field (B0)', 0, expt.MachineParameterError)
