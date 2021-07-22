@@ -8,7 +8,7 @@ master
 v3.4.0
 ------
 
-:Date: TBD
+:Date: 2021-07-22
 
 -----
 Fixes
