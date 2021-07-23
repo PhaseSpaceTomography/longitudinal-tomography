@@ -1,18 +1,12 @@
-# ================
-# DLC Exceptions
-# ================
-
-
-class LibraryNotFound(Exception):
+class TomoException(Exception):
     pass
-
 
 # ================
 # Array Exceptions
 # ================
 
 
-class UnequalArrayShapes(Exception):
+class UnequalArrayShapes(TomoException, ValueError):
     pass
 
 # ====================
@@ -20,19 +14,19 @@ class UnequalArrayShapes(Exception):
 # ====================
 
 
-class OverMaxIterationsError(Exception):
+class OverMaxIterationsError(TomoException):
     pass
 
 
-class ValuesOutOfBrackets(Exception):
+class ValuesOutOfBrackets(TomoException):
     pass
 
 
-class ArrayLengthError(Exception):
+class ArrayLengthError(TomoException, ValueError):
     pass
 
 
-class ArrayElementsNotEqualError(Exception):
+class ArrayElementsNotEqualError(TomoException, ValueError):
     pass
 
 # ===========================
@@ -40,23 +34,23 @@ class ArrayElementsNotEqualError(Exception):
 # ===========================
 
 
-class InputError(Exception):
+class InputError(TomoException):
     pass
 
 
-class MachineParameterError(Exception):
+class MachineParameterError(TomoException, ValueError):
     pass
 
 
-class SpaceChargeParameterError(Exception):
+class SpaceChargeParameterError(TomoException, ValueError):
     pass
 
 
-class RawDataImportError(Exception):
+class RawDataImportError(TomoException):
     pass
 
 
-class ArgumentError(Exception):
+class ArgumentError(TomoException, ValueError):
     pass
 
 
@@ -68,23 +62,23 @@ class NegativeIndexError(IndexError):
 # ===========================
 
 
-class RebinningError(Exception):
+class RebinningError(TomoException, RuntimeError):
     pass
 
 
-class WaterfallReducedToZero(Exception):
+class WaterfallReducedToZero(TomoException, RuntimeError):
     pass
 
 
-class FilteredProfilesError(Exception):
+class FilteredProfilesError(TomoException, ValueError):
     pass
 
 
-class WaterfallError(Exception):
+class WaterfallError(TomoException, ValueError):
     pass
 
 
-class ProfileChargeNotCalculated(Exception):
+class ProfileChargeNotCalculated(TomoException, ValueError):
     pass
 
 # ============================
@@ -92,19 +86,19 @@ class ProfileChargeNotCalculated(Exception):
 # ============================
 
 
-class EnergyBinningError(Exception):
+class EnergyBinningError(TomoException, ValueError):
     pass
 
 
-class EnergyLimitsError(Exception):
+class EnergyLimitsError(TomoException, ValueError):
     pass
 
 
-class PhaseLimitsError(Exception):
+class PhaseLimitsError(TomoException, ValueError):
     pass
 
 
-class MapCreationError(Exception):
+class MapCreationError(TomoException):
     pass
 
 
@@ -112,15 +106,15 @@ class MapCreationError(Exception):
 # PARTICLE TRACKING EXCEPTIONS
 # ============================
 
-class InvalidParticleError(Exception):
+class InvalidParticleError(TomoException, ValueError):
     pass
 
 
-class TrackingError(Exception):
+class TrackingError(TomoException, RuntimeError):
     pass
 
 
-class SelfFieldTrackingError(Exception):
+class SelfFieldTrackingError(TomoException):
     pass
 
 # ============================
@@ -128,17 +122,17 @@ class SelfFieldTrackingError(Exception):
 # ============================
 
 
-class PhaseSpaceReducedToZeroes(Exception):
+class PhaseSpaceReducedToZeroes(TomoException, RuntimeError):
     pass
 
 
-class XPOutOfImageWidthError(Exception):
+class XPOutOfImageWidthError(TomoException, ValueError):
     pass
 
 
-class CoordinateImportError(Exception):
+class CoordinateImportError(TomoException, ValueError):
     pass
 
 
-class CoordinateError(Exception):
+class CoordinateError(TomoException, ValueError):
     pass

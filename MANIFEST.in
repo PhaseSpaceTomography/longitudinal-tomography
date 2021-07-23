@@ -1,4 +1,2 @@
-recursive-include longitudinal_tomography/cpp_routines *.la
-recursive-include longitudinal_tomography/cpp_routines *.a
 recursive-include longitudinal_tomography/cpp_routines *.cpp
 recursive-include longitudinal_tomography/cpp_routines *.h

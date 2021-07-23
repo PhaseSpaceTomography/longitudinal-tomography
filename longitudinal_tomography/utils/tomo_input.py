@@ -1,21 +1,22 @@
 """Module containing functions for handling input from
 Fortran style text files.
 
-:Author(s): **Christoffer Hjertø Grindheim**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 import os
 import sys
-from typing import List, Tuple, Union, Collection, Sequence
+import typing as t
 
 import numpy as np
 
 from .. import assertions as asrt, exceptions as expt
-from ..data.profiles import Profiles
 from ..data import pre_process
+from ..data.profiles import Profiles
 from ..tracking.machine import Machine
-from longitudinal_tomography.compat import fortran
+from ..compat import fortran
 
 # Some constants for input files containing machine parameters.
+from ..tracking.machine_base import MachineABC
 
 PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12
@@ -70,8 +71,9 @@ class Frames:
         Path to file holding raw data for programmers reference.
     """
 
-    def __init__(self, framecount, framelength, skip_frames, skip_bins_start,
-                 skip_bins_end, rebin, dtbin, raw_data_path=''):
+    def __init__(self, framecount: int, framelength: int, skip_frames: int,
+                 skip_bins_start: int, skip_bins_end: int, rebin: int,
+                 dtbin: float, raw_data_path: str = ''):
         self.raw_data_path = raw_data_path
         self.nframes = framecount
         self.nbins_frame = framelength
@@ -81,10 +83,10 @@ class Frames:
         self.rebin = rebin
         self.sampling_time = dtbin
 
-        self._raw_data = None
+        self._raw_data: np.ndarray = None
 
     @property
-    def raw_data(self) -> Union[np.ndarray, None]:
+    def raw_data(self) -> t.Union[np.ndarray, None]:
         """Raw data defined as a @property.
 
         Holds assertions for validity of raw data.
@@ -112,7 +114,7 @@ class Frames:
             return None
 
     @raw_data.setter
-    def raw_data(self, in_raw_data: Collection):
+    def raw_data(self, in_raw_data: t.Collection):
         if not hasattr(in_raw_data, '__iter__'):
             raise expt.RawDataImportError('Raw data should be iterable')
 
@@ -180,15 +182,14 @@ class Frames:
 
         # Skips bins at start and end of time frames.
         if self.skip_bins_end > 0:
-            waterfall = waterfall[:, self.skip_bins_start:
-                                  -self.skip_bins_end]
+            waterfall = waterfall[:, self.skip_bins_start:-self.skip_bins_end]
         else:
             waterfall = waterfall[:, self.skip_bins_start:]
         return waterfall
 
     # Check that provided raw data is valid.
-    def _assert_raw_data(
-            self, raw_data: Union[np.ndarray, Collection]) -> np.ndarray:
+    def _assert_raw_data(self, raw_data: t.Union[np.ndarray, t.Collection]) \
+            -> np.ndarray:
         if not hasattr(raw_data, '__iter__'):
             raise expt.RawDataImportError('Raw data should be iterable')
 
@@ -230,7 +231,7 @@ def get_user_input(input: str = ''):
 
 # Receive path to input file via sys.argv.
 # Can also receive the path to the output directory.
-def _get_input_args(input_file_pth) -> np.ndarray:
+def _get_input_args(input_file_pth: str) -> np.ndarray:
     if not os.path.isfile(input_file_pth):
         raise expt.InputError(f'The input file: "{input_file_pth}" '
                               f'does not exist!')
@@ -273,7 +274,7 @@ def _get_input_stdin() -> np.ndarray:
 # Splits the read input data to machine parameters and raw data.
 # If the raw data is not already read from the input file, the
 #  data will be found in the file given by the parameter file.
-def _split_input(read_input: Sequence) -> Tuple[List, np.ndarray]:
+def _split_input(read_input: t.Sequence) -> t.Tuple[t.List, np.ndarray]:
     nframes_idx = 16
     nbins_idx = 20
     ndata = 0
@@ -317,7 +318,7 @@ def _split_input(read_input: Sequence) -> Tuple[List, np.ndarray]:
     return read_parameters, read_data
 
 
-def txt_input_to_machine(input_array: List) -> Tuple[Machine, Frames]:
+def txt_input_to_machine(input_array: t.List) -> t.Tuple[Machine, Frames]:
     """Function converts the content of an input file and uses this to
     generate an machine object. The input file is given as a list
     holding one line of the file in ach element. The list should
@@ -426,7 +427,7 @@ def txt_input_to_machine(input_array: List) -> Tuple[Machine, Frames]:
 
 # Convert from setting min and max phase of reconstruction area
 # as phase space coordinates to physical units of phase [s].
-def _min_max_dt(nbins: int, input_array: Sequence) -> Tuple[float, float]:
+def _min_max_dt(nbins: int, input_array: t.Sequence) -> t.Tuple[float, float]:
     dtbin = float(input_array[22])
     min_dt_bin = int(input_array[31])
     max_dt_bin = int(input_array[34])
@@ -436,7 +437,7 @@ def _min_max_dt(nbins: int, input_array: Sequence) -> Tuple[float, float]:
     return min_dt, max_dt
 
 
-def raw_data_to_profiles(waterfall: np.ndarray, machine: Machine, rbn: int,
+def raw_data_to_profiles(waterfall: np.ndarray, machine: MachineABC, rbn: int,
                          sampling_time: float,
                          synch_part_x: float = None) -> Profiles:
     """Converts from waterfall of untreated data, to waterfall

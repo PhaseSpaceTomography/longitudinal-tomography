@@ -1,11 +1,13 @@
-"""Module containing the Particles class for creating and storing
+"""
+Module containing the Particles class for creating and storing
 and initial particle distribution.
 
 Module also contains utility functions for particle distribution
 like assertions, conversions and filtering of lost particles.
 
-:Author(s): **Christoffer Hjertø Grindheim**"""
-import logging as log
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
+"""
+import logging
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
 
 import numpy as np
@@ -15,6 +17,9 @@ from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
     from .machine import Machine
+    from .machine_base import MachineABC
+
+log = logging.getLogger(__name__)
 
 
 class Particles(object):
@@ -209,8 +214,7 @@ class Particles(object):
         needed_fieds = ['snpt', 'h_num', 'omega_rev0', 'eta0',
                         'dtbin', 'phi0', 'synch_part_y', 'dturns', 'phi12',
                         'nbins', 'beam_ref_frame', 'full_pp_flag',
-                        'demax', 'vrf2', 'vrf2dot', 'e0', 'vrf1',
-                        'vrf1dot', 'min_dt', 'max_dt', 'time_at_turn']
+                        'demax', 'e0', 'min_dt', 'max_dt', 'time_at_turn']
         asrt.assert_fields(
             machine, 'machine', needed_fieds, expt.MachineParameterError,
             'Did you remember to use machine.values_at_turns()?')
@@ -269,7 +273,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
 
 
 def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
-                       machine: 'Machine', xorigin: float, dEbin: float) \
+                       machine: 'MachineABC', xorigin: float, dEbin: float) \
         -> Tuple[np.ndarray, np.ndarray]:
     """Function to convert from physical units ([rad], [eV]) to reconstructed
     phase space coordinates (bin numbers).
@@ -287,7 +291,7 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
         2D array containing the energy difference [eV] relative to
         the synchronous particle for every particle at every time frame.
         Array shape: (nprofiles, nparticles)
-    machine: Machine
+    machine: MachineABC
         machine object holding machine parameters, and settings for
         the reconstruction.
     xorigin: float

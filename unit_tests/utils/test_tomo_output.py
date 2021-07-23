@@ -6,19 +6,18 @@ Run as python test_tomo_output.py in console or via coverage
 import os
 import shutil
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import numpy.testing as nptest
 
 from .. import commons
 import longitudinal_tomography.utils.tomo_output as tout
+import longitudinal_tomography.data.data_treatment as dtreat
 
 base_dir = os.path.split(os.path.realpath(__file__))[0]
 base_dir = os.path.split(base_dir)[0]
 tmp_dir = os.path.join(base_dir, 'tmp')
-
-# All values retrieved from INDIVShavingC325.dat
-MACHINE_ARGS = commons.get_machine_args()
 
 
 class TestTomoOut(unittest.TestCase):
@@ -54,3 +53,15 @@ class TestTomoOut(unittest.TestCase):
 
         nptest.assert_equal(
             img, correct, err_msg='Phase space image was created incorrectly')
+
+    @patch('matplotlib.pyplot.show')
+    def test_show(self, mock_show):
+        _, _, profiles = commons.load_data()
+        tomo, machine = commons.get_tomography_params()
+        waterfall = profiles.waterfall
+        rec_prof = 0
+
+        phase_space = dtreat.phase_space(tomo, machine, rec_prof)[-1]
+        measured_profile = waterfall[:, 0] / waterfall[:, 0].sum()
+
+        tout.show(phase_space, measured_profile, tomo.diff)
