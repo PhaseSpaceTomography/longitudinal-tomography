@@ -318,6 +318,95 @@ def _split_input(read_input: t.Sequence) -> t.Tuple[t.List, np.ndarray]:
     return read_parameters, read_data
 
 
+def txt_input_to_kwargs(input_array: t.List) -> t.Tuple[dict, dict]:
+    """
+    Function converts the contents of an input file into two dictionaries of
+    kwargs that can be used to initialise the frames and machine objects.
+
+    Parameters
+    ----------
+    input_arry : list
+        Array containing each line of an input file as an element of the array.
+        This should be a direct read from a tomography text file.
+
+    Returns
+    -------
+    machineKwargs: dict
+        Dictionary of keyword arguments used to initialise the machine object
+    frameKwargs: dict
+        Dictionary of keyword arguments used to initialise the frames object
+    """
+    
+    # Checks if input is valid
+    if not hasattr(input_array, '__iter__'):
+        raise expt.InputError('Input should be iterable')
+    if len(input_array) != PARAMETER_LENGTH:
+        raise expt.InputError(f'Input array be of length {PARAMETER_LENGTH}, '
+                              f'containing every line of input file '
+                              f'(not including raw-data).')
+
+    # String formatting
+    for i in range(len(input_array)):
+        input_array[i] = input_array[i].strip('\r\n')
+
+    # Arguments for shaping waterfall from raw data
+    frameKwargs = {
+        'raw_data_path': input_array[12],
+        'framecount': int(input_array[16]),
+        'skip_frames': int(input_array[18]),
+        'framelength': int(input_array[20]),
+        'dtbin': float(input_array[22]),
+        'skip_bins_start': int(input_array[26]),
+        'skip_bins_end': int(input_array[28]),
+        'rebin': int(input_array[36])
+    }
+
+    # Machine arguments
+    # Some of the arguments are subtracted by one. This is
+    # to convert from Fortran to C indexing.
+    # Last 4 elements are initialised to None, these require the Frames
+    # object to be created before their value can be (easily) known.
+    machineKwargs = {
+        'output_dir': input_array[14],
+        'dtbin': float(input_array[22]),
+        'dturns': int(input_array[24]),
+        'synch_part_x': float(input_array[39]),
+        'demax': float(input_array[41]),
+        'filmstart': int(input_array[43]) - 1,
+        'filmstop': int(input_array[45]) - 1,
+        'filmstep': int(input_array[47]),
+        'niter': int(input_array[49]),
+        'snpt': int(input_array[51]),
+        'full_pp_flag': bool(int(input_array[53])),
+        'beam_ref_frame': int(input_array[55]) - 1,
+        'machine_ref_frame': int(input_array[57]) - 1,
+        'vrf1': float(input_array[61]),
+        'vrf1dot': float(input_array[63]),
+        'vrf2': float(input_array[65]),
+        'vrf2dot': float(input_array[67]),
+        'h_num': float(input_array[69]),
+        'h_ratio': float(input_array[71]),
+        'phi12': float(input_array[73]),
+        'b0': float(input_array[75]),
+        'bdot': float(input_array[77]),
+        'mean_orbit_rad': float(input_array[79]),
+        'bending_rad': float(input_array[81]),
+        'trans_gamma': float(input_array[83]),
+        'rest_energy': float(input_array[85]),
+        'charge': float(input_array[87]),
+        'self_field_flag': bool(int(input_array[91])),
+        'g_coupling': float(input_array[93]),
+        'zwall_over_n': float(input_array[95]),
+        'pickup_sensitivity': float(input_array[97]),
+        'nprofiles': None,
+        'nbins': None,
+        'min_dt': None,
+        'max_dt': None
+    }
+    
+    return machineKwargs, frameKwargs
+
+
 def txt_input_to_machine(input_array: t.List) -> t.Tuple[Machine, Frames]:
     """Function converts the content of an input file and uses this to
     generate an machine object. The input file is given as a list
