@@ -186,6 +186,24 @@ class Frames:
         else:
             waterfall = waterfall[:, self.skip_bins_start:]
         return waterfall
+    
+    
+    def reslice_raw_data(self, start: int = 0, stop: int = -1,
+                         stride: int = 1) -> np.ndarray:
+        
+        asrt.assert_frame_inputs(self)
+        
+        waterfall = self.raw_data.reshape(self.nframes, self.nbins_frame)
+        
+        waterfall[start:stop:stride]
+        
+        # Skips bins at start and end of time frames.
+        if self.skip_bins_end > 0:
+            waterfall = waterfall[:, self.skip_bins_start:-self.skip_bins_end]
+        else:
+            waterfall = waterfall[:, self.skip_bins_start:]
+        return waterfall
+
 
     # Check that provided raw data is valid.
     def _assert_raw_data(self, raw_data: t.Union[np.ndarray, t.Collection]) \
