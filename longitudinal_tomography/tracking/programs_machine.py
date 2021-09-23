@@ -312,7 +312,7 @@ class ProgramsMachine(MachineABC):
         turn = self.i0
 
         k = 0
-        while turn < nturns:
+        while turn < nturns + 1:
 
             while time_interp[i + 1] <= time[k]:
                 momentum_interp.append(
