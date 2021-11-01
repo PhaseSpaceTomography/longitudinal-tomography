@@ -28,25 +28,25 @@ class TestProgramsMachine(unittest.TestCase):
                                   phase_function=phase_program,
                                   **P_MACHINE_ARGS)
 
-        self.assertEqual(1193, len(machine.time_at_turn),
+        self.assertEqual(1200, len(machine.time_at_turn),
                          msg='Wrong length of array: time_at_turn')
-        self.assertEqual(1193, len(machine.omega_rev0),
+        self.assertEqual(1200, len(machine.omega_rev0),
                          msg='Wrong length of array: omega_rev0')
-        self.assertEqual(1193, len(machine.phi0),
+        self.assertEqual(1200, len(machine.phi0),
                          msg='Wrong length of array: phi0')
-        self.assertEqual(1193, len(machine.drift_coef),
+        self.assertEqual(1200, len(machine.drift_coef),
                          msg='Wrong length of array: drift_coef')
-        self.assertEqual(1192, len(machine.deltaE0),
+        self.assertEqual(1199, len(machine.deltaE0),
                          msg='Wrong length of array: deltaE0')
-        self.assertEqual(1193, len(machine.beta0),
+        self.assertEqual(1200, len(machine.beta0),
                          msg='Wrong length of array: beta0')
-        self.assertEqual(1193, len(machine.eta0),
+        self.assertEqual(1200, len(machine.eta0),
                          msg='Wrong length of array: eta0')
-        self.assertEqual(1193, len(machine.e0),
+        self.assertEqual(1200, len(machine.e0),
                          msg='Wrong length of array: e0')
-        self.assertEqual(1193, len(machine.vrf1_at_turn),
+        self.assertEqual(1200, len(machine.vrf1_at_turn),
                          msg='Wrong length of array: vrf1_at_turn')
-        self.assertEqual(1193, len(machine.vrf2_at_turn),
+        self.assertEqual(1200, len(machine.vrf2_at_turn),
                          msg='Wrong length of array: vrf2_at_turn')
 
     def test_values_at_turns_correct_time_at_turn(self):
