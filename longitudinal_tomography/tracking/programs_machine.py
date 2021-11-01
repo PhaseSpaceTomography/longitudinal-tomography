@@ -306,13 +306,13 @@ class ProgramsMachine(MachineABC):
         time_interp.append(time_interp[-1]
                            + self.circumference / (beta_interp[0] * c.c))
 
-        nturns = self.dturns * self.nprofiles - 1
+        nturns = self.dturns * self.nprofiles
         self.i0 = self.machine_ref_frame * self.dturns
         i = 0
         turn = self.i0
 
         k = 0
-        while turn < nturns + 1:
+        while turn < nturns:
 
             while time_interp[i + 1] <= time[k]:
                 momentum_interp.append(
