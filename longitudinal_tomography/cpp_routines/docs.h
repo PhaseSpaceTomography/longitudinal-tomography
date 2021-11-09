@@ -9,6 +9,22 @@
 #ifndef TOMO_DOCS_H
 #define TOMO_DOCS_H
 
+
+const char* set_num_threads_docs = R"pbdoc(
+    Set max number of threads for OpenMP parallel for.
+
+    Parameters
+    ----------
+    num_threads: int
+        Maximum number of threads.
+
+    Throws
+    ------
+    RuntimeError
+        If something goes wrong
+)pbdoc";
+
+
 const char* kick_docs = R"pbdoc(
     Wrapper for C++ kick function.
 
