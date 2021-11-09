@@ -74,3 +74,16 @@ For development environments where it's preferable to compile the C++ extension 
 
 which will compile the C++ extension using the available compiler (decided by setuptools).
 
+
+Parallelization using OpenMP
+============================
+
+The C++ extension is accelerated by OpenMP parallel for loops. It is possible to limit the number of launched threads
+by setting it in the extension, by
+::
+
+    from longitudinal_tomography.cpp_routines import libtomo
+    libtomo.set_num_threads([num_threads])
+
+which will set the maximum number of used threads to [num_threads].
+
