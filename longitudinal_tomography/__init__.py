@@ -1,8 +1,8 @@
 major_version = 3
 minor_version = 4
-patch_level = 3
+patch_level = 1
 
-dev_version = 1
+dev_version = 4
 
 __version__ = '{}.{}'.format(
     major_version,
