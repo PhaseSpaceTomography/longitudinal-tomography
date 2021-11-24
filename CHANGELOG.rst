@@ -5,6 +5,23 @@ Changelog
 master
 ======
 
+v3.4.1
+------
+
+:Date: 2021-11-24
+
+-----
+Fixes
+-----
+
+* Increase number of interpolated turns for :code:`ProgramsMachine`.
+
+------------
+New Features
+------------
+
+* add :code:`set_num_threads` to :code:`libtomo` extension to limit max number of threads allowed to be used by OpenMP parallelizations.
+
 v3.4.0
 ------
 

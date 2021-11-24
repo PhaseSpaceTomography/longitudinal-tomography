@@ -10,6 +10,7 @@
 #include <pybind11/numpy.h>
 #include <iostream>
 #include <algorithm>
+#include <omp.h>
 
 #include "docs.h"
 #include "libtomo.h"
@@ -26,6 +27,15 @@ using namespace pybind11::literals;
 
 typedef py::array_t<double, py::array::c_style | py::array::forcecast> d_array;
 typedef py::array_t<int, py::array::c_style | py::array::forcecast> i_array;
+
+
+void wrapper_set_num_threads(const int num_threads) {
+    try {
+        omp_set_num_threads(num_threads);
+    } catch (...) {
+        throw std::runtime_error("Could not set OMP number of threads.");
+    }
+}
 
 
 void wrapper_kick_up(const d_array &input_dphi,
@@ -412,9 +422,10 @@ py::array_t<double> wrapper_make_phase_space(
 // wrap as Python module
 PYBIND11_MODULE(libtomo, m
 ) {
-m.
+m.doc() = "pybind11 tomo plugin";
 
-doc() = "pybind11 tomo plugin";
+m.def("set_num_threads", &wrapper_set_num_threads, set_num_threads_docs,
+      "num_threads"_a);
 
 m.def("kick", &wrapper_kick, kick_docs,
 "machine"_a, "denergy"_a, "dphi"_a,
@@ -440,10 +451,7 @@ m.def("drift_down", &wrapper_drift_down, "Tomography drift down",
 
 m.def("kick_and_drift", &wrapper_kick_and_drift_machine, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "machine"_a,
-"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a =
-
-py::none()
-
+"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift",
@@ -455,10 +463,7 @@ py::overload_cast<const d_array &, const d_array &, const d_array &, const d_arr
 >(&wrapper_kick_and_drift_scalar), kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a =
-
-py::none()
-
+"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift",
@@ -470,10 +475,7 @@ py::overload_cast<const d_array &, const d_array &, const d_array &, const d_arr
 >(wrapper_kick_and_drift_array), kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a =
-
-py::none()
-
+"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
 m.def("project", &wrapper_project, project_docs,
@@ -486,10 +488,7 @@ m.def("back_project", &wrapper_back_project, back_project_docs,
 
 m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
 "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
-"n_profiles"_a, "verbose"_a = false, "callback"_a =
-
-py::none()
-
+"n_profiles"_a, "verbose"_a = false, "callback"_a = py::none()
 );
 
 m.def("make_phase_space", &wrapper_make_phase_space, make_phase_space_docs,
