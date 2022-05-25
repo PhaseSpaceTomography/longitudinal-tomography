@@ -70,9 +70,16 @@ The C++ extension will be built on install.
 For development environments where it's preferable to compile the C++ extension inplace, it's possible to run the command
 ::
 
-    python setup.py build_ext --inplace
+    pip install -e .
 
 which will compile the C++ extension using the available compiler (decided by setuptools).
+
+"""""""""""""
+Documentation
+"""""""""""""
+
+This development is based on the well tested and widely used FORTRAN95 code, documented and available here: http://tomograp.web.cern.ch/tomograp/
+Details on the algorithms in both codes, and the differences between them, can be found here: https://cdsweb.cern.ch/record/2750116?ln=ka
 
 
 Parallelization using OpenMP
@@ -85,5 +92,4 @@ by setting it in the extension, by
     from longitudinal_tomography.cpp_routines import libtomo
     libtomo.set_num_threads([num_threads])
 
-which will set the maximum number of used threads to [num_threads].
-
+which will set the maximum number of used threads to :code:`[num_threads]`.
