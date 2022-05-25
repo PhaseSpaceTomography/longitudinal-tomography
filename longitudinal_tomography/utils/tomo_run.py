@@ -122,7 +122,7 @@ def run(input: str, reconstruct_profile: bool = None,
 
     # Tomography!
     tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
-    weight = tomo.run(verbose=tomoscope)
+    weight = tomo.run(niter=machine.niter, verbose=tomoscope)
 
     if tomoscope:
         for film in range(machine.filmstart, machine.filmstop + 1,
