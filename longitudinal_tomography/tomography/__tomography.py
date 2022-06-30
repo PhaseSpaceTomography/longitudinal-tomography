@@ -169,9 +169,9 @@ class TomographyABC(ABC):
                       f'Given particles seems so have been tracked trough ' \
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
-            if np.any(value < 0) or np.any(value >= self.nbins):
-                msg = 'X coordinate of particles outside of image width'
-                raise expt.XPOutOfImageWidthError(msg)
+            # if np.any(value < 0) or np.any(value >= self.nbins):
+            #     msg = 'X coordinate of particles outside of image width'
+            #     raise expt.XPOutOfImageWidthError(msg)
             self._xp = np.ascontiguousarray(value).astype(np.int32)
             self._nparts = self._xp.shape[0]
             log.info(f'X coordinates of shape {self.xp.shape} loaded.')
@@ -241,6 +241,16 @@ class TomographyABC(ABC):
         ppb = np.zeros((self.nbins, self.nprofs))
         ppb = self._count_particles_in_bins(
             ppb, self.nprofs, self.xp, self.nparts)
+
+        # Setting bins with zero particles one to avoid division by zero.
+        ppb[ppb == 0] = 1
+        return np.max(ppb) / ppb
+
+    def _reciprocal_particles_multi(self, centers) -> np.ndarray:
+        ppb = np.zeros((self.nbins, self.nprofs))
+        for c in centers:
+            ppb = self._count_particles_in_bins(
+                ppb, self.nprofs, self.xp+int(np.floor(c)), self.nparts)
 
         # Setting bins with zero particles one to avoid division by zero.
         ppb[ppb == 0] = 1
