@@ -92,8 +92,8 @@ class Particles(object):
                                  coordinates: Tuple[np.ndarray, np.ndarray]):
         """
         See the definition of the property
-        :py:func`longitudinal_tomography.tracking.particles.coordinates_dphi_denergy` for full
-        documentation.
+        :py:func`longitudinal_tomography.tracking.particles.
+                 coordinates_dphi_denergy` for full documentation.
 
         Parameters
         ----------
@@ -115,7 +115,8 @@ class Particles(object):
 
         The distributions created are identical to the distributions created
         in the Fortran tomography. The reconstruction area is found by calling
-        :func:`~longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo.find_binned_phase_energy_limits`.
+        :func:`~longitudinal_tomography.tracking.phase_space_info.
+                PhaseSpaceInfo.find_binned_phase_energy_limits`.
 
         Parameters
         ----------

@@ -193,8 +193,7 @@ class Tracking(ParticleTracker):
 
     def kick_and_drift(self, denergy: np.ndarray, dphi: np.ndarray,
                        rf1v: np.ndarray, rf2v: np.ndarray, rec_prof: int,
-                       deltaturn: int = 0) -> \
-            Tuple[np.ndarray, np.ndarray]:
+                       deltaturn: int = 0) -> Tuple[np.ndarray, np.ndarray]:
         """Routine for tracking a distribution of particles for N turns.
         N is given by *tracking.nturns*
 
@@ -297,8 +296,8 @@ class Tracking(ParticleTracker):
 
     def kick_and_drift_self(self, denergy: np.ndarray, dphi: np.ndarray,
                             rf1v: np.ndarray, rf2v: np.ndarray,
-                            rec_prof: int, deltaturn: int = 0)\
-                -> Tuple[np.ndarray, np.ndarray]:
+                            rec_prof: int, deltaturn: int = 0) \
+            -> Tuple[np.ndarray, np.ndarray]:
         """Routine for tracking a given distribution of particles,\
         including self-fields. Implemented as hybrid between Python and C++.
 
