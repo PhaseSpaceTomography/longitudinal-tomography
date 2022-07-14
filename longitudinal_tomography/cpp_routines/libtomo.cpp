@@ -169,6 +169,7 @@ py::tuple wrapper_kick_and_drift_machine(
         const d_array &input_rf2v,
         const py::object &machine,
         const int rec_prof,
+        const int deltaturn,
         const int nturns,
         const int nparts,
         const bool ftn_out,
@@ -183,7 +184,7 @@ py::tuple wrapper_kick_and_drift_machine(
 
     wrapper_kick_and_drift_scalar(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v,
                                   input_phi0, input_deltaE0, input_drift_coef, phi12, hratio, dturns,
-                                  rec_prof, nturns, nparts, ftn_out, callback);
+                                  rec_prof, deltaturn, nturns, nparts, ftn_out, callback);
 
     return py::make_tuple(input_xp, input_yp);
 }
@@ -453,31 +454,31 @@ m.def("drift_down", &wrapper_drift_down, "Tomography drift down",
 
 m.def("kick_and_drift", &wrapper_kick_and_drift_machine, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "machine"_a,
-"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift",
 py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
         const d_array &, const d_array &, const d_array &, const d_array &,
         const d_array &, const double, const double, const int,
-        const int, const int, const int, const bool,
+        const int, const int, const int, const int, const bool,
         const std::optional<const py::object>
 >(&wrapper_kick_and_drift_scalar), kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift",
 py::overload_cast<const d_array &, const d_array &, const d_array &, const d_array &,
         const d_array &, const d_array &, const d_array &, const d_array &,
         const d_array &, const d_array &, const double, const int,
-        const int, const int, const int, const bool,
+        const int, const int, const int, const int, const bool,
         const std::optional<const py::object>
 >(wrapper_kick_and_drift_array), kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
 m.def("project", &wrapper_project, project_docs,
