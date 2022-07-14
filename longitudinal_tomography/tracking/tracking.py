@@ -65,7 +65,9 @@ class Tracking(ParticleTracker):
 
         By default, an distribution of particles is spread out homogeneously
         over the area to be reconstructed. This area is found using the
-        :class:`longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo` class.
+        :class:
+            `longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo`
+            class.
         The homogeneous distribution is placed on the time frame intended
         to be reconstructed for optimum quality. This is based on the
         original tomography algorithm.
@@ -74,13 +76,17 @@ class Tracking(ParticleTracker):
         default, automatic generation of particles.
 
         By calling
-        :func:`longitudinal_tomography.tracking.__tracking.ParticleTracker.enable_self_fields`,
+        :func:
+            `longitudinal_tomography.tracking.__tracking.ParticleTracker.
+            enable_self_fields`,
         a flag indicating that self-fields should be included is set.
         In this case, :func:`kick_and_drift_self` will be used.
         Note that tracking including self fields are much slower than without.
 
         By calling
-        :func:`longitudinal_tomography.tracking.__tracking.ParticleTracker.enable_fortran_output`,
+        :func:
+            `longitudinal_tomography.tracking.__tracking.ParticleTracker.
+            enable_fortran_output`,
         an output resembling the original is written to stdout.
         Note that the values for the number of lost particles is **not valid**.
         Note also, that if the full Fortran output is to be printed,
@@ -231,7 +237,7 @@ class Tracking(ParticleTracker):
         # Setting homogeneous coordinates to profile to be reconstructed.
         init_dphi = np.copy(dphi)
         init_denergy = np.copy(denergy)
-        
+
         if deltaturn == 0:
             out_dphi[rec_prof] = np.copy(dphi)
             out_denergy[rec_prof] = np.copy(denergy)
