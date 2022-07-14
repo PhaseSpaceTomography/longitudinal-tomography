@@ -203,6 +203,7 @@ py::tuple wrapper_kick_and_drift_scalar(
         const double hratio,
         const int dturns,
         const int rec_prof,
+        const int deltaturn,
         const int nturns,
         const int nparts,
         const bool ftn_out,
@@ -216,7 +217,7 @@ py::tuple wrapper_kick_and_drift_scalar(
 
     wrapper_kick_and_drift_array(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v, input_phi0,
                                  input_deltaE0,
-                                 input_drift_coef, arr_phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out,
+                                 input_drift_coef, arr_phi12, hratio, dturns, rec_prof, deltaturn, nturns, nparts, ftn_out,
                                  callback);
 
     return py::make_tuple(input_xp, input_yp);
@@ -236,6 +237,7 @@ py::tuple wrapper_kick_and_drift_array(
         const double hratio,
         const int dturns,
         const int rec_prof,
+        const int deltaturn,
         const int nturns,
         const int nparts,
         const bool ftn_out,
@@ -289,7 +291,7 @@ py::tuple wrapper_kick_and_drift_array(
 
     try {
         kick_and_drift(xp_d, yp_d, denergy, dphi, rf1v, rf2v, phi0, deltaE0, drift_coef,
-                       phi12, hratio, dturns, rec_prof, nturns, nparts, ftn_out, cb);
+                       phi12, hratio, dturns, rec_prof, deltaturn, nturns, nparts, ftn_out, cb);
     } catch (const std::exception &e) {
         cleanup();
         throw;
