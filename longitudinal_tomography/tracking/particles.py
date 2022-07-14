@@ -109,7 +109,8 @@ class Particles(object):
         """
         self._dphi, self._denergy = _assert_coordinates(coordinates)
 
-    def homogeneous_distribution(self, machine: 'Machine', recprof: int):
+    def homogeneous_distribution(self, machine: 'Machine', recprof: int,
+                                 deltaturn: int = 0):
         """Function for automatic generation of particle distribution.
 
         The distributions created are identical to the distributions created
@@ -125,6 +126,9 @@ class Particles(object):
         recprof: int
             The index of the profile (time frame) to be reconstructed.
             This will be the profile where the distribution is generated.
+        deltaturn: int
+            On offset in turn numbers to allow creation of distributions
+            between two recorded profiles
 
         Raises
         ------
@@ -175,7 +179,8 @@ class Particles(object):
         self.jmax = psinfo.jmax
 
         # Converting from phase space coordinates to physical units.
-        coords = self._bin_nr_to_physical_coords(coords, machine, recprof)
+        coords = self._bin_nr_to_physical_coords(coords, machine, recprof,
+                                                 deltaturn)
         self.coordinates_dphi_denergy = coords
 
     def _bin_nr_to_physical_coords(self,
@@ -183,7 +188,8 @@ class Particles(object):
                                        Sequence[np.ndarray],
                                        np.ndarray
                                    ],
-                                   machine: 'Machine', recprof: int) \
+                                   machine: 'Machine', recprof: int,
+                                   deltaturn: int = 0) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Function to convert from reconstructed phase space coordinates
         to physical units.
@@ -200,8 +206,11 @@ class Particles(object):
             Machine object holding machine parameters and settings
         recprof: int
             Profile to reconstruct.
+        deltaturn: int
+            On offset in turn numbers to allow creation of distributions
+            between two recorded profiles
         """
-        turn = recprof * machine.dturns
+        turn = recprof * machine.dturns + deltaturn
         dphi = ((coordinates[0] + self.xorigin)
                 * machine.h_num * machine.omega_rev0[turn] * machine.dtbin
                 - machine.phi0[turn])
