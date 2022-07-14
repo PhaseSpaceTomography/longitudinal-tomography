@@ -153,6 +153,9 @@ class Tracking(ParticleTracker):
         dphi = coords[0]
         denergy = coords[1]
 
+        self.init_dphi = dphi.copy()
+        self.init_denergy = denergy.copy()
+
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
 
