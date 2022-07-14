@@ -176,7 +176,7 @@ class Tracking(ParticleTracker):
                                    machine.phi0, machine.deltaE0,
                                    machine.drift_coef, machine.phi12,
                                    machine.h_ratio, machine.dturns,
-                                   recprof, nturns, nparts,
+                                   recprof, deltaturn, nturns, nparts,
                                    self.fortran_flag, callback=callback)
 
         log.info('Tracking completed!')
