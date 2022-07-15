@@ -159,8 +159,6 @@ extern "C" void kick_and_drift(
     profile = rec_prof;
     turn = rec_prof * dturns;
 
-    if (deltaturn > 0) profile++;
-
     if (profile > 0) {
 
         // Going back to initial coordinates
