@@ -1,9 +1,10 @@
 """Module containing the TomographyCpp class
 
-:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**, **Simon Albright**
 """
 
 import logging
+import time as tm
 import typing as t
 import sys
 
@@ -197,14 +198,21 @@ class Tomography(TomographyABC):
         masks = np.array(masks)
 
         print(1)
+        t0 = tm.process_time()
 
         self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles_multi(centers)
+        print(f"recip: {tm.process_time() - t0}")
+        t0 = tm.process_time()
         flat_points = self._create_flat_points()
+        print(f"flat_points: {tm.process_time() - t0}")
 
+        print(reciprocal_pts.shape)
         plt.plot(reciprocal_pts[:,-1])
-        plt.gca().twinx().plot(self.waterfall[-1])
+        # plt.gca().twinx().plot(self.waterfall[-1])
+        # plt.xlim([0, 20])
         plt.show()
+
 
         print(2)
 
@@ -213,7 +221,7 @@ class Tomography(TomographyABC):
         weight = np.zeros([nBunches, self.nparts])
 
         print(3)
-
+        t0 = tm.process_time()
         for i in range(nBunches):
             print(f"weight {i}")
             weight[i][masks[i]] = libtomo.back_project(weight[i][masks[i]],
@@ -223,7 +231,7 @@ class Tomography(TomographyABC):
                                                        np.sum(masks[i]),
                                                        self.nprofs)
         weight = weight.clip(0.0)
-
+        print(f"weights 1: {tm.process_time() - t0}")
         if verbose:
             print(' Iterating...')
 
@@ -248,11 +256,6 @@ class Tomography(TomographyABC):
 
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts.T
-            f, (ax1, ax2, ax3) = plt.subplots(3, 1)
-            ax1.contourf(self.waterfall)
-            ax2.contourf(self.full_recreated)
-            ax3.contourf(diff_waterfall)
-            plt.show()
 
             for j in range(nBunches):
 

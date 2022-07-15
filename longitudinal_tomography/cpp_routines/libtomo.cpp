@@ -348,6 +348,24 @@ d_array wrapper_project(
     return input_flat_rec;
 }
 
+d_array wrapper_count_particles_in_bin(
+        const d_array &input_parts,
+        const i_array &input_xp,
+        const int n_profiles,
+        const int n_particles,
+        const int n_bins
+) {
+    py::buffer_info buffer_parts = input_parts.request();
+    py::buffer_info buffer_xp = input_xp.request();
+
+    auto *parts = static_cast<double *>(buffer_parts.ptr);
+    auto *xp = static_cast<int *>(buffer_xp.ptr);
+
+    count_particles_in_bin(parts, xp, n_profiles, n_particles, n_bins);
+
+    return input_parts;
+}
+
 
 py::tuple wrapper_reconstruct(
         const i_array &input_xp,
@@ -488,6 +506,9 @@ m.def("project", &wrapper_project, project_docs,
 m.def("back_project", &wrapper_back_project, back_project_docs,
 "weights"_a, "flat_points"_a, "flat_profiles"_a,
 "n_particles"_a, "n_profiles"_a);
+
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin, count_particles_in_bin_docs,
+    "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
 
 m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
 "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,

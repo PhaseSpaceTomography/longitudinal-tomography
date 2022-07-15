@@ -228,6 +228,12 @@ const char * back_project_docs = R"pbdoc(
         1D array containing the **new weight** of each particle.
 )pbdoc";
 
+
+const char * count_particles_in_bin_docs = R"pbdoc(
+    Wrapper for counting the number of particles per bin.
+)pbdoc";
+
+
 const char * reconstruct_docs = R"pbdoc(
     Wrapper for full reconstruction in C++.
     Used in the :mod:`~tomo.tomography.tomography` module.
