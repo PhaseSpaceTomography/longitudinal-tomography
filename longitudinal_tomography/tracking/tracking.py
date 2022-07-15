@@ -134,9 +134,23 @@ class Tracking(ParticleTracker):
             recprof, self.machine.nprofiles, wrap_around=True)
         machine = self.machine
 
-        asrt.assert_array_less(np.abs(deltaturn), machine.dturns,
-                               ValueError, 'deltaturn must be less than the'
+        asrt.assert_less(np.abs(deltaturn), '|deltaturn|', machine.dturns,
+                               ValueError, '|deltaturn| must be less than the'
                                + ' number of turns between profiles')
+
+        asrt.assert_less(machine.dturns*recprof + deltaturn,
+                         'reconstruction turn',
+                         machine.dturns*(machine.nprofiles-1), ValueError,
+                         'Reconstruction turn '
+                         + '(machine.dturns*recprof + deltaturn) must be less'
+                         + ' than the total number of measured turns.')
+
+        asrt.assert_greater_or_equal(machine.dturns*recprof + deltaturn,
+                         'reconstruction turn',
+                         0, ValueError,
+                         'Reconstruction turn '
+                         + '(machine.dturn*recprof + deltaturn) must be'
+                         + ' greater than 0.')
 
         if init_distr is None:
             # Homogeneous distribution is created based on the
