@@ -6,6 +6,7 @@ from typing import Tuple, TYPE_CHECKING, Callable
 
 import numpy as np
 import logging
+import warnings
 
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
@@ -54,7 +55,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None) \
+              callback: Callable = None, deltaturn: int = 0) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -65,7 +66,9 @@ class Tracking(ParticleTracker):
 
         By default, an distribution of particles is spread out homogeneously
         over the area to be reconstructed. This area is found using the
-        :class:`longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo` class.
+        :class:
+            `longitudinal_tomography.tracking.phase_space_info.PhaseSpaceInfo`
+            class.
         The homogeneous distribution is placed on the time frame intended
         to be reconstructed for optimum quality. This is based on the
         original tomography algorithm.
@@ -74,13 +77,17 @@ class Tracking(ParticleTracker):
         default, automatic generation of particles.
 
         By calling
-        :func:`longitudinal_tomography.tracking.__tracking.ParticleTracker.enable_self_fields`,
+        :func:
+            `longitudinal_tomography.tracking.__tracking.ParticleTracker.
+            enable_self_fields`,
         a flag indicating that self-fields should be included is set.
         In this case, :func:`kick_and_drift_self` will be used.
         Note that tracking including self fields are much slower than without.
 
         By calling
-        :func:`longitudinal_tomography.tracking.__tracking.ParticleTracker.enable_fortran_output`,
+        :func:
+            `longitudinal_tomography.tracking.__tracking.ParticleTracker.
+            enable_fortran_output`,
         an output resembling the original is written to stdout.
         Note that the values for the number of lost particles is **not valid**.
         Note also, that if the full Fortran output is to be printed,
@@ -124,15 +131,38 @@ class Tracking(ParticleTracker):
               given as energy [eV] relative to the synchronous particle.
         """
 
+        if deltaturn != 0:
+            warnings.warn("deltaturn is still an experimental "
+                          + "feature, results may not be reliable and it may"
+                          + " not be maintained.")
+
         recprof = asrt.assert_index_ok(
             recprof, self.machine.nprofiles, wrap_around=True)
         machine = self.machine
+
+        asrt.assert_less(np.abs(deltaturn), '|deltaturn|', machine.dturns,
+                         ValueError, '|deltaturn| must be less than the'
+                         + ' number of turns between profiles')
+
+        asrt.assert_less(machine.dturns*recprof + deltaturn,
+                         'reconstruction turn',
+                         machine.dturns*(machine.nprofiles-1), ValueError,
+                         'Reconstruction turn '
+                         + '(machine.dturns*recprof + deltaturn) must be less'
+                         + ' than the total number of measured turns.')
+
+        asrt.assert_greater_or_equal(machine.dturns*recprof + deltaturn,
+                                     'reconstruction turn', 0, ValueError,
+                                     'Reconstruction turn '
+                                     + '(machine.dturn*recprof + deltaturn) '
+                                     + 'must be greater than 0.')
 
         if init_distr is None:
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
             log.info('Creating homogeneous distribution of particles.')
-            self.particles.homogeneous_distribution(machine, recprof)
+            self.particles.homogeneous_distribution(machine, recprof,
+                                                    deltaturn)
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
@@ -147,6 +177,9 @@ class Tracking(ParticleTracker):
 
         dphi = coords[0]
         denergy = coords[1]
+
+        self.init_dphi = dphi.copy()
+        self.init_denergy = denergy.copy()
 
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
@@ -171,15 +204,15 @@ class Tracking(ParticleTracker):
                                    machine.phi0, machine.deltaE0,
                                    machine.drift_coef, machine.phi12,
                                    machine.h_ratio, machine.dturns,
-                                   recprof, nturns, nparts,
+                                   recprof, deltaturn, nturns, nparts,
                                    self.fortran_flag, callback=callback)
 
         log.info('Tracking completed!')
         return xp, yp
 
     def kick_and_drift(self, denergy: np.ndarray, dphi: np.ndarray,
-                       rf1v: np.ndarray, rf2v: np.ndarray, rec_prof: int) -> \
-            Tuple[np.ndarray, np.ndarray]:
+                       rf1v: np.ndarray, rf2v: np.ndarray, rec_prof: int,
+                       deltaturn: int = 0) -> Tuple[np.ndarray, np.ndarray]:
         """Routine for tracking a distribution of particles for N turns.
         N is given by *tracking.nturns*
 
@@ -200,6 +233,9 @@ class Tracking(ParticleTracker):
             multiplied by particle charge
         rec_prof: int
             Time slice to initiate tracking.
+        deltaturn: int
+            On offset in turn numbers in case the initial distribution is
+            between profiles.
 
         Returns
         -------
@@ -217,12 +253,20 @@ class Tracking(ParticleTracker):
         out_denergy = np.copy(out_dphi)
 
         # Setting homogeneous coordinates to profile to be reconstructed.
-        out_dphi[rec_prof] = np.copy(dphi)
-        out_denergy[rec_prof] = np.copy(denergy)
+        init_dphi = np.copy(dphi)
+        init_denergy = np.copy(denergy)
 
-        rec_turn = rec_prof * self.machine.dturns
+        if deltaturn == 0:
+            out_dphi[rec_prof] = np.copy(dphi)
+            out_denergy[rec_prof] = np.copy(denergy)
+
+        rec_turn = rec_prof * self.machine.dturns + deltaturn
         turn = rec_turn
+
         profile = rec_prof
+
+        if deltaturn < 0:
+            profile -= 1
 
         # Tracking 'upwards'
         while turn < self.nturns:
@@ -242,8 +286,8 @@ class Tracking(ParticleTracker):
                     fortran.print_tracking_status(rec_prof, profile)
 
         # Starting again from homogenous distribution
-        dphi = np.copy(out_dphi[rec_prof])
-        denergy = np.copy(out_denergy[rec_prof])
+        dphi = np.copy(init_dphi)
+        denergy = np.copy(init_denergy)
         turn = rec_turn
         profile = rec_prof
 
@@ -268,7 +312,8 @@ class Tracking(ParticleTracker):
 
     def kick_and_drift_self(self, denergy: np.ndarray, dphi: np.ndarray,
                             rf1v: np.ndarray, rf2v: np.ndarray,
-                            rec_prof: int) -> Tuple[np.ndarray, np.ndarray]:
+                            rec_prof: int, deltaturn: int = 0) \
+            -> Tuple[np.ndarray, np.ndarray]:
         """Routine for tracking a given distribution of particles,\
         including self-fields. Implemented as hybrid between Python and C++.
 
@@ -299,6 +344,9 @@ class Tracking(ParticleTracker):
             multiplied by particle charge
         rec_prof: int
             Time slice to initiate tracking.
+        deltaturn: int
+            On offset in turn numbers in case the initial distribution is
+            between profiles.
 
         Returns
         -------
@@ -317,9 +365,12 @@ class Tracking(ParticleTracker):
         xp = np.zeros((self.machine.nprofiles, nparts))
         yp = np.copy(xp)
 
-        rec_turn = rec_prof * self.machine.dturns
+        rec_turn = rec_prof * self.machine.dturns + deltaturn
         turn = rec_turn
         profile = rec_prof
+
+        if deltaturn < 0:
+            profile -= 1
 
         # To be saved for downwards tracking
         dphi0 = np.copy(dphi)
@@ -366,6 +417,7 @@ class Tracking(ParticleTracker):
         denergy = denergy0
         turn = rec_turn
         profile = rec_prof - 1
+
         temp_xp = xp[rec_prof]
 
         while turn > 0:

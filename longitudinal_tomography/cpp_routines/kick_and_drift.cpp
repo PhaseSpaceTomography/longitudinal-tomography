@@ -113,12 +113,15 @@ extern "C" void kick_and_drift(
         const double hratio,
         const int dturns,
         const int rec_prof,
+        const int deltaturn,
         const int nturns,
         const int nparts,
         const bool ftn_out,
         const std::function<void(int, int)> callback) {
     int profile = rec_prof;
-    int turn = rec_prof * dturns;
+    int turn = rec_prof * dturns + deltaturn;
+
+    if (deltaturn < 0) profile--;
 
 #pragma omp parallel for
     for (int i = 0; i < nparts; i++) {
