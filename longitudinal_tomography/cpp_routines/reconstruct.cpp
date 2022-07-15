@@ -141,6 +141,26 @@ void count_particles_in_bin(double *rparts,      // out
         }
 }
 
+void count_particles_in_bin_multi(double *rparts,
+                                  const int *xpRound0,
+                                  const int *centers,
+                                  const int nprof,
+                                  const int npart,
+                                  const int nbins,
+                                  const int ncenters) {
+
+    int bin;
+    for (int c = 0; c < ncenters; c++) {
+        for (int i = 0; i < nprof; i++) {
+            for (int j = 0; j < npart; j++) {
+                bin = xpRound0[j * nprof + i] + centers[c];
+                rparts[bin + i * nbins] += 1;
+            }
+        }
+
+    }
+}
+
 void reciprocal_particles(double *rparts,   // out
                           const int *xp,     // inn
                           const int nbins,

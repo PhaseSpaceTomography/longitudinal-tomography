@@ -250,10 +250,13 @@ class TomographyABC(ABC):
     def _reciprocal_particles_multi(self, centers) -> np.ndarray:
         ppb = np.zeros((self.nbins, self.nprofs))
         # ppb = np.zeros((self.nprofs, self.nbins))
-        for c in centers:
-            ppb = self._count_particles_in_bins(
-                ppb, self.nprofs, self.xp+int(np.floor(c)), self.nparts)
-
+        # for c in centers:
+        #     ppb = self._count_particles_in_bins(
+        #         ppb, self.nprofs, self.xp+int(np.floor(c)), self.nparts)
+        ppb = libtomo.count_particles_in_bins_multi(ppb, self.xp, centers,
+                                                    self.nprofs, self.nparts,
+                                                    self.nbins, len(centers))
+        print(ppb)
         # Setting bins with zero particles one to avoid division by zero.
         ppb[ppb == 0] = 1
         return np.max(ppb) / ppb
@@ -264,12 +267,12 @@ class TomographyABC(ABC):
                                  profile_count: int,
                                  xp: np.ndarray, nparts: int) -> np.ndarray:
 
-        ppb = libtomo.count_particles_in_bins(ppb.T, xp, profile_count, nparts,
-                                              ppb.shape[0])
+        # ppb = libtomo.count_particles_in_bins(ppb, xp, profile_count, nparts,
+        #                                       ppb.shape[0])
         # ppb = libtomo.count_particles_in_bins(ppb, xp, nparts, nbins, profile_count)
-        # for i in range(profile_count):
-        #     for j in range(nparts):
-        #         ppb[xp[j, i], i] += 1
+        for i in range(profile_count):
+            for j in range(nparts):
+                ppb[xp[j, i], i] += 1
         return ppb
 
     @abstractmethod
