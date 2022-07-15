@@ -286,9 +286,6 @@ class Tracking(ParticleTracker):
         turn = rec_turn
         profile = rec_prof
 
-        if deltaturn > 0:
-            profile += 1
-
         # Tracking 'downwards'
         while turn > 0:
             # Calculating change in energy for each particle at a turn
@@ -415,9 +412,6 @@ class Tracking(ParticleTracker):
         denergy = denergy0
         turn = rec_turn
         profile = rec_prof - 1
-
-        if deltaturn > 0:
-            profile += 1
 
         temp_xp = xp[rec_prof]
 
