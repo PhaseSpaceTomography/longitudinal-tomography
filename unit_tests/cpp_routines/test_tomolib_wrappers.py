@@ -118,7 +118,7 @@ class TestTLW(unittest.TestCase):
         yp = np.zeros((machine.nprofiles, nparts))
 
         xp, yp = libtomo.kick_and_drift(
-            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof,
+            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof, 0,
             nturns, nparts)
 
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
@@ -165,7 +165,7 @@ class TestTLW(unittest.TestCase):
 
         xp, yp = libtomo.kick_and_drift(
             xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef,
-            phi12, h_ratio, dturns, recprof, nturns, nparts, False)
+            phi12, h_ratio, dturns, recprof, 0, nturns, nparts, False)
 
         correct_xp = np.array([[0.22739336], [0.24930078], [0.27073013],
                                [0.291644], [0.31200651], [0.33178332],
@@ -409,7 +409,7 @@ class TestTLW(unittest.TestCase):
             results.append(progress)
 
         libtomo.kick_and_drift(
-            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof,
+            xp, yp, denergy, dphi, rfv1, rfv2, machine, recprof, 0,
             nturns, nparts, callback=callback)
 
         correct = np.arange(1, nturns+1).tolist()

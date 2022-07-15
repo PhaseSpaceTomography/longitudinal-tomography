@@ -144,15 +144,57 @@ def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
         raise expt.InputError("""phase_space function requires automatic
                               phase space generation to have been used""")
 
-    density = libtomo.make_phase_space(tomo.xp[:, reconstr_idx],
-                                       tomo.yp[:, reconstr_idx],
-                                       tomo.weight, machine.nbins)
+    return phase_space_from_coordinates(tomo.xp[:, reconstr_idx],
+                                        tomo.yp[:, reconstr_idx],
+                                        tomo.weight, machine.nbins,
+                                        machine.synch_part_x,
+                                        machine.synch_part_y, machine.dtbin,
+                                        machine.dEbin)
 
-    t_cent = machine.synch_part_x
-    E_cent = machine.synch_part_y
 
-    t_range = (np.arange(machine.nbins) - t_cent) * machine.dtbin
-    E_range = (np.arange(machine.nbins) - E_cent) * machine.dEbin
+def phase_space_from_coordinates(xp: np.ndarray, yp: np.ndarray,
+                                 weight: np.ndarray, nbins: int,
+                                 synch_x: float, synch_y: float,
+                                 dtbin: float, dEbin: float) \
+        -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Returns time, energy and phase space density arrays from a
+    reconstruction.
+
+    Parameters
+    ----------
+    xp : np.ndarray
+        An array of x-coordinates in bin numbers for the reconstructed phase
+        space.
+    yp : np.ndarray
+        An array of y-coordinates in bin numbers for the reconstructed phase
+        space.
+    weight : np.ndarray
+        The array of particle weights for the reconstructed phase space.
+    nbins : int
+        Number of bins in each dimension.
+    synch_x : float
+        The bin number in time of the synchronous particle.
+    synch_y : float
+        The bin number in energy of the synchronous particle.
+    dtbin : float
+        The number of s per time bin.
+    dEbin : float
+        The number of eV per energy bin.
+
+    Returns
+    -------
+    t_range : np.ndarray
+        1D array of the center times for each time bin.
+    E_range : np.ndarray
+        1D array of the center energies for each energy bin.
+    density : np.ndarray
+        2D array of bin weights in phase space.
+    """
+
+    density = libtomo.make_phase_space(xp, yp, weight, nbins)
+
+    t_range = (np.arange(nbins) - synch_x) * dtbin
+    E_range = (np.arange(nbins) - synch_y) * dEbin
 
     return t_range, E_range, density
 
