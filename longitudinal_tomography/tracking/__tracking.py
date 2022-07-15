@@ -146,7 +146,8 @@ class ParticleTracker:
         profiles: Profiles
             Self-fields must be calculated in the the Profiles object prior
             to calling this function.
-            See :func:`longitudinal_tomography.data.profiles.Profiles.calc_self_fields`.
+            See :func:`longitudinal_tomography.data.profiles.Profiles.
+                        calc_self_fields`.
 
         Raises
         ------
