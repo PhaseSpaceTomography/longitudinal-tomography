@@ -6,6 +6,7 @@ from typing import Tuple, TYPE_CHECKING, Callable
 
 import numpy as np
 import logging
+import warnings
 
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
@@ -129,6 +130,11 @@ class Tracking(ParticleTracker):
             * If self-fields are disabled, the returned y-coordinates will be
               given as energy [eV] relative to the synchronous particle.
         """
+
+        if deltaturn != 0:
+            warnings.warn("deltaturn is still an experimental "
+                          + "feature, results may not be reliable and it may"
+                          + " not be maintained.")
 
         recprof = asrt.assert_index_ok(
             recprof, self.machine.nprofiles, wrap_around=True)
