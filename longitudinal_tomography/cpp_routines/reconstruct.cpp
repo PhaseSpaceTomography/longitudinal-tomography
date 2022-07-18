@@ -151,8 +151,8 @@ void count_particles_in_bin_multi(double *rparts,
 
     int bin;
     for (int c = 0; c < ncenters; c++) {
-        for (int i = 0; i < nprof; i++) {
-            for (int j = 0; j < npart; j++) {
+        for (int j = 0; j < npart; j++) {
+            for (int i = 0; i < nprof; i++) {
                 bin = xpRound0[j * nprof + i] + centers[c];
                 rparts[bin + i * nbins] += 1;
             }

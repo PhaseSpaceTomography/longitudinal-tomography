@@ -207,8 +207,8 @@ class Tomography(TomographyABC):
         flat_points = self._create_flat_points()
         print(f"flat_points: {tm.process_time() - t0}")
 
-        print(reciprocal_pts.shape)
-        plt.plot(reciprocal_pts[:,-1])
+        # print(reciprocal_pts.shape)
+        # plt.plot(reciprocal_pts[-1])
         # plt.gca().twinx().plot(self.waterfall[-1])
         # plt.xlim([0, 20])
         plt.show()
@@ -255,7 +255,7 @@ class Tomography(TomographyABC):
             self.diff[i] = self._discrepancy(diff_waterfall)
 
             # Weighting difference waterfall relative to number of particles
-            diff_waterfall *= reciprocal_pts.T
+            diff_waterfall *= reciprocal_pts
 
             for j in range(nBunches):
 

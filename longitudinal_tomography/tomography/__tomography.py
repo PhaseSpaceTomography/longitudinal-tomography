@@ -248,15 +248,15 @@ class TomographyABC(ABC):
         return np.max(ppb) / ppb
 
     def _reciprocal_particles_multi(self, centers) -> np.ndarray:
-        ppb = np.zeros((self.nbins, self.nprofs))
-        # ppb = np.zeros((self.nprofs, self.nbins))
+
+        ppb = np.zeros((self.nprofs, self.nbins))
         # for c in centers:
         #     ppb = self._count_particles_in_bins(
         #         ppb, self.nprofs, self.xp+int(np.floor(c)), self.nparts)
-        ppb = libtomo.count_particles_in_bins_multi(ppb, self.xp, centers,
+        ppb = libtomo.count_particles_in_bins_multi(ppb, self.xp.T, centers,
                                                     self.nprofs, self.nparts,
                                                     self.nbins, len(centers))
-        print(ppb)
+
         # Setting bins with zero particles one to avoid division by zero.
         ppb[ppb == 0] = 1
         return np.max(ppb) / ppb
