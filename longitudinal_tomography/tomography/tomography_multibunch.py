@@ -201,8 +201,8 @@ class Tomography(TomographyABC):
         self.weight_combined = weight
         self.weight_split = []
         for i in range(nBunches):
-            start = j*self.nparts
-            stop = (j+1)*self.nparts
+            start = i*self.nparts
+            stop = (i+1)*self.nparts
             self.weight_split.append(weight[start:stop])
 
 
@@ -232,7 +232,8 @@ class Tomography(TomographyABC):
             super()._create_flat_points()).astype(np.int32)
 
 
-    def run(self, niter: int = 20, verbose: bool = False,
+    def run(self, centers: [int], cutleft: [int], cutright: [int],
+            niter: int = 20, verbose: bool = False,
             callback: t.Callable = None) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
@@ -272,10 +273,16 @@ class Tomography(TomographyABC):
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
 
-        (self.weight,
-         self.diff,
-         self.recreated) = libtomo.reconstruct(
-            self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose, callback)
+        # (self.weight,
+        #  self.diff,
+        #  self.recreated) = libtomo.reconstruct(
+        #     self.xp, self.waterfall, niter, self.nbins,
+        #     self.nparts, self.nprofs, verbose, callback)
+        
+        (self.weight, self.diff, self.diff_split, self.recreated) = \
+            libtomo.reconstruct_multi(self.xp, self.waterfall, cutleft,
+                                      cutright, centers, niter, self.nbins,
+                                      self.nparts, self.nprofs, len(centers))
+        
         return self.weight
 

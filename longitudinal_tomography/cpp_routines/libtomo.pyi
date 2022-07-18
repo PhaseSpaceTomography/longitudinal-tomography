@@ -66,5 +66,16 @@ def reconstruct(xp: numpy.ndarray[numpy.int32],
                 callback: Optional[object] = ...) -> tuple:
     ...
 
+def reconstruct_multi(xpRound0: numpy.ndarray[numpy.int32],
+                      waterfall: numpy.ndarray[numpy.float64],
+                      cutleft: numpy.ndarray[numpy.int32],
+                      cutright: numpy.ndarray[numpy.int32],
+                      centers: numpy.ndarray[numpy.int32],
+                      n_iter: int, n_bins: int, n_particles: int,
+                      n_profiles: int, n_centers: int,
+                      verbose: bool = ...,
+                      callback: Optional[object] = ...) -> tuple:
+    ...
+
 def set_num_threads(num_threads: int) -> None:
     ...
