@@ -170,6 +170,8 @@ class TomographyABC(ABC):
                       f'Given particles seems so have been tracked trough ' \
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
+
+# TODO: Reinstate assertion
             # if np.any(value < 0) or np.any(value >= self.nbins):
             #     msg = 'X coordinate of particles outside of image width'
             #     raise expt.XPOutOfImageWidthError(msg)
