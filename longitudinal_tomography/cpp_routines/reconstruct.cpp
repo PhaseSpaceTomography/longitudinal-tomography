@@ -132,11 +132,33 @@ void count_particles_in_bin(double *rparts,      // out
                             const int npart,
                             const int nbins) {
     int bin;
+
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++) {
+
             bin = xp[i * nprof + j];
             rparts[j * nbins + bin] += 1;
         }
+}
+
+void count_particles_in_bin_multi(double *rparts,
+                                  const int *xpRound0,
+                                  const int *centers,
+                                  const int nprof,
+                                  const int npart,
+                                  const int nbins,
+                                  const int ncenters) {
+
+    int bin;
+    for (int c = 0; c < ncenters; c++) {
+        for (int j = 0; j < npart; j++) {
+            for (int i = 0; i < nprof; i++) {
+                bin = xpRound0[j * nprof + i] + centers[c];
+                rparts[bin + i * nbins] += 1;
+            }
+        }
+
+    }
 }
 
 void reciprocal_particles(double *rparts,   // out
@@ -165,6 +187,7 @@ void reciprocal_particles(double *rparts,   // out
             rparts[idx] = (double) max_bin_val / rparts[idx];
         }
 }
+
 
 void create_flat_points(const int *xp,       //inn
                         int *flat_points,    //out

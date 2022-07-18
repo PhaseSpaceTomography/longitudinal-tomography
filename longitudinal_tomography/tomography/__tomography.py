@@ -10,6 +10,7 @@ import typing as t
 import numpy as np
 
 from .. import exceptions as expt
+from ..cpp_routines import libtomo
 
 log = logging.getLogger(__name__)
 
@@ -169,9 +170,11 @@ class TomographyABC(ABC):
                       f'Given particles seems so have been tracked trough ' \
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
-            if np.any(value < 0) or np.any(value >= self.nbins):
-                msg = 'X coordinate of particles outside of image width'
-                raise expt.XPOutOfImageWidthError(msg)
+
+# TODO: Reinstate assertion
+            # if np.any(value < 0) or np.any(value >= self.nbins):
+            #     msg = 'X coordinate of particles outside of image width'
+            #     raise expt.XPOutOfImageWidthError(msg)
             self._xp = np.ascontiguousarray(value).astype(np.int32)
             self._nparts = self._xp.shape[0]
             log.info(f'X coordinates of shape {self.xp.shape} loaded.')
@@ -246,11 +249,29 @@ class TomographyABC(ABC):
         ppb[ppb == 0] = 1
         return np.max(ppb) / ppb
 
+    def _reciprocal_particles_multi(self, centers) -> np.ndarray:
+
+        ppb = np.zeros((self.nprofs, self.nbins))
+        # for c in centers:
+        #     ppb = self._count_particles_in_bins(
+        #         ppb, self.nprofs, self.xp+int(np.floor(c)), self.nparts)
+        ppb = libtomo.count_particles_in_bins_multi(ppb, self.xp.T, centers,
+                                                    self.nprofs, self.nparts,
+                                                    self.nbins, len(centers))
+
+        # Setting bins with zero particles one to avoid division by zero.
+        ppb[ppb == 0] = 1
+        return np.max(ppb) / ppb
+
     # Needed by reciprocal particles function.
     # TODO: removed njit, reimplement in C in the future
     def _count_particles_in_bins(self, ppb: np.ndarray,
                                  profile_count: int,
                                  xp: np.ndarray, nparts: int) -> np.ndarray:
+
+        # ppb = libtomo.count_particles_in_bins(ppb, xp, profile_count, nparts,
+        #                                       ppb.shape[0])
+        # ppb = libtomo.count_particles_in_bins(ppb, xp, nparts, nbins, profile_count)
         for i in range(profile_count):
             for j in range(nparts):
                 ppb[xp[j, i], i] += 1

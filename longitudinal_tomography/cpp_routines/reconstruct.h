@@ -66,6 +66,14 @@ void count_particles_in_bin(double *rparts,
                             const int npart,
                             const int nbins);
 
+void count_particles_in_bin_multi(double *rparts,
+                                  const int *xpRound0,
+                                  const int *centers,
+                                  const int nprof,
+                                  const int npart,
+                                  const int nbins,
+                                  const int ncenters);
+
 void reciprocal_particles(double *rparts,
                           const int *xp,
                           const int nbins,
