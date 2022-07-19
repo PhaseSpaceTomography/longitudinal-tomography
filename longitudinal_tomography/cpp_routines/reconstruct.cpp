@@ -42,7 +42,15 @@ extern "C" void back_project_multi(double *weights,                     // inn/o
         {
             for (int j = 0; j < nprof; j++)
             {
-                if (mask[i*nprof + j + c*npart]) weights[i] += flat_profiles[flat_points[i * nprof + j] + centers[c]];
+                // if (c == 2 && i % 20000 == 0 && j == 0)
+                // {
+                //     if (mask[i*ncenter + c])
+                //     {
+                //     std::cout << (mask[i*ncenter + c]) << ", " << flat_points[i * nprof + j] << ", " << centers[c] << ", ";
+                //     std::cout << flat_profiles[flat_points[i * nprof + j] + centers[c]] << std::endl;
+                //     }
+                // }
+                if (mask[i + c*npart]) weights[i + c*npart] += flat_profiles[flat_points[i * nprof + j] + centers[c]];
             }
         }
     }
@@ -67,14 +75,19 @@ extern "C" void project_multi(double *flat_rec,                     // inn/out
                               const int npart,
                               const int nprof,
                               const int ncenter) {      // inn
-    
+    // std::cout << "Projecting" << std::endl;
     for (int c = 0; c < ncenter; c++)
     {
+        // std::cout << "c: " << c << std::endl;
         for (int i = 0; i < npart; i++)
         {
             for (int j = 0; j < nprof; j++)
             {
-                flat_rec[flat_points[i*nprof + j + c*npart]] += weights[i + c*npart];
+                // if (c == 2 && i % 1000 == 0)
+                // {
+                //     std::cout << weights[i + c*npart] << std::endl;
+                // }
+                flat_rec[flat_points[i*nprof + j] + centers[c]] += weights[i + c*npart];
             }
         }
     }
@@ -114,9 +127,32 @@ void find_difference_profile(double *diff_prof,           // out
                              const double *flat_rec,      // inn
                              const double *flat_profiles, // inn
                              const int all_bins) {
-#pragma omp parallel for
+    double maxDiff = 0;
+    double minDiff = 0;
+    double profAtMax;
+    double profAtMin;
+    double recAtMax;
+    double recAtMin;
+// #pragma omp parallel for
     for (int i = 0; i < all_bins; i++)
+    {
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
+        if (diff_prof[i] > maxDiff)
+        {
+            maxDiff = diff_prof[i];
+            profAtMax = flat_profiles[i];
+            recAtMax = flat_profiles[i];
+        }
+        if (diff_prof[i] < minDiff)
+        {
+            minDiff = diff_prof[i];
+            profAtMin = flat_profiles[i];
+            recAtMin = flat_profiles[i];
+        }
+    }
+    std::cout << "Max: " << maxDiff << ", min: " << minDiff;
+    std::cout << ", profAtMax " << profAtMax << ", profAtMin " << profAtMin;
+    std::cout << ", recAtMax " << recAtMax << ", recAtMin " << recAtMin << std::endl;
 }
 
 double discrepancy(const double *diff_prof,   // inn
@@ -316,18 +352,22 @@ void create_mask(const int *xpRound0,       //inn
                  const int ncenter) {
 
     int bin;
-#pragma omp parallel for
+    // std::cout << "Start create mask" << std::endl;
+// #pragma omp parallel for
     for (int c = 0; c < ncenter; c++)
     {
+        // std::cout << "c: " << c << std::endl;
         for (int i = 0; i < npart; i++)
         {
             for (int j = 0; j < nprof; j++)
             {
                 bin = xpRound0[i * nprof + j] + centers[c];
-                if ((bin < cutleft[c]) || (bin > cutright[c])) {mask[i * nprof + j] = false;}
+                // mask[i * ncenter + c] = false;
+                if ((bin < cutleft[c]) || (bin > cutright[c])) {mask[i + c*npart] = false;}
             }
         }
     }
+    // std::cout << "End create mask" << std::endl;
 
 }
 
@@ -436,6 +476,7 @@ extern "C" void reconstruct_multi(double *weights,             // out
                                   const std::function<void(int, int)> callback
 ) {
     // Creating arrays...
+    // std::cout << "In reconstruct multi" << std::endl;
     int all_bins = nprof * nbins;
     double *diff_prof = new double[all_bins]();
 
@@ -445,6 +486,8 @@ extern "C" void reconstruct_multi(double *weights,             // out
 
     bool *mask = new bool[npart*ncenter];
     for (int i = 0; i < npart*ncenter; i++) {mask[i] = true;}
+
+    // std::cout << "Made internal pointers" << std::endl;
 
     auto cleanup = [diff_prof, flat_points, rparts, mask]() {
         delete[] diff_prof;
@@ -456,11 +499,13 @@ extern "C" void reconstruct_multi(double *weights,             // out
     // Actual functionality
 
     try {
+        // std::cout << "Create mask" << std::endl;
         create_mask(xpRound0, centers, cutleft, cutright, mask, npart, nprof, ncenter);
+        // std::cout << "Compute reciprocal" << std::endl;
         reciprocal_particles_multi(rparts, xpRound0, centers, nbins, nprof, npart, ncenter);
-
+        // std::cout << "Flatten points" << std::endl;
         create_flat_points(xpRound0, flat_points, npart, nprof, nbins);
-
+        // std::cout << "Back Project" << std::endl;
         back_project_multi(weights, flat_points, flat_profiles, mask, centers, npart, nprof, ncenter);
 
         clip(weights, npart, 0.0);
@@ -474,19 +519,22 @@ extern "C" void reconstruct_multi(double *weights,             // out
         for (int iteration = 0; iteration < niter; iteration++) {
             if (verbose)
                 std::cout << std::setw(3) << iteration + 1 << std::endl;
-
+            // std::cout << "Iterating: " << iteration << std::endl;
             project_multi(flat_rec, flat_points, weights, centers, npart, nprof, ncenter);
+            // std::cout << "Projected" << std::endl;
             normalize(flat_rec, nprof, nbins);
-
+// std::cout << "Normalized" << std::endl;
             find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
-
+// std::cout << "Differenced" << std::endl;
             discr[iteration] = discrepancy(diff_prof, nprof, nbins);
+            // std::cout << "Disc" << std::endl;
             discrepancy_multi(diff_prof, discr_split, cutleft, cutright, iteration, nprof, nbins, ncenter);
-
+// std::cout << "Disc multi" << std::endl;
             compensate_particle_amount(diff_prof, rparts, nprof, nbins);
-
-            back_project_multi(weights, flat_points, flat_profiles, mask, centers, npart, nprof, ncenter);
-            clip(weights, npart, 0.0);
+// std::cout << "Compensated" << std::endl;
+            back_project_multi(weights, flat_points, diff_prof, mask, centers, npart, nprof, ncenter);
+        // std::cout << "Back projected" << std::endl;
+            clip(weights, npart*ncenter, 0.0);
 
             if (sum(weights, npart) <= 0.)
                 throw std::runtime_error("All of phase space got reduced to zeroes");
