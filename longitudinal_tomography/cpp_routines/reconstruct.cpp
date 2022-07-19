@@ -67,10 +67,9 @@ extern "C" void project_multi(double *flat_rec,                     // inn/out
                               const int npart,
                               const int nprof,
                               const int ncenter) {      // inn
-    // std::cout << "Projecting" << std::endl;
+
     for (int c = 0; c < ncenter; c++)
     {
-        // std::cout << "c: " << c << std::endl;
         for (int i = 0; i < npart; i++)
         {
             for (int j = 0; j < nprof; j++)
@@ -125,22 +124,7 @@ void find_difference_profile(double *diff_prof,           // out
     for (int i = 0; i < all_bins; i++)
     {
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
-        if (diff_prof[i] > maxDiff)
-        {
-            maxDiff = diff_prof[i];
-            profAtMax = flat_profiles[i];
-            recAtMax = flat_profiles[i];
-        }
-        if (diff_prof[i] < minDiff)
-        {
-            minDiff = diff_prof[i];
-            profAtMin = flat_profiles[i];
-            recAtMin = flat_profiles[i];
-        }
     }
-    std::cout << "Max: " << maxDiff << ", min: " << minDiff;
-    std::cout << ", profAtMax " << profAtMax << ", profAtMin " << profAtMin;
-    std::cout << ", recAtMax " << recAtMax << ", recAtMin " << recAtMin << std::endl;
 }
 
 double discrepancy(const double *diff_prof,   // inn
@@ -177,7 +161,7 @@ void discrepancy_multi(const double *diff_prof,   // inn
                 squared_sum += std::pow(diff_prof[i], 2.0);
             }
         }
-        disc[iteration * ncenter + c] = std::sqrt(squared_sum / (nprof * (cutright - cutleft)));
+        disc[iteration * ncenter + c] = std::sqrt(squared_sum / (nprof * (cutright[c] - cutleft[c])));
     }
 }
 
