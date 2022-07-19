@@ -284,5 +284,12 @@ class Tomography(TomographyABC):
                                       cutright, centers, niter, self.nbins,
                                       self.nparts, self.nprofs, len(centers))
         
-        return self.weight
+        self.diff_split = self.diff_split.reshape([niter+1, len(centers)]).T
+        
+        self.weight_combined = weight
+        self.weight_split = []
+        for i in range(nBunches):
+            start = i*self.nparts
+            stop = (i+1)*self.nparts
+            self.weight_split.append(weight[start:stop])
 
