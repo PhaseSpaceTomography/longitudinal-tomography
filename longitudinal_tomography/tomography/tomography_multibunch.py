@@ -282,7 +282,8 @@ class Tomography(TomographyABC):
         (weight, self.diff, self.diff_split, self.recreated) = \
             libtomo.reconstruct_multi(self.xp, self.waterfall, cutleft,
                                       cutright, centers, niter, self.nbins,
-                                      self.nparts, self.nprofs, len(centers))
+                                      self.nparts, self.nprofs, len(centers),
+                                      verbose, callback)
         
         self.diff_split = self.diff_split.reshape([niter+1, len(centers)]).T
         
