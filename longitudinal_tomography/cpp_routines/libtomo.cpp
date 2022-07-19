@@ -439,6 +439,73 @@ py::tuple wrapper_reconstruct(
 }
 
 
+py::tuple wrapper_reconstruct_multi(
+        const i_array &input_xp,
+        const d_array &waterfall,
+        const i_array &inp_cutleft,
+        const i_array &inp_cutright,
+        const i_array &inp_centers,
+        const int n_iter,
+        const int n_bins,
+        const int n_particles,
+        const int n_profiles,
+        const int n_centers,
+        const bool verbose,
+        const std::optional<const py::object> callback
+) {
+
+    py::buffer_info buffer_xp = input_xp.request();
+    py::buffer_info buffer_waterfall = waterfall.request();
+    py::buffer_info buffer_cutleft = inp_cutleft.request();
+    py::buffer_info buffer_cutright = inp_cutright.request();
+    py::buffer_info buffer_centers = inp_centers.request();
+
+    auto *weights = new double[n_particles * n_centers]();
+    auto *discr = new double[n_iter + 1]();
+    auto *discr_split = new double[n_centers * (n_iter + 1)];
+    auto *recreated = new double[n_profiles * n_bins]();
+    auto *flat_profs = static_cast<double *>(buffer_waterfall.ptr);
+
+    const int *const xp = static_cast<int *>(buffer_xp.ptr);
+    const int *const cutleft = static_cast<int *>(buffer_cutleft.ptr);
+    const int *const cutright = static_cast<int *>(buffer_cutright.ptr);
+    const int *const centers = static_cast<int *>(buffer_centers.ptr);
+
+    std::function<void(int, int)> cb;
+    if (callback.has_value()) {
+        cb = [&callback](const int progress, const int total) {
+            callback.value()(progress, total);
+        };
+    } else
+        cb = [](const int progress, const int total) { (void) progress, (void) total; };
+
+    try {
+        reconstruct_multi(weights, xp, centers, cutleft, cutright, flat_profs,
+                          recreated, discr, discr_split, n_iter, n_bins, n_particles,
+                           n_profiles, n_centers, verbose, cb);
+    } catch (const std::exception &e) {
+        delete[] weights;
+        delete[] discr;
+        delete[] discr_split;
+        delete[] recreated;
+
+        throw;
+    }
+
+    py::capsule capsule_weights(weights, [](void *p) { delete[] reinterpret_cast<double *>(p); });
+    py::capsule capsule_discr(discr, [](void *p) { delete[] reinterpret_cast<double *>(p); });
+    py::capsule capsule_discr_split(discr_split, [](void *p) { delete[] reinterpret_cast<double *>(p); });
+    py::capsule capsule_recreated(recreated, [](void *p) { delete[] reinterpret_cast<double *>(p); });
+
+    py::array_t<double> arr_weights = py::array_t<double>({n_particles*n_centers}, weights, capsule_weights);
+    py::array_t<double> arr_discr = py::array_t<double>({n_iter + 1}, discr, capsule_discr);
+    py::array_t<double> arr_discr_split = py::array_t<double>({n_centers * (n_iter + 1)}, discr_split, capsule_discr_split);
+    py::array_t<double> arr_recreated = py::array_t<double>({n_profiles, n_bins}, recreated, capsule_recreated);
+
+    return py::make_tuple(arr_weights, arr_discr, arr_discr_split, arr_recreated);
+}
+
+
 py::array_t<double> wrapper_make_phase_space(
         const i_array &input_xp,
         const i_array &input_yp,
@@ -538,6 +605,11 @@ m.def("count_particles_in_bins_multi", &wrapper_count_particles_in_bin_multi, co
 m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
 "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
 "n_profiles"_a, "verbose"_a = false, "callback"_a = py::none()
+);
+
+m.def("reconstruct_multi", &wrapper_reconstruct_multi, reconstruct_docs,
+"xp"_a, "waterfall"_a, "cutleft"_a, "cutright"_a, "centers"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
+"n_profiles"_a, "n_centers"_a, "verbose"_a = false, "callback"_a = py::none()
 );
 
 m.def("make_phase_space", &wrapper_make_phase_space, make_phase_space_docs,
