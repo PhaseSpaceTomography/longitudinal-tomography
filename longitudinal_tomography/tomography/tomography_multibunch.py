@@ -279,7 +279,7 @@ class Tomography(TomographyABC):
         #     self.xp, self.waterfall, niter, self.nbins,
         #     self.nparts, self.nprofs, verbose, callback)
         
-        (self.weight, self.diff, self.diff_split, self.recreated) = \
+        (weight, self.diff, self.diff_split, self.recreated) = \
             libtomo.reconstruct_multi(self.xp, self.waterfall, cutleft,
                                       cutright, centers, niter, self.nbins,
                                       self.nparts, self.nprofs, len(centers))
@@ -288,7 +288,7 @@ class Tomography(TomographyABC):
         
         self.weight_combined = weight
         self.weight_split = []
-        for i in range(nBunches):
+        for i in range(len(centers)):
             start = i*self.nparts
             stop = (i+1)*self.nparts
             self.weight_split.append(weight[start:stop])
