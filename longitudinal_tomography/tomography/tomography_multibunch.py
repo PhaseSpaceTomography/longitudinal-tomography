@@ -68,7 +68,7 @@ class Tomography(TomographyABC):
         super().__init__(waterfall, x_coords, y_coords)
 
 
-    def run_hybrid_split(self, centers, cuts, niter=20, verbose=False):
+    def run_hybrid(self, centers, cuts, niter=20, verbose=False):
         """Function to perform tomographic reconstruction, implemented
         as a hybrid between C++ and Python.
 
@@ -114,128 +114,12 @@ class Tomography(TomographyABC):
         for cent, cut in zip(centers, cuts):
             mask = np.all(((self.xp+cent)>cut[0])*((self.xp+cent)<cut[1]),
                           axis=1)
-            masks.append(mask)
+            masks += mask.tolist()
         masks = np.array(masks)
 
         self.diff = np.zeros(niter + 1)
-        reciprocal_pts = self._reciprocal_particles_multi(centers)
-        flat_points = self._create_flat_points()
+        self.diff_split = np.zeros([nBunches, niter + 1])
 
-        flat_profs = np.ascontiguousarray(
-            self.waterfall.flatten()).astype(np.float64)
-        weight = np.zeros([nBunches, self.nparts])
-
-        for i in range(nBunches):
-            weight[i][masks[i]] = libtomo.back_project(weight[i][masks[i]],
-                                                       flat_points[masks[i]]\
-                                                          + centers[i],
-                                                       flat_profs,
-                                                       np.sum(masks[i]),
-                                                       self.nprofs)
-        weight = weight.clip(0.0)
-
-        if verbose:
-            print(' Iterating...')
-
-        for i in range(niter):
-            if verbose:
-                print(f'{i + 1:3d}')
-
-            self.full_recreated = np.zeros_like(self.waterfall)
-
-            for j in range(nBunches):
-                self.recreated = self._project(flat_points + centers[j],
-                                                      weight[j], self.nparts)
-
-                self.full_recreated += self.recreated
-
-            self.recreated = self._normalize_profiles(self.full_recreated)
-
-            diff_waterfall = self.waterfall - self.recreated
-            self.diff[i] = self._discrepancy(diff_waterfall)
-
-            # Weighting difference waterfall relative to number of particles
-            diff_waterfall *= reciprocal_pts
-
-            for j in range(nBunches):
-
-                weight[j][masks[j]] = libtomo.back_project(
-                                            weight[j][masks[j]],
-                                            flat_points[masks[j]] + centers[j],
-                                            diff_waterfall.flatten(),
-                                            np.sum(masks[j]), self.nprofs)
-
-            weight = weight.clip(0.0)
-
-        self.full_recreated = np.zeros_like(self.waterfall)
-        
-        for j in range(nBunches):
-            self.recreated = self._project(flat_points + centers[j],
-                                                  weight[j], self.nparts)
-            self.full_recreated += self.recreated
-        self.recreated = self._normalize_profiles(self.full_recreated)
-
-        # Calculating final discrepancy
-        diff_waterfall = self.waterfall - self.recreated
-        self.diff[-1] = self._discrepancy(diff_waterfall)
-
-        if verbose:
-            print(' Done!')
-
-        return weight
-
-
-
-    def run_hybrid_combined(self, centers, cuts, niter=20, verbose=False):
-        """Function to perform tomographic reconstruction, implemented
-        as a hybrid between C++ and Python.
-
-        Projection and back projection routines are called from C++,
-        the rest is written in python. Kept for reference.
-
-        The discrepancy of each iteration is saved in the *diff* array
-        of the object.
-
-        The recreated waterfall can be found calling the *recreated* field
-        of the object.
-
-        Parameters
-        ----------
-        niter: int
-            Number of iterations in reconstruction.
-        verbose: boolean
-            Flag to indicate that the status of the tomography should be
-            written to stdout. The output is identical to output
-            generated in the original Fortran tomography.
-
-        Returns
-        -------
-        weight: ndarray
-            1D array containing the weight of each particle.
-
-        Raises
-        ------
-        CoordinateError: Exception
-            X-coordinates is None
-        WaterfallReducedToZero: Exception
-            All of reconstructed waterfall reduced to zero.
-        """
-        log.warning('TomographyCpp.run_hybrid() '
-                    'may be removed in future updates!')
-        if self.xp is None:
-            raise expt.CoordinateError(
-                'x-coordinates has value None, and must be provided')
-
-        nBunches = len(centers)
-
-        masks = []
-        for cent, cut in zip(centers, cuts):
-            mask = np.all(((self.xp+cent)>cut[0])*((self.xp+cent)<cut[1]),
-                          axis=1)
-            masks.append(mask)
-        masks = np.array(masks)
-
-        self.diff = np.zeros(niter + 1)
         reciprocal_pts = self._reciprocal_particles_multi(centers)
         flat_points = self._create_flat_points()
 
@@ -246,12 +130,12 @@ class Tomography(TomographyABC):
         for i in range(nBunches):
             start = i*self.nparts
             stop = (i+1)*self.nparts
-            weight[start:stop][masks[i]] = libtomo.back_project(
-                                                weight[start:stop][masks[i]],
-                                                flat_points[masks[i]] \
+            weight[start:stop][masks[start:stop]] = libtomo.back_project(
+                                                weight[start:stop][masks[start:stop]],
+                                                flat_points[masks[start:stop]] \
                                                     + centers[i],
                                                 flat_profs,
-                                                np.sum(masks[i]),
+                                                np.sum(masks[start:stop]),
                                                 self.nprofs)
         weight = weight.clip(0.0)
 
@@ -277,6 +161,7 @@ class Tomography(TomographyABC):
 
             diff_waterfall = self.waterfall - self.recreated
             self.diff[i] = self._discrepancy(diff_waterfall)
+            self.diff_split[:, i] = self._discrepancy_multi(diff_waterfall, cuts)
 
             # Weighting difference waterfall relative to number of particles
             diff_waterfall *= reciprocal_pts
@@ -285,11 +170,11 @@ class Tomography(TomographyABC):
                 start = j*self.nparts
                 stop = (j+1)*self.nparts
                 
-                weight[start:stop][masks[j]] = libtomo.back_project(
-                                            weight[start:stop][masks[j]],
-                                            flat_points[masks[j]] + centers[j],
+                weight[start:stop][masks[start:stop]] = libtomo.back_project(
+                                            weight[start:stop][masks[start:stop]],
+                                            flat_points[masks[start:stop]] + centers[j],
                                             diff_waterfall.flatten(),
-                                            np.sum(masks[j]), self.nprofs)
+                                            np.sum(masks[start:stop]), self.nprofs)
 
             weight = weight.clip(0.0)
 
@@ -307,12 +192,30 @@ class Tomography(TomographyABC):
         # Calculating final discrepancy
         diff_waterfall = self.waterfall - self.recreated
         self.diff[-1] = self._discrepancy(diff_waterfall)
-
+        self.diff_split[:, -1] = self._discrepancy_multi(diff_waterfall, cuts)
+        
         if verbose:
             print(' Done!')
 
-        return weight
 
+        self.weight_combined = weight
+        self.weight_split = []
+        for i in range(nBunches):
+            start = i*self.nparts
+            stop = (i+1)*self.nparts
+            self.weight_split.append(weight[start:stop])
+
+
+
+    def _discrepancy_multi(self, diff_waterfall, cuts):
+
+        allDiffs = []
+        for c in cuts:
+            cutWFall = diff_waterfall[:,c[0]:c[1]]
+            diff = np.sqrt(np.sum(cutWFall**2)/((c[1]-c[0])*self.nprofs))
+            allDiffs.append(diff)
+
+        return allDiffs
 
 
     def _project(self, flat_points: np.ndarray, weight: np.ndarray,
@@ -329,7 +232,8 @@ class Tomography(TomographyABC):
             super()._create_flat_points()).astype(np.int32)
 
 
-    def run(self, niter: int = 20, verbose: bool = False,
+    def run(self, centers: [int], cutleft: [int], cutright: [int],
+            niter: int = 20, verbose: bool = False,
             callback: t.Callable = None) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
@@ -369,10 +273,24 @@ class Tomography(TomographyABC):
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
 
-        (self.weight,
-         self.diff,
-         self.recreated) = libtomo.reconstruct(
-            self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose, callback)
-        return self.weight
+        # (self.weight,
+        #  self.diff,
+        #  self.recreated) = libtomo.reconstruct(
+        #     self.xp, self.waterfall, niter, self.nbins,
+        #     self.nparts, self.nprofs, verbose, callback)
+        
+        (weight, self.diff, self.diff_split, self.recreated) = \
+            libtomo.reconstruct_multi(self.xp, self.waterfall, cutleft,
+                                      cutright, centers, niter, self.nbins,
+                                      self.nparts, self.nprofs, len(centers),
+                                      verbose, callback)
+        
+        self.diff_split = self.diff_split.reshape([niter+1, len(centers)]).T
+        
+        self.weight_combined = weight
+        self.weight_split = []
+        for i in range(len(centers)):
+            start = i*self.nparts
+            stop = (i+1)*self.nparts
+            self.weight_split.append(weight[start:stop])
 

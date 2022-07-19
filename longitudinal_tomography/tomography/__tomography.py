@@ -63,6 +63,7 @@ class TomographyABC(ABC):
 
         self.recreated = np.zeros(self.waterfall.shape)
         self.diff: np.ndarray = None
+        self.diff_split: np.ndarray = None
         self.weight: np.ndarray = None
 
     @property
