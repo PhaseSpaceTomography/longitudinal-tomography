@@ -454,8 +454,6 @@ py::tuple wrapper_reconstruct_multi(
         const std::optional<const py::object> callback
 ) {
 
-    // std::cout << "In wrapper multi" << std::endl;
-    
     py::buffer_info buffer_xp = input_xp.request();
     py::buffer_info buffer_waterfall = waterfall.request();
     py::buffer_info buffer_cutleft = inp_cutleft.request();
@@ -473,8 +471,6 @@ py::tuple wrapper_reconstruct_multi(
     const int *const cutright = static_cast<int *>(buffer_cutright.ptr);
     const int *const centers = static_cast<int *>(buffer_centers.ptr);
 
-    // std::cout << "Made pointers" << std::endl;
-    
     std::function<void(int, int)> cb;
     if (callback.has_value()) {
         cb = [&callback](const int progress, const int total) {
@@ -484,7 +480,6 @@ py::tuple wrapper_reconstruct_multi(
         cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
     try {
-        // std::cout << "Before call to reconstruct" << std::endl;
         reconstruct_multi(weights, xp, centers, cutleft, cutright, flat_profs,
                           recreated, discr, discr_split, n_iter, n_bins, n_particles,
                            n_profiles, n_centers, verbose, cb);
