@@ -2,7 +2,7 @@
 .. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/coverage.svg
     :target: https://gitlab.cern.ch/anlu/longitudinaltomography/-/jobs/artifacts/master/download?job=pages
 
-Copyright 2020 CERN. This software is distributed under the terms of the
+Copyright 2023 CERN. This software is distributed under the terms of the
 GNU General Public Licence version 3 (GPL Version 3), copied verbatim in
 the file LICENCE.txt. In applying this licence, CERN does not waive the
 privileges and immunities granted to it by virtue of its status as an
@@ -39,7 +39,8 @@ In MinGW and WSL environments the standard `g++` compiler works out of the box.
 MacOS
 """""
 
-No offical tests have been done on MacOS, but presumably `g++`, `clang`/`llvm` should work.
+You need to use a compiler other that the default provided on MacOS (:code:`gcc` is symlinked to :code:`clang` by default).
+The easiest way (and the way that us currently supported) is to install :code:`llvm` and :code:`openmp` with Homebrew: :code:`brew install llvm openmp`.
 
 Install
 =======
@@ -73,6 +74,24 @@ For development environments where it's preferable to compile the C++ extension 
     pip install -e .
 
 which will compile the C++ extension using the available compiler (decided by setuptools).
+
+-----
+MacOS
+-----
+
+MacOS requires some special treatment for the extension to compile.
+You need to tell pip to use Homebrew clang.
+
+On arm64 MacBooks, use the following:
+::
+    CC=/opt/homebrew/opt/llvm/bin/clang++ pip install .
+
+Or use the :code:`-e` flag for an editable installation.
+For Intel MacBooks, Homebrew packages are installed in a different location.
+
+Hence, for Intel MacBooks, use the following:
+::
+    CC=/usr/local/opt/llvm/bin/clang++ pip install .
 
 """""""""""""
 Documentation
