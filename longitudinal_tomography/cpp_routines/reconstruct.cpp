@@ -35,7 +35,7 @@ extern "C" void back_project_multi(double *weights,                     // inn/o
                                    const int npart,
                                    const int nprof,
                                    const int ncenter) {     // inn
-#pragma omp parallel for
+#pragma omp parallel for collapse(3)
     for (int c = 0; c < ncenter; c++)
     {
         for (int i = 0; i < npart; i++)
@@ -68,6 +68,7 @@ extern "C" void project_multi(double *flat_rec,                     // inn/out
                               const int nprof,
                               const int ncenter) {      // inn
 
+#pragma omp parallel for
     for (int c = 0; c < ncenter; c++)
     {
         for (int i = 0; i < npart; i++)
@@ -151,7 +152,7 @@ void discrepancy_multi(const double *diff_prof,   // inn
 
     int all_bins = nprof * nbins;
     double squared_sum = 0;
-
+#pragma omp parallel for
     for (int c = 0; c < ncenter; c++)
     {
         for (int i = 0; i < all_bins; i++)
@@ -228,6 +229,7 @@ void count_particles_in_bin_multi(double *rparts,
                                   const int ncenters) {
 
     int bin;
+#pragma omp parallel for
     for (int c = 0; c < ncenters; c++) {
         for (int j = 0; j < npart; j++) {
             for (int i = 0; i < nprof; i++) {
@@ -290,7 +292,7 @@ void reciprocal_particles_multi(double *rparts,   // out
 
     // Creating reciprocal
     int idx;
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < nprof; i++)
         for (int j = 0; j < nbins; j++) {
             idx = i * nbins + j;
@@ -325,7 +327,7 @@ void create_mask(const int *xpRound0,       //inn
 
     int bin;
 
-#pragma omp parallel for
+#pragma omp parallel for collapse(3)
     for (int c = 0; c < ncenter; c++)
     {
         for (int i = 0; i < npart; i++)
