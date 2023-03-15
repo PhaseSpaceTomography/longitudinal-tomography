@@ -1,3 +1,7 @@
+===================================
+Longitudinal Phase Space Tomography
+===================================
+
 .. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/pipeline.svg
 .. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/coverage.svg
     :target: https://gitlab.cern.ch/anlu/longitudinaltomography/-/jobs/artifacts/master/download?job=pages
@@ -17,8 +21,8 @@ written in C++ and python bindings are provided using `pybind11 <https://pybind1
 The installation and usage of the library is the same for all operating systems, but
 different dependencies are needed for different operating systems.
 
-Install
-=======
+Installing using package manager
+""""""""""""""""""""""""""""""""
 
 The Longitudinal Tomography package is available in prebuilt wheels for Python 3.6-3.9
 on CERN Acc-Py and pypy.org as `longitudinal-tomography`. The package can thus easily be installed on
@@ -33,35 +37,29 @@ C++ extension will be built on install.
 
 
 Installing manually
-===================
+"""""""""""""""""""
 
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
-"""""
-Linux
-"""""
+**Linux**
 
 You need a C++ compiler like `g++` installed. This is not required if installing a prebuilt package from acc-py or pypi.
 
-"""""""
-Windows
-"""""""
+**Windows**
 
 On Windows computers `MSVC >= 14.0 <https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools>`_
 with the Windows 10 SDK is required.
 
 In MinGW and WSL environments the standard `g++` compiler works out of the box.
 
-"""""
-MacOS
-"""""
+**MacOS**
 
 You need to use a compiler other that the default provided on MacOS (:code:`gcc` is symlinked to :code:`clang` by default).
 The easiest way (and the way that us currently supported) is to install :code:`llvm` and :code:`openmp` with Homebrew: :code:`brew install llvm openmp`.
 
 Installation instructions
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For MacOS see next section.
 
@@ -80,14 +78,12 @@ For development environments where it's preferable to compile the C++ extension 
 
 which will compile the C++ extension using the available compiler (decided by setuptools).
 
------
-MacOS
------
+**MacOS**
 
 MacOS requires some special treatment for the extension to compile.
 You need to tell pip to use Homebrew clang.
 
-On arm64 MacBooks, use the following:
+On arm64 (M1/M2) MacBooks, use the following:
 ::
     CC=/opt/homebrew/opt/llvm/bin/clang++ pip install .
 
@@ -107,7 +103,6 @@ Details on the algorithms in both codes, and the differences between them, can b
 
 
 Parallelization using OpenMP
-============================
 
 The C++ extension is accelerated by OpenMP parallel for loops. It is possible to limit the number of launched threads
 by setting it in the extension, by
