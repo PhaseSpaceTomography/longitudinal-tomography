@@ -17,8 +17,26 @@ written in C++ and python bindings are provided using `pybind11 <https://pybind1
 The installation and usage of the library is the same for all operating systems, but
 different dependencies are needed for different operating systems.
 
+Install
+=======
+
+The Longitudinal Tomography package is available in prebuilt wheels for Python 3.6-3.9
+on CERN Acc-Py and pypy.org as `longitudinal-tomography`. The package can thus easily be installed on
+a Linux machine using
+
+::
+
+    pip install longitudinal-tomography
+
+The package can be installed on a MacOS or Windows machine in the same manner, but the
+C++ extension will be built on install.
+
+
+Installing manually
+===================
+
 Prerequisites
-=============
+-------------
 
 """""
 Linux
@@ -42,30 +60,17 @@ MacOS
 You need to use a compiler other that the default provided on MacOS (:code:`gcc` is symlinked to :code:`clang` by default).
 The easiest way (and the way that us currently supported) is to install :code:`llvm` and :code:`openmp` with Homebrew: :code:`brew install llvm openmp`.
 
-Install
-=======
+Installation instructions
+-------------------------
 
-The Longitudinal Tomography package is available in prebuilt wheels for Python 3.6-3.9
-on CERN Acc-Py and pypy.org as `longitudinal-tomography`. The package can thus easily be installed on
-a Linux machine using
-
-::
-
-    pip install longitudinal-tomography
-
-The package can be installed on a MacOS or Windows machine in the same manner, but the
-C++ extension will be built on install.
-
-"""""""""""""""""""""
-Other ways to install
-"""""""""""""""""""""
+For MacOS see next section.
 
 Clone the repository and run
 ::
 
    pip install .
 
-The C++ extension will be built on install.
+The C++ extension will be built on install using the native compiler in Linux and Windows (pybind11 should find it).
 
 
 For development environments where it's preferable to compile the C++ extension inplace, it's possible to run the command
