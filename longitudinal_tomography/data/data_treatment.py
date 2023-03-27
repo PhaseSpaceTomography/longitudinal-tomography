@@ -238,7 +238,7 @@ def density_to_macro(tRange, ERange, density, n_macro, threshold=1E-5):
     n_macro: Amount of macroparticles to be generated
     threshold: Threshhold under which density is set to 0.
 
-       Returns
+    Returns
     -------
     dt: np.ndarray
         1D array of time coordinates of each macroparticle
