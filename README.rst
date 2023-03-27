@@ -101,6 +101,13 @@ Documentation
 This development is based on the well tested and widely used FORTRAN95 code, documented and available here: http://tomograp.web.cern.ch/tomograp/
 Details on the algorithms in both codes, and the differences between them, can be found here: https://cdsweb.cern.ch/record/2750116?ln=ka
 
+"""""""""""""
+Documentation
+"""""""""""""
+
+This development is based on the well tested and widely used FORTRAN95 code, documented and available here: http://tomograp.web.cern.ch/tomograp/
+Details on the algorithms in both codes, and the differences between them, can be found here: https://cdsweb.cern.ch/record/2750116?ln=ka
+
 
 Parallelization using OpenMP
 
