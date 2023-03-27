@@ -13,6 +13,10 @@ elif platform.system() == 'Linux':
     extra_compile_args.append('-fopenmp')
     extra_compile_args.append('-ffast-math')
     extra_link_args.append('-lgomp')
+elif platform.system() == 'Darwin':
+    extra_compile_args.append('-fopenmp')
+    extra_compile_args.append('-ffast-math')
+    extra_link_args.append('-lomp')
 
 
 cpp_routines = Pybind11Extension(

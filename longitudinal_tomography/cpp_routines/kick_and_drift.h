@@ -84,6 +84,7 @@ extern "C" void kick_and_drift(
         const double hratio,
         const int dturns,
         const int rec_prof,
+        const int deltaturn,
         const int nturns,
         const int nparts,
         const bool ftn_out,
