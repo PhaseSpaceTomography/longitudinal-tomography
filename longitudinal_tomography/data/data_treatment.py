@@ -7,6 +7,7 @@ from typing import Tuple, TYPE_CHECKING, Union
 from warnings import warn
 
 import numpy as np
+import itertools as itl
 
 from .. import exceptions as expt
 from ..utils import physics
@@ -216,3 +217,54 @@ def calc_baseline_ftn(*args):
     #      'longitudinal_tomography.compat.fortran.')
     from longitudinal_tomography.compat.fortran import calc_baseline
     return calc_baseline(*args)
+
+
+def density_to_macro(tRange: np.ndarray, ERange: np.ndarray,
+                     density: np.ndarray, n_macro: int,
+                     threshold: float = 1E-5) -> Tuple:
+    """
+
+    Takes a time range, energy range and density function and converts it to
+    n_macro number macroparticles to reproduce the distribution via randomly
+    sampling from it.
+
+
+    Parameters
+    ----------
+    t_range : np.ndarray
+        1D array of the center times for each time bin.
+    E_range : np.ndarray
+        1D array of the center energies for each energy bin.
+    density : np.ndarray
+        2D array of bin weights in phase space.
+    n_macro: int
+        Amount of macroparticles to be generated
+    threshold: float
+        Threshhold under which density is set to 0.
+
+    Returns
+    -------
+    dt: np.ndarray
+        1D array of time coordinates of each macroparticle
+    dE: np.ndarray
+        1D array of energy coordinates of each macroparticle
+
+    """
+
+    dtbin = tRange[1] - tRange[0]
+    dEbin = ERange[1] - ERange[0]
+
+    sumDens = np.sum(density)
+    density[density / sumDens < threshold] = 0
+
+    prob = density.flatten()
+    prob = prob / np.sum(prob)
+    coords = np.array(list(itl.product(tRange, ERange)))
+    n_macro = int(n_macro)
+
+    samples = np.random.choice(prob.shape[0], n_macro, p=prob)
+
+    dt = coords[samples, 0] + dtbin * (np.random.random(n_macro) - 0.5)
+    dE = coords[samples, 1] + dEbin * (np.random.random(n_macro) - 0.5)
+
+    return dt, dE
