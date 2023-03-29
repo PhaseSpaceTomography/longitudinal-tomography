@@ -219,7 +219,9 @@ def calc_baseline_ftn(*args):
     return calc_baseline(*args)
 
 
-def density_to_macro(tRange, ERange, density, n_macro, threshold=1E-5):
+def density_to_macro(tRange: np.ndarray, ERange: np.ndarray,
+                     density: np.ndarray, n_macro: int,
+                     threshold: float = 1E-5) -> Tuple:
     """
 
     Takes a time range, energy range and density function and converts it to
