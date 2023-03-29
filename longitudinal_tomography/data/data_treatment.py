@@ -237,8 +237,10 @@ def density_to_macro(tRange: np.ndarray, ERange: np.ndarray,
         1D array of the center energies for each energy bin.
     density : np.ndarray
         2D array of bin weights in phase space.
-    n_macro: Amount of macroparticles to be generated
-    threshold: Threshhold under which density is set to 0.
+    n_macro: int
+        Amount of macroparticles to be generated
+    threshold: float
+        Threshhold under which density is set to 0.
 
     Returns
     -------
