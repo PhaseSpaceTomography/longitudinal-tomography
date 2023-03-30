@@ -206,7 +206,7 @@ class Tracking(ParticleTracker):
             #                        machine.h_ratio, machine.dturns,
             #                        recprof, deltaturn, nturns, nparts,
             #                        self.fortran_flag, callback=callback)
-            #from longitudinal_tomography.python_routines.kick_and_drift import kick_and_drift
+            from longitudinal_tomography.python_routines.kick_and_drift import kick_and_drift
             kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
                                           nparts, machine.phi0, machine.deltaE0, machine.omega_rev0, machine.drift_coef,\
                                             machine.phi12, machine.h_ratio, machine.dturns, machine, False)
