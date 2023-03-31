@@ -422,6 +422,140 @@ py::array_t<double> wrapper_make_phase_space(
 }
 
 
+// Helper functions also with wrapper
+d_array wrapper_normalize(const d_array &input_flat_rec, // in/out
+               const int nprof,
+               const int nbins)
+{
+    py::buffer_info flat_rec_buffer = input_flat_rec.request();
+    auto *const flat_rec = static_cast<double *>(flat_rec_buffer.ptr);
+
+    normalize(flat_rec, nprof, nbins);
+    return input_flat_rec;
+}
+
+d_array wrapper_clip(const d_array &input_array,
+          const int length,
+          const double clip_val)
+{
+    py::buffer_info array_buffer = input_array.request();
+    auto *const array = static_cast<double *>(array_buffer.ptr);
+
+    clip(array, length, clip_val);
+    return input_array;
+
+}
+
+
+d_array wrapper_find_difference_profile(const d_array &output_diff_prof, // output, so no const?
+                             const d_array &input_flat_rec,
+                             const d_array &input_flat_profiles,
+                             const int all_bins)
+{
+    py::buffer_info diff_prof_buffer = output_diff_prof.request();
+    py::buffer_info flat_rec_buffer = input_flat_rec.request();
+    py::buffer_info flat_profiles_buffer = input_flat_profiles.request();
+
+    auto *const diff_prof = static_cast<double *>(diff_prof_buffer.ptr);
+    auto *const flat_rec = static_cast<double *>(flat_rec_buffer.ptr);
+    auto *const flat_profiles = static_cast<double *>(flat_profiles_buffer.ptr);
+
+    find_difference_profile(diff_prof, flat_rec, flat_profiles, all_bins);
+    return output_diff_prof;
+}
+
+double wrapper_discrepancy(const d_array &input_diff_prof,
+                   const int nprof,
+                   const int nbins)
+{
+    py::buffer_info diff_prof_buffer = input_diff_prof.request();
+    auto *const diff_prof = static_cast<double *>(diff_prof_buffer.ptr);
+
+    return discrepancy(diff_prof, nprof, nbins);
+}
+
+d_array wrapper_compensate_particle_amount(const d_array &input_diff_prof, // in/out
+                                const d_array &input_rparts, // in
+                                const int nprof,
+                                const int nbins)
+{
+    py::buffer_info diff_prof_buffer = input_diff_prof.request();
+    py::buffer_info rparts_buffer = input_rparts.request();
+
+    auto *const diff_prof = static_cast<double *>(diff_prof_buffer.ptr);
+    auto *const rparts = static_cast<double *>(rparts_buffer.ptr);
+
+    compensate_particle_amount(diff_prof, rparts, nprof, nbins);
+    return input_diff_prof;
+}
+
+double wrapper_max_2d(const d_array &input_arr,
+              const int x_axis,
+              const int y_axis)
+{
+    // UNTESTED!!
+    py::buffer_info arr_buffer = input_arr.request();
+    auto **const arr = static_cast<double **>(arr_buffer.ptr);
+
+    return max_2d(arr, x_axis, y_axis);
+}
+
+double wrapper_max_1d(const d_array &input_arr, const int length)
+{
+    py::buffer_info arr_buffer = input_arr.request();
+    auto *const arr = static_cast<double *>(arr_buffer.ptr);
+
+    return max_1d(arr, length);
+}
+
+d_array wrapper_count_particles_in_bin(const d_array &output_rparts,
+                            const i_array &input_xp,
+                            const int nprof,
+                            const int npart,
+                            const int nbins)
+{
+    py::buffer_info rparts_buffer = output_rparts.request();
+    py::buffer_info xp_buffer = input_xp.request();
+
+    auto *const rparts = static_cast<double *>(rparts_buffer.ptr);
+    auto *const xp = static_cast<int *>(xp_buffer.ptr);
+
+    count_particles_in_bin(rparts, xp, nprof, npart, nbins);
+    return output_rparts;
+}
+
+d_array wrapper_reciprocal_particles(const d_array &output_rparts,
+                          const i_array &input_xp,
+                          const int nbins,
+                          const int nprof,
+                          const int npart)
+{
+    py::buffer_info rparts_buffer = output_rparts.request();
+    py::buffer_info xp_buffer = input_xp.request();
+
+    auto *const rparts = static_cast<double *>(rparts_buffer.ptr);
+    auto *const xp = static_cast<int *>(xp_buffer.ptr);
+
+    reciprocal_particles(rparts, xp, nbins, nprof, npart);
+    return output_rparts;
+}
+
+void wrapper_create_flat_points(const i_array &input_xp,
+                        const i_array &output_flat_points,
+                        const int npart,
+                        const int nprof,
+                        const int nbins)
+{
+    py::buffer_info flat_points_buffer = output_flat_points.request();
+    py::buffer_info xp_buffer = input_xp.request();
+
+    auto *const flat_points = static_cast<int *>(flat_points_buffer.ptr);
+    auto *const xp = static_cast<int *>(xp_buffer.ptr);
+
+    create_flat_points(xp, flat_points, npart, nprof, nbins);
+}
+
+
 // wrap as Python module
 PYBIND11_MODULE(libtomo, m
 ) {
@@ -496,4 +630,41 @@ m.def("reconstruct", &wrapper_reconstruct, reconstruct_docs,
 
 m.def("make_phase_space", &wrapper_make_phase_space, make_phase_space_docs,
 "xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
+
+// new experimental part
+m.def("normalize", &wrapper_normalize, "Tomography normalize",
+"flat_rec"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("clip", &wrapper_clip, "Tomography clip",
+"array"_a, "length"_a, "clip_val"_a);
+
+m.def("find_difference_profile", &wrapper_find_difference_profile,
+"Tomography find difference profile",
+"diff_profiles"_a, "flat_rec"_a, "flat_profiles"_a, "all_bins"_a);
+
+m.def("discrepancy", &wrapper_discrepancy, "Tomography discrepancy",
+"diff_profiles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("compensate_particle_amount", &wrapper_compensate_particle_amount,
+"Tomography compensate particle amount",
+"diff_profiles"_a, "rparticles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("max_2d", &wrapper_max_2d, "Tomography max 2d",
+"array"_a, "x_axis"_a, "y_axis"_a);
+
+m.def("max_1d", &wrapper_max_1d, "Tomography max 1d",
+"array"_a, "length"_a);
+
+m.def("count_particles_in_bin", &wrapper_count_particles_in_bin,
+"Tomography count particles in bin",
+"rparts"_a, "xp"_a, "n_profiles"_a, "n_particles"_a, "n_bins"_a);
+
+m.def("reciprocal_particles", &wrapper_reciprocal_particles,
+"Tomography reciprocal particles",
+"rparts"_a, "xp"_a, "n_bins"_a, "n_profiles"_a, "n_particles"_a);
+
+m.def("create_flat_points", &wrapper_create_flat_points,
+"Tomography create flat points",
+"xp"_a, "flat_points"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
 }
