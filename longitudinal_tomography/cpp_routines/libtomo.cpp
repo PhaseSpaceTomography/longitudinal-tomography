@@ -443,7 +443,6 @@ d_array wrapper_clip(const d_array &input_array,
 
     clip(array, length, clip_val);
     return input_array;
-
 }
 
 
@@ -540,7 +539,7 @@ d_array wrapper_reciprocal_particles(const d_array &output_rparts,
     return output_rparts;
 }
 
-void wrapper_create_flat_points(const i_array &input_xp,
+i_array wrapper_create_flat_points(const i_array &input_xp,
                         const i_array &output_flat_points,
                         const int npart,
                         const int nprof,
@@ -553,6 +552,7 @@ void wrapper_create_flat_points(const i_array &input_xp,
     auto *const xp = static_cast<int *>(xp_buffer.ptr);
 
     create_flat_points(xp, flat_points, npart, nprof, nbins);
+    return output_flat_points;
 }
 
 
