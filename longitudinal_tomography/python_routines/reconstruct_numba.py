@@ -7,6 +7,7 @@ import numpy as np
 from typing import Optional
 from numba import jit
 
+@jit(nopython=True)
 def back_project(weights: np.ndarray,
                  flat_points: np.ndarray,
                  flat_profiles: np.ndarray,
@@ -14,18 +15,20 @@ def back_project(weights: np.ndarray,
                  n_profiles: int) -> np.ndarray:
     for i in range(n_particles):
         for j in range(n_profiles):
-            weights[i] += flat_profiles[flat_points[i, j]]
+            weights[i] += flat_profiles[flat_points[i * n_profiles + j]]
     return weights
 
+@jit(nopython=True)
 def project(flat_rec: np.ndarray,
             flat_points: np.ndarray,
             weights: np.ndarray, n_particles: int,
             n_profiles: int) -> np.ndarray:
     for i in range(n_particles):
         for j in range(n_profiles):
-            flat_rec[flat_points[i, j]] += weights[i]
+            flat_rec[flat_points[i * n_profiles + j]] += weights[i]
     return flat_rec
 
+@jit(nopython=True)
 def normalize(flat_rec: np.ndarray,
               n_profiles: int, n_bins: int) -> np.ndarray:
     sum_waterfall = 0.0
@@ -41,15 +44,18 @@ def normalize(flat_rec: np.ndarray,
         raise RuntimeError("Phase space reduced to zeros!")
     return flat_rec
 
+@jit(nopython=True, parallel=True)
 def clip(array: np.ndarray,
         clip_val: float) -> np.ndarray:
     array[array < clip_val] = clip_val
     return array
 
+@jit(nopython=True, parallel=True)
 def find_difference_profile(flat_rec: np.ndarray,
                             flat_profiles: np.ndarray) -> np.ndarray:
     return flat_profiles - flat_rec
 
+@jit(nopython=True, parallel=True)
 def discrepancy(diff_prof: np.ndarray,
                 n_profiles: int, n_bins = int) -> float:
     all_bins = n_profiles * n_bins
@@ -57,6 +63,7 @@ def discrepancy(diff_prof: np.ndarray,
 
     return np.sqrt(squared_sum / all_bins)
 
+@jit(nopython=True)
 def compensate_particle_amount(diff_prof: np.ndarray,
                                rparts: np.ndarray,
                                n_profiles: int, n_bins: int) -> np.ndarray:
@@ -69,14 +76,17 @@ def compensate_particle_amount(diff_prof: np.ndarray,
 
     return diff_prof
 
+@jit(nopython=True, parallel=True)
 def max_2d(array: np.ndarray,
            x_axis: int, y_axis: int) -> float:
     return np.max(array[:y_axis, :x_axis])
 
+@jit(nopython=True, parallel=True)
 def max_1d(array: np.ndarray,
            length: int) -> float:
     return np.max(array)
 
+@jit(nopython=True, parallel=True)
 def count_particles_in_bin(xp: np.ndarray,
                            n_profiles: int, n_particles: int,
                            n_bins: int) -> np.ndarray:
@@ -88,10 +98,11 @@ def count_particles_in_bin(xp: np.ndarray,
             rparts[j, bin] += 1
     return rparts
 
+@jit(nopython=True, parallel=True)
 def reciprocal_particles(xp: np.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> np.ndarray:
-
+    all_bins = n_profiles * n_bins
     rparts = count_particles_in_bin(xp, n_profiles, n_particles, n_bins)
     max_bin_val = max_2d(rparts, n_particles, n_profiles)
 
@@ -104,14 +115,15 @@ def reciprocal_particles(xp: np.ndarray,
             rparts[i, j] = max_bin_val / rparts[i, j]
     return rparts
 
+@jit(nopython=True)
 def create_flat_points(xp: np.ndarray,
                        n_particles: int, n_profiles: int,
                        n_bins: int) -> np.ndarray:
-    flat_points = np.copy(xp)
+    flat_points = np.copy(xp.flatten())
 
     for i in range(n_particles):
         for j in range(n_profiles):
-            flat_points[i, j] += n_bins * j
+            flat_points[i * n_profiles + j] += n_bins * j
     return flat_points
 
 def reconstruct(xp: np.ndarray,
