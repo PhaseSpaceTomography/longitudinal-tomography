@@ -7,7 +7,7 @@ import numpy as np
 from typing import Tuple
 import logging
 from enum import Enum
-from numba import njit, vectorize
+from numba import njit, vectorize, prange
 import math
 from ..cpp_routines import libtomo
 
@@ -44,6 +44,12 @@ def drift_down_unrolled(dphi: np.ndarray,
     for i in range(n_particles):
         dphi[i] += drift_coef * denergy[i]
 
+def drift_down_unrolled_parallel(dphi: np.ndarray,
+                                 denergy: np.ndarray, drift_coef: float,
+                                 n_particles: int) -> None:
+    for i in prange(n_particles):
+        dphi[i] += drift_coef * denergy[i]
+
 def drift_down_vectorized(dphi: float, denergy: float, drift_coef: float) -> None:
     dphi += drift_coef * denergy
 
@@ -62,6 +68,12 @@ def drift_up_unrolled(dphi: np.ndarray,
                       denergy: np.ndarray, drift_coef: float,
                       n_particles: int) -> None:
     for i in range(n_particles):
+        dphi[i] -= drift_coef * denergy[i]
+
+def drift_up_unrolled_parallel(dphi: np.ndarray,
+                      denergy: np.ndarray, drift_coef: float,
+                      n_particles: int) -> None:
+    for i in prange(n_particles):
         dphi[i] -= drift_coef * denergy[i]
 
 def drift_up_vectorized(dphi: float, denergy: float, drift_coef: float) -> None:
@@ -125,10 +137,10 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
         kick_up_func = njit()(kick_up_unrolled)
         kick_down_func = njit()(kick_down_unrolled)
     elif mode == mode.UNROLLED_PARALLEL:
-        drift_up_func = njit(parallel=True)(drift_up_unrolled)
-        drift_down_func = njit(parallel=True)(drift_down_unrolled)
-        kick_up_func = njit(parallel=True)(kick_up_unrolled)
-        kick_down_func = njit(parallel=True)(kick_down_unrolled)
+        drift_up_func = njit(parallel=True)(drift_up_unrolled_parallel)
+        drift_down_func = njit(parallel=True)(drift_down_unrolled_parallel)
+        kick_up_func = njit(parallel=True)(kick_up_unrolled_parallel)
+        kick_down_func = njit(parallel=True)(kick_down_unrolled_parallel)
     elif mode == mode.VECTORIZE:
         drift_up_func = vectorize(drift_up_vectorized)
         drift_down_func = vectorize(drift_down_vectorized)
@@ -227,6 +239,14 @@ def kick_down_unrolled(dphi: np.ndarray,
         denergy[i] -= rfv1 * math.sin(dphi[i] + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
 
+def kick_down_unrolled_parallel(dphi: np.ndarray,
+              denergy: np.ndarray, rfv1: float, rfv2: float,
+              phi0: float, phi12: float, h_ratio: float, n_particles: int,
+              acc_kick: float) -> None:
+    for i in prange(n_particles):
+        denergy[i] -= rfv1 * math.sin(dphi[i] + phi0) \
+        + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
+
 def kick_down_vectorized(dphi: float, denergy: float, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
               acc_kick: float) -> None:
@@ -252,6 +272,14 @@ def kick_up_unrolled(dphi: np.ndarray,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
               acc_kick: float) -> None:
     for i in range(n_particles):
+        denergy[i] += rfv1 * math.sin(dphi[i] + phi0) \
+        + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
+
+def kick_up_unrolled_parallel(dphi: np.ndarray,
+              denergy: np.ndarray, rfv1: float, rfv2: float,
+              phi0: float, phi12: float, h_ratio: float, n_particles: int,
+              acc_kick: float) -> None:
+    for i in prange(n_particles):
         denergy[i] += rfv1 * math.sin(dphi[i] + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
 
