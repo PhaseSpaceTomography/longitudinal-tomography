@@ -101,7 +101,6 @@ def kick(machine: object, denergy: np.ndarray,
 
     return denergy
 
-@njit
 def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    denergy: np.ndarray, dphi: np.ndarray,
                    rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
