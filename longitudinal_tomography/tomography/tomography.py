@@ -11,6 +11,7 @@ import numpy as np
 from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
+from ..utils.execution_mode import Mode
 
 log = logging.getLogger(__name__)
 
@@ -207,7 +208,7 @@ class Tomography(TomographyABC):
         return self.weight
 
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+            callback: t.Callable = None, mode: Mode = Mode.JIT) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -246,11 +247,16 @@ class Tomography(TomographyABC):
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
 
-        (self.weight,
-         self.diff,
-         self.recreated) = libtomo.reconstruct(
+        # (self.weight,
+        #  self.diff,
+        #  self.recreated) = libtomo.reconstruct(
+        #     self.xp, self.waterfall, niter, self.nbins,
+        #     self.nparts, self.nprofs, verbose, callback)
+        from longitudinal_tomography.python_routines.reconstruct import reconstruct
+        (self.weight, self.diff, self.recreated) = reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose, callback)
+            self.nparts, self.nprofs, verbose, callback, mode)
+
         return self.weight
 
 
