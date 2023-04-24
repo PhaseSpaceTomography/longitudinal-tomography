@@ -10,79 +10,78 @@ from enum import Enum
 from numba import njit, vectorize, prange
 import math
 from ..cpp_routines import libtomo
+from ..utils.execution_mode import Mode
 
 log = logging.getLogger(__name__)
-
-class Mode(Enum):
-    PURE = 1 # numpy
-    JIT = 2
-    JIT_PARALLEL = 3
-    UNROLLED = 4
-    UNROLLED_PARALLEL = 5
-    VECTORIZE = 6
-    VECTORIZE_PARALLEL = 7
-    CPP = 8
 
 def drift(denergy: np.ndarray,
           dphi: np.ndarray,
           drift_coef: np.ndarray, npart: int, turn: int,
           up: bool = ...) -> np.ndarray:
     if up:
-        drift_up(dphi, denergy, drift_coef[turn], npart)
+        return drift_up(dphi, denergy, drift_coef[turn], npart)
     else:
-        drift_down(dphi, denergy, drift_coef[turn], npart)
-    return dphi
+        return drift_down(dphi, denergy, drift_coef[turn], npart)
 
 def drift_down(dphi: np.ndarray,
                denergy: np.ndarray, drift_coef: float,
-               n_particles: int) -> None:
+               n_particles: int) -> np.ndarray:
     dphi += drift_coef * denergy
+    return dphi
 
 def drift_down_unrolled(dphi: np.ndarray,
                         denergy: np.ndarray, drift_coef: float,
-                        n_particles: int) -> None:
+                        n_particles: int) -> np.ndarray:
     for i in range(n_particles):
         dphi[i] += drift_coef * denergy[i]
+    return dphi
 
 def drift_down_unrolled_parallel(dphi: np.ndarray,
                                  denergy: np.ndarray, drift_coef: float,
-                                 n_particles: int) -> None:
+                                 n_particles: int) -> np.ndarray:
     for i in prange(n_particles):
         dphi[i] += drift_coef * denergy[i]
+    return dphi
 
-def drift_down_vectorized(dphi: float, denergy: float, drift_coef: float) -> None:
+def drift_down_vectorized(dphi: float, denergy: float, drift_coef: float, n_particles: int) -> float:
+    return dphi + drift_coef * denergy
     dphi += drift_coef * denergy
 
 def drift_down_cpp(dphi: np.ndarray,
                    denergy: np.ndarray, drift_coef: float,
-                   n_particles: int) -> None:
+                   n_particles: int) -> np.ndarray:
     libtomo.drift_down(dphi, denergy, drift_coef, n_particles)
+    return dphi
 
 
 def drift_up(dphi: np.ndarray,
              denergy: np.ndarray, drift_coef: float,
-             n_particles: int) -> None:
+             n_particles: int) -> np.ndarray:
     dphi -= drift_coef * denergy
+    return dphi
 
 def drift_up_unrolled(dphi: np.ndarray,
                       denergy: np.ndarray, drift_coef: float,
-                      n_particles: int) -> None:
+                      n_particles: int) -> np.ndarray:
     for i in range(n_particles):
         dphi[i] -= drift_coef * denergy[i]
+    return dphi
 
 def drift_up_unrolled_parallel(dphi: np.ndarray,
                       denergy: np.ndarray, drift_coef: float,
-                      n_particles: int) -> None:
+                      n_particles: int) -> np.ndarray:
     for i in prange(n_particles):
         dphi[i] -= drift_coef * denergy[i]
+    return dphi
 
-def drift_up_vectorized(dphi: float, denergy: float, drift_coef: float) -> None:
-    dphi -= drift_coef * denergy
+def drift_up_vectorized(dphi: float, denergy: float, drift_coef: float, n_particles: int) -> float:
+    return dphi - drift_coef * denergy
 
 def drift_up_cpp(dphi: np.ndarray,
                    denergy: np.ndarray, drift_coef: float,
-                   n_particles: int) -> None:
+                   n_particles: int) -> np.ndarray:
     libtomo.drift_up(dphi, denergy, drift_coef, n_particles)
+    return dphi
 
 def kick(machine: object, denergy: np.ndarray,
          dphi: np.ndarray,
@@ -91,15 +90,13 @@ def kick(machine: object, denergy: np.ndarray,
          up: bool = ...) -> np.ndarray:
 
     if up:
-        kick_up(dphi, denergy, rfv1[turn], rfv2[turn],
+        return kick_up(dphi, denergy, rfv1[turn], rfv2[turn],
                         machine.phi0[turn], machine.phi12, machine.h_ratio, npart,
                         machine.deltaE0[turn])
     else:
-        kick_down(dphi, denergy, rfv1[turn], rfv2[turn],
+        return kick_down(dphi, denergy, rfv1[turn], rfv2[turn],
                         machine.phi0[turn], machine.phi12, machine.h_ratio, npart,
                         machine.deltaE0[turn])
-
-    return denergy
 
 def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    denergy: np.ndarray, dphi: np.ndarray,
@@ -113,7 +110,7 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    h_ratio: float = None,
                    dturns: int = None,
                    machine: 'Machine' = None,
-                   ftn_out: bool = False, mode: Mode = Mode.PURE) -> Tuple[np.ndarray, np.ndarray]:
+                   ftn_out: bool = False, mode: Mode = Mode.JIT) -> Tuple[np.ndarray, np.ndarray]:
 
     drift_up_func = drift_up
     drift_down_func = drift_down
@@ -124,7 +121,7 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
         drift_up_func = njit()(drift_up)
         drift_down_func = njit()(drift_down)
         kick_up_func = njit()(kick_up)
-        kick_down_func = njit()(kick_down_func)
+        kick_down_func = njit()(kick_down)
     elif mode == mode.JIT_PARALLEL:
         drift_up_func = njit(parallel=True)(drift_up)
         drift_down_func = njit(parallel=True)(drift_down)
@@ -146,11 +143,11 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
         kick_up_func = vectorize(kick_up_vectorized)
         kick_down_func = vectorize(kick_down_vectorized)
     elif mode == mode.VECTORIZE_PARALLEL:
-        drift_up_func = vectorize('void(float64, float64, float64)', target='parallel')(drift_up_vectorized)
-        drift_down_func = vectorize('void(float64, float64, float64)', target='parallel')(drift_down_vectorized)
-        kick_up_func = vectorize('void(float64, float64, float64, float64, float64, \
+        drift_up_func = vectorize('float64(float64, float64, float64, int32)', target='parallel')(drift_up_vectorized)
+        drift_down_func = vectorize('float64(float64, float64, float64, int32)', target='parallel')(drift_down_vectorized)
+        kick_up_func = vectorize('float64(float64, float64, float64, float64, float64, \
                                  float64, float64, int32, float64)', target='parallel')(kick_up_vectorized)
-        kick_down_func = vectorize('void(float64, float64, float64, float64, float64, \
+        kick_down_func = vectorize('float64(float64, float64, float64, float64, float64, \
                                  float64, float64, int32, float64)', target='parallel')(kick_down_vectorized)
     elif mode == mode.CPP:
         drift_up_func = drift_up_cpp
@@ -176,11 +173,11 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
     total = nturns
 
     while turn < nturns:
-        drift_up_func(dphi, denergy, drift_coef[turn], nparts)
+        dphi = drift_up_func(dphi, denergy, drift_coef[turn], nparts)
 
         turn += 1
 
-        kick_up_func(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn], phi12_arr[turn],
+        denergy = kick_up_func(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn], phi12_arr[turn],
                 h_ratio, nparts, deltaE0[turn])
 
         if turn % dturns == 0:
@@ -205,11 +202,11 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
 
         # Downwards
         while turn > 0:
-            kick_down_func(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn],
+            denergy = kick_down_func(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn],
                     phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
             turn -= 1
 
-            drift_down_func(dphi, denergy, drift_coef[turn], nparts)
+            dphi = drift_down_func(dphi, denergy, drift_coef[turn], nparts)
 
         if (turn % dturns == 0):
             profile -= 1
@@ -226,71 +223,83 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
 def kick_down(dphi: np.ndarray,
               denergy: np.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> np.ndarray:
     denergy -= rfv1 * np.sin(dphi + phi0) \
                       + rfv2 * np.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
+    return denergy
 
 def kick_down_unrolled(dphi: np.ndarray,
               denergy: np.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> np.ndarray:
     for i in range(n_particles):
         denergy[i] -= rfv1 * math.sin(dphi[i] + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
+    return denergy
 
 def kick_down_unrolled_parallel(dphi: np.ndarray,
               denergy: np.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> np.ndarray:
     for i in prange(n_particles):
         denergy[i] -= rfv1 * math.sin(dphi[i] + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
+    return denergy
 
 def kick_down_vectorized(dphi: float, denergy: float, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> float:
+    return denergy - rfv1 * math.sin(dphi + phi0) \
+        + rfv2 * math.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
     denergy -= rfv1 * math.sin(dphi + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
 
 def kick_down_cpp(dphi: np.ndarray,
               denergy: np.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> np.ndarray:
     libtomo.kick_down(dphi, denergy, rfv1, rfv2, phi0, phi12, h_ratio,\
                       n_particles, acc_kick)
+    return denergy
 
 def kick_up(dphi: np.ndarray,
             denergy: np.ndarray, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
-            acc_kick: float) -> None:
+            acc_kick: float) -> np.ndarray:
     denergy += rfv1 * np.sin(dphi + phi0) \
                   + rfv2 * np.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
+    return denergy
 
 def kick_up_unrolled(dphi: np.ndarray,
               denergy: np.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> np.ndarray:
     for i in range(n_particles):
         denergy[i] += rfv1 * math.sin(dphi[i] + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
+    return denergy
 
 def kick_up_unrolled_parallel(dphi: np.ndarray,
               denergy: np.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> np.ndarray:
     for i in prange(n_particles):
         denergy[i] += rfv1 * math.sin(dphi[i] + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick
+    return denergy
 
 def kick_up_vectorized(dphi: float, denergy: float, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> None:
+              acc_kick: float) -> float:
+    return denergy + rfv1 * math.sin(dphi + phi0) \
+        + rfv2 * math.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
     denergy += rfv1 * math.sin(dphi + phi0) \
         + rfv2 * math.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
 
 def kick_up_cpp(dphi: np.ndarray,
             denergy: np.ndarray, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
-            acc_kick: float) -> None:
+            acc_kick: float) -> np.ndarray:
     libtomo.kick_up(dphi, denergy, rfv1, rfv2, phi0, phi12, h_ratio,\
                       n_particles, acc_kick)
+    return denergy

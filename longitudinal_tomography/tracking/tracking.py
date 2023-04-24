@@ -12,6 +12,7 @@ from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import libtomo
 from ..compat import fortran
+from ..utils.execution_mode import Mode
 
 if TYPE_CHECKING:
     from .machine_base import MachineABC
@@ -55,7 +56,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None, deltaturn: int = 0) \
+              callback: Callable = None, deltaturn: int = 0, mode: Mode = Mode.JIT) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -200,17 +201,17 @@ class Tracking(ParticleTracker):
             yp = np.zeros((machine.nprofiles, nparts))
 
             # Calling C++ implementation of tracking routine.
-            #libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
+            # libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
             #                       machine.phi0, machine.deltaE0,
             #                       machine.drift_coef, machine.phi12,
             #                       machine.h_ratio, machine.dturns,
             #                       recprof, deltaturn, nturns, nparts,
             #                       self.fortran_flag, callback=callback)
-            from longitudinal_tomography.python_routines.kick_and_drift_numba import kick_and_drift
+            from longitudinal_tomography.python_routines.kick_and_drift import kick_and_drift
             kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
                                             nparts, machine.phi0, machine.deltaE0, machine.omega_rev0, machine.drift_coef,\
-                                            machine.phi12, machine.h_ratio, machine.dturns, machine, False)
-            
+                                            machine.phi12, machine.h_ratio, machine.dturns, machine, False, mode)
+
 
         log.info('Tracking completed!')
         return xp, yp

@@ -14,6 +14,7 @@ from ..tracking import particles as pts
 # Tomo modules
 from ..tracking import tracking as tracking
 from ..utils import tomo_input as tomoin, tomo_output as tomoout
+from ..utils.execution_mode import Mode
 
 from ..compat import tomoscope as tscp
 
@@ -22,7 +23,7 @@ log = logging.getLogger(__name__)
 
 def run(input: str, reconstruct_profile: bool = None,
         output_dir: str = None, tomoscope: bool = False,
-        plot: bool = False) \
+        plot: bool = False, mode: Mode = Mode.JIT) \
         -> t.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Function to perform full reconstruction based on the original
     algorithm.
@@ -40,6 +41,8 @@ def run(input: str, reconstruct_profile: bool = None,
         Enable tomoscope specific output for progress tracking.
     plot: bool = False
         Plot phase space after reconstruction.
+    mode: Mode
+        Decide which optimization should be used
 
     Returns
     -------
@@ -107,7 +110,7 @@ def run(input: str, reconstruct_profile: bool = None,
         profiles.calc_self_fields()
         tracker.enable_self_fields(profiles)
 
-    xp, yp = tracker.track(reconstr_idx)
+    xp, yp = tracker.track(reconstr_idx, mode=mode)
 
     # Converting from physical coordinates ([rad], [eV])
     # to phase space coordinates.
@@ -122,7 +125,7 @@ def run(input: str, reconstruct_profile: bool = None,
 
     # Tomography!
     tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
-    weight = tomo.run(niter=machine.niter, verbose=tomoscope)
+    weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
 
     if tomoscope:
         for film in range(machine.filmstart, machine.filmstop + 1,
