@@ -208,7 +208,7 @@ class Tomography(TomographyABC):
         return self.weight
 
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None, mode: Mode = Mode.JIT) -> np.ndarray:
+            callback: t.Callable = None, mode: Mode = Mode.CUPY) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -255,7 +255,7 @@ class Tomography(TomographyABC):
         from longitudinal_tomography.python_routines.reconstruct import reconstruct
         (self.weight, self.diff, self.recreated) = reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose, callback, mode)
+            self.nparts, self.nprofs, verbose, mode)
 
         return self.weight
 

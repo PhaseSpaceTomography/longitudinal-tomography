@@ -4,13 +4,10 @@
 """
 
 import numpy as np
-from enum import Enum
-from typing import Optional
 from numba import njit, vectorize, prange
 from ..cpp_routines import libtomo
 from ..utils.execution_mode import Mode
 
-# Probably no vectorization possible?
 def back_project(weights: np.ndarray,
                  flat_points: np.ndarray,
                  flat_profiles: np.ndarray,
@@ -143,7 +140,8 @@ def find_difference_profile_unrolled_parallel(flat_rec: np.ndarray,
     return diff_prof
 
 def find_difference_profile_vectorized(flat_rec: float, flat_profile: float) -> float:
-    return flat_rec - flat_profile
+    diff_prof = flat_profile - flat_rec
+    return diff_prof
 
 def find_difference_profile_cpp(flat_rec: np.ndarray,
                                 flat_profiles: np.ndarray) -> np.ndarray:
@@ -212,9 +210,6 @@ def compensate_particle_amount_cpp(diff_prof: np.ndarray,
                                    n_profiles: int, n_bins: int) -> np.ndarray:
     return libtomo.compensate_particle_amount(diff_prof, rparts, n_profiles, n_bins)
 
-
-# VECTORIZATION POSSIBLE?
-
 @njit
 def max_2d(array: np.ndarray,
            x_axis: int, y_axis: int) -> float:
@@ -241,29 +236,6 @@ def max_2d_unrolled_parallel(array: np.ndarray,
 def max_2d_cpp(array: np.ndarray,
                x_axis: int, y_axis: int) -> float:
     return libtomo.max_2d(array, x_axis, y_axis)
-
-def max_1d(array: np.ndarray,
-           length: int) -> float:
-    return np.max(array)
-
-def max_1d_unrolled(array: np.ndarray,
-                    length: int) -> float:
-    max_val = 0.0
-    for i in range(length):
-        if max_val < array[i]:
-            max_val = array[i]
-    return max_val
-
-def max_1d_unrolled_parallel(array: np.ndarray,
-                    length: int) -> float:
-    max_val = 0.0
-    for i in prange(length):
-        if max_val < array[i]:
-            max_val = array[i]
-    return max_val
-
-def max_1d_cpp(array: np.ndarray, length: int) -> float:
-    return libtomo.max_1d(array, length)
 
 @njit
 def count_particles_in_bin(xp: np.ndarray,
@@ -307,7 +279,6 @@ def reciprocal_particles(xp: np.ndarray,
 
     for i in range(n_profiles):
         for j in range(n_bins):
-            #idx = i * n_bins + j
             rparts[i, j] = max_bin_val / rparts[i, j]
     return rparts
 
@@ -323,7 +294,6 @@ def reciprocal_particles_parallel(xp: np.ndarray,
 
     for i in prange(n_profiles):
         for j in prange(n_bins):
-            #idx = i * n_bins + j
             rparts[i, j] = max_bin_val / rparts[i, j]
     return rparts
 
@@ -363,7 +333,12 @@ def reconstruct(xp: np.ndarray,
                 waterfall: np.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...,
-                callback: Optional[object] = ..., mode: Mode = Mode.JIT) -> tuple:
+                mode: Mode = Mode.CPP) -> tuple:
+
+    if mode == mode.CUPY:
+        from .reconstruct_cupy import reconstruct_cupy
+        return reconstruct_cupy(xp, waterfall, n_iter, n_bins, n_particles, n_profiles, verbose)
+
     # functions
     reciprocal_particles_func = reciprocal_particles
     create_flat_points_func = create_flat_points
@@ -375,19 +350,19 @@ def reconstruct(xp: np.ndarray,
     discrepancy_func = discrepancy
     compensate_particle_amount_func = compensate_particle_amount
 
-    if mode == mode.JIT or mode == mode.VECTORIZE:
+    if mode == mode.JIT or mode == mode.VECTORIZE or mode == mode.CUPY:
         reciprocal_particles_func = njit()(reciprocal_particles)
         create_flat_points_func = njit()(create_flat_points)
         back_project_func = njit()(back_project)
-        clip_func = njit()(clip) if mode == mode.JIT \
+        clip_func = njit()(clip) if mode == mode.JIT or mode.CUPY \
             else vectorize()(clip_vectorized)
         project_func = njit()(project)
         normalize_func = njit()(normalize)
-        find_difference_profile_func = njit()(find_difference_profile) if mode == mode.JIT \
-            else vectorize(find_difference_profile_vectorized)
+        find_difference_profile_func = njit()(find_difference_profile) if mode == mode.JIT or mode == mode.CUPY \
+            else vectorize()(find_difference_profile_vectorized)
         discrepancy_func = njit()(discrepancy)
         compensate_particle_amount_func = njit()(compensate_particle_amount)
-    elif mode == mode.JIT_PARALLEL or mode.VECTORIZE_PARALLEL:
+    elif mode == mode.JIT_PARALLEL or mode == mode.VECTORIZE_PARALLEL:
         reciprocal_particles_func = njit(parallel=True)(reciprocal_particles_parallel)
         create_flat_points_func = njit(parallel=True)(create_flat_points_parallel)
         back_project_func = njit(parallel=True)(back_project_parallel)
@@ -403,12 +378,12 @@ def reconstruct(xp: np.ndarray,
         reciprocal_particles_func = njit()(reciprocal_particles)
         create_flat_points_func = njit()(create_flat_points)
         back_project_func = njit()(back_project)
-        clip_func = njit()(clip_unrolled)
+        clip_func = njit()(clip)
         project_func = njit()(project)
         normalize_func = njit()(normalize)
-        find_difference_profile_func = njit()(find_difference_profile_unrolled)
-        discrepancy_func = njit()(discrepancy_unrolled)
-        compensate_particle_amount_func = njit()(compensate_particle_amount_unrolled)
+        find_difference_profile_func = njit()(find_difference_profile)
+        discrepancy_func = njit()(discrepancy)
+        compensate_particle_amount_func = njit()(compensate_particle_amount)
     elif mode == mode.UNROLLED_PARALLEL:
         reciprocal_particles_func = njit(parallel=True)(reciprocal_particles_parallel)
         create_flat_points_func = njit(parallel=True)(create_flat_points_parallel)
@@ -431,12 +406,10 @@ def reconstruct(xp: np.ndarray,
         compensate_particle_amount_func = compensate_particle_amount_cpp
 
 
-
-
     # from wrapper
     weights = np.zeros(n_particles)
     discr = np.zeros(n_iter + 1)
-    flat_profiles = np.copy(waterfall.flatten()) # Shallow or deep copy needed?
+    flat_profiles = np.copy(waterfall.flatten())
     flat_rec = np.zeros(n_profiles * n_bins)
 
     all_bins = n_profiles * n_bins
@@ -470,15 +443,11 @@ def reconstruct(xp: np.ndarray,
         if np.sum(weights) <= 0:
             raise RuntimeError("All of phase space got reduced to zeros")
 
-        #callback(iteration + 1, n_iter)
-
     # Calculating final discrepancy
     flat_rec = project_func(flat_rec, flat_points, weights, n_particles, n_profiles, n_bins)
     flat_rec = normalize_func(flat_rec, n_profiles, n_bins)
     diff_prof = find_difference_profile_func(flat_rec, flat_profiles)
     discr[n_iter] = discrepancy_func(diff_prof, n_profiles, n_bins)
-
-    #callback(n_iter, n_iter)
 
     if verbose:
         print("Done!")

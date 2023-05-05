@@ -9,3 +9,4 @@ class Mode(Enum):
     VECTORIZE = 6 # wrong results
     VECTORIZE_PARALLEL = 7
     CPP = 8
+    CUPY = 9
