@@ -1,14 +1,9 @@
 import numpy as np
 import cupy as cp
 import logging
-from numba import cuda
 from typing import Tuple
-from ..utils.execution_mode import Mode
 
 log = logging.getLogger(__name__)
-
-UP = -1
-DOWN = 1
 
 def drift_down(dphi: cp.ndarray,
                denergy: cp.ndarray, drift_coef: float,
@@ -65,14 +60,14 @@ def kick_and_drift_cupy(xp: np.ndarray, yp: np.ndarray,
                    denergy: np.ndarray, dphi: np.ndarray,
                    rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
                    nturns: int, nparts: int,
-                   phi0: np.ndarray = None,
-                   deltaE0: np.ndarray = None,
-                   drift_coef: np.ndarray = None,
-                   phi12: float = None,
-                   h_ratio: float = None,
-                   dturns: int = None,
-                   deltaturn: int = None,
-                   machine: 'Machine' = None,
+                   phi0: np.ndarray,
+                   deltaE0: np.ndarray,
+                   drift_coef: np.ndarray,
+                   phi12: float,
+                   h_ratio: float,
+                   dturns: int,
+                   deltaturn: int,
+                   machine: 'Machine',
                    ftn_out: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 
     xp_gpu = cp.asarray(xp)
@@ -92,9 +87,6 @@ def kick_and_drift_cupy(xp: np.ndarray, yp: np.ndarray,
     # Value-based copy to avoid side-effects
     xp_gpu[profile] = cp.copy(dphi_gpu)
     yp_gpu[profile] = cp.copy(denergy_gpu)
-
-    progress = 0 # nur für Callback benötigt?
-    total = nturns
 
     together = True
 
@@ -118,8 +110,6 @@ def kick_and_drift_cupy(xp: np.ndarray, yp: np.ndarray,
         if ftn_out:
             log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                     0.000% went outside the image width.")
-            #callback
-        # end while
 
     profile = rec_prof
     turn = rec_prof * dturns
@@ -150,8 +140,6 @@ def kick_and_drift_cupy(xp: np.ndarray, yp: np.ndarray,
                 if ftn_out:
                     log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                                 0.000% went outside the image width.")
-            #callback
-    # end while
 
     xp = cp.asnumpy(xp_gpu)
     yp = cp.asnumpy(yp_gpu)

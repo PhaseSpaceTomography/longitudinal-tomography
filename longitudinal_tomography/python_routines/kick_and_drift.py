@@ -13,13 +13,10 @@ from ..utils.execution_mode import Mode
 
 log = logging.getLogger(__name__)
 
-UP = -1
-DOWN = 1
-
 def drift(denergy: np.ndarray,
           dphi: np.ndarray,
           drift_coef: np.ndarray, npart: int, turn: int,
-          up: bool = ...) -> np.ndarray:
+          up: bool) -> np.ndarray:
     if up:
         return drift_up(dphi, denergy, drift_coef[turn], npart)
     else:
@@ -47,7 +44,6 @@ def drift_down_unrolled_parallel(dphi: np.ndarray,
 
 def drift_down_vectorized(dphi: float, denergy: float, drift_coef: float, n_particles: int) -> float:
     return dphi + drift_coef * denergy
-    dphi += drift_coef * denergy
 
 def drift_down_cpp(dphi: np.ndarray,
                    denergy: np.ndarray, drift_coef: float,
@@ -120,7 +116,7 @@ def kick(machine: object, denergy: np.ndarray,
          dphi: np.ndarray,
          rfv1: np.ndarray,
          rfv2: np.ndarray, npart: int, turn: int,
-         up: bool = ...) -> np.ndarray:
+         up: bool) -> np.ndarray:
 
     if up:
         return kick_up(dphi, denergy, rfv1[turn], rfv2[turn],
@@ -135,14 +131,14 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    denergy: np.ndarray, dphi: np.ndarray,
                    rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
                    nturns: int, nparts: int,
-                   phi0: np.ndarray = None,
-                   deltaE0: np.ndarray = None,
-                   drift_coef: np.ndarray = None,
-                   phi12: float = None,
-                   h_ratio: float = None,
-                   dturns: int = None,
-                   deltaturn: int = None,
-                   machine: 'Machine' = None,
+                   phi0: np.ndarray,
+                   deltaE0: np.ndarray,
+                   drift_coef: np.ndarray,
+                   phi12: float,
+                   h_ratio: float,
+                   dturns: int,
+                   deltaturn: int,
+                   machine: 'Machine',
                    ftn_out: bool = False, mode: Mode = Mode.JIT) -> Tuple[np.ndarray, np.ndarray]:
     if mode == mode.CUPY:
         from .kick_and_drift_cupy import kick_and_drift_cupy
@@ -215,9 +211,6 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
     xp[profile] = np.copy(dphi)
     yp[profile] = np.copy(denergy)
 
-    progress = 0 # nur für Callback benötigt?
-    total = nturns
-
     together = False
 
     dphi2 = np.copy(dphi)
@@ -246,8 +239,6 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
             if ftn_out:
                 log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                         0.000% went outside the image width.")
-            #callback
-        # end while
 
     profile = rec_prof
     turn = rec_prof * dturns
@@ -279,8 +270,6 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                 if ftn_out:
                     log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                                 0.000% went outside the image width.")
-            #callback
-        # end while
     return xp, yp
 
 def kick_down(dphi: np.ndarray,

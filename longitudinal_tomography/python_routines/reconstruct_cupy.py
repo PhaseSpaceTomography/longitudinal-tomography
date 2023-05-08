@@ -15,7 +15,6 @@ def back_project(weights: cp.ndarray,
 
     return cp.sum(cp.take(flat_profiles, flat_points, axis=0), axis=1) + weights
 
-# TODO check tests
 def project(flat_rec: cp.ndarray,
             flat_points: cp.ndarray,
             weights: cp.ndarray, n_particles: int,
