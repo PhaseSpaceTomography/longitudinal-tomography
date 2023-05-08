@@ -54,6 +54,13 @@ def kick_drift_up_simultaneously_unrolled(dphi: cp.ndarray, denergy: cp.ndarray,
                   + rfv2 * cp.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick)
     return dphi, denergy
 
+def kick_drift_down_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
+            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
+    denergy -= (rfv1 * cp.sin(dphi + phi0) \
+                  + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick)
+    dphi += drift_coef * denergy
+    return dphi, denergy
+
 def kick_and_drift_cupy(xp: np.ndarray, yp: np.ndarray,
                    denergy: np.ndarray, dphi: np.ndarray,
                    rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
@@ -124,11 +131,16 @@ def kick_and_drift_cupy(xp: np.ndarray, yp: np.ndarray,
 
         # Downwards
         while turn > 0:
-            denergy_gpu = kick_down(dphi_gpu, denergy_gpu, rfv1[turn], rfv2[turn], phi0[turn],
-                    phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
-            turn -= 1
+            if together:
+                dphi_gpu, denergy_gpu = kick_drift_down_simultaneously(dphi_gpu, denergy_gpu, drift_coef[turn-1], rfv1[turn], rfv2[turn],
+                                                                       phi0[turn], phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
+                turn -= 1
+            else:
+                denergy_gpu = kick_down(dphi_gpu, denergy_gpu, rfv1[turn], rfv2[turn], phi0[turn],
+                        phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
+                turn -= 1
 
-            dphi_gpu = drift_down(dphi_gpu, denergy_gpu, drift_coef[turn], nparts)
+                dphi_gpu = drift_down(dphi_gpu, denergy_gpu, drift_coef[turn], nparts)
 
             if (turn % dturns == 0):
                 profile -= 1

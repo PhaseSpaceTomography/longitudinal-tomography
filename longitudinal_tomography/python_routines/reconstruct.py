@@ -333,7 +333,7 @@ def reconstruct(xp: np.ndarray,
                 waterfall: np.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...,
-                mode: Mode = Mode.CPP) -> tuple:
+                mode: Mode = Mode.JIT) -> tuple:
 
     if mode == mode.CUPY:
         from .reconstruct_cupy import reconstruct_cupy
@@ -394,7 +394,7 @@ def reconstruct(xp: np.ndarray,
         find_difference_profile_func = njit(parallel=True)(find_difference_profile_unrolled_parallel)
         discrepancy_func = njit(parallel=True)(discrepancy_unrolled_parallel)
         compensate_particle_amount_func = njit(parallel=True)(compensate_particle_amount_unrolled_parallel)
-    elif mode == mode.CPP:
+    elif mode == mode.CPP_WRAPPER:
         reciprocal_particles_func = reciprocal_particles_cpp
         create_flat_points_func = create_flat_points_cpp
         back_project_func = back_project_cpp

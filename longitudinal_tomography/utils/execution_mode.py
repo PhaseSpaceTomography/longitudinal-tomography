@@ -8,5 +8,6 @@ class Mode(Enum):
     UNROLLED_PARALLEL = 5
     VECTORIZE = 6 # wrong results
     VECTORIZE_PARALLEL = 7
-    CPP = 8
+    CPP_WRAPPER = 8
     CUPY = 9
+    CPP = 10

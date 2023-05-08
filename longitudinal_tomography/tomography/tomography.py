@@ -247,15 +247,17 @@ class Tomography(TomographyABC):
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
 
-        # (self.weight,
-        #  self.diff,
-        #  self.recreated) = libtomo.reconstruct(
-        #     self.xp, self.waterfall, niter, self.nbins,
-        #     self.nparts, self.nprofs, verbose, callback)
-        from longitudinal_tomography.python_routines.reconstruct import reconstruct
-        (self.weight, self.diff, self.recreated) = reconstruct(
-            self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose, mode)
+        if mode == Mode.CPP:
+            (self.weight,
+            self.diff,
+            self.recreated) = libtomo.reconstruct(
+                self.xp, self.waterfall, niter, self.nbins,
+                self.nparts, self.nprofs, verbose, callback)
+        else:
+            from longitudinal_tomography.python_routines.reconstruct import reconstruct
+            (self.weight, self.diff, self.recreated) = reconstruct(
+                self.xp, self.waterfall, niter, self.nbins,
+                self.nparts, self.nprofs, verbose, mode)
 
         return self.weight
 

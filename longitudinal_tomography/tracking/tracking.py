@@ -200,16 +200,18 @@ class Tracking(ParticleTracker):
             xp = np.zeros((machine.nprofiles, nparts))
             yp = np.zeros((machine.nprofiles, nparts))
 
-            # Calling C++ implementation of tracking routine.
-            # libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-            #                       machine.phi0, machine.deltaE0,
-            #                       machine.drift_coef, machine.phi12,
-            #                       machine.h_ratio, machine.dturns,
-            #                       recprof, deltaturn, nturns, nparts,
-            #                       self.fortran_flag, callback=callback)
-            from longitudinal_tomography.python_routines.kick_and_drift import kick_and_drift
-            xp, yp = kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
-                                            nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
+            if mode == Mode.CPP:
+                # Calling C++ implementation of tracking routine.
+                libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
+                                      machine.phi0, machine.deltaE0,
+                                      machine.drift_coef, machine.phi12,
+                                      machine.h_ratio, machine.dturns,
+                                      recprof, deltaturn, nturns, nparts,
+                                      self.fortran_flag, callback=callback)
+            else:
+                from longitudinal_tomography.python_routines.kick_and_drift import kick_and_drift
+                xp, yp = kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
+                                                nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
                                             machine.phi12, machine.h_ratio, machine.dturns, deltaturn, machine, False, mode)
 
         log.info('Tracking completed!')
