@@ -120,11 +120,11 @@ def count_particles_in_bin(xp: cp.ndarray,
 
     # return cp.sum(cp.eye(n_bins)[xp], axis=0) # extremely memory-intensive
 
-def reciprocal_particles(xp_gpu: cp.ndarray,
+def reciprocal_particles(xp: cp.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> cp.ndarray:
 
-    rparts = count_particles_in_bin(xp_gpu, n_profiles, n_particles, n_bins)
+    rparts = count_particles_in_bin(xp, n_profiles, n_particles, n_bins)
     max_bin_val = max_2d(rparts, n_particles, n_profiles)
 
     # Setting 0's to 1's to avoid zero division
@@ -141,30 +141,28 @@ def create_flat_points(xp: cp.ndarray,
 
     return flat_points
 
-def reconstruct_cupy(xp: np.ndarray,
-                waterfall: np.ndarray, n_iter: int,
+def reconstruct_cupy(xp: cp.ndarray,
+                waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...) -> tuple:
 
     # from wrapper
-    weights_gpu = cp.zeros(n_particles)
+    weights = cp.zeros(n_particles)
     discr = np.zeros(n_iter + 1)
-    flat_profiles_gpu = cp.asarray(np.copy(waterfall.flatten()))
-    flat_rec_gpu = cp.zeros(n_profiles * n_bins)
+    flat_profiles = waterfall.flatten()
+    flat_rec = cp.zeros(n_profiles * n_bins)
 
     all_bins = n_profiles * n_bins
-    diff_prof_gpu = cp.zeros(all_bins)
-    flat_points_gpu = cp.zeros(n_particles * n_profiles)
-
-    xp_gpu = cp.asarray(xp)
+    diff_prof = cp.zeros(all_bins)
+    flat_points = cp.zeros(n_particles * n_profiles)
 
     # Actual functionality
-    rparts_gpu = reciprocal_particles(xp_gpu, n_bins, n_profiles, n_particles)
-    flat_points_gpu = create_flat_points(xp_gpu, n_particles, n_profiles, n_bins)
-    weights_gpu = back_project(weights_gpu, flat_points_gpu, flat_profiles_gpu, n_particles, n_profiles)
-    weights_gpu = clip(weights_gpu, 0.0)
+    rparts = reciprocal_particles(xp, n_bins, n_profiles, n_particles)
+    flat_points = create_flat_points(xp, n_particles, n_profiles, n_bins)
+    weights = back_project(weights, flat_points, flat_profiles, n_particles, n_profiles)
+    weights = clip(weights, 0.0)
 
-    if cp.sum(weights_gpu) <= 0:
+    if cp.sum(weights) <= 0:
         raise RuntimeError("All of phase space got reduced to zeros")
 
     if verbose:
@@ -174,29 +172,25 @@ def reconstruct_cupy(xp: np.ndarray,
         if verbose:
             print(f"{iteration+1:3}")
 
-        flat_rec_gpu = project(flat_rec_gpu, flat_points_gpu, weights_gpu, n_particles, n_profiles, n_bins)
-        flat_rec_gpu = normalize(flat_rec_gpu, n_profiles, n_bins)
-        flat_rec_gpu = cp.asarray(flat_rec_gpu)
-        diff_prof_gpu = find_difference_profile(flat_rec_gpu, flat_profiles_gpu)
-        discr[iteration] = discrepancy(diff_prof_gpu, n_profiles, n_bins)
-        diff_prof_gpu = compensate_particle_amount(diff_prof_gpu, rparts_gpu, n_profiles, n_bins)
-        weights_gpu = back_project(weights_gpu, flat_points_gpu, diff_prof_gpu, n_particles, n_profiles)
-        weights_gpu = clip(weights_gpu, 0.0)
+        flat_rec = project(flat_rec, flat_points, weights, n_particles, n_profiles, n_bins)
+        flat_rec = normalize(flat_rec, n_profiles, n_bins)
+        diff_prof = find_difference_profile(flat_rec, flat_profiles)
+        discr[iteration] = discrepancy(diff_prof, n_profiles, n_bins)
+        diff_prof = compensate_particle_amount(diff_prof, rparts, n_profiles, n_bins)
+        weights = back_project(weights, flat_points, diff_prof, n_particles, n_profiles)
+        weights = clip(weights, 0.0)
 
 
-        if cp.sum(weights_gpu) <= 0:
+        if cp.sum(weights) <= 0:
             raise RuntimeError("All of phase space got reduced to zeros")
 
     # Calculating final discrepancy
-    flat_rec_gpu = project(flat_rec_gpu, flat_points_gpu, weights_gpu, n_particles, n_profiles, n_bins)
-    flat_rec_gpu = normalize(flat_rec_gpu, n_profiles, n_bins)
-    diff_prof_gpu = find_difference_profile(flat_rec_gpu, flat_profiles_gpu)
-    discr[n_iter] = discrepancy(diff_prof_gpu, n_profiles, n_bins)
+    flat_rec = project(flat_rec, flat_points, weights, n_particles, n_profiles, n_bins)
+    flat_rec = normalize(flat_rec, n_profiles, n_bins)
+    diff_prof = find_difference_profile(flat_rec, flat_profiles)
+    discr[n_iter] = discrepancy(diff_prof, n_profiles, n_bins)
 
     if verbose:
         print("Done!")
-
-    weights = cp.asnumpy(weights_gpu)
-    flat_rec = cp.asnumpy(flat_rec_gpu)
 
     return weights, discr, flat_rec

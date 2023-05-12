@@ -197,8 +197,15 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            xp = np.zeros((machine.nprofiles, nparts))
-            yp = np.zeros((machine.nprofiles, nparts))
+            if mode == mode.CUPY:
+                import cupy as cp
+                xp = cp.zeros((machine.nprofiles, nparts))
+                yp = cp.zeros((machine.nprofiles, nparts))
+                dphi = cp.asarray(dphi)
+                denergy = cp.asarray(denergy)
+            else:
+                xp = np.zeros((machine.nprofiles, nparts))
+                yp = np.zeros((machine.nprofiles, nparts))
 
             if mode == Mode.CPP:
                 # Calling C++ implementation of tracking routine.

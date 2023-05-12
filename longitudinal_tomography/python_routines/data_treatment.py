@@ -4,17 +4,20 @@
 """
 
 import numpy as np
+from ..utils.execution_mode import Mode
 
 def make_phase_space(xp: np.ndarray[np.int32],
                      yp: np.ndarray[np.int32],
                      weights: np.ndarray[np.float64],
-                     n_particles: int, # TODO: where do I get that from?
-                     n_bins: int) -> np.ndarray[np.float64]:
-    phase_space = np.empty(n_bins**2)
+                     n_bins: int, mode: Mode = Mode.JIT) -> np.ndarray[np.float64]:
+    index = yp + xp * n_bins
 
-    for i in range(n_particles):
-        index = yp[i] + xp[i] * n_bins
-        if index >= n_bins**2:
-            raise Exception("Index out of bounds")
-            exit()
-        phase_space[index] += weights[i]
+    if(mode == mode.CUPY):
+        import cupy as cp
+        phase_space = cp.empty(n_bins**2)
+        cp.add.at(phase_space, index, weights)
+    else:
+        phase_space = np.empty(n_bins**2)
+        np.add.at(phase_space, index, weights)
+
+    return phase_space.reshape((n_bins, n_bins))

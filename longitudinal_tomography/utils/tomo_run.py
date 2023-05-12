@@ -117,15 +117,24 @@ def run(input: str, reconstruct_profile: bool = None,
     if not tracker.self_field_flag:
         xp, yp = pts.physical_to_coords(
             xp, yp, machine, tracker.particles.xorigin,
-            tracker.particles.dEbin)
+            tracker.particles.dEbin, mode=mode)
 
     # Filters out lost particles, transposes particle matrix,
     # casts to np.int32.
-    xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
+    xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins, mode=mode)
 
     # Tomography!
-    tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
-    weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
+    if mode == mode.CUPY:
+        # TODO Discuss if this is necessary
+        from ..tomography import tomography_cupy as tomography
+        import cupy as cp
+        waterfall_gpu = cp.asarray(profiles.waterfall)
+        tomo = tomography.TomographyCuPy(waterfall_gpu, xp, yp)
+        weight = tomo.run(niter=machine.niter, verbose=tomoscope)
+    else:
+        tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
+        weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
+
 
     if tomoscope:
         for film in range(machine.filmstart, machine.filmstop + 1,
@@ -135,15 +144,20 @@ def run(input: str, reconstruct_profile: bool = None,
 
         tscp.save_difference(tomo.diff, output_dir, film)
 
+    # TODO mode is new and only phase_space is then in GPU. Discuss if necessary
     t_range, E_range, phase_space = dtreat.phase_space(tomo, machine,
-                                                       reconstr_idx)
+                                                       reconstr_idx, mode)
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
-    phase_space /= np.sum(phase_space)
+    # See line 147
+    if mode == mode.CUPY:
+        phase_space /= cp.sum(phase_space)
+    else:
+        phase_space /= np.sum(phase_space)
 
     if plot:
-        tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])
+        tomoout.show(phase_space.get(), tomo.diff, profiles.waterfall[reconstr_idx])
 
-    return t_range, E_range, phase_space
+    return t_range, E_range, phase_space.get()

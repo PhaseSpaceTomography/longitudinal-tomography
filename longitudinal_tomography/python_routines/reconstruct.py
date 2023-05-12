@@ -335,10 +335,6 @@ def reconstruct(xp: np.ndarray,
                 verbose: bool = ...,
                 mode: Mode = Mode.JIT) -> tuple:
 
-    if mode == mode.CUPY:
-        from .reconstruct_cupy import reconstruct_cupy
-        return reconstruct_cupy(xp, waterfall, n_iter, n_bins, n_particles, n_profiles, verbose)
-
     # functions
     reciprocal_particles_func = reciprocal_particles
     create_flat_points_func = create_flat_points
