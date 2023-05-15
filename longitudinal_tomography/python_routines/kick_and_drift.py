@@ -223,12 +223,9 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                                                       phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
         else:
             dphi = drift_up_func(dphi, denergy, drift_coef[turn], nparts)
-            dphi2 = drift_up(dphi2, denergy, drift_coef[turn], nparts)
 
             turn += 1
             denergy = kick_up_func(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn], phi12_arr[turn],
-                h_ratio, nparts, deltaE0[turn])
-            denergy2 = kick_up(dphi, denergy2, rfv1[turn], rfv2[turn], phi0[turn], phi12_arr[turn],
                 h_ratio, nparts, deltaE0[turn])
 
         if turn % dturns == 0:

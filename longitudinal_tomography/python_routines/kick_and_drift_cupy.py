@@ -83,7 +83,7 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
     xp[profile] = cp.copy(dphi)
     yp[profile] = cp.copy(denergy)
 
-    together = True
+    together = False
 
     while turn < nturns:
         if together:

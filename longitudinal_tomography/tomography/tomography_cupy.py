@@ -67,7 +67,7 @@ class TomographyCuPy(TomographyCuPyABC):
         super().__init__(waterfall, x_coords, y_coords)
 
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> cp.ndarray:
+            callback: t.Callable = None, mode: Mode = Mode.JIT) -> cp.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using CuPy.

@@ -245,8 +245,8 @@ def count_particles_in_bin(xp: np.ndarray,
 
     for i in range(n_particles):
         for j in range(n_profiles):
-            bin = xp[i, j]
-            rparts[j, bin] += 1
+            index = xp[i, j]
+            rparts[j, index] += 1
     return rparts
 
 @njit(parallel=True)
@@ -257,8 +257,8 @@ def count_particles_in_bin_parallel(xp: np.ndarray,
 
     for i in prange(n_particles):
         for j in prange(n_profiles):
-            bin = xp[i, j]
-            rparts[j, bin] += 1
+            index = xp[i, j]
+            rparts[j, index] += 1
     return rparts
 
 def count_particles_in_bin_cpp(xp: np.ndarray,
