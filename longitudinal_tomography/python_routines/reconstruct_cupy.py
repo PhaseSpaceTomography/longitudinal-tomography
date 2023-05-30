@@ -39,32 +39,9 @@ def clip(array: cp.ndarray,
     array[array < clip_val] = clip_val
     return array
 
-def clip_unrolled(array: np.ndarray,
-                  clip_val: float) -> np.ndarray:
-    for i in range(array.shape[0]):
-        if array[i] < clip_val:
-            array[i] = clip_val
-    return array
-
-def clip_vectorized(arr_value: float, clip_val: float) -> float:
-    if arr_value < clip_val:
-        arr_value = clip_val
-    return arr_value
-
 def find_difference_profile(flat_rec: cp.ndarray,
                             flat_profiles: cp.ndarray) -> cp.ndarray:
     return flat_profiles - flat_rec
-
-def find_difference_profile_unrolled(flat_rec: np.ndarray,
-                                     flat_profiles: np.ndarray) -> np.ndarray:
-    diff_prof = np.zeros(flat_rec.shape)
-    for i in range(flat_rec.shape[0]):
-        diff_prof[i] = flat_profiles[i] - flat_rec[i]
-    return diff_prof
-
-def find_difference_profile_vectorized(flat_rec: float, flat_profile: float) -> float:
-    diff_prof = flat_profile - flat_rec
-    return diff_prof
 
 def discrepancy(diff_prof: cp.ndarray,
                 n_profiles: int, n_bins: int) -> float:
