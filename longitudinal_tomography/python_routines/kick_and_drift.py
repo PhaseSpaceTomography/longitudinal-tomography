@@ -153,6 +153,7 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
         return kick_and_drift_numba(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof, nturns, nparts,
                                 phi0, deltaE0, drift_coef, phi12, h_ratio, dturns, deltaturn, machine, ftn_out)
 
+    # TODO remove this
     drift_up_func = drift_up
     drift_down_func = drift_down
     kick_up_func = kick_up
@@ -160,45 +161,45 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
     kick_drift_up_simultaneously_func = kick_drift_up_simultaneously
     kick_drift_down_simultaneously_func = kick_drift_down_simultaneously
 
-    if mode == mode.JIT:
+    if mode == Mode.JIT:
         drift_up_func = njit()(drift_up)
         drift_down_func = njit()(drift_down)
         kick_up_func = njit()(kick_up)
         kick_down_func = njit()(kick_down)
         kick_drift_up_simultaneously_func = njit()(kick_drift_up_simultaneously)
         kick_drift_down_simultaneously_func = njit()(kick_drift_down_simultaneously)
-    elif mode == mode.JIT_PARALLEL:
+    elif mode == Mode.JIT_PARALLEL:
         drift_up_func = njit(parallel=True)(drift_up)
         drift_down_func = njit(parallel=True)(drift_down)
         kick_up_func = njit(parallel=True)(kick_up)
         kick_down_func = njit(parallel=True)(kick_down)
         kick_drift_up_simultaneously_func = njit(parallel=True)(kick_drift_up_simultaneously)
         kick_drift_down_simultaneously_func = njit(parallel=True)(kick_drift_down_simultaneously)
-    elif mode == mode.UNROLLED:
+    elif mode == Mode.UNROLLED:
         drift_up_func = njit()(drift_up_unrolled)
         drift_down_func = njit()(drift_down_unrolled)
         kick_up_func = njit()(kick_up_unrolled)
         kick_down_func = njit()(kick_down_unrolled)
-    elif mode == mode.UNROLLED_PARALLEL:
+    elif mode == Mode.UNROLLED_PARALLEL:
         drift_up_func = njit(parallel=True)(drift_up_unrolled_parallel)
         drift_down_func = njit(parallel=True)(drift_down_unrolled_parallel)
         kick_up_func = njit(parallel=True)(kick_up_unrolled_parallel)
         kick_down_func = njit(parallel=True)(kick_down_unrolled_parallel)
         kick_drift_up_simultaneously_func = njit(parallel=True)(kick_drift_up_simultaneously_unrolled)
         kick_drift_down_simultaneously_func = njit(parallel=True)(kick_drift_down_simultaneously_unrolled)
-    elif mode == mode.VECTORIZE:
+    elif mode == Mode.VECTORIZE:
         drift_up_func = vectorize(drift_up_vectorized)
         drift_down_func = vectorize(drift_down_vectorized)
         kick_up_func = vectorize(kick_up_vectorized)
         kick_down_func = vectorize(kick_down_vectorized)
-    elif mode == mode.VECTORIZE_PARALLEL:
+    elif mode == Mode.VECTORIZE_PARALLEL:
         drift_up_func = vectorize('float64(float64, float64, float64, int32)', target='parallel')(drift_up_vectorized)
         drift_down_func = vectorize('float64(float64, float64, float64, int32)', target='parallel')(drift_down_vectorized)
         kick_up_func = vectorize('float64(float64, float64, float64, float64, float64, \
                                  float64, float64, int32, float64)', target='parallel')(kick_up_vectorized)
         kick_down_func = vectorize('float64(float64, float64, float64, float64, float64, \
                                  float64, float64, int32, float64)', target='parallel')(kick_down_vectorized)
-    elif mode == mode.CPP_WRAPPER:
+    elif mode == Mode.CPP_WRAPPER:
         drift_up_func = drift_up_cpp
         drift_down_func = drift_down_cpp
         kick_up_func = kick_up_cpp

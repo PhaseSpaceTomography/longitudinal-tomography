@@ -1,4 +1,5 @@
-"""Module containing the kick-and-drift algorithm derived from the cpp functions.
+"""Module containing the kick-and-drift algorithm derived from the cpp functions
+with Numba optimizations.
 
 :Author(s): **Bernardo Abreu Figueiredo**
 """

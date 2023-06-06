@@ -193,7 +193,7 @@ def phase_space_from_coordinates(xp: np.ndarray, yp: np.ndarray,
         2D array of bin weights in phase space.
     """
 
-    if mode == mode.CPP or mode == mode.CPP_WRAPPER:
+    if mode == Mode.CPP or mode == Mode.CPP_WRAPPER:
         density = libtomo.make_phase_space(xp, yp, weight, nbins)
     else:
         density = data_treatment.make_phase_space(xp, yp, weight, nbins, mode)
