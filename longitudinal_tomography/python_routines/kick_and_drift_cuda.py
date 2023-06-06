@@ -83,6 +83,8 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                    deltaturn: int,
                    machine: 'Machine',
                    ftn_out: bool = False) -> Tuple[cp.ndarray, cp.ndarray]:
+    global grid_size
+    grid_size = (int(nparts / block_size[0]) + 1, 1, 1)
 
     phi12_arr = np.full(nturns+1, phi12)
     # Preparation end
@@ -150,4 +152,5 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                     log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                                 0.000% went outside the image width.")
 
+    print(cp.std(xp), cp.std(yp))
     return xp, yp

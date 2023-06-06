@@ -4,7 +4,7 @@
  * @author Bernardo Abreu Figueiredo
  * Contact: bernardo.abreu.figueiredo@cern.ch
  *
- * CUDA kernels that handles particle tracking (kicking and
+ * CUDA kernels that handle particle tracking (kicking and
  * drifting).
  */
 
@@ -20,9 +20,8 @@ __global__ void kick_up(const double *dphi,
                         const int nr_particles,
                         const double acc_kick) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-    for (int i = tid; i < nr_particles; i += blockDim.x * gridDim.x)
-        denergy[i] += rfv1 * sin(dphi[i] + phi0)
-                      + rfv2 * sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+    denergy[tid] += rfv1 * sin(dphi[tid] + phi0)
+                + rfv2 * sin(hratio * (dphi[tid] + phi0 - phi12)) - acc_kick;
 }
 
 extern "C"
@@ -37,9 +36,8 @@ __global__ void kick_down(const double *dphi,
                           const double acc_kick) {
 
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-    for (int i = tid; i < nr_particles; i += blockDim.x * gridDim.x)
-        denergy[i] -= rfv1 * sin(dphi[i] + phi0)
-                      + rfv2 * sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+    denergy[tid] -= rfv1 * sin(dphi[tid] + phi0)
+                + rfv2 * sin(hratio * (dphi[tid] + phi0 - phi12)) - acc_kick;
 }
 
 extern "C"
@@ -48,10 +46,7 @@ __global__ void drift_up(double *dphi,
                          const double drift_coef,
                          const int nr_particles) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-
-    for(int i = tid; i < nr_particles; i += blockDim.x * gridDim.x) {
-        dphi[i] -= drift_coef * denergy[i];
-    }
+    dphi[tid] -= drift_coef * denergy[tid];
 }
 
 extern "C"
@@ -60,10 +55,7 @@ __global__ void drift_down(double *dphi,
                          const double drift_coef,
                          const int nr_particles) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-
-    for(int i = tid; i < nr_particles; i += blockDim.x * gridDim.x) {
-        dphi[i] += drift_coef * denergy[i];
-    }
+    dphi[tid] += drift_coef * denergy[tid];
 }
 
 extern "C"
@@ -79,11 +71,9 @@ __global__ void kick_drift_up_simultaneously(double *dphi,
                          const double acc_kick) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
-    for(int i = tid; i < nr_particles; i += blockDim.x * gridDim.x) {
-        dphi[i] -= drift_coef * denergy[i];
-        denergy[i] += rfv1 * sin(dphi[i] + phi0)
-                      + rfv2 * sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
-    }
+    dphi[tid] -= drift_coef * denergy[tid];
+    denergy[tid] += rfv1 * sin(dphi[tid] + phi0)
+                + rfv2 * sin(hratio * (dphi[tid] + phi0 - phi12)) - acc_kick;
 }
 
 extern "C"
@@ -99,9 +89,7 @@ __global__ void kick_drift_down_simultaneously(double *dphi,
                          const double acc_kick) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
-    for(int i = tid; i < nr_particles; i += blockDim.x * gridDim.x) {
-        denergy[i] -= rfv1 * sin(dphi[i] + phi0)
-                      + rfv2 * sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
-        dphi[i] += drift_coef * denergy[i];
-    }
+    denergy[tid] -= rfv1 * sin(dphi[tid] + phi0)
+                    + rfv2 * sin(hratio * (dphi[tid] + phi0 - phi12)) - acc_kick;
+    dphi[tid] += drift_coef * denergy[tid];
 }

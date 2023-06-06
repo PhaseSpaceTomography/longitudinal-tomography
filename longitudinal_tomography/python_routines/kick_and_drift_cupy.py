@@ -140,5 +140,5 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                 if ftn_out:
                     log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                                 0.000% went outside the image width.")
-
+    print(cp.std(xp), cp.std(yp))
     return xp, yp
