@@ -197,7 +197,7 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            if mode == mode.CUPY:
+            if mode == Mode.CUPY or mode == Mode.CUDA:
                 import cupy as cp
                 xp = cp.zeros((machine.nprofiles, nparts))
                 yp = cp.zeros((machine.nprofiles, nparts))

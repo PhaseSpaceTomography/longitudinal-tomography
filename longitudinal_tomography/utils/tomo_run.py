@@ -124,7 +124,7 @@ def run(input: str, reconstruct_profile: bool = None,
     xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins, mode=mode)
 
     # Tomography!
-    if mode == mode.CUPY:
+    if mode == Mode.CUPY or mode == Mode.CUDA:
         # TODO Discuss if this is necessary
         from ..tomography import tomography_cupy as tomography
         import cupy as cp
@@ -132,6 +132,7 @@ def run(input: str, reconstruct_profile: bool = None,
         tomo = tomography.TomographyCuPy(waterfall_gpu, xp, yp)
         weight = tomo.run(niter=machine.niter, verbose=tomoscope)
     else:
+        from ..tomography import tomography as tomography
         tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
         weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
 
@@ -152,12 +153,13 @@ def run(input: str, reconstruct_profile: bool = None,
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
     # See line 147
-    if mode == mode.CUPY:
+    if mode == Mode.CUPY or mode == Mode.CUDA:
         phase_space /= cp.sum(phase_space)
+        phase_space = phase_space.get()
     else:
         phase_space /= np.sum(phase_space)
 
     if plot:
-        tomoout.show(phase_space.get(), tomo.diff, profiles.waterfall[reconstr_idx])
+        tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])
 
-    return t_range, E_range, phase_space.get()
+    return t_range, E_range, phase_space

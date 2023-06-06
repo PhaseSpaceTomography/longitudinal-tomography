@@ -12,7 +12,7 @@ def make_phase_space(xp: np.ndarray[np.int32],
                      n_bins: int, mode: Mode = Mode.JIT) -> np.ndarray[np.float64]:
     index = yp + xp * n_bins
 
-    if(mode == mode.CUPY):
+    if(mode == Mode.CUPY or mode == Mode.CUDA):
         import cupy as cp
         phase_space = cp.empty(n_bins**2)
         cp.add.at(phase_space, index, weights)

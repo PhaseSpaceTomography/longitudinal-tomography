@@ -5,38 +5,38 @@
 
 import numpy as np
 from typing import Optional
-from numba import jit
+from numba import njit, prange
 
-@jit(nopython=True)
+@njit(parallel=True)
 def back_project(weights: np.ndarray,
                  flat_points: np.ndarray,
                  flat_profiles: np.ndarray,
                  n_particles: int,
                  n_profiles: int) -> np.ndarray:
-    for i in range(n_particles):
-        for j in range(n_profiles):
+    for i in prange(n_particles):
+        for j in prange(n_profiles):
             weights[i] += flat_profiles[flat_points[i * n_profiles + j]]
     return weights
 
-@jit(nopython=True)
+@njit(parallel=True)
 def project(flat_rec: np.ndarray,
             flat_points: np.ndarray,
             weights: np.ndarray, n_particles: int,
             n_profiles: int) -> np.ndarray:
-    for i in range(n_particles):
-        for j in range(n_profiles):
+    for i in prange(n_particles):
+        for j in prange(n_profiles):
             flat_rec[flat_points[i * n_profiles + j]] += weights[i]
     return flat_rec
 
-@jit(nopython=True)
+@njit(parallel=True)
 def normalize(flat_rec: np.ndarray,
               n_profiles: int, n_bins: int) -> np.ndarray:
     sum_waterfall = 0.0
-    for i in range(n_profiles):
+    for i in prange(n_profiles):
         sum_profile = 0.0
-        for j in range(n_bins):
+        for j in prange(n_bins):
             sum_profile += flat_rec[i * n_bins + j]
-        for j in range(n_bins):
+        for j in prange(n_bins):
             flat_rec[i * n_bins + j] /= sum_profile
         sum_waterfall += sum_profile
 
@@ -44,18 +44,18 @@ def normalize(flat_rec: np.ndarray,
         raise RuntimeError("Phase space reduced to zeros!")
     return flat_rec
 
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def clip(array: np.ndarray,
         clip_val: float) -> np.ndarray:
     array[array < clip_val] = clip_val
     return array
 
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def find_difference_profile(flat_rec: np.ndarray,
                             flat_profiles: np.ndarray) -> np.ndarray:
     return flat_profiles - flat_rec
 
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def discrepancy(diff_prof: np.ndarray,
                 n_profiles: int, n_bins = int) -> float:
     all_bins = n_profiles * n_bins
@@ -63,42 +63,37 @@ def discrepancy(diff_prof: np.ndarray,
 
     return np.sqrt(squared_sum / all_bins)
 
-@jit(nopython=True)
+@njit(parallel=True)
 def compensate_particle_amount(diff_prof: np.ndarray,
                                rparts: np.ndarray,
                                n_profiles: int, n_bins: int) -> np.ndarray:
     diff_prof *= rparts.reshape(n_profiles * n_bins)
 
-    # for i in range(n_profiles):
-    #     for j in range(n_bins):
+    # for i in prange(n_profiles):
+    #     for j in prange(n_bins):
     #         idx = i * n_bins + j
     #         diff_prof[idx] *= rparts[idx]
 
     return diff_prof
 
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def max_2d(array: np.ndarray,
            x_axis: int, y_axis: int) -> float:
     return np.max(array[:y_axis, :x_axis])
 
-@jit(nopython=True, parallel=True)
-def max_1d(array: np.ndarray,
-           length: int) -> float:
-    return np.max(array)
-
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def count_particles_in_bin(xp: np.ndarray,
                            n_profiles: int, n_particles: int,
                            n_bins: int) -> np.ndarray:
     rparts = np.zeros((n_profiles, n_bins))
 
-    for i in range(n_particles):
-        for j in range(n_profiles):
+    for i in prange(n_particles):
+        for j in prange(n_profiles):
             bin = xp[i, j]
             rparts[j, bin] += 1
     return rparts
 
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def reciprocal_particles(xp: np.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> np.ndarray:
@@ -109,28 +104,27 @@ def reciprocal_particles(xp: np.ndarray,
     # Setting 0's to 1's to avoid zero division
     rparts = np.where(rparts == 0, 1, rparts)
 
-    for i in range(n_profiles):
-        for j in range(n_bins):
+    for i in prange(n_profiles):
+        for j in prange(n_bins):
             #idx = i * n_bins + j
             rparts[i, j] = max_bin_val / rparts[i, j]
     return rparts
 
-@jit(nopython=True)
+@njit(parallel=True)
 def create_flat_points(xp: np.ndarray,
                        n_particles: int, n_profiles: int,
                        n_bins: int) -> np.ndarray:
     flat_points = np.copy(xp.flatten())
 
-    for i in range(n_particles):
-        for j in range(n_profiles):
+    for i in prange(n_particles):
+        for j in prange(n_profiles):
             flat_points[i * n_profiles + j] += n_bins * j
     return flat_points
 
-def reconstruct(xp: np.ndarray,
+def reconstruct_numba(xp: np.ndarray,
                 waterfall: np.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
-                verbose: bool = ...,
-                callback: Optional[object] = ...) -> tuple:
+                verbose: bool) -> tuple:
     # from wrapper
     weights = np.zeros(n_particles)
     discr = np.zeros(n_iter + 1)
@@ -153,7 +147,7 @@ def reconstruct(xp: np.ndarray,
     if verbose:
         print(" Iterating...")
 
-    for iteration in range(n_iter):
+    for iteration in prange(n_iter):
         if verbose:
             print(f"{iteration+1:3}")
 

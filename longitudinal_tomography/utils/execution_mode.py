@@ -10,4 +10,5 @@ class Mode(Enum):
     VECTORIZE_PARALLEL = 7
     CPP_WRAPPER = 8
     CUPY = 9
-    CPP = 10
+    CUDA = 10
+    CPP = 11

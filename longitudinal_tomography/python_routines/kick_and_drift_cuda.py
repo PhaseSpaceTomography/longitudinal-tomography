@@ -1,4 +1,4 @@
-"""Module containing the kick-and-drift algorithm with CuPy.
+"""Module containing the kick-and-drift algorithm with CUDA kernels.
 
 :Author(s): **Bernardo Abreu Figueiredo**
 """
@@ -7,61 +7,70 @@ import numpy as np
 import cupy as cp
 import logging
 from typing import Tuple
+from ..utils import gpu_dev
 
 log = logging.getLogger(__name__)
+
+if gpu_dev is None:
+        from ..utils import GPUDev
+        gpu_dev = GPUDev()
+
+kick_down_kernel = gpu_dev.kd_mod.get_function("kick_down")
+kick_up_kernel = gpu_dev.kd_mod.get_function("kick_up")
+drift_down_kernel = gpu_dev.kd_mod.get_function("drift_down")
+drift_up_kernel = gpu_dev.kd_mod.get_function("drift_up")
+kick_drift_down_simultaneously_kernel = gpu_dev.kd_mod.get_function("kick_drift_down_simultaneously")
+kick_drift_up_simultaneously_kernel = gpu_dev.kd_mod.get_function("kick_drift_up_simultaneously")
+
+block_size = gpu_dev.block_size
+grid_size = gpu_dev.grid_size
+
 
 def drift_down(dphi: cp.ndarray,
                denergy: cp.ndarray, drift_coef: float,
                n_particles: int) -> cp.ndarray:
-    dphi += drift_coef * denergy
+    drift_down_kernel(args=(dphi, denergy, drift_coef, n_particles),
+                      block=block_size, grid=grid_size)
     return dphi
 
 def drift_up(dphi: cp.ndarray,
              denergy: cp.ndarray, drift_coef: float,
              n_particles: int) -> cp.ndarray:
-    dphi -= drift_coef * denergy
+    drift_up_kernel(args=(dphi, denergy, drift_coef, n_particles),
+                    block=block_size, grid=grid_size)
     return dphi
 
 def kick_down(dphi: cp.ndarray,
               denergy: cp.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
               acc_kick: float) -> cp.ndarray:
-    denergy -= rfv1 * cp.sin(dphi + phi0) \
-                      + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
+    kick_down_kernel(args=(dphi, denergy, rfv1, rfv2, phi0, phi12, h_ratio, n_particles, acc_kick),
+                     block=block_size, grid=grid_size)
     return denergy
 
 def kick_up(dphi: cp.ndarray,
             denergy: cp.ndarray, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
             acc_kick: float) -> cp.ndarray:
-    denergy += rfv1 * cp.sin(dphi + phi0) \
-                  + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
+    kick_up_kernel(args=(dphi, denergy, rfv1, rfv2, phi0, phi12, h_ratio, n_particles, acc_kick),
+                   block=block_size, grid=grid_size)
     return denergy
 
 def kick_drift_up_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
-    dphi -= drift_coef * denergy
-    denergy += (rfv1 * cp.sin(dphi + phi0) \
-                  + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick)
-    return dphi, denergy
-
-# incredibly slow, probably only works with vectorization?
-def kick_drift_up_simultaneously_unrolled(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
-            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
-    for i in range(n_particles):
-        dphi[i] -= drift_coef * denergy[i]
-        denergy[i] += (rfv1 * cp.sin(dphi[i] + phi0) \
-                  + rfv2 * cp.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick)
+    kick_drift_up_simultaneously_kernel(args=(dphi, denergy, drift_coef, rfv1, rfv2,
+                                              phi0, phi12, h_ratio, n_particles, acc_kick),
+                                        block=block_size, grid=grid_size)
     return dphi, denergy
 
 def kick_drift_down_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
-    denergy -= (rfv1 * cp.sin(dphi + phi0) \
-                  + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick)
-    dphi += drift_coef * denergy
+    kick_drift_down_simultaneously_kernel(args=(dphi, denergy, drift_coef, rfv1, rfv2,
+                                              phi0, phi12, h_ratio, n_particles, acc_kick),
+                                        block=block_size, grid=grid_size)
     return dphi, denergy
 
-def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
+def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                    denergy: cp.ndarray, dphi: cp.ndarray,
                    rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
                    nturns: int, nparts: int,

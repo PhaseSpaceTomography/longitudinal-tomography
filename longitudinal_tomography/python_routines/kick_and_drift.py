@@ -140,9 +140,17 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
                    deltaturn: int,
                    machine: 'Machine',
                    ftn_out: bool = False, mode: Mode = Mode.JIT) -> Tuple[np.ndarray, np.ndarray]:
-    if mode == mode.CUPY:
+    if mode == Mode.CUPY:
         from .kick_and_drift_cupy import kick_and_drift_cupy
         return kick_and_drift_cupy(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof, nturns, nparts,
+                                phi0, deltaE0, drift_coef, phi12, h_ratio, dturns, deltaturn, machine, ftn_out)
+    elif mode == Mode.CUDA:
+        from .kick_and_drift_cuda import kick_and_drift_cuda
+        return kick_and_drift_cuda(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof, nturns, nparts,
+                                phi0, deltaE0, drift_coef, phi12, h_ratio, dturns, deltaturn, machine, ftn_out)
+    elif mode == Mode.JIT_PARALLEL:
+        from .kick_and_drift_numba import kick_and_drift_numba
+        return kick_and_drift_numba(xp, yp, denergy, dphi, rfv1, rfv2, rec_prof, nturns, nparts,
                                 phi0, deltaE0, drift_coef, phi12, h_ratio, dturns, deltaturn, machine, ftn_out)
 
     drift_up_func = drift_up
@@ -212,9 +220,6 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
     yp[profile] = np.copy(denergy)
 
     together = False
-
-    dphi2 = np.copy(dphi)
-    denergy2 = np.copy(denergy)
 
     while turn < nturns:
         if together:

@@ -335,6 +335,11 @@ def reconstruct(xp: np.ndarray,
                 verbose: bool = ...,
                 mode: Mode = Mode.JIT) -> tuple:
 
+    if mode == Mode.JIT_PARALLEL:
+        from .reconstruct_numba import reconstruct_numba
+        return reconstruct_numba(xp, waterfall, n_iter, n_bins, n_particles, n_profiles, verbose)
+
+    # TODO remove this
     # functions
     reciprocal_particles_func = reciprocal_particles
     create_flat_points_func = create_flat_points
@@ -346,31 +351,31 @@ def reconstruct(xp: np.ndarray,
     discrepancy_func = discrepancy
     compensate_particle_amount_func = compensate_particle_amount
 
-    if mode == mode.JIT or mode == mode.VECTORIZE or mode == mode.CUPY:
+    if mode == Mode.JIT or mode == Mode.VECTORIZE or mode == Mode.CUPY:
         reciprocal_particles_func = njit()(reciprocal_particles)
         create_flat_points_func = njit()(create_flat_points)
         back_project_func = njit()(back_project)
-        clip_func = njit()(clip) if mode == mode.JIT or mode.CUPY \
+        clip_func = njit()(clip) if mode == Mode.JIT or mode == Mode.CUPY \
             else vectorize()(clip_vectorized)
         project_func = njit()(project)
         normalize_func = njit()(normalize)
-        find_difference_profile_func = njit()(find_difference_profile) if mode == mode.JIT or mode == mode.CUPY \
+        find_difference_profile_func = njit()(find_difference_profile) if mode == Mode.JIT or mode == Mode.CUPY \
             else vectorize()(find_difference_profile_vectorized)
         discrepancy_func = njit()(discrepancy)
         compensate_particle_amount_func = njit()(compensate_particle_amount)
-    elif mode == mode.JIT_PARALLEL or mode == mode.VECTORIZE_PARALLEL:
+    elif mode == Mode.JIT_PARALLEL or mode == Mode.VECTORIZE_PARALLEL:
         reciprocal_particles_func = njit(parallel=True)(reciprocal_particles_parallel)
         create_flat_points_func = njit(parallel=True)(create_flat_points_parallel)
         back_project_func = njit(parallel=True)(back_project_parallel)
-        clip_func = njit(parallel=True)(clip) if mode == mode.JIT_PARALLEL \
+        clip_func = njit(parallel=True)(clip) if mode == Mode.JIT_PARALLEL \
             else vectorize('float64(float64, float64)', target='parallel')(clip_vectorized)
         project_func = njit(parallel=True)(project_parallel)
         normalize_func = njit(parallel=True)(normalize_parallel)
-        find_difference_profile_func = njit(parallel=True)(find_difference_profile) if mode == mode.JIT_PARALLEL \
+        find_difference_profile_func = njit(parallel=True)(find_difference_profile) if mode == Mode.JIT_PARALLEL \
             else vectorize('float64(float64, float64)', target='parallel')(find_difference_profile_vectorized)
         discrepancy_func = njit(parallel=True)(discrepancy)
         compensate_particle_amount_func = njit(parallel=True)(compensate_particle_amount)
-    elif mode == mode.UNROLLED:
+    elif mode == Mode.UNROLLED:
         reciprocal_particles_func = njit()(reciprocal_particles)
         create_flat_points_func = njit()(create_flat_points)
         back_project_func = njit()(back_project)
@@ -380,7 +385,7 @@ def reconstruct(xp: np.ndarray,
         find_difference_profile_func = njit()(find_difference_profile)
         discrepancy_func = njit()(discrepancy)
         compensate_particle_amount_func = njit()(compensate_particle_amount)
-    elif mode == mode.UNROLLED_PARALLEL:
+    elif mode == Mode.UNROLLED_PARALLEL:
         reciprocal_particles_func = njit(parallel=True)(reciprocal_particles_parallel)
         create_flat_points_func = njit(parallel=True)(create_flat_points_parallel)
         back_project_func = njit(parallel=True)(back_project_parallel)
@@ -390,7 +395,7 @@ def reconstruct(xp: np.ndarray,
         find_difference_profile_func = njit(parallel=True)(find_difference_profile_unrolled_parallel)
         discrepancy_func = njit(parallel=True)(discrepancy_unrolled_parallel)
         compensate_particle_amount_func = njit(parallel=True)(compensate_particle_amount_unrolled_parallel)
-    elif mode == mode.CPP_WRAPPER:
+    elif mode == Mode.CPP_WRAPPER:
         reciprocal_particles_func = reciprocal_particles_cpp
         create_flat_points_func = create_flat_points_cpp
         back_project_func = back_project_cpp

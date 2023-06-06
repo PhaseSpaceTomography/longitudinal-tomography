@@ -265,7 +265,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mod
     """
     nr_lost_pts = 0
 
-    if mode == Mode.CUPY:
+    if mode == Mode.CUPY or mode == Mode.CUDA:
         import cupy as cp
         # Find all particles outside of image width
         invalid_pts = cp.argwhere(cp.logical_or(xp >= img_width, xp < 0))
@@ -351,7 +351,7 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     phi0_reshaped = machine.phi0[turns].reshape(-1, 1)
     omega_rev0_reshaped = machine.omega_rev0[turns].reshape(-1, 1)
 
-    if mode == mode.CUPY:
+    if mode == Mode.CUPY or mode == Mode.CUDA:
         import cupy as cp
         phi0_reshaped = cp.asarray(phi0_reshaped)
         omega_rev0_reshaped = cp.asarray(omega_rev0_reshaped)
