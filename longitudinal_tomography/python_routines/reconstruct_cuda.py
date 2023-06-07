@@ -1,29 +1,49 @@
-"""Module containing the reconstruction algorithm derived from the cpp functions.
+"""Module containing the reconstruction algorithm with CUDA kernels.
 
 :Author(s): **Bernardo Abreu Figueiredo**
 """
 
 import numpy as np
 import cupy as cp
+from ..utils import gpu_dev
 
-# Probably no vectorization possible?
+if gpu_dev is None:
+        from ..utils import GPUDev
+        gpu_dev = GPUDev()
+
+back_project_kernel = gpu_dev.rec_mod.get_function("back_project")
+project_kernel = gpu_dev.rec_mod.get_function("project")
+clip_kernel = gpu_dev.rec_mod.get_function("clip")
+find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile")
+count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin")
+calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal")
+comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount")
+create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
+
+block_size = gpu_dev.block_size
+grid_size = gpu_dev.grid_size
+
 def back_project(weights: cp.ndarray,
                  flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
-
-    return cp.sum(cp.take(flat_profiles, flat_points, axis=0), axis=1) + weights
+    back_project_kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
+                        block=block_size,
+                        grid=(int(n_particles / block_size[0] + 1), 1, 1))
+    return weights
 
 def project(flat_rec: cp.ndarray,
             flat_points: cp.ndarray,
             weights: cp.ndarray, n_particles: int,
             n_profiles: int, n_bins: int) -> cp.ndarray:
-    return cp.bincount(flat_points.reshape(-1), weights.repeat(n_profiles), minlength=n_profiles * n_bins) + flat_rec
+    project_kernel(args=(flat_rec, flat_points, weights, n_particles, n_profiles),
+                        block=block_size,
+                        grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
+    return flat_rec
 
 def normalize(flat_rec: cp.ndarray,
               n_profiles: int, n_bins: int) -> cp.ndarray:
-
     flat_rec = flat_rec.reshape((n_profiles, n_bins))
     sum_profile = cp.sum(flat_rec, axis=1)
     flat_rec /= cp.expand_dims(sum_profile, axis=1)
@@ -36,12 +56,20 @@ def normalize(flat_rec: cp.ndarray,
 
 def clip(array: cp.ndarray,
         clip_val: float) -> cp.ndarray:
-    array[array < clip_val] = clip_val
+    array_length = len(array)
+    clip_kernel(args=(array, array_length, clip_val),
+                block=block_size,
+                grid=(int(array_length / block_size[0] + 1), 1, 1))
     return array
 
 def find_difference_profile(flat_rec: cp.ndarray,
                             flat_profiles: cp.ndarray) -> cp.ndarray:
-    return flat_profiles - flat_rec
+    length = len(flat_rec)
+    diff_prof = cp.empty(length)
+    find_diffprof_kernel(args=(diff_prof, flat_rec, flat_profiles, length),
+                         block=block_size,
+                         grid=(int(length / block_size[0] + 1), 1, 1))
+    return diff_prof
 
 def discrepancy(diff_prof: cp.ndarray,
                 n_profiles: int, n_bins: int) -> float:
@@ -53,50 +81,47 @@ def discrepancy(diff_prof: cp.ndarray,
 def compensate_particle_amount(diff_prof: cp.ndarray,
                                rparts: cp.ndarray,
                                n_profiles: int, n_bins: int) -> cp.ndarray:
-    return diff_prof * rparts.reshape(n_profiles * n_bins)
+    comp_part_amount_kernel(args=(diff_prof, rparts, n_profiles, n_bins),
+                            block=block_size,
+                            grid=(int((n_profiles * n_bins) / block_size[0] + 1), 1, 1))
+    return diff_prof
 
 def max_2d(array: cp.ndarray,
            x_axis: int, y_axis: int) -> float:
     return cp.max(array[:y_axis, :x_axis])
 
-def count_particles_in_bin(xp: cp.ndarray,
-                           n_profiles: int, n_particles: int,
-                           n_bins: int) -> cp.ndarray:
-
-    bins = cp.arange(n_bins + 1)
-    rparts = cp.empty((n_profiles, n_bins), dtype=cp.int32)
-    for j in range(n_profiles):
-        rparts[j], _ = cp.histogram(xp[:, j], bins=bins)
-    return rparts
-
-    # return cp.sum(cp.eye(n_bins)[xp], axis=0) # extremely memory-intensive
-
 def reciprocal_particles(xp: cp.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> cp.ndarray:
+    rparts = cp.empty((n_profiles * n_bins), dtype=cp.float64)
+    count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
+                          block=block_size,
+                          grid=(int(n_particles / block_size[0] + 1), 1, 1))
 
-    rparts = count_particles_in_bin(xp, n_profiles, n_particles, n_bins)
-    max_bin_val = max_2d(rparts, n_particles, n_profiles)
+    max_bin_val = float(cp.max(rparts))
 
-    # Setting 0's to 1's to avoid zero division
-    rparts = cp.where(rparts == 0, 1, rparts)
-    rparts = max_bin_val / rparts
-
+    calc_reciprocal_kernel(args=(rparts, n_bins, n_profiles, max_bin_val),
+                           block=block_size,
+                           grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))
     return rparts
 
 def create_flat_points(xp: cp.ndarray,
                        n_particles: int, n_profiles: int,
                        n_bins: int) -> cp.ndarray:
     flat_points = cp.copy(xp)
-    flat_points += cp.arange(n_profiles) * n_bins
+
+    create_flat_points_kernel(args=(flat_points, n_particles, n_profiles, n_bins),
+                              block=block_size,
+                              grid=(int(n_particles / block_size[0] + 1), 1, 1))
 
     return flat_points
 
-def reconstruct_cupy(xp: cp.ndarray,
+def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...) -> tuple:
 
+    xp = xp.flatten()
     # from wrapper
     weights = cp.zeros(n_particles)
     discr = np.zeros(n_iter + 1)
@@ -104,7 +129,6 @@ def reconstruct_cupy(xp: cp.ndarray,
     flat_rec = cp.zeros(n_profiles * n_bins)
 
     all_bins = n_profiles * n_bins
-    diff_prof = cp.zeros(all_bins)
     flat_points = cp.zeros(n_particles * n_profiles)
 
     # Actual functionality

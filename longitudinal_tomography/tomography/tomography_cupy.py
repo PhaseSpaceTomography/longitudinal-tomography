@@ -14,6 +14,7 @@ from ..cpp_routines import libtomo
 from .. import exceptions as expt
 from ..utils.execution_mode import Mode
 from longitudinal_tomography.python_routines.reconstruct_cupy import reconstruct_cupy
+from longitudinal_tomography.python_routines.reconstruct_cuda import reconstruct_cuda
 
 log = logging.getLogger(__name__)
 
@@ -107,8 +108,13 @@ class TomographyCuPy(TomographyCuPyABC):
                 'x-coordinates has value None, and must be provided')
 
 
-        (self.weight, self.diff, self.recreated) = reconstruct_cupy(
-            self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose)
+        if mode == Mode.CUPY:
+            (self.weight, self.diff, self.recreated) = reconstruct_cupy(
+                self.xp, self.waterfall, niter, self.nbins,
+                self.nparts, self.nprofs, verbose)
+        else:
+            (self.weight, self.diff, self.recreated) = reconstruct_cuda(
+                self.xp, self.waterfall, niter, self.nbins,
+                self.nparts, self.nprofs, verbose)
 
         return self.weight

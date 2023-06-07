@@ -37,6 +37,8 @@ class GPUDev:
 
         self.kd_mod = cp.RawModule(path=os.path.join(
                         directory, f'../cuda_kernels/kick_and_drift.cubin'))
+        self.rec_mod = cp.RawModule(path=os.path.join(
+                        directory, f'../cuda_kernels/reconstruct.cubin'))
 
     def report_attributes(self):
         # Saves into a file all the device attributes
@@ -45,4 +47,4 @@ class GPUDev:
                 f.write(f"{k}:{v}\n")
 
 
-gpu_dev = None
+gpu_dev = GPUDev()

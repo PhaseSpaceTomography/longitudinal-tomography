@@ -130,7 +130,7 @@ def run(input: str, reconstruct_profile: bool = None,
         import cupy as cp
         waterfall_gpu = cp.asarray(profiles.waterfall)
         tomo = tomography.TomographyCuPy(waterfall_gpu, xp, yp)
-        weight = tomo.run(niter=machine.niter, verbose=tomoscope)
+        weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
     else:
         from ..tomography import tomography as tomography
         tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
