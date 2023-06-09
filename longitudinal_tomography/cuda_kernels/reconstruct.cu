@@ -16,9 +16,12 @@ __global__ void back_project(double *weights,                     // inn/out
                              const double *flat_profiles,         // inn
                              const int npart, const int nprof) {  // inn
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if(tid < npart)
-        for (int j = 0; j < nprof; j++)
-            weights[tid] += flat_profiles[flat_points[tid * nprof + j]];
+    
+    if(tid < npart * nprof)
+    {
+        int idx = flat_points[tid];
+        atomicAdd(&weights[tid / nprof], flat_profiles[idx]);
+    }
 }
 
 // Projections using flattened arrays
@@ -27,7 +30,6 @@ __global__ void project(double *flat_rec,                       // inn/out
                         int *flat_points,                       // inn
                         const double *weights,                  // inn
                         const int npart, const int nprof) {     // inn
-    // TODO
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
     if (tid < npart * nprof)
