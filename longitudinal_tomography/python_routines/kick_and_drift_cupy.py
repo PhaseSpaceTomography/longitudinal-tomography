@@ -10,12 +10,15 @@ from typing import Tuple
 
 log = logging.getLogger(__name__)
 
+from pyprof import timing
+
 def drift_down(dphi: cp.ndarray,
                denergy: cp.ndarray, drift_coef: float,
                n_particles: int) -> cp.ndarray:
     dphi += drift_coef * denergy
     return dphi
 
+@timing.timeit(key='drift_up')
 def drift_up(dphi: cp.ndarray,
              denergy: cp.ndarray, drift_coef: float,
              n_particles: int) -> cp.ndarray:
@@ -30,6 +33,7 @@ def kick_down(dphi: cp.ndarray,
                       + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
     return denergy
 
+@timing.timeit(key='kick_up')
 def kick_up(dphi: cp.ndarray,
             denergy: cp.ndarray, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
@@ -140,5 +144,4 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                 if ftn_out:
                     log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                                 0.000% went outside the image width.")
-    print(cp.std(xp), cp.std(yp))
     return xp, yp

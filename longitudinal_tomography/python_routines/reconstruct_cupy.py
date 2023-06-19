@@ -6,7 +6,10 @@
 import numpy as np
 import cupy as cp
 
+from pyprof import timing
+
 # Probably no vectorization possible?
+@timing.timeit(key='back_project')
 def back_project(weights: cp.ndarray,
                  flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,
@@ -15,6 +18,7 @@ def back_project(weights: cp.ndarray,
 
     return cp.sum(cp.take(flat_profiles, flat_points, axis=0), axis=1) + weights
 
+@timing.timeit(key='project')
 def project(flat_rec: cp.ndarray,
             flat_points: cp.ndarray,
             weights: cp.ndarray, n_particles: int,
@@ -143,5 +147,7 @@ def reconstruct_cupy(xp: cp.ndarray,
 
     if verbose:
         print("Done!")
+
+    print(cp.mean(weights), cp.std(weights))
 
     return weights, discr, flat_rec

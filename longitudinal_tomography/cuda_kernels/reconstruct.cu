@@ -7,22 +7,64 @@
  * CUDA kernels that handle phase space reconstruction.
  */
 
-#include <stdio.h>
+#include <cub/block/block_reduce.cuh>
 
 // Back projection using flattened arrays
+// implementation with fixed block_size and items_per_array for the reduction
 extern "C"
 __global__ void back_project(double *weights,                     // inn/out
                              int *flat_points,                    // inn
                              const double *flat_profiles,         // inn
                              const int npart, const int nprof) {  // inn
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+    //int tid = threadIdx.x + blockDim.x * blockIdx.x;
+    const int BLOCK_SIZE = 64;
+    const int ITEMS_PER_ARRAY = 7;
+
+    typedef cub::BlockReduce<double, 64> BlockReduce;
+
+    // allocate shared memory for BlockReduce
+    __shared__ typename BlockReduce::TempStorage temp_storage;
+
+    // int items_per_thread = (nprof + blockDim.x - 1) / blockDim.x;
+    double weight_prof[ITEMS_PER_ARRAY];
     
-    if(tid < npart * nprof)
+    for (int i = 0; i < ITEMS_PER_ARRAY; i++)
     {
-        int idx = flat_points[tid];
-        atomicAdd(&weights[tid / nprof], flat_profiles[idx]);
+        if (i * BLOCK_SIZE + threadIdx.x < nprof)
+            weight_prof[i] = flat_profiles[flat_points[blockIdx.x * nprof + threadIdx.x + i*BLOCK_SIZE]];
+        else
+            weight_prof[i] = 0.0;
     }
+
+    __syncthreads();
+
+    double aggregate = BlockReduce(temp_storage).Sum(weight_prof);
+
+    if (threadIdx.x == 0)
+        weights[blockIdx.x] += aggregate;
+
+    // if(tid < npart * nprof)
+    // {
+    //     int idx = flat_points[tid];
+    //     atomicAdd(&weights[tid / nprof], flat_profiles[idx]);
+    // }
 }
+
+//// Implementation with atomic operations and block_size = npart * nprof 
+// extern "C"
+// __global__ void back_project(double *weights,                     // inn/out
+//                              int *flat_points,                    // inn
+//                              const double *flat_profiles,         // inn
+//                              const int npart, const int nprof) {  // inn
+//     int tid = threadIdx.x + blockDim.x * blockIdx.x;
+
+//     if(tid < npart * nprof)
+//     {
+//         int idx = flat_points[tid];
+//         atomicAdd(&weights[tid / nprof], flat_profiles[idx]);
+//     }
+// }
+
 
 // Projections using flattened arrays
 extern "C"

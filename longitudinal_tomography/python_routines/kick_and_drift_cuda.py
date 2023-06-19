@@ -8,6 +8,7 @@ import cupy as cp
 import logging
 from typing import Tuple
 from ..utils import gpu_dev
+from pyprof import timing
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ kick_drift_up_simultaneously_kernel = gpu_dev.kd_mod.get_function("kick_drift_up
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
 
-
+@timing.timeit(key='drift_down')
 def drift_down(dphi: cp.ndarray,
                denergy: cp.ndarray, drift_coef: float,
                n_particles: int) -> cp.ndarray:
@@ -33,6 +34,7 @@ def drift_down(dphi: cp.ndarray,
                       block=block_size, grid=grid_size)
     return dphi
 
+@timing.timeit(key='drift_up')
 def drift_up(dphi: cp.ndarray,
              denergy: cp.ndarray, drift_coef: float,
              n_particles: int) -> cp.ndarray:
@@ -40,6 +42,7 @@ def drift_up(dphi: cp.ndarray,
                     block=block_size, grid=grid_size)
     return dphi
 
+@timing.timeit(key='kick_down')
 def kick_down(dphi: cp.ndarray,
               denergy: cp.ndarray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
@@ -48,6 +51,7 @@ def kick_down(dphi: cp.ndarray,
                      block=block_size, grid=grid_size)
     return denergy
 
+@timing.timeit(key='kick_up')
 def kick_up(dphi: cp.ndarray,
             denergy: cp.ndarray, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
@@ -56,6 +60,7 @@ def kick_up(dphi: cp.ndarray,
                    block=block_size, grid=grid_size)
     return denergy
 
+@timing.timeit(key='kick_drift_up_simultaneously')
 def kick_drift_up_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
     kick_drift_up_simultaneously_kernel(args=(dphi, denergy, drift_coef, rfv1, rfv2,
@@ -63,6 +68,7 @@ def kick_drift_up_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_co
                                         block=block_size, grid=grid_size)
     return dphi, denergy
 
+@timing.timeit(key='kick_drift_down_simultaneously')
 def kick_drift_down_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
     kick_drift_down_simultaneously_kernel(args=(dphi, denergy, drift_coef, rfv1, rfv2,
@@ -151,6 +157,4 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                 if ftn_out:
                     log.info(f"Tracking from time slice {rec_prof + 1} to {profile + 1},\
                                 0.000% went outside the image width.")
-
-    print(cp.std(xp), cp.std(yp))
     return xp, yp

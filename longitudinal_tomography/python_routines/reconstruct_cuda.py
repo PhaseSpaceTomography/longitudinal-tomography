@@ -6,6 +6,7 @@
 import numpy as np
 import cupy as cp
 from ..utils import gpu_dev
+from pyprof import timing
 
 if gpu_dev is None:
         from ..utils import GPUDev
@@ -23,16 +24,19 @@ create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
 
+@timing.timeit(key='back_project')
 def back_project(weights: cp.ndarray,
                  flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
     back_project_kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
-                        block=block_size,
-                        grid=(int(n_particles / block_size[0] + 1), 1, 1))
+                        block=(64,1,1),
+                        grid=(n_particles, 1, 1))
     return weights
+    # Cupy version is 2x faster
 
+@timing.timeit(key='project')
 def project(flat_rec: cp.ndarray,
             flat_points: cp.ndarray,
             weights: cp.ndarray, n_particles: int,
@@ -42,6 +46,7 @@ def project(flat_rec: cp.ndarray,
                         grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
     return flat_rec
 
+@timing.timeit(key='normalize')
 def normalize(flat_rec: cp.ndarray,
               n_profiles: int, n_bins: int) -> cp.ndarray:
     flat_rec = flat_rec.reshape((n_profiles, n_bins))
@@ -54,14 +59,16 @@ def normalize(flat_rec: cp.ndarray,
         raise RuntimeError("Phase space reduced to zeros!")
     return flat_rec
 
+@timing.timeit(key='clip')
 def clip(array: cp.ndarray,
+         array_length: int,
         clip_val: float) -> cp.ndarray:
-    array_length = len(array)
     clip_kernel(args=(array, array_length, clip_val),
                 block=block_size,
                 grid=(int(array_length / block_size[0] + 1), 1, 1))
     return array
 
+@timing.timeit(key='find_difference_profile')
 def find_difference_profile(flat_rec: cp.ndarray,
                             flat_profiles: cp.ndarray) -> cp.ndarray:
     length = len(flat_rec)
@@ -78,6 +85,7 @@ def discrepancy(diff_prof: cp.ndarray,
 
     return cp.sqrt(squared_sum / all_bins)
 
+@timing.timeit(key='compensate_particle_amount')
 def compensate_particle_amount(diff_prof: cp.ndarray,
                                rparts: cp.ndarray,
                                n_profiles: int, n_bins: int) -> cp.ndarray:
@@ -94,17 +102,22 @@ def reciprocal_particles(xp: cp.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> cp.ndarray:
     rparts = cp.empty((n_profiles * n_bins), dtype=cp.float64)
+    timing.start_timing('count_particles_in_bin')
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
                           grid=(int(n_particles / block_size[0] + 1), 1, 1))
+    timing.stop_timing()
 
     max_bin_val = float(cp.max(rparts))
 
+    timing.start_timing('calculate_reciprocal')
     calc_reciprocal_kernel(args=(rparts, n_bins, n_profiles, max_bin_val),
                            block=block_size,
                            grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))
+    timing.stop_timing()
     return rparts
 
+@timing.timeit(key='create_flat_points')
 def create_flat_points(xp: cp.ndarray,
                        n_particles: int, n_profiles: int,
                        n_bins: int) -> cp.ndarray:
@@ -120,7 +133,8 @@ def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...) -> tuple:
-
+    
+    timing.start_timing('Reconstruct initialize arrays')
     xp = xp.flatten()
     # from wrapper
     weights = cp.zeros(n_particles)
@@ -130,12 +144,13 @@ def reconstruct_cuda(xp: cp.ndarray,
 
     all_bins = n_profiles * n_bins
     flat_points = cp.zeros(n_particles * n_profiles)
+    timing.stop_timing()
 
     # Actual functionality
     rparts = reciprocal_particles(xp, n_bins, n_profiles, n_particles)
     flat_points = create_flat_points(xp, n_particles, n_profiles, n_bins)
     weights = back_project(weights, flat_points, flat_profiles, n_particles, n_profiles)
-    weights = clip(weights, 0.0)
+    weights = clip(weights, n_particles, 0.0)
 
     if cp.sum(weights) <= 0:
         raise RuntimeError("All of phase space got reduced to zeros")
@@ -153,7 +168,7 @@ def reconstruct_cuda(xp: cp.ndarray,
         discr[iteration] = discrepancy(diff_prof, n_profiles, n_bins)
         diff_prof = compensate_particle_amount(diff_prof, rparts, n_profiles, n_bins)
         weights = back_project(weights, flat_points, diff_prof, n_particles, n_profiles)
-        weights = clip(weights, 0.0)
+        weights = clip(weights, n_particles, 0.0)
 
 
         if cp.sum(weights) <= 0:
