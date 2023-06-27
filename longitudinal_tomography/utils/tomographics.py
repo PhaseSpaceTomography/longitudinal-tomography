@@ -13,9 +13,10 @@ import scipy.signal
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
+import typing as typ
 
-
-def foot_tangent_fit_dq(x, y, t_rf, filter=True):
+def foot_tangent_fit_dq(x: typ.Iterable[float], y: typ.Iterable[float],
+                        t_rf: float, filter: bool=True) -> typ.Tuple[float]:
     if filter:
         y = scipy.signal.savgol_filter(y, 5, 4)
     try:
@@ -49,7 +50,7 @@ def foot_tangent_fit_dq(x, y, t_rf, filter=True):
         return [np.nan, np.nan]
 
 
-def foot_tangent_fit(y, dx=1):
+def foot_tangent_fit(y: typ.Iterable[float], dx: float = 1) -> typ.Tuple[float]:
 
     threshold = 15 * np.max(y) / 100
     max_index = np.where(y == np.max(y))[0][0]
@@ -68,7 +69,8 @@ def foot_tangent_fit(y, dx=1):
     return foot_left * dx, foot_right * dx
 
 
-def foot_tangent_fit_density(y, x, level=15):
+def foot_tangent_fit_density(y: typ.Iterable[float], x: typ.Iterable[float],
+                             level: float = 0.15) -> float:
     
     y_zero = y-np.min(y)
 
@@ -89,7 +91,8 @@ def foot_tangent_fit_density(y, x, level=15):
     return foot_density
 
 
-def _urf_length_at_level(phi_array, urf, phi_0, urf_level):
+def _urf_length_at_level(phi_array: typ.Iterable[float], urf: typ.Iterable[float],
+                         phi_0: float, urf_level: float) -> typ.Tuple[float]:
     urf_left = urf[phi_array < phi_0] - urf_level
     urf_right = urf[phi_array > phi_0] - urf_level
     phi_left = np.interp(0, urf_left, phi_array[phi_array < phi_0])
@@ -99,7 +102,7 @@ def _urf_length_at_level(phi_array, urf, phi_0, urf_level):
     return phi_tot, phi_right, phi_left
 
 
-def _residue_urf_length(urf_level, *params):
+def _residue_urf_length(urf_level: float, *args) -> float:
 
     phi_target, phi_array, urf, phi_0 = params
     phi_tot = _urf_length_at_level(phi_array, urf, phi_0, urf_level)[0]
@@ -108,7 +111,7 @@ def _residue_urf_length(urf_level, *params):
     return residue
 
 
-def matched_area_calc(tomomachine, bunch_length, idx_frame=None):
+def matched_area_calc(tomomachine: "Machine", bunch_length: float, idx_frame: int=None) -> float:
 
     if idx_frame is None:
         turn = int(tomomachine.machine_ref_frame * tomomachine.dturns)
@@ -154,13 +157,18 @@ def matched_area_calc(tomomachine, bunch_length, idx_frame=None):
     return matched_area
 
 
-def _cumulative_density_calc(tomo_image, dt, dE):
+def _cumulative_density_calc(tomo_image: np.ndarray, dt: float,
+                             dE: float) -> typ.Tuple[np.ndarray]:
     cumulative_density = np.cumsum(-np.sort(-tomo_image.flatten()))
     cumulative_density_x_array = np.arange(len(cumulative_density)) * dt * dE
     return cumulative_density, cumulative_density_x_array
 
 
-def emittance_density_calc(tomo_image, dt, dE, density_target=0.9):
+def emittance_density_calc(tomo_image: np.ndarray, dt: float,
+                           dE: float, density_target: float=0.9) -> float:
+
+    if not (0 < density_target < 1):
+        raise ValueError("density_target must be between 0 and 1")
 
     cumulative_density, cumulative_density_x_array = _cumulative_density_calc(
         tomo_image, dt, dE)
@@ -173,7 +181,8 @@ def emittance_density_calc(tomo_image, dt, dE, density_target=0.9):
     return emittance
 
 
-def rms_params(tomo_image, dt, dE):
+def rms_params(tomo_image: np.ndarray, dt: float,
+               dE: float) -> typ.Tuple[float]:
 
     y_matrix_tomo1, x_matrix_tomo1 = np.meshgrid(
         np.arange(tomo_image.shape[0]),
@@ -198,8 +207,10 @@ def rms_params(tomo_image, dt, dE):
     return rmsemittance, mean_dt, sigma_dt, mean_dE, sigma_dE
 
 
-def density_vs_emittance(tomomachine, tomo_image, time_array,
-                         dE_array, n_points_amplitude=100, idx_frame=None):
+def density_vs_emittance(tomomachine: "Machine", tomo_image: np.ndarray,
+                         time_array: typ.Iterable[float], dE_array: typ.Iterable[float],
+                         n_points_amplitude: int=100, idx_frame: int=None)\
+                     -> typ.Tuple[float]:
 
     if idx_frame is None:
         turn = int(tomomachine.machine_ref_frame * tomomachine.dturns)
@@ -311,15 +322,11 @@ def density_vs_emittance(tomomachine, tomo_image, time_array,
             local_density_max_final, summed_density_final)
 
 
-def tomo_weight_clipping(tomomachine,
-                         time_array,
-                         dE_array,
-                         map_tomo_x,
-                         map_tomo_y,
-                         weight_tomo,
-                         emittance_target,
-                         n_points_amplitude=100,
-                         idx_frame=None):
+def tomo_weight_clipping(tomomachine: "Machine", time_array: typ.Iterable[float],
+                         dE_array: typ.Iterable[float], map_tomo_x: np.ndarray,
+                         map_tomo_y: np.ndarray, weight_tomo: np.ndarray,
+                         emittance_target: float, n_points_amplitude: int=100,
+                         idx_frame: int=None):
 
     if idx_frame is None:
         turn = int(tomomachine.machine_ref_frame * tomomachine.dturns)
