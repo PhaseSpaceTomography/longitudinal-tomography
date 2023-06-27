@@ -19,30 +19,31 @@ def foot_tangent_fit_dq(x: typ.Iterable[float], y: typ.Iterable[float],
                         t_rf: float, apply_filter: bool=True) -> typ.Tuple[float]:
     if apply_filter:
         y = scipy.signal.savgol_filter(y, 5, 4)
-    try:
-        # Threshod at 15% of the peak
-        threshold = 15 * np.max(y) / 100
-        indices_above = np.where(y >= threshold)[0]
-        # Find the indices corresponding to 15%
-        left_index = indices_above[0]
-        right_index = indices_above[-1]
-        # Polinomial fits of order 1 (straight lines) to find the two tangent lines.
-        # For each fit, 6 points of the y are used, 3 to the left of the 15% point and 3 to the right of the 15% point.
-        coefficient_1 = np.polyfit(
-            [x[left_index - 3], x[left_index - 2], x[left_index - 1], x[left_index],
-             x[left_index + 1], x[left_index + 2]],
-            [y[left_index - 3], y[left_index - 2], y[left_index - 1],
-             y[left_index], y[left_index + 1], y[left_index + 2]], 1)
-        coefficient_2 = np.polyfit(
-            [x[right_index - 2], x[right_index - 1], x[right_index],
-             x[right_index + 1], x[right_index + 2], x[right_index + 3]],
-            [y[right_index - 2], y[right_index - 1], y[right_index],
-             y[right_index + 1], y[right_index + 2], y[right_index + 3]], 1)
-    except:
+
+    # Threshold at 15% of the peak
+    threshold = 0.15 * np.max(y)
+    indices_above = np.where(y >= threshold)[0]
+
+    # Find the indices corresponding to 15%
+    left_index = indices_above[0]
+    right_index = indices_above[-1]
+
+    if (left_index-3 < 0) or (right_index+3 >= len(x)):
         return [np.nan, np.nan]
-    # Find the ntersections of the two tangents with the baseline, here supposed at 0.
+
+    # Polynomial fits of order 1 (straight lines) to find the two tangent lines.
+    # For each fit, 6 points of the y are used, 3 to the left of the 15% point and 3 to the right of the 15% point.
+    coefficient_1 = np.polyfit(
+        x[left_index-3:left_index+3],
+        y[left_index-3:left_index+3], 1)
+    coefficient_2 = np.polyfit(
+        x[right_index-2:right_index+4],
+        y[right_index-2:right_index+4], 1)
+
+    # Find the intersections of the two tangents with the baseline, here supposed at 0.
     x_min = - coefficient_1[1] / coefficient_1[0]
     x_max = - coefficient_2[1] / coefficient_2[0]
+
     # Obvious checks, but just to be sure...
     if (0 <= (x_max - x_min) < t_rf):
         return [x_min, x_max]
