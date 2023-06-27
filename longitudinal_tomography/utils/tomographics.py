@@ -44,7 +44,7 @@ def foot_tangent_fit_dq(x: typ.Iterable[float], y: typ.Iterable[float],
     x_min = - coefficient_1[1] / coefficient_1[0]
     x_max = - coefficient_2[1] / coefficient_2[0]
     # Obvious checks, but just to be sure...
-    if ((x_max - x_min) >= 0) & ((x_max - x_min) < t_rf):
+    if (0 <= (x_max - x_min) < t_rf):
         return [x_min, x_max]
     else:
         return [np.nan, np.nan]
@@ -52,13 +52,13 @@ def foot_tangent_fit_dq(x: typ.Iterable[float], y: typ.Iterable[float],
 
 def foot_tangent_fit(y: typ.Iterable[float], dx: float = 1) -> typ.Tuple[float]:
 
-    threshold = 15 * np.max(y) / 100
+    threshold = 0.15 * np.max(y)
     max_index = np.where(y == np.max(y))[0][0]
     indices_below = np.where(y < threshold)[0]
     left_index = indices_below[indices_below < max_index][-1]
     right_index = indices_below[indices_below > max_index][0]
-    y_left = y[left_index - 1:left_index + 2 + 1]
-    y_right = y[right_index - 2:right_index + 1 + 1]
+    y_left = y[left_index - 1:left_index + 3]
+    y_right = y[right_index - 2:right_index + 2]
     foot_left = left_index - 5 * \
         np.sum(y_left) / (-6 * y_left[0] - 2 *
                           y_left[1] + 2 * y_left[2] + 6 * y_left[3])
@@ -71,18 +71,20 @@ def foot_tangent_fit(y: typ.Iterable[float], dx: float = 1) -> typ.Tuple[float]:
 
 def foot_tangent_fit_density(y: typ.Iterable[float], x: typ.Iterable[float],
                              level: float = 0.15) -> float:
-    
+    if not (0 < level < 1):
+        raise ValueError("Level must be between 0 and 1")
+
     y_zero = y-np.min(y)
 
-    threshold = level * np.max(y_zero) / 100
+    threshold = level * np.max(y_zero)
     max_index = np.where(y_zero == np.max(y_zero))[0][0]
     indices_below = np.where(y_zero < threshold)[0]
 
     right_index = indices_below[indices_below > max_index][0]
 
-    y_right = y_zero[right_index - 2:right_index + 1 + 1]
+    y_right = y_zero[right_index - 2:right_index + 2]
 
-    foot_right = right_index - 1 - 5 * \
+    foot_right = right_index-6 * \
         np.sum(y_right) / (-6 * y_right[0] - 2 *
                            y_right[1] + 2 * y_right[2] + 6 * y_right[3])
 
@@ -114,9 +116,9 @@ def _residue_urf_length(urf_level: float, *args) -> float:
 def matched_area_calc(tomomachine: "Machine", bunch_length: float, idx_frame: int=None) -> float:
 
     if idx_frame is None:
-        turn = int(tomomachine.machine_ref_frame * tomomachine.dturns)
-    else:
-        turn = int(idx_frame * tomomachine.dturns)
+        idx_frame = tomomachine.machine_ref_frame
+
+    turn = int(idx_frame * tomomachine.dturns)
 
     phi_0 = tomomachine.phi0[turn]
     energy = tomomachine.e0[turn]
@@ -213,9 +215,9 @@ def density_vs_emittance(tomomachine: "Machine", tomo_image: np.ndarray,
                      -> typ.Tuple[float]:
 
     if idx_frame is None:
-        turn = int(tomomachine.machine_ref_frame * tomomachine.dturns)
-    else:
-        turn = int(idx_frame * tomomachine.dturns)
+        idx_frame = tomomachine.machine_ref_frame
+
+    turn = int(idx_frame * tomomachine.dturns)
 
     phi_0 = tomomachine.phi0[turn]
     energy = tomomachine.e0[turn]
@@ -296,9 +298,7 @@ def density_vs_emittance(tomomachine: "Machine", tomo_image: np.ndarray,
 
             n_points_local += 1
 
-        if n_points_local == 0:
-            pass
-        else:
+        if n_points_local != 0:
             summed_density_final[idx_amplitude] = summed_density / \
                 np.sum(tomo_image)
             local_density_final[idx_amplitude] = local_density / n_points_local
@@ -329,10 +329,9 @@ def tomo_weight_clipping(tomomachine: "Machine", time_array: typ.Iterable[float]
                          idx_frame: int=None):
 
     if idx_frame is None:
-        turn = int(tomomachine.machine_ref_frame * tomomachine.dturns)
         idx_frame = tomomachine.machine_ref_frame
-    else:
-        turn = int(idx_frame * tomomachine.dturns)
+
+    turn = int(idx_frame * tomomachine.dturns)
 
     new_weight_tomo = np.array(weight_tomo)
 
@@ -374,9 +373,7 @@ def tomo_weight_clipping(tomomachine: "Machine", time_array: typ.Iterable[float]
             dE_height_array,
             dx=phi_array_matched[1] - phi_array_matched[0])
 
-        if emittance_density <= emittance_target:
-            continue
-        else:
+        if emittance_density >= emittance_target:
             break
 
     idx_minmax = np.array([], dtype=int)
@@ -408,11 +405,10 @@ def tomo_weight_clipping(tomomachine: "Machine", time_array: typ.Iterable[float]
         elif len(idx_in) == 1:
             idx_minmax.append(np.where(map_tomo_y == np.max(
                 map_tomo_y[idx_in, idx_frame]))[0][0])
-        else:
-            pass
 
-    new_weight_tomo = new_weight_tomo / \
-        np.sum(new_weight_tomo) * np.sum(weight_tomo)
+    new_weight_tomo = new_weight_tomo\
+                      / np.sum(new_weight_tomo)\
+                      * np.sum(weight_tomo)
 
     return new_weight_tomo, dE_height_array, idx_minmax
 
