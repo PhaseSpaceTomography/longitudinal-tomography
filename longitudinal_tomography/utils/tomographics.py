@@ -16,8 +16,8 @@ from scipy.optimize import minimize
 import typing as typ
 
 def foot_tangent_fit_dq(x: typ.Iterable[float], y: typ.Iterable[float],
-                        t_rf: float, filter: bool=True) -> typ.Tuple[float]:
-    if filter:
+                        t_rf: float, apply_filter: bool=True) -> typ.Tuple[float]:
+    if apply_filter:
         y = scipy.signal.savgol_filter(y, 5, 4)
     try:
         # Threshod at 15% of the peak
@@ -104,9 +104,10 @@ def _urf_length_at_level(phi_array: typ.Iterable[float], urf: typ.Iterable[float
     return phi_tot, phi_right, phi_left
 
 
-def _residue_urf_length(urf_level: float, *args) -> float:
+def _residue_urf_length(urf_level: float,
+                        phi_target: float, phi_array: float,
+                        urf: float, phi_0: float) -> float:
 
-    phi_target, phi_array, urf, phi_0 = params
     phi_tot = _urf_length_at_level(phi_array, urf, phi_0, urf_level)[0]
     residue = (phi_tot - phi_target)**2.
 
