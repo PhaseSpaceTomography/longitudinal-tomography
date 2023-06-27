@@ -7,6 +7,8 @@ A. Lasheen
 TODO: include double RF
 TODO: documentation
 TODO: include plotting routine matching the mathematica output (draft already exists)
+TODO: docstrings
+TODO: unit tests
 '''
 
 import scipy.signal
