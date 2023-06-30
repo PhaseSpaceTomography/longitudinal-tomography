@@ -12,15 +12,14 @@
 // Back projection using flattened arrays
 // implementation with fixed block_size and items_per_array for the reduction
 extern "C"
-__global__ void back_project(double *weights,                     // inn/out
-                             int *flat_points,                    // inn
-                             const double *flat_profiles,         // inn
-                             const int npart, const int nprof) {  // inn
-    //int tid = threadIdx.x + blockDim.x * blockIdx.x;
-    const int BLOCK_SIZE = 64;
-    const int ITEMS_PER_ARRAY = 7;
+__global__ void back_project(double * __restrict__ weights,                     // inn/out
+                             int * __restrict__ flat_points,                    // inn
+                             const double * __restrict__ flat_profiles,         // inn
+                             const int npart, const int nprof) {                // inn
+    const int BLOCK_SIZE = 32;
+    const int ITEMS_PER_ARRAY = 13;
 
-    typedef cub::BlockReduce<double, 64> BlockReduce;
+    typedef cub::BlockReduce<double, BLOCK_SIZE> BlockReduce;
 
     // allocate shared memory for BlockReduce
     __shared__ typename BlockReduce::TempStorage temp_storage;
@@ -30,8 +29,8 @@ __global__ void back_project(double *weights,                     // inn/out
     
     for (int i = 0; i < ITEMS_PER_ARRAY; i++)
     {
-        if (i * BLOCK_SIZE + threadIdx.x < nprof)
-            weight_prof[i] = flat_profiles[flat_points[blockIdx.x * nprof + threadIdx.x + i*BLOCK_SIZE]];
+        if (i * blockDim.x + threadIdx.x < nprof)
+            weight_prof[i] = flat_profiles[flat_points[blockIdx.x * nprof + threadIdx.x + i*blockDim.x]];
         else
             weight_prof[i] = 0.0;
     }
@@ -42,15 +41,9 @@ __global__ void back_project(double *weights,                     // inn/out
 
     if (threadIdx.x == 0)
         weights[blockIdx.x] += aggregate;
-
-    // if(tid < npart * nprof)
-    // {
-    //     int idx = flat_points[tid];
-    //     atomicAdd(&weights[tid / nprof], flat_profiles[idx]);
-    // }
 }
 
-//// Implementation with atomic operations and block_size = npart * nprof 
+//// Implementation with atomic operations and block_size = npart * nprof
 // extern "C"
 // __global__ void back_project(double *weights,                     // inn/out
 //                              int *flat_points,                    // inn
@@ -68,9 +61,9 @@ __global__ void back_project(double *weights,                     // inn/out
 
 // Projections using flattened arrays
 extern "C"
-__global__ void project(double *flat_rec,                       // inn/out
-                        int *flat_points,                       // inn
-                        const double *weights,                  // inn
+__global__ void project(double * __restrict__ flat_rec,         // inn/out
+                        const int * __restrict__ flat_points,   // inn
+                        const double * __restrict__ weights,    // inn
                         const int npart, const int nprof) {     // inn
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -115,9 +108,9 @@ __global__ void clip(double *array, // inn/out
 
 
 extern "C"
-__global__ void find_difference_profile(double *diff_prof,           // out
-                             const double *flat_rec,      // inn
-                             const double *flat_profiles, // inn
+__global__ void find_difference_profile(double * __restrict__ diff_prof,    // out
+                             const double * __restrict__ flat_rec,          // inn
+                             const double * __restrict__ flat_profiles,     // inn
                              const int all_bins) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
     for (int i = tid; i < all_bins; i += blockDim.x * gridDim.x)
@@ -141,8 +134,8 @@ __global__ void find_difference_profile(double *diff_prof,           // out
 // }
 
 extern "C"
-__global__ void compensate_particle_amount(double *diff_prof,        // inn/out
-                                double *rparts,          // inn
+__global__ void compensate_particle_amount(double * __restrict__ diff_prof,     // inn/out
+                                const double * __restrict__ rparts,             // inn
                                 const int nprof,
                                 const int nbins) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
@@ -176,19 +169,17 @@ __global__ void compensate_particle_amount(double *diff_prof,        // inn/out
 
 // Atomic add?
 extern "C"
-__global__ void count_particles_in_bin(double *rparts,      // out
-                            const int *xp,       // inn
+__global__ void count_particles_in_bin(double * __restrict__ rparts,    // out
+                            const int * __restrict__ xp,                // inn
                             const int nprof,
                             const int npart,
                             const int nbins) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-
-    for (int i = tid; i < npart * nprof; i += blockDim.x * gridDim.x) {
-        if (i < npart * nprof) {
-            int j = i % nprof;
-            int bin = xp[i];
-            atomicAdd(&rparts[j * nbins + bin], 1);
-        }
+    if(tid < npart * nprof)
+    {
+        int j = tid % nprof;
+        int bin = xp[tid];
+        atomicAdd(&rparts[j * nbins + bin], 1);
     }
 }
 
@@ -215,7 +206,10 @@ __global__ void create_flat_points(int *flat_points,    // inn/out
                         const int nprof,
                         const int nbins) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if (tid < npart)
-        for (int j = 0; j < nprof; j++)
-            flat_points[tid * nprof + j] += nbins * j;
+    if (tid < npart * nprof)
+        flat_points[tid] += nbins * (tid % nprof);
+    
+        // for (int j = 0; j < nprof; j++)
+        //     // uncoalesced!!
+        //     flat_points[tid * nprof + j] += nbins * j;
 }

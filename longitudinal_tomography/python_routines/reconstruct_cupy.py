@@ -148,6 +148,4 @@ def reconstruct_cupy(xp: cp.ndarray,
     if verbose:
         print("Done!")
 
-    print(cp.mean(weights), cp.std(weights))
-
     return weights, discr, flat_rec

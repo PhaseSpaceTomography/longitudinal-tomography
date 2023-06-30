@@ -276,6 +276,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mod
             # Save number of invalid particles
             nr_lost_pts = len(invalid_pts)
             # Remove invalid particles
+            # TODO: Method does not exist, needs a fix!
             xp = cp.delete(xp, invalid_pts, axis=1)
             yp = cp.delete(yp, invalid_pts, axis=1)
     else:

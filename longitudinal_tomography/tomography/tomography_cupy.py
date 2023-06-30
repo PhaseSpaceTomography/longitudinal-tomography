@@ -10,7 +10,6 @@ import numpy as np
 import cupy as cp
 
 from .__tomography_cupy import TomographyCuPyABC
-from ..cpp_routines import libtomo
 from .. import exceptions as expt
 from ..utils.execution_mode import Mode
 from longitudinal_tomography.python_routines.reconstruct_cupy import reconstruct_cupy

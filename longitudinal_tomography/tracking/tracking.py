@@ -13,6 +13,7 @@ from .__tracking import ParticleTracker
 from ..cpp_routines import libtomo
 from ..compat import fortran
 from ..utils.execution_mode import Mode
+from pyprof import timing
 
 if TYPE_CHECKING:
     from .machine_base import MachineABC
@@ -132,6 +133,8 @@ class Tracking(ParticleTracker):
               given as energy [eV] relative to the synchronous particle.
         """
 
+        timing.start_timing("tracking::assertions")
+
         if deltaturn != 0:
             warnings.warn("deltaturn is still an experimental "
                           + "feature, results may not be reliable and it may"
@@ -158,6 +161,9 @@ class Tracking(ParticleTracker):
                                      + '(machine.dturn*recprof + deltaturn) '
                                      + 'must be greater than 0.')
 
+        timing.stop_timing()
+
+        timing.start_timing("tracking::set_distribution")
         if init_distr is None:
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
@@ -185,6 +191,8 @@ class Tracking(ParticleTracker):
         rfv1 = machine.vrf1_at_turn * machine.q
         rfv2 = machine.vrf2_at_turn * machine.q
 
+        timing.stop_timing()
+
         # Tracking particles
         if self.self_field_flag:
             # Tracking with self-fields
@@ -195,6 +203,7 @@ class Tracking(ParticleTracker):
                 denergy, dphi, rfv1, rfv2, recprof)
         else:
             # Tracking without self-fields
+            timing.start_timing("tracking::alloc_arrays")
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
             if mode == Mode.CUPY or mode == Mode.CUDA:
@@ -207,16 +216,22 @@ class Tracking(ParticleTracker):
                 xp = np.zeros((machine.nprofiles, nparts))
                 yp = np.zeros((machine.nprofiles, nparts))
 
+            timing.stop_timing()
+
             if mode == Mode.CPP:
                 # Calling C++ implementation of tracking routine.
+                timing.start_timing("tracking::kick_and_drift_cpp")
                 libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
                                       machine.phi0, machine.deltaE0,
                                       machine.drift_coef, machine.phi12,
                                       machine.h_ratio, machine.dturns,
                                       recprof, deltaturn, nturns, nparts,
                                       self.fortran_flag, callback=callback)
+                timing.stop_timing()
             else:
+                timing.start_timing("tracking::import_kd")
                 from longitudinal_tomography.python_routines.kick_and_drift import kick_and_drift
+                timing.stop_timing()
                 xp, yp = kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
                                                 nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
                                             machine.phi12, machine.h_ratio, machine.dturns, deltaturn, machine, False, mode)

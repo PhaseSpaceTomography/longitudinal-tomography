@@ -24,19 +24,37 @@ create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
 
-@timing.timeit(key='back_project')
+# def get_back_project_kernel(n_profiles, block_xdim):
+#     return gpu_dev.get_template_function('reconstruct_templates.cu', f'back_project<{block_xdim},{n_profiles}>')
+
+# @timing.timeit(key='rec::back_project')
+# def back_project_kernel_func(weights: cp.ndarray,
+#                  flat_points: cp.ndarray,
+#                  flat_profiles: cp.ndarray,
+#                  n_particles: int,
+#                  n_profiles: int,
+#                  kernel, block_xdim) -> cp.ndarray:
+#     kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
+#                 block=(block_xdim, 1, 1),
+#                 grid=(n_particles, 1, 1))
+#     return weights
+
+@timing.timeit(key='rec::back_project')
 def back_project(weights: cp.ndarray,
                  flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
+    # block_xdim = 32
+    # kernel = get_back_project_kernel(n_profiles, block_xdim)
+    # return back_project_kernel_func(weights, flat_points, flat_profiles, n_particles, n_profiles, kernel, block_xdim)
     back_project_kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
-                        block=(64,1,1),
-                        grid=(n_particles, 1, 1))
+                            block=(32, 1, 1),
+                            grid=(n_particles, 1, 1))
     return weights
-    # Cupy version is 2x faster
 
-@timing.timeit(key='project')
+
+@timing.timeit(key='rec::project')
 def project(flat_rec: cp.ndarray,
             flat_points: cp.ndarray,
             weights: cp.ndarray, n_particles: int,
@@ -46,7 +64,7 @@ def project(flat_rec: cp.ndarray,
                         grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
     return flat_rec
 
-@timing.timeit(key='normalize')
+@timing.timeit(key='rec::normalize')
 def normalize(flat_rec: cp.ndarray,
               n_profiles: int, n_bins: int) -> cp.ndarray:
     flat_rec = flat_rec.reshape((n_profiles, n_bins))
@@ -59,7 +77,7 @@ def normalize(flat_rec: cp.ndarray,
         raise RuntimeError("Phase space reduced to zeros!")
     return flat_rec
 
-@timing.timeit(key='clip')
+@timing.timeit(key='rec::clip')
 def clip(array: cp.ndarray,
          array_length: int,
         clip_val: float) -> cp.ndarray:
@@ -68,7 +86,7 @@ def clip(array: cp.ndarray,
                 grid=(int(array_length / block_size[0] + 1), 1, 1))
     return array
 
-@timing.timeit(key='find_difference_profile')
+@timing.timeit(key='rec::find_difference_profile')
 def find_difference_profile(flat_rec: cp.ndarray,
                             flat_profiles: cp.ndarray) -> cp.ndarray:
     length = len(flat_rec)
@@ -78,6 +96,7 @@ def find_difference_profile(flat_rec: cp.ndarray,
                          grid=(int(length / block_size[0] + 1), 1, 1))
     return diff_prof
 
+@timing.timeit(key='rec::discrepancy')
 def discrepancy(diff_prof: cp.ndarray,
                 n_profiles: int, n_bins: int) -> float:
     all_bins = n_profiles * n_bins
@@ -85,7 +104,7 @@ def discrepancy(diff_prof: cp.ndarray,
 
     return cp.sqrt(squared_sum / all_bins)
 
-@timing.timeit(key='compensate_particle_amount')
+@timing.timeit(key='rec::compensate_particle_amount')
 def compensate_particle_amount(diff_prof: cp.ndarray,
                                rparts: cp.ndarray,
                                n_profiles: int, n_bins: int) -> cp.ndarray:
@@ -101,23 +120,23 @@ def max_2d(array: cp.ndarray,
 def reciprocal_particles(xp: cp.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> cp.ndarray:
-    rparts = cp.empty((n_profiles * n_bins), dtype=cp.float64)
-    timing.start_timing('count_particles_in_bin')
+    rparts = cp.zeros((n_profiles * n_bins), dtype=cp.float64)
+    timing.start_timing('rec::count_particles_in_bin')
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
-                          grid=(int(n_particles / block_size[0] + 1), 1, 1))
+                          grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
     timing.stop_timing()
 
     max_bin_val = float(cp.max(rparts))
 
-    timing.start_timing('calculate_reciprocal')
+    timing.start_timing('rec::calculate_reciprocal')
     calc_reciprocal_kernel(args=(rparts, n_bins, n_profiles, max_bin_val),
                            block=block_size,
                            grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))
     timing.stop_timing()
     return rparts
 
-@timing.timeit(key='create_flat_points')
+@timing.timeit(key='rec::create_flat_points')
 def create_flat_points(xp: cp.ndarray,
                        n_particles: int, n_profiles: int,
                        n_bins: int) -> cp.ndarray:
@@ -125,7 +144,7 @@ def create_flat_points(xp: cp.ndarray,
 
     create_flat_points_kernel(args=(flat_points, n_particles, n_profiles, n_bins),
                               block=block_size,
-                              grid=(int(n_particles / block_size[0] + 1), 1, 1))
+                              grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
 
     return flat_points
 
@@ -133,8 +152,7 @@ def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...) -> tuple:
-    
-    timing.start_timing('Reconstruct initialize arrays')
+    timing.start_timing('rec::initialize_arrays')
     xp = xp.flatten()
     # from wrapper
     weights = cp.zeros(n_particles)
@@ -142,7 +160,6 @@ def reconstruct_cuda(xp: cp.ndarray,
     flat_profiles = waterfall.flatten()
     flat_rec = cp.zeros(n_profiles * n_bins)
 
-    all_bins = n_profiles * n_bins
     flat_points = cp.zeros(n_particles * n_profiles)
     timing.stop_timing()
 

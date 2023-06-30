@@ -9,7 +9,6 @@ from typing import Tuple
 import logging
 from numba import njit
 import math
-from ..cpp_routines import libtomo
 from ..utils.execution_mode import Mode
 
 log = logging.getLogger(__name__)
