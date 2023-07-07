@@ -272,22 +272,26 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mod
 
         if cp.size(invalid_pts) > 0:
             # Mark particle as invalid only once
-            invalid_pts = cp.unique(invalid_pts.T[1])
+            invalid_cols = cp.unique(invalid_pts[:, 1])
             # Save number of invalid particles
-            nr_lost_pts = len(invalid_pts)
+            nr_lost_pts = len(invalid_cols)
+
+            # Create a mask to select valid columns
+            valid_mask = ~cp.isin(cp.arange(xp.shape[1]), invalid_cols)
+
             # Remove invalid particles
-            # TODO: Method does not exist, needs a fix!
-            xp = cp.delete(xp, invalid_pts, axis=1)
-            yp = cp.delete(yp, invalid_pts, axis=1)
+            xp = xp[:, valid_mask]
+            yp = yp[:, valid_mask]
     else:
         # Find all particles outside of image width
         invalid_pts = np.argwhere(np.logical_or(xp >= img_width, xp < 0))
 
         if np.size(invalid_pts) > 0:
             # Mark particle as invalid only once
-            invalid_pts = np.unique(invalid_pts.T[1])
+            invalid_pts = np.unique(invalid_pts[:, 1])
             # Save number of invalid particles
             nr_lost_pts = len(invalid_pts)
+
             # Remove invalid particles
             xp = np.delete(xp, invalid_pts, axis=1)
             yp = np.delete(yp, invalid_pts, axis=1)
