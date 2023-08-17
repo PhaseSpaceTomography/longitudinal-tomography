@@ -5,8 +5,10 @@
 
 import numpy as np
 import cupy as cp
-
+import logging
 from pyprof import timing
+
+log = logging.getLogger(__name__)
 
 # Probably no vectorization possible?
 @timing.timeit(key='back_project')
@@ -15,8 +17,53 @@ def back_project(weights: cp.ndarray,
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
-
     return cp.sum(cp.take(flat_profiles, flat_points, axis=0), axis=1) + weights
+
+# @timing.timeit(key='back_project_jit')
+# @jit.rawkernel()
+# def back_project_jit(weights: cp.ndarray,
+#                  flat_points: cp.ndarray,
+#                  flat_profiles: cp.ndarray,
+#                  n_particles: int,
+#                  n_profiles: int) -> cp.ndarray:
+#     BLOCK_SIZE = 32
+#     ITEMS_PER_ARRAY = 16
+#     ITEMS_PER_IT = BLOCK_SIZE * ITEMS_PER_ARRAY
+#     iterations = (n_profiles + ITEMS_PER_IT - 1) // ITEMS_PER_IT
+
+#     aggregate = cp.float64(0.0)
+#     weight_prof = cp.zeros(16, dtype=cp.float64)
+#     index = cp.int32(0)
+#     fprof_index = cp.int32(0)
+#     fpoints_index = cp.int32(0)
+#     BlockReduce = jit.cub.BlockReduce[cp.float64, 32]
+#     temp_storage = jit.shared_memory(
+#         dtype=BlockReduce.TempStorage, size=1
+#     )
+
+#     for i in range(iterations):
+#         # Using jit is experimental, using jit.cub.BlockReduce.Sum is even more
+#         # because there is no documentation in CuPy available
+#         # Reference: https://github.com/cupy/cupy/commit/95754ceabc7a3a1404a6fee5faa6e3f2ce120901
+#         # Use at your own risk
+
+#         #BlockReduce = jit.cub.BlockReduce[cp.float64, 32]
+#         #temp_storage = jit.shared_memory(
+#         #dtype=BlockReduce.TempStorage, size=1
+
+#         for j in range(ITEMS_PER_ARRAY):
+#             index = i * ITEMS_PER_IT + j * jit.blockDim.x + jit.threadIdx.x
+#             fpoints_index = cp.int32(jit.blockIdx.x * n_profiles + index)
+#             if index < n_profiles:
+#                 fprof_index = int(flat_points[fpoints_index][0])
+#                 weight_prof[j] = flat_profiles[fprof_index]
+#         jit.syncthreads()
+
+#         aggregate += BlockReduce(temp_storage[0]).Sum(weight_prof)
+
+#     if jit.threadIdx.x == 0:
+#         weights[jit.blockIdx.x] += aggregate
+
 
 @timing.timeit(key='project')
 def project(flat_rec: cp.ndarray,

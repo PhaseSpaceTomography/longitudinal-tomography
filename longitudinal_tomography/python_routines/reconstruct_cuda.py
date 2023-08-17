@@ -7,10 +7,18 @@ import numpy as np
 import cupy as cp
 from ..utils import gpu_dev
 from pyprof import timing
+import os
 
 if gpu_dev is None:
         from ..utils import GPUDev
         gpu_dev = GPUDev()
+
+if os.getenv('SINGLE_PREC') is not None:
+    single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
+    dtype = cp.float32 if os.getenv('SINGLE_PREC') == 'True' else cp.float64
+else:
+    single_precision = False
+    dtype = cp.float64
 
 back_project_kernel = gpu_dev.rec_mod.get_function("back_project")
 project_kernel = gpu_dev.rec_mod.get_function("project")
@@ -24,30 +32,12 @@ create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
 
-# def get_back_project_kernel(n_profiles, block_xdim):
-#     return gpu_dev.get_template_function('reconstruct_templates.cu', f'back_project<{block_xdim},{n_profiles}>')
-
-# @timing.timeit(key='rec::back_project')
-# def back_project_kernel_func(weights: cp.ndarray,
-#                  flat_points: cp.ndarray,
-#                  flat_profiles: cp.ndarray,
-#                  n_particles: int,
-#                  n_profiles: int,
-#                  kernel, block_xdim) -> cp.ndarray:
-#     kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
-#                 block=(block_xdim, 1, 1),
-#                 grid=(n_particles, 1, 1))
-#     return weights
-
 @timing.timeit(key='rec::back_project')
 def back_project(weights: cp.ndarray,
                  flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
-    # block_xdim = 32
-    # kernel = get_back_project_kernel(n_profiles, block_xdim)
-    # return back_project_kernel_func(weights, flat_points, flat_profiles, n_particles, n_profiles, kernel, block_xdim)
     back_project_kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
                             block=(32, 1, 1),
                             grid=(n_particles, 1, 1))
@@ -90,7 +80,7 @@ def clip(array: cp.ndarray,
 def find_difference_profile(flat_rec: cp.ndarray,
                             flat_profiles: cp.ndarray) -> cp.ndarray:
     length = len(flat_rec)
-    diff_prof = cp.empty(length)
+    diff_prof = cp.empty(length, dtype=flat_rec.dtype)
     find_diffprof_kernel(args=(diff_prof, flat_rec, flat_profiles, length),
                          block=block_size,
                          grid=(int(length / block_size[0] + 1), 1, 1))
@@ -117,10 +107,9 @@ def max_2d(array: cp.ndarray,
            x_axis: int, y_axis: int) -> float:
     return cp.max(array[:y_axis, :x_axis])
 
-def reciprocal_particles(xp: cp.ndarray,
+def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
                          n_bins: int, n_profiles: int,
                          n_particles: int) -> cp.ndarray:
-    rparts = cp.zeros((n_profiles * n_bins), dtype=cp.float64)
     timing.start_timing('rec::count_particles_in_bin')
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
@@ -134,6 +123,7 @@ def reciprocal_particles(xp: cp.ndarray,
                            block=block_size,
                            grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))
     timing.stop_timing()
+
     return rparts
 
 @timing.timeit(key='rec::create_flat_points')
@@ -152,25 +142,33 @@ def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = ...) -> tuple:
+    if single_precision:
+        dtype = cp.float32
+    else:
+        dtype = cp.float64
+
     timing.start_timing('rec::initialize_arrays')
     xp = xp.flatten()
     # from wrapper
-    weights = cp.zeros(n_particles)
+    weights = cp.zeros(n_particles, dtype=dtype)
     discr = np.zeros(n_iter + 1)
-    flat_profiles = waterfall.flatten()
-    flat_rec = cp.zeros(n_profiles * n_bins)
-
+    flat_profiles = waterfall.flatten().astype(dtype)
+    flat_rec = cp.zeros(n_profiles * n_bins, dtype=dtype)
     flat_points = cp.zeros(n_particles * n_profiles)
+    rparts = cp.zeros((n_profiles * n_bins), dtype=dtype)
+
     timing.stop_timing()
 
     # Actual functionality
-    rparts = reciprocal_particles(xp, n_bins, n_profiles, n_particles)
+    rparts = reciprocal_particles(rparts, xp, n_bins, n_profiles, n_particles)
     flat_points = create_flat_points(xp, n_particles, n_profiles, n_bins)
     weights = back_project(weights, flat_points, flat_profiles, n_particles, n_profiles)
     weights = clip(weights, n_particles, 0.0)
 
+    timing.start_timing('rec::sum_check')
     if cp.sum(weights) <= 0:
         raise RuntimeError("All of phase space got reduced to zeros")
+    timing.stop_timing()
 
     if verbose:
         print(" Iterating...")
@@ -187,9 +185,10 @@ def reconstruct_cuda(xp: cp.ndarray,
         weights = back_project(weights, flat_points, diff_prof, n_particles, n_profiles)
         weights = clip(weights, n_particles, 0.0)
 
-
+        timing.start_timing('rec::sum_check')
         if cp.sum(weights) <= 0:
             raise RuntimeError("All of phase space got reduced to zeros")
+        timing.stop_timing()
 
     # Calculating final discrepancy
     flat_rec = project(flat_rec, flat_points, weights, n_particles, n_profiles, n_bins)

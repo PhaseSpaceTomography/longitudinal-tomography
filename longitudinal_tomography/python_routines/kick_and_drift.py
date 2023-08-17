@@ -51,7 +51,6 @@ def drift_down_cpp(dphi: np.ndarray,
     libtomo.drift_down(dphi, denergy, drift_coef, n_particles)
     return dphi
 
-
 def drift_up(dphi: np.ndarray,
              denergy: np.ndarray, drift_coef: float,
              n_particles: int) -> np.ndarray:
@@ -251,8 +250,6 @@ def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
         dphi = np.copy(xp[rec_prof])
         denergy = np.copy(yp[rec_prof])
 
-        dphi2 = np.copy(xp[rec_prof])
-        denergy2 = np.copy(yp[rec_prof])
         # Downwards
         while turn > 0:
             if together:

@@ -11,11 +11,14 @@ from pyprof import timing
 class GPUDev:
     __instance = None
 
+    @timing.timeit(key='create_gpudev')
     def __init__(self, _gpu_num=0):
         if GPUDev.__instance is not None:
             return
         else:
             GPUDev.__instance = self
+            global gpu_dev
+            gpu_dev = GPUDev.__instance
 
         import cupy as cp
         self.id = _gpu_num
@@ -52,36 +55,14 @@ class GPUDev:
             print("Single precision")
             self.kd_mod = cp.RawModule(path=os.path.join(
                         self.directory, f'../cuda_kernels/kick_and_drift_single_{arch}.cubin'))
+            self.rec_mod = cp.RawModule(path=os.path.join(
+                        self.directory, f'../cuda_kernels/reconstruct_single_{arch}.cubin'))
         else:
             print("Double precision")
             self.kd_mod = cp.RawModule(path=os.path.join(
                         self.directory, f'../cuda_kernels/kick_and_drift_double_{arch}.cubin'))
-        self.rec_mod = cp.RawModule(path=os.path.join(
-                        self.directory, f'../cuda_kernels/reconstruct_{arch}.cubin'))
-        # self.rec_mod = cp.RawModule(path=os.path.join(
-        #                 directory, f'../cuda_kernels/reconstruct.cubin'),
-        #                 name_expressions=['back_project<int,int>', 'project', 'clip', 'find_difference_profile',\
-        #                                   'count_particles_in_bin', 'calculate_reciprocal', 'compensate_particle_amount',\
-        #                                     'create_flat_points'])
-
-    # TODO: Discuss if needed, probably going to be removed soon
-    def __compile_template_function(self, codepath, name_expression):
-        timing.start_timing("compile_backproject")
-        import cupy as cp
-        code = open(os.path.join(self.directory, f"../cuda_kernels/{codepath}"), "r").read()
-        mod = cp.RawModule(code=code, options=('--use_fast_math', '-std=c++17', '-I/usr/local/cuda-11.8/include'),
-                            name_expressions=[name_expression], jitify=True)
-        kernel_func = mod.get_function(name_expression)
-        self.func_dict[name_expression] = kernel_func
-        timing.stop_timing()
-
-    # Function to compile template functions based on a path to the source code and the name for the function
-    def get_template_function(self, codepath, name_expression):
-        if(name_expression not in self.func_dict):
-            self.__compile_template_function(codepath, name_expression)
-
-        return self.func_dict.get(name_expression)
-
+            self.rec_mod = cp.RawModule(path=os.path.join(
+                            self.directory, f'../cuda_kernels/reconstruct_double_{arch}.cubin'))
 
     def report_attributes(self):
         # Saves into a file all the device attributes
@@ -90,4 +71,4 @@ class GPUDev:
                 f.write(f"{k}:{v}\n")
 
 
-gpu_dev = GPUDev()
+gpu_dev = None
