@@ -58,15 +58,6 @@ def kick_drift_up_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_co
                   + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick)
     return dphi, denergy
 
-# incredibly slow, probably only works with vectorization?
-def kick_drift_up_simultaneously_unrolled(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
-            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
-    for i in range(n_particles):
-        dphi[i] -= drift_coef * denergy[i]
-        denergy[i] += (rfv1 * cp.sin(dphi[i] + phi0) \
-                  + rfv2 * cp.sin(h_ratio * (dphi[i] + phi0 - phi12)) - acc_kick)
-    return dphi, denergy
-
 def kick_drift_down_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
     denergy -= (rfv1 * cp.sin(dphi + phi0) \
