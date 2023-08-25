@@ -67,7 +67,7 @@ def kick_up(dphi: cp.ndarray,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
             acc_kick: float) -> cp.ndarray:
     kick_up_kernel(args=(dphi, denergy, rfv1, rfv2, phi0, phi12, h_ratio, n_particles, acc_kick),
-                   block=block_size, grid=grid_size, shared_mem=block_size[0]*8)
+                   block=block_size, grid=grid_size)
     return denergy
 
 @timing.timeit(key='tracking::kick_drift_up_simultaneously')
