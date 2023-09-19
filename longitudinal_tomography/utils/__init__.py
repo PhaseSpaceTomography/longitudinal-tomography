@@ -6,12 +6,10 @@ from .tomo_output import create_phase_space_image, show
 import os
 
 # Class for encapsulating information about the GPU as used in BLonD
-from pyprof import timing
 
 class GPUDev:
     __instance = None
 
-    @timing.timeit(key='create_gpudev')
     def __init__(self, _gpu_num=0):
         if GPUDev.__instance is not None:
             return

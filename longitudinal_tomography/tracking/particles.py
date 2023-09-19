@@ -232,7 +232,7 @@ class Particles(object):
             'Did you remember to use machine.values_at_turns()?')
 
 
-def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mode.JIT) \
+def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray, int]:
     """Remove lost particles (particles that leaves the image width).
 
@@ -304,7 +304,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mod
 
 
 def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
-                       machine: 'MachineABC', xorigin: float, dEbin: float, mode: Mode = Mode.JIT) \
+                       machine: 'MachineABC', xorigin: float, dEbin: float, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray]:
     """Function to convert from physical units ([rad], [eV]) to reconstructed
     phase space coordinates (bin numbers).
@@ -373,7 +373,7 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     return xp, yp
 
 
-def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int, mode: Mode = Mode.JIT) \
+def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray]:
     """Function to prepare tracked particles tomography routine.
 

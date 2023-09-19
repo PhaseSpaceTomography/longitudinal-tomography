@@ -111,7 +111,7 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
 
 
 def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
-                reconstr_idx: int = 0, mode: Mode = Mode.JIT) \
+                reconstr_idx: int = 0, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -157,7 +157,7 @@ def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
 def phase_space_from_coordinates(xp: np.ndarray, yp: np.ndarray,
                                  weight: np.ndarray, nbins: int,
                                  synch_x: float, synch_y: float,
-                                 dtbin: float, dEbin: float, mode: Mode = Mode.JIT) \
+                                 dtbin: float, dEbin: float, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Returns time, energy and phase space density arrays from a
     reconstruction.
@@ -193,7 +193,7 @@ def phase_space_from_coordinates(xp: np.ndarray, yp: np.ndarray,
         2D array of bin weights in phase space.
     """
 
-    if mode == Mode.CPP or mode == Mode.CPP_WRAPPER:
+    if mode == Mode.CPP:
         density = libtomo.make_phase_space(xp, yp, weight, nbins)
     else:
         density = data_treatment.make_phase_space(xp, yp, weight, nbins, mode)

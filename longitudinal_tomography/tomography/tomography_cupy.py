@@ -6,7 +6,6 @@
 import logging
 import typing as t
 
-import numpy as np
 import cupy as cp
 
 from .__tomography_cupy import TomographyCuPyABC
@@ -36,6 +35,7 @@ class TomographyCuPy(TomographyCuPyABC):
     waterfall: ndarray
         2D array of measured profiles, shaped: (nprofiles, nbins).
     x_coords: ndarray
+import numpy as np
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
 
@@ -67,7 +67,7 @@ class TomographyCuPy(TomographyCuPyABC):
         super().__init__(waterfall, x_coords, y_coords)
 
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None, mode: Mode = Mode.JIT) -> cp.ndarray:
+            mode: Mode = Mode.CPP) -> cp.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using CuPy.

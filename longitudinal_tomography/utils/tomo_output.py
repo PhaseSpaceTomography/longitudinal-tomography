@@ -64,7 +64,7 @@ def print_tracking_status_ftn(*args, **kwargs):
 
 def create_phase_space_image(
         xp: np.ndarray, yp: np.ndarray, weight: np.ndarray, n_bins: int,
-        recprof: int, mode: Mode = Mode.JIT) -> np.ndarray:
+        recprof: int, mode: Mode = Mode.CPP) -> np.ndarray:
     """Convert from weighted particles to phase-space image.
 
     The output is equal to the phase space image created

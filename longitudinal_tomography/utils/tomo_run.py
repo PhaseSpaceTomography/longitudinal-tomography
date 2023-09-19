@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 def run(input: str, reconstruct_profile: bool = None,
         output_dir: str = None, tomoscope: bool = False,
-        plot: bool = False, mode: Mode = Mode.JIT) \
+        plot: bool = False, mode: Mode = Mode.CPP) \
         -> t.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Function to perform full reconstruction based on the original
     algorithm.

@@ -7,8 +7,8 @@ import logging
 
 from abc import ABC, abstractmethod
 import typing as t
-import numpy as np
 import cupy as cp
+from ..utils.execution_mode import Mode
 
 from .. import exceptions as expt
 
@@ -125,7 +125,7 @@ class TomographyCuPyABC(ABC):
                 'Y-coordinates should be iterable, or None.')
 
     @property
-    def xp(self) -> np.ndarray:
+    def xp(self) -> cp.ndarray:
         """X-coordinates defined as @property.
 
         Automatically updates `nparts`.
@@ -222,6 +222,5 @@ class TomographyCuPyABC(ABC):
         return waterfall
 
     @abstractmethod
-    def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+    def run(self, niter: int = 20, verbose: bool = False, mode: Mode = Mode.CUDA) -> cp.ndarray:
         pass
