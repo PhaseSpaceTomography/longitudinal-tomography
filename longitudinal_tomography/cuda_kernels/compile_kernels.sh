@@ -1,0 +1,12 @@
+nvcc --cubin -O3 --use_fast_math -arch sm_70 -o reconstruct_single_sm_70.cubin reconstruct_single.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_75 -o reconstruct_single_sm_75.cubin reconstruct_single.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_80 -o reconstruct_single_sm_80.cubin reconstruct_single.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_70 -o reconstruct_double_sm_70.cubin reconstruct_double.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_75 -o reconstruct_double_sm_75.cubin reconstruct_double.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_80 -o reconstruct_double_sm_80.cubin reconstruct_double.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_70 -o kick_and_drift_single_sm_70.cubin kick_and_drift_single.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_75 -o kick_and_drift_single_sm_75.cubin kick_and_drift_single.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_80 -o kick_and_drift_single_sm_80.cubin kick_and_drift_single.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_70 -o kick_and_drift_double_sm_70.cubin kick_and_drift_double.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_75 -o kick_and_drift_double_sm_75.cubin kick_and_drift_double.cu
+nvcc --cubin -O3 --use_fast_math -arch sm_80 -o kick_and_drift_double_sm_80.cubin kick_and_drift_double.cu
