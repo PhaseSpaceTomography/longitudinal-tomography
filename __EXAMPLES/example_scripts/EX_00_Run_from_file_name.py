@@ -1,5 +1,3 @@
-# %%
-
 # General imports
 import os
 
@@ -27,5 +25,3 @@ plt.contourf(tRange * 1E9, ERange / 1E6, density.T,
 plt.xlabel('dt (ns)')
 plt.ylabel('dE (MeV)')
 plt.show()
-
-# %%
