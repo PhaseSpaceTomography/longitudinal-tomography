@@ -5,10 +5,13 @@
  * Contact: bernardo.abreu.figueiredo@cern.ch
  *
  * CUDA kernels that handle particle tracking (kicking and
- * drifting).
+ * drifting) for double precision floating-point numbers.
  */
 
 
+// Calculates the energy kick up for all the particles.
+// This function does not iterate, so the
+// amount of threads should be equal to nr_particles
 extern "C"
 __global__ void kick_up(const double * __restrict__ dphi,
                         double * __restrict__ denergy,
@@ -25,6 +28,9 @@ __global__ void kick_up(const double * __restrict__ dphi,
                     + rfv2 * sin(hratio * (dphi[tid] + phi0 - phi12)) - acc_kick;
 }
 
+// Calculates the energy kick down for all the particles.
+// This function does not iterate, so the
+// amount of threads should be equal to nr_particles
 extern "C"
 __global__ void kick_down(const double * __restrict__ dphi,
                           double * __restrict__ denergy,
@@ -41,6 +47,9 @@ __global__ void kick_down(const double * __restrict__ dphi,
                     + rfv2 * sin(hratio * (dphi[tid] + phi0 - phi12)) - acc_kick;
 }
 
+// Calculates the phase drift up for all the particles.
+// This function does not iterate, so the
+// amount of threads should be equal to nr_particles
 extern "C"
 __global__ void drift_up(double * __restrict__ dphi,
                          const double * __restrict__ denergy,
@@ -51,6 +60,9 @@ __global__ void drift_up(double * __restrict__ dphi,
         dphi[tid] -= drift_coef * denergy[tid];
 }
 
+// Calculates the phase drift down for all the particles.
+// This function does not iterate, so the
+// amount of threads should be equal to nr_particles
 extern "C"
 __global__ void drift_down(double * __restrict__ dphi,
                          const double * __restrict__ denergy,
@@ -61,6 +73,9 @@ __global__ void drift_down(double * __restrict__ dphi,
         dphi[tid] += drift_coef * denergy[tid];
 }
 
+// Calculates the phase drift and energy kick up for all the particles.
+// This function does not iterate, so the
+// amount of threads should be equal to nr_particles
 extern "C"
 __global__ void kick_drift_up_simultaneously(double * __restrict__ dphi,
                          double * __restrict__ denergy,
@@ -83,6 +98,9 @@ __global__ void kick_drift_up_simultaneously(double * __restrict__ dphi,
     
 }
 
+// Calculates the phase drift and energy kick down for all the particles.
+// This function does not iterate, so the
+// amount of threads should be equal to nr_particles
 extern "C"
 __global__ void kick_drift_down_simultaneously(double * __restrict__ dphi,
                          double * __restrict__ denergy,
@@ -104,9 +122,12 @@ __global__ void kick_drift_down_simultaneously(double * __restrict__ dphi,
     }
 }
 
+// Calculates the entire process of the kick/drift loop up.
+// This function does not iterate with respect to the amount of particles, so the
+// amount of threads should be equal to nr_particles.
 extern "C"
-__global__ void kick_drift_up_turns(double * __restrict__ dphi,
-                         double * __restrict__ denergy,
+__global__ void kick_drift_up_turns(const double * __restrict__ dphi,
+                         const double * __restrict__ denergy,
                          double * __restrict__ xp,
                          double * __restrict__ yp,
                          const double * __restrict__ drift_coef,
@@ -146,9 +167,12 @@ __global__ void kick_drift_up_turns(double * __restrict__ dphi,
     }
 }
 
+// Calculates the entire process of the kick/drift loop down.
+// This function does not iterate with respect to the amount of particles, so the
+// amount of threads should be equal to nr_particles.
 extern "C"
-__global__ void kick_drift_down_turns(double * __restrict__ dphi,
-                         double * __restrict__ denergy,
+__global__ void kick_drift_down_turns(const double * __restrict__ dphi,
+                         const double * __restrict__ denergy,
                          double * __restrict__ xp,
                          double * __restrict__ yp,
                          const double * __restrict__ drift_coef,

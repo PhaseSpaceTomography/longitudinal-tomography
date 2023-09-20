@@ -4,14 +4,14 @@
  * @author Bernardo Abreu Figueiredo
  * Contact: bernardo.abreu.figueiredo@cern.ch
  *
- * CUDA kernels that handle phase space reconstruction.
+ * CUDA kernels that handle phase space reconstruction for double precision floating-point numbers.
  */
 
 #include <cub/block/block_reduce.cuh>
 
-// Back projection using flattened arrays
-// implementation with fixed block_size and items_per_array, but variable number of profiles for the reduction
-// Must be called with block size 32
+// Back projection using flattened arrays and a block-wide reduction.
+// Implementation with fixed block_size and items_per_array, but variable number of profiles for the reduction
+// Must be called with block size 32.
 extern "C"
 __global__ void back_project(double * __restrict__ weights,                     // inn/out
                              int * __restrict__ flat_points,                    // inn
@@ -31,7 +31,6 @@ __global__ void back_project(double * __restrict__ weights,                     
         // allocate shared memory for BlockReduce
         __shared__ typename BlockReduce::TempStorage temp_storage;
 
-        // int items_per_thread = (nprof + blockDim.x - 1) / blockDim.x;
         double weight_prof[ITEMS_PER_ARRAY];
 
         for (int j = 0; j < ITEMS_PER_ARRAY; j++)
@@ -52,23 +51,9 @@ __global__ void back_project(double * __restrict__ weights,                     
         weights[blockIdx.x] += aggregate;
 }
 
-//// Implementation with atomic operations and block_size = npart * nprof
-// extern "C"
-// __global__ void back_project(double *weights,                     // inn/out
-//                              int *flat_points,                    // inn
-//                              const double *flat_profiles,         // inn
-//                              const int npart, const int nprof) {  // inn
-//     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-
-//     if(tid < npart * nprof)
-//     {
-//         int idx = flat_points[tid];
-//         atomicAdd(&weights[tid / nprof], flat_profiles[idx]);
-//     }
-// }
-
-
-// Projections using flattened arrays
+// Projection using flattened arrays.
+// This function does not iterate, so the
+// amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void project(double * __restrict__ flat_rec,         // inn/out
                         const int * __restrict__ flat_points,   // inn
@@ -83,26 +68,10 @@ __global__ void project(double * __restrict__ flat_rec,         // inn/out
     }
 }
 
-// extern "C"
-// __global__ void normalize(double *flat_rec, // inn/out
-//                const int nprof,
-//                const int nbins) {
-//     // TODO
-//     double sum_waterfall = 0.0;
-// #pragma omp parallel for reduction(+ : sum_waterfall)
-//     for (int i = 0; i < nprof; i++) {
-//         double sum_profile = 0;
-//         for (int j = 0; j < nbins; j++)
-//             sum_profile += flat_rec[i * nbins + j];
-//         for (int j = 0; j < nbins; j++)
-//             flat_rec[i * nbins + j] /= sum_profile;
-//         sum_waterfall += sum_profile;
-//     }
-
-//     if (sum_waterfall <= 0)
-//         throw std::runtime_error("Phase space reduced to zeroes!");
-// }
-
+// Array clipping function to set values below a threshold
+// to the respective value.
+// This function does not iterate, so the
+// amount of threads should be at least equal to the length.
 extern "C"
 __global__ void clip(double *array, // inn/out
           const int length,
@@ -115,7 +84,10 @@ __global__ void clip(double *array, // inn/out
     }
 }
 
-
+// Calculates the difference between the reconstructed profile
+// and the flat profiles.
+// This function iterates, however to reduce multiple iterations,
+// the amount of threads should be at least equal to all_bins if possible.
 extern "C"
 __global__ void find_difference_profile(double * __restrict__ diff_prof,    // out
                              const double * __restrict__ flat_rec,          // inn
@@ -127,21 +99,10 @@ __global__ void find_difference_profile(double * __restrict__ diff_prof,    // o
             diff_prof[i] = flat_profiles[i] - flat_rec[i];
 }
 
-// extern "C"
-// __global__ double discrepancy(const double *diff_prof,   // inn
-//                    const int nprof,
-//                    const int nbins) {
-//     int all_bins = nprof * nbins;
-//     double squared_sum = 0;
-
-//     int tid = threadIdx.x + blockDim.x * blockIdx.x;
-//     for (int i = tid; i < all_bins; i += blockDim.x * gridDim.x) {
-//         squared_sum += pow(diff_prof[i], 2.0);
-//     }
-
-//     return sqrt(squared_sum / (nprof * nbins));
-// }
-
+// Multiplies the profile differences with the reciprocal particle array
+// to compensate for the amount of particles.
+// This function does not iterate, so the
+// amount of threads should be at least equal to the product of nprof and nbins.
 extern "C"
 __global__ void compensate_particle_amount(double * __restrict__ diff_prof,     // inn/out
                                 const double * __restrict__ rparts,             // inn
@@ -153,30 +114,9 @@ __global__ void compensate_particle_amount(double * __restrict__ diff_prof,     
     }
 }
 
-// // Parallel reduction?
-// extern "C"
-// __global__ double max_2d(double **arr,  // inn
-//               const int x_axis,
-//               const int y_axis) {
-//     double max_bin_val = 0;
-//     for (int i = 0; i < y_axis; i++)
-//         for (int j = 0; j < x_axis; j++)
-//             if (max_bin_val < arr[i][j])
-//                 max_bin_val = arr[i][j];
-//     return max_bin_val;
-// }
-
-// // Parallel reduction?
-// extern "C"
-// __global__ double max_1d(double *arr, const int length) {
-//     double max_bin_val = 0;
-//     for (int i = 0; i < length; i++)
-//         if (max_bin_val < arr[i])
-//             max_bin_val = arr[i];
-//     return max_bin_val;
-// }
-
-// Atomic add?
+// Counts the particles in each bin.
+// This function does not iterate, so the
+// amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void count_particles_in_bin(double * __restrict__ rparts,    // out
                             const int * __restrict__ xp,                // inn
@@ -192,7 +132,9 @@ __global__ void count_particles_in_bin(double * __restrict__ rparts,    // out
     }
 }
 
-
+// Calculates the reciprocal of the counted particles per bin.
+// This function does not iterate, so the
+// amount of threads should be at least equal to the product of nprof and nbins.
 extern "C"
 __global__ void calculate_reciprocal(double *rparts,   // inn/out
                           const int nbins,
@@ -209,6 +151,10 @@ __global__ void calculate_reciprocal(double *rparts,   // inn/out
     }
 }
 
+// Creates a flattened representation of the particle coordinates
+// used for indexing. 
+// This function does not iterate, so the
+// amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void create_flat_points(int *flat_points,    // inn/out
                         const int npart,

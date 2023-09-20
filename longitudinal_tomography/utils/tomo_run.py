@@ -42,7 +42,7 @@ def run(input: str, reconstruct_profile: bool = None,
     plot: bool = False
         Plot phase space after reconstruction.
     mode: Mode
-        Decide which optimization should be used
+        Decide which execution mode should be used
 
     Returns
     -------
