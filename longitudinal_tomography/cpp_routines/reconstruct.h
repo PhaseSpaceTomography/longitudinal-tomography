@@ -31,48 +31,48 @@ extern "C" void project(double *flat_rec,
                         const double *weights,
                         const int npart, const int nprof);
 
-extern "C" void normalize(double *flat_rec,
+void normalize(double *flat_rec,
                const int nprof,
                const int nbins);
 
-extern "C" void clip(double *array,
+void clip(double *array,
           const int length,
           const double clip_val);
 
 
-extern "C" void find_difference_profile(double *diff_prof,
+void find_difference_profile(double *diff_prof,
                              const double *flat_rec,
                              const double *flat_profiles,
                              const int all_bins);
 
-extern "C" double discrepancy(const double *diff_prof,
+double discrepancy(const double *diff_prof,
                    const int nprof,
                    const int nbins);
 
-extern "C" void compensate_particle_amount(double *diff_prof,
+void compensate_particle_amount(double *diff_prof,
                                 double *rparts,
                                 const int nprof,
                                 const int nbins);
 
-extern "C" double max_2d(double **arr,
+double max_2d(double **arr,
               const int x_axis,
               const int y_axis);
 
-extern "C" double max_1d(double *arr, const int length);
+double max_1d(double *arr, const int length);
 
-extern "C" void count_particles_in_bin(double *rparts,
+void count_particles_in_bin(double *rparts,
                             const int *xp,
                             const int nprof,
                             const int npart,
                             const int nbins);
 
-extern "C" void reciprocal_particles(double *rparts,
+void reciprocal_particles(double *rparts,
                           const int *xp,
                           const int nbins,
                           const int nprof,
                           const int npart);
 
-extern "C" void create_flat_points(const int *xp,
+void create_flat_points(const int *xp,
                         int *flat_points,
                         const int npart,
                         const int nprof,

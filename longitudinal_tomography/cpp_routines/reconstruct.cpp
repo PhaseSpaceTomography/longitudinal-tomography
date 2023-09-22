@@ -37,7 +37,7 @@ extern "C" void project(double *flat_rec,                     // inn/out
             flat_rec[flat_points[i * nprof + j]] += weights[i];
 }
 
-extern "C" void normalize(double *flat_rec, // inn/out
+void normalize(double *flat_rec, // inn/out
                const int nprof,
                const int nbins) {
     double sum_waterfall = 0.0;
@@ -55,7 +55,7 @@ extern "C" void normalize(double *flat_rec, // inn/out
         throw std::runtime_error("Phase space reduced to zeroes!");
 }
 
-extern "C" void clip(double *array, // inn/out
+void clip(double *array, // inn/out
           const int length,
           const double clip_val) {
 #pragma omp parallel for
@@ -65,7 +65,7 @@ extern "C" void clip(double *array, // inn/out
 }
 
 
-extern "C" void find_difference_profile(double *diff_prof,           // out
+void find_difference_profile(double *diff_prof,           // out
                              const double *flat_rec,      // inn
                              const double *flat_profiles, // inn
                              const int all_bins) {
@@ -74,7 +74,7 @@ extern "C" void find_difference_profile(double *diff_prof,           // out
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
 }
 
-extern "C" double discrepancy(const double *diff_prof,   // inn
+double discrepancy(const double *diff_prof,   // inn
                    const int nprof,
                    const int nbins) {
     int all_bins = nprof * nbins;
@@ -87,7 +87,7 @@ extern "C" double discrepancy(const double *diff_prof,   // inn
     return std::sqrt(squared_sum / (nprof * nbins));
 }
 
-extern "C" void compensate_particle_amount(double *diff_prof,        // inn/out
+void compensate_particle_amount(double *diff_prof,        // inn/out
                                 double *rparts,          // inn
                                 const int nprof,
                                 const int nbins) {
@@ -99,7 +99,7 @@ extern "C" void compensate_particle_amount(double *diff_prof,        // inn/out
         }
 }
 
-extern "C" double max_2d(double **arr,  // inn
+double max_2d(double **arr,  // inn
               const int x_axis,
               const int y_axis) {
     double max_bin_val = 0;
@@ -110,7 +110,7 @@ extern "C" double max_2d(double **arr,  // inn
     return max_bin_val;
 }
 
-extern "C" double max_1d(double *arr, const int length) {
+double max_1d(double *arr, const int length) {
     double max_bin_val = 0;
     for (int i = 0; i < length; i++)
         if (max_bin_val < arr[i])
@@ -119,14 +119,14 @@ extern "C" double max_1d(double *arr, const int length) {
 }
 
 
-extern "C" double sum(double *arr, const int length) {
+double sum(double *arr, const int length) {
     double sum = 0;
     for (int i = 0; i < length; i++)
         sum += arr[i];
     return sum;
 }
 
-extern "C" void count_particles_in_bin(double *rparts,      // out
+void count_particles_in_bin(double *rparts,      // out
                             const int *xp,       // inn
                             const int nprof,
                             const int npart,
@@ -139,7 +139,7 @@ extern "C" void count_particles_in_bin(double *rparts,      // out
         }
 }
 
-extern "C" void reciprocal_particles(double *rparts,   // out
+void reciprocal_particles(double *rparts,   // out
                           const int *xp,     // inn
                           const int nbins,
                           const int nprof,
@@ -166,7 +166,7 @@ extern "C" void reciprocal_particles(double *rparts,   // out
         }
 }
 
-extern "C" void create_flat_points(const int *xp,       //inn
+void create_flat_points(const int *xp,       //inn
                         int *flat_points,    //out
                         const int npart,
                         const int nprof,
