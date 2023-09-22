@@ -94,7 +94,7 @@ def create_flat_points(xp: cp.ndarray,
 def reconstruct_cupy(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
-                verbose: bool = ...) -> tuple:
+                verbose: bool = False) -> tuple:
 
     weights = cp.zeros(n_particles)
     discr = np.zeros(n_iter + 1)

@@ -248,11 +248,10 @@ class Tomography(TomographyABC):
                 'x-coordinates has value None, and must be provided')
 
         (self.weight,
-        self.diff,
-        self.recreated) = libtomo.reconstruct(
+         self.diff,
+         self.recreated) = libtomo.reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
             self.nparts, self.nprofs, verbose, callback)
-
         return self.weight
 
 

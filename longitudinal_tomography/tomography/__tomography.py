@@ -158,7 +158,7 @@ class TomographyABC(ABC):
     @xp.setter
     def xp(self, value: np.ndarray):
         if hasattr(value, '__iter__'):
-            value = np.asarray(value)
+            value = np.array(value)
             if value.ndim != 2:
                 msg = 'X coordinates have two dimensions ' \
                       '(nparticles, nprofiles)'
