@@ -9,7 +9,7 @@ import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.utils.tomo_input as tomoin
 
 from longitudinal_tomography.utils.execution_mode import Mode
-
+# TODO: Separate GPU/CPU example files
 mode = Mode.CUDA
 
 if mode == Mode.CUPY or mode == Mode.CUDA:
