@@ -89,17 +89,9 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
     yp[profile] = cp.copy(denergy)
 
     while turn < nturns:
-        together = True
-
-        if together:
-            turn += 1
-            dphi, denergy = kick_drift_up_simultaneously(dphi, denergy, drift_coef[turn-1], rfv1[turn], rfv2[turn],
-                                                            phi0[turn], phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
-        else:
-            dphi = drift_up(dphi, denergy, drift_coef[turn], nparts)
-            turn += 1
-            denergy = kick_up(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn], phi12_arr[turn],
-                h_ratio, nparts, deltaE0[turn])
+        turn += 1
+        dphi, denergy = kick_drift_up_simultaneously(dphi, denergy, drift_coef[turn-1], rfv1[turn], rfv2[turn],
+                                                        phi0[turn], phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
 
         if turn % dturns == 0:
             profile += 1
@@ -117,16 +109,9 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
 
         # Downwards
         while turn > 0:
-            if together:
-                dphi, denergy = kick_drift_down_simultaneously(dphi, denergy, drift_coef[turn-1], rfv1[turn], rfv2[turn],
-                                                                        phi0[turn], phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
-                turn -= 1
-            else:
-                denergy = kick_down(dphi, denergy, rfv1[turn], rfv2[turn], phi0[turn],
-                        phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
-                turn -= 1
-
-                dphi = drift_down(dphi, denergy, drift_coef[turn], nparts)
+            dphi, denergy = kick_drift_down_simultaneously(dphi, denergy, drift_coef[turn-1], rfv1[turn], rfv2[turn],
+                                                                    phi0[turn], phi12_arr[turn], h_ratio, nparts, deltaE0[turn])
+            turn -= 1
 
             if (turn % dturns == 0):
                 profile -= 1
