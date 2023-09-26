@@ -14,17 +14,25 @@ import os
 log = logging.getLogger(__name__)
 
 ### Testing purposes - remove later
-if os.getenv('SINGLE_PREC') is not None:
-    single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
-else:
-    single_precision = False
 
 if gpu_dev is None:
         from ..utils import GPUDev
         gpu_dev = GPUDev()
 
-kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
-kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
+if os.getenv('SINGLE_PREC') is not None:
+    single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
+else:
+    single_precision = False
+
+if single_precision:
+    kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_float")
+    kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_float")
+else:
+    kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_double")
+    kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_double")
+
+#kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
+#kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
 
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size

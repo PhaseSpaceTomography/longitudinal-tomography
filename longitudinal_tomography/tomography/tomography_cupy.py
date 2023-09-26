@@ -1,6 +1,6 @@
 """Module containing the TomographyCpp class
 
-:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**, **Bernardo Abreu Figueiredo**
 """
 
 import logging

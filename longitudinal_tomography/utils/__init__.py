@@ -50,17 +50,14 @@ class GPUDev:
             arch = "sm_75"
 
         if single_precision:
-            print("Single precision")
-            self.kd_mod = cp.RawModule(path=os.path.join(
-                        self.directory, f'../cuda_kernels/kick_and_drift_single_{arch}.cubin'))
-            self.rec_mod = cp.RawModule(path=os.path.join(
-                        self.directory, f'../cuda_kernels/reconstruct_single_{arch}.cubin'))
+            print("Using single precision")
         else:
-            print("Double precision")
-            self.kd_mod = cp.RawModule(path=os.path.join(
-                        self.directory, f'../cuda_kernels/kick_and_drift_double_{arch}.cubin'))
-            self.rec_mod = cp.RawModule(path=os.path.join(
-                            self.directory, f'../cuda_kernels/reconstruct_double_{arch}.cubin'))
+            print("Using double precision")
+
+        self.kd_mod = cp.RawModule(path=os.path.join(
+                    self.directory, f'../cuda_kernels/kick_and_drift_{arch}.cubin'))
+        self.rec_mod = cp.RawModule(path=os.path.join(
+                            self.directory, f'../cuda_kernels/reconstruct_{arch}.cubin'))
 
     def report_attributes(self):
         # Saves into a file all the device attributes

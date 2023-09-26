@@ -14,18 +14,28 @@ if gpu_dev is None:
 
 if os.getenv('SINGLE_PREC') is not None:
     single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
-    dtype = cp.float32 if os.getenv('SINGLE_PREC') == 'True' else cp.float64
 else:
     single_precision = False
-    dtype = cp.float64
 
-back_project_kernel = gpu_dev.rec_mod.get_function("back_project")
-project_kernel = gpu_dev.rec_mod.get_function("project")
-clip_kernel = gpu_dev.rec_mod.get_function("clip")
-find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile")
-count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin")
-calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal")
-comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount")
+if single_precision:
+    dtype = cp.float32
+    back_project_kernel = gpu_dev.rec_mod.get_function("back_project_float")
+    project_kernel = gpu_dev.rec_mod.get_function("project_float")
+    clip_kernel = gpu_dev.rec_mod.get_function("clip_float")
+    find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_float")
+    count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_float")
+    calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_float")
+    comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_float")
+else:
+    dtype = cp.float64
+    back_project_kernel = gpu_dev.rec_mod.get_function("back_project_double")
+    project_kernel = gpu_dev.rec_mod.get_function("project_double")
+    clip_kernel = gpu_dev.rec_mod.get_function("clip_double")
+    find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_double")
+    count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_double")
+    calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_double")
+    comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_double")
+
 create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 
 block_size = gpu_dev.block_size
