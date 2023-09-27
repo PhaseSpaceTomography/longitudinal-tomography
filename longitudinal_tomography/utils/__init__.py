@@ -55,9 +55,9 @@ class GPUDev:
             print("Using double precision")
 
         self.kd_mod = cp.RawModule(path=os.path.join(
-                    self.directory, f'../cuda_kernels/kick_and_drift_{arch}.cubin'))
+                    self.directory, f'../cuda_kernels/kick_and_drift.cubin'))
         self.rec_mod = cp.RawModule(path=os.path.join(
-                            self.directory, f'../cuda_kernels/reconstruct_{arch}.cubin'))
+                            self.directory, f'../cuda_kernels/reconstruct.cubin'))
 
     def report_attributes(self):
         # Saves into a file all the device attributes
