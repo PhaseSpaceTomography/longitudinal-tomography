@@ -1,2 +1,3 @@
 recursive-include longitudinal_tomography/cpp_routines *.cpp
 recursive-include longitudinal_tomography/cpp_routines *.h
+recursive-include longitudinal_tomography/cuda_kernels *.cu

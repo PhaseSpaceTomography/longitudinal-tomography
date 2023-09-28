@@ -1,17 +1,9 @@
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
-import subprocess
-import os
+from setuptools import setup
+from os import path
 import platform
 from pybind11.setup_helpers import Pybind11Extension
 
-HERE = os.path.split(os.path.abspath(__file__))[0]
-
-class CUDABuildExt(build_ext):
-    def run(self):
-        script_path = os.path.join(HERE, 'compile_gpu.py')
-        subprocess.check_call(['python', script_path])
-        super().run()
+HERE = path.split(path.abspath(__file__))[0]
 
 extra_compile_args = []
 extra_link_args = []
@@ -37,4 +29,4 @@ cpp_routines = Pybind11Extension(
     extra_compile_args=extra_compile_args,
     extra_link_args=extra_link_args)
 
-setup(ext_modules=[cpp_routines], cmdclass={'build_ext': CUDABuildExt}, setup_requires=['cupy; extra == "gpu"'], extras_require={"gpu": ["cupy"]})
+setup(ext_modules=[cpp_routines])
