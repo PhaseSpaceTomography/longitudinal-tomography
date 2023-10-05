@@ -10,13 +10,17 @@ import os
 class GPUDev:
     __instance = None
 
+    @classmethod
+    def get_gpu_dev(cls):
+        if cls.__instance is None:
+            cls.__instance = GPUDev()
+        return cls.__instance
+
     def __init__(self, _gpu_num=0):
         if GPUDev.__instance is not None:
             return
         else:
             GPUDev.__instance = self
-            global gpu_dev
-            gpu_dev = GPUDev.__instance
 
         import cupy as cp
         self.id = _gpu_num
@@ -44,11 +48,6 @@ class GPUDev:
         else:
             single_precision = False
 
-        if os.getenv('ARCH') is not None:
-            arch = os.getenv('ARCH')
-        else:
-            arch = "sm_75"
-
         if single_precision:
             print("Using single precision")
         else:
@@ -64,6 +63,3 @@ class GPUDev:
         with open(f'{self.name}-attributes.txt', 'w') as f:
             for k, v in self.attributes.items():
                 f.write(f"{k}:{v}\n")
-
-
-gpu_dev = None

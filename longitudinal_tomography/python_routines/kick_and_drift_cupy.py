@@ -7,17 +7,8 @@ import numpy as np
 import cupy as cp
 import logging
 from typing import Tuple
-from ..utils import gpu_dev
 
 log = logging.getLogger(__name__)
-
-if gpu_dev is None:
-        from ..utils import GPUDev
-        gpu_dev = GPUDev()
-
-block_size = gpu_dev.block_size
-grid_size = gpu_dev.grid_size
-
 
 def drift_down(dphi: cp.ndarray,
                denergy: cp.ndarray, drift_coef: float,
@@ -72,11 +63,7 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                    h_ratio: float,
                    dturns: int,
                    deltaturn: int) -> Tuple[cp.ndarray, cp.ndarray]:
-    global grid_size
-    grid_size = (int(nparts / block_size[0]) + 1, 1, 1)
-
     phi12_arr = np.full(nturns+1, phi12)
-    # Preparation end
 
     profile = rec_prof
     turn = rec_prof * dturns + deltaturn

@@ -7,17 +7,13 @@ import numpy as np
 import cupy as cp
 import logging
 from typing import Tuple
-from ..utils import gpu_dev
+from ..utils import GPUDev
 
 import os
 
 log = logging.getLogger(__name__)
 
-### Testing purposes - remove later
-
-if gpu_dev is None:
-        from ..utils import GPUDev
-        gpu_dev = GPUDev()
+gpu_dev = GPUDev.get_gpu_dev()
 
 if os.getenv('SINGLE_PREC') is not None:
     single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False

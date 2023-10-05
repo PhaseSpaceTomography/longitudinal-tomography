@@ -1,6 +1,13 @@
 class TomoException(Exception):
     pass
 
+# ==========================
+# CUDA Compilation Exception
+# ==========================
+
+class CudaCompilationException(Exception):
+    pass
+
 # ================
 # Array Exceptions
 # ================

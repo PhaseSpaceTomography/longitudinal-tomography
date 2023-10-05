@@ -5,19 +5,17 @@
 
 import numpy as np
 import cupy as cp
-from ..utils import gpu_dev
+from ..utils import GPUDev
 import os
 
-if gpu_dev is None:
-        from ..utils import GPUDev
-        gpu_dev = GPUDev()
+gpu_dev = GPUDev.get_gpu_dev()
 
 if os.getenv('SINGLE_PREC') is not None:
     single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
 else:
     single_precision = False
 
-precis, dtype = 'float', cp.float32 if single_precision else 'double', cp.float64
+precis, dtype = ('float', cp.float32) if single_precision else ('double', cp.float64)
 back_project_kernel = gpu_dev.rec_mod.get_function("back_project_" + precis)
 project_kernel = gpu_dev.rec_mod.get_function("project_" + precis)
 clip_kernel = gpu_dev.rec_mod.get_function("clip_" + precis)
@@ -25,6 +23,13 @@ find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_" +
 count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_" + precis)
 calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_" + precis)
 comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_" + precis)
+create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
+
+block_size = gpu_dev.block_size
+grid_size = gpu_dev.grid_size
+
+def back_project(weights: cp.ndarray,
+                 flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
@@ -32,6 +37,7 @@ comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amou
                             block=(32, 1, 1),
                             grid=(n_particles, 1, 1))
     return weights
+
 
 def project(flat_rec: cp.ndarray,
             flat_points: cp.ndarray,

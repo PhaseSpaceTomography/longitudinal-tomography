@@ -1,5 +1,6 @@
 import subprocess
 import os
+from .. import exceptions as expt
 
 cuda_sources = [
     os.path.dirname(__file__) + '/kick_and_drift.cu',
@@ -37,8 +38,8 @@ if not os.path.isfile(cuda_sources[0] + 'bin') or not os.path.isfile(cuda_source
         if os.path.isfile(cuda_sources[0] + 'bin') and os.path.isfile(cuda_sources[1] + 'bin'):
             print('The CUDA sources have been successfully compiled.')
         else:
-            print('The CUDA source compilation failed.')
-    except ImportError:
-        print("Package CuPy is not installed. CUDA sources cannot be compiled")
-    except cp.cuda.runtime.CUDARuntimeError:
-        print("No capable GPU device has been found. CUDA sources cannot be compiled")
+            raise expt.CudaCompilationException('The CUDA source compilation failed.')
+    except ImportError as e:
+        raise expt.CudaCompilationException("Package CuPy is not installed. CUDA sources cannot be compiled") from e
+    except cp.cuda.runtime.CUDARuntimeError as e:
+        raise expt.CudaCompilationException("No capable GPU device has been found. CUDA sources cannot be compiled") from e
