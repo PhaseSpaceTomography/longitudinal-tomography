@@ -9,8 +9,6 @@ like assertions, conversions and filtering of lost particles.
 """
 import logging
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
-
-
 import numpy as np
 
 from . import phase_space_info as psi
