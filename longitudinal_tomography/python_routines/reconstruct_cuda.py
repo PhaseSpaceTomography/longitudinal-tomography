@@ -17,32 +17,14 @@ if os.getenv('SINGLE_PREC') is not None:
 else:
     single_precision = False
 
-if single_precision:
-    dtype = cp.float32
-    back_project_kernel = gpu_dev.rec_mod.get_function("back_project_float")
-    project_kernel = gpu_dev.rec_mod.get_function("project_float")
-    clip_kernel = gpu_dev.rec_mod.get_function("clip_float")
-    find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_float")
-    count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_float")
-    calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_float")
-    comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_float")
-else:
-    dtype = cp.float64
-    back_project_kernel = gpu_dev.rec_mod.get_function("back_project_double")
-    project_kernel = gpu_dev.rec_mod.get_function("project_double")
-    clip_kernel = gpu_dev.rec_mod.get_function("clip_double")
-    find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_double")
-    count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_double")
-    calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_double")
-    comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_double")
-
-create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
-
-block_size = gpu_dev.block_size
-grid_size = gpu_dev.grid_size
-
-def back_project(weights: cp.ndarray,
-                 flat_points: cp.ndarray,
+precis, dtype = 'float', cp.float32 if single_precision else 'double', cp.float64
+back_project_kernel = gpu_dev.rec_mod.get_function("back_project_" + precis)
+project_kernel = gpu_dev.rec_mod.get_function("project_" + precis)
+clip_kernel = gpu_dev.rec_mod.get_function("clip_" + precis)
+find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_" + precis)
+count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_" + precis)
+calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_" + precis)
+comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_" + precis)
                  flat_profiles: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
