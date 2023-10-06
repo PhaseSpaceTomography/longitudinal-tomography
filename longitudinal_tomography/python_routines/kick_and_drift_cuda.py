@@ -20,15 +20,10 @@ if os.getenv('SINGLE_PREC') is not None:
 else:
     single_precision = False
 
-if single_precision:
-    kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_float")
-    kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_float")
-else:
-    kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_double")
-    kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_double")
+precis, dtype = ('float', cp.float32) if single_precision else ('double', cp.float64)
 
-#kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
-#kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
+kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_" + precis)
+kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_" + precis)
 
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
@@ -63,18 +58,17 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
     global grid_size
     grid_size = (int(nparts / block_size[0]) + 1, 1, 1)
 
-    if single_precision:
-        xp = xp.astype(cp.float32)
-        yp = yp.astype(cp.float32)
-        denergy = denergy.astype(cp.float32)
-        dphi = dphi.astype(cp.float32)
-        drift_coef = drift_coef.astype(np.float32)
-        phi0 = phi0.astype(np.float32)
-        deltaE0 = deltaE0.astype(np.float32)
-        rfv1 = rfv1.astype(np.float32)
-        rfv2 = rfv2.astype(np.float32)
+    xp = xp.astype(dtype)
+    yp = yp.astype(dtype)
+    denergy = denergy.astype(dtype)
+    dphi = dphi.astype(dtype)
+    drift_coef = cp.asarray(drift_coef, dtype=dtype)
+    phi0 = cp.asarray(phi0, dtype=dtype)
+    deltaE0 = cp.asarray(deltaE0, dtype=dtype)
+    rfv1 = cp.asarray(rfv1, dtype=dtype)
+    rfv2 = cp.asarray(rfv2, dtype=dtype)
 
-    phi12_arr = np.full(nturns+1, phi12)
+    phi12_arr = cp.full(nturns+1, phi12)
     # Preparation end
 
     profile = rec_prof
@@ -87,8 +81,8 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
     xp[profile] = cp.copy(dphi)
     yp[profile] = cp.copy(denergy)
 
-    kick_drift_up_whole(dphi, denergy, xp, yp, cp.asarray(drift_coef), cp.asarray(rfv1), cp.asarray(rfv2),
-                        cp.asarray(phi0), cp.asarray(phi12_arr), h_ratio, nparts, cp.asarray(deltaE0),
+    kick_drift_up_whole(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
+                        phi0, phi12_arr, h_ratio, nparts, deltaE0,
                         turn, nturns, dturns, profile)
 
     profile = rec_prof
@@ -100,7 +94,7 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
         dphi = cp.copy(xp[rec_prof])
         denergy = cp.copy(yp[rec_prof])
 
-        kick_drift_down_whole(dphi, denergy, xp, yp, cp.asarray(drift_coef), cp.asarray(rfv1), cp.asarray(rfv2),
-                        cp.asarray(phi0), cp.asarray(phi12_arr), h_ratio, nparts, cp.asarray(deltaE0),
+        kick_drift_down_whole(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
+                        phi0, phi12_arr, h_ratio, nparts, deltaE0,
                         turn, dturns, profile)
     return xp, yp

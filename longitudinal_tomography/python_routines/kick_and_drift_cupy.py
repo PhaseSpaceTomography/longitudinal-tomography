@@ -63,7 +63,15 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                    h_ratio: float,
                    dturns: int,
                    deltaturn: int) -> Tuple[cp.ndarray, cp.ndarray]:
-    phi12_arr = np.full(nturns+1, phi12)
+    
+    drift_coef = cp.asarray(drift_coef)
+    phi0 = cp.asarray(phi0)
+    deltaE0 = cp.asarray(deltaE0)
+    rfv1 = cp.asarray(rfv1)
+    rfv2 = cp.asarray(rfv2)
+
+    phi12_arr = cp.full(nturns+1, phi12)
+    # Preparation end
 
     profile = rec_prof
     turn = rec_prof * dturns + deltaturn

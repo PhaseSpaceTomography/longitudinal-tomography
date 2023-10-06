@@ -157,28 +157,35 @@ class TomographyABC(ABC):
 
     @xp.setter
     def xp(self, value: np.ndarray):
+
         if hasattr(value, '__iter__'):
             value = np.array(value)
+
             if value.ndim != 2:
                 msg = 'X coordinates have two dimensions ' \
                       '(nparticles, nprofiles)'
                 raise expt.CoordinateImportError(msg)
+
             if not value.shape[1] == self.nprofs:
                 msg = f'Imported particles should be ' \
                       f'tracked trough {self.nprofs} profiles. ' \
                       f'Given particles seems so have been tracked trough ' \
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
+
             if np.any(value < 0) or np.any(value >= self.nbins):
                 msg = 'X coordinate of particles outside of image width'
                 raise expt.XPOutOfImageWidthError(msg)
+
             self._xp = np.ascontiguousarray(value, dtype=np.int32)
             self._nparts = self._xp.shape[0]
             log.info(f'X coordinates of shape {self.xp.shape} loaded.')
+
         elif value is None:
             self._xp = None
             self._nparts = None
             log.info('X coordinates set to None')
+
         else:
             msg = 'X coordinates should be iterable, or None.'
             raise expt.CoordinateImportError(msg)
