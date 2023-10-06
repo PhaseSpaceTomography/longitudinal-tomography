@@ -112,4 +112,3 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                 profile -= 1
                 xp[profile] = cp.copy(dphi)
                 yp[profile] = cp.copy(denergy)
-    return xp, yp

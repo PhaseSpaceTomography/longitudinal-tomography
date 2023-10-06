@@ -97,4 +97,3 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
         kick_drift_down_whole(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                         phi0, phi12_arr, h_ratio, nparts, deltaE0,
                         turn, dturns, profile)
-    return xp, yp

@@ -217,12 +217,12 @@ class Tracking(ParticleTracker):
                                       self.fortran_flag, callback=callback)
             elif mode == Mode.CUPY:
                 from longitudinal_tomography.python_routines.kick_and_drift_cupy import kick_and_drift_cupy
-                xp, yp = kick_and_drift_cupy(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
+                kick_and_drift_cupy(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
                                                 nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
                                             machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
             elif mode == Mode.CUDA:
                 from longitudinal_tomography.python_routines.kick_and_drift_cuda import kick_and_drift_cuda
-                xp, yp = kick_and_drift_cuda(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
+                kick_and_drift_cuda(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
                                                 nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
                                             machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
 
