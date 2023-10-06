@@ -170,7 +170,7 @@ class TomographyCuPyABC(ABC):
                       f'Given particles seems so have been tracked trough ' \
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
-            if cp.any(cp.logical_or(value < 0, value >= self.nbins)):
+            if cp.any((value < 0) * (value >= self.nbins)):
                 msg = 'X coordinate of particles outside of image width'
                 raise expt.XPOutOfImageWidthError(msg)
             self._xp = cp.ascontiguousarray(value, dtype=cp.int32)

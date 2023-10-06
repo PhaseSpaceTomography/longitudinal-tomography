@@ -282,7 +282,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mod
             yp = yp[:, valid_mask]
     else:
         # Find all particles outside of image width
-        invalid_pts = np.argwhere(np.logical_or(xp >= img_width, xp < 0))
+        invalid_pts = np.argwhere(np.any(xp >= img_width) or np.any(xp < 0))
 
         if np.size(invalid_pts) > 0:
             # Mark particle as invalid only once
