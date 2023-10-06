@@ -22,3 +22,4 @@ __doc/build
 *.npy
 *.so
 *.o
+*.cubin

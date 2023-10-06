@@ -11,6 +11,7 @@ import numpy as np
 from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
+from ..utils.execution_mode import Mode
 
 log = logging.getLogger(__name__)
 
@@ -207,7 +208,7 @@ class Tomography(TomographyABC):
         return self.weight
 
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+            callback: t.Callable = None, mode: Mode = Mode.CPP) -> np.ndarray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.

@@ -1,21 +1,22 @@
-"""Module containing the Tomography super class
+"""Module containing the Tomography super class with
 
-:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
+:Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**, **Bernardo Abreu Figueiredo**
 """
 
 import logging
 
 from abc import ABC, abstractmethod
 import typing as t
-import numpy as np
+import cupy as cp
+from ..utils.execution_mode import Mode
 
 from .. import exceptions as expt
 
 log = logging.getLogger(__name__)
 
 
-class TomographyABC(ABC):
-    """Base class for tomography classes.
+class TomographyCuPyABC(ABC):
+    """Base class for tomography classes using CuPy.
 
     This class holds tomography utilities and assertions.
 
@@ -50,8 +51,8 @@ class TomographyABC(ABC):
         of the reconstruction process.
     """
 
-    def __init__(self, waterfall: np.ndarray,
-                 x_coords: np.ndarray = None, y_coords: np.ndarray = None):
+    def __init__(self, waterfall: cp.ndarray,
+                 x_coords: cp.ndarray = None, y_coords: cp.ndarray = None):
         self._waterfall = self._normalize_profiles(waterfall.clip(0.0))
 
         self._nprofs: int = self.waterfall.shape[0]
@@ -60,12 +61,12 @@ class TomographyABC(ABC):
         self.xp = x_coords
         self.yp = y_coords
 
-        self.recreated = np.zeros(self.waterfall.shape)
-        self.diff: np.ndarray = None
-        self.weight: np.ndarray = None
+        self.recreated = cp.zeros(self.waterfall.shape)
+        self.diff: cp.ndarray = None
+        self.weight: cp.ndarray = None
 
     @property
-    def waterfall(self) -> np.ndarray:
+    def waterfall(self) -> cp.ndarray:
         """Waterfall defined as @property.
 
         Returns
@@ -77,7 +78,7 @@ class TomographyABC(ABC):
         return self._waterfall
 
     @property
-    def yp(self) -> np.ndarray:
+    def yp(self) -> cp.ndarray:
         """Y-coordinates defined as @property.
 
         Parameters
@@ -105,14 +106,14 @@ class TomographyABC(ABC):
         return self._yp
 
     @yp.setter
-    def yp(self, value: np.ndarray):
+    def yp(self, value: cp.ndarray):
         if hasattr(value, '__iter__'):
             if self._xp is None:
                 raise expt.CoordinateImportError(
                     'The object x-coordinates are None. x-coordinates'
                     'must be provided before the y-coordinates.')
             elif value.shape == self.xp.shape:
-                self._yp = value.astype(np.int32)
+                self._yp = value.astype(cp.int32)
             else:
                 raise expt.CoordinateImportError(
                     'The given y-coordinates should be of the '
@@ -124,7 +125,7 @@ class TomographyABC(ABC):
                 'Y-coordinates should be iterable, or None.')
 
     @property
-    def xp(self) -> np.ndarray:
+    def xp(self) -> cp.ndarray:
         """X-coordinates defined as @property.
 
         Automatically updates `nparts`.
@@ -156,10 +157,10 @@ class TomographyABC(ABC):
         return self._xp
 
     @xp.setter
-    def xp(self, value: np.ndarray):
+    def xp(self, value: cp.ndarray):
 
         if hasattr(value, '__iter__'):
-            value = np.array(value)
+            value = cp.asarray(value)
 
             if value.ndim != 2:
                 msg = 'X coordinates have two dimensions ' \
@@ -173,11 +174,11 @@ class TomographyABC(ABC):
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
 
-            if np.any(value < 0) or np.any(value >= self.nbins):
+            if cp.any((value < 0) * (value >= self.nbins)):
                 msg = 'X coordinate of particles outside of image width'
                 raise expt.XPOutOfImageWidthError(msg)
 
-            self._xp = np.ascontiguousarray(value, dtype=np.int32)
+            self._xp = cp.ascontiguousarray(value, dtype=cp.int32)
             self._nparts = self._xp.shape[0]
             log.info(f'X coordinates of shape {self.xp.shape} loaded.')
 
@@ -221,49 +222,12 @@ class TomographyABC(ABC):
         """
         return self._nprofs
 
-    def _normalize_profiles(self, waterfall: np.ndarray) -> np.ndarray:
+    def _normalize_profiles(self, waterfall: cp.ndarray) -> cp.ndarray:
         if not waterfall.any():
             raise expt.WaterfallReducedToZero()
-        waterfall /= np.sum(waterfall, axis=1)[:, None]
+        waterfall /= cp.sum(waterfall, axis=1)[:, None]
         return waterfall
 
-    # Calculates discrepancy for the whole waterfall
-    def _discrepancy(self, diff_waterfall: np.ndarray):
-        return np.sqrt(
-            np.sum(diff_waterfall ** 2) / (self.nbins * self.nprofs))
-
-    # Created xp array modified to point at flattened version of waterfall.
-    def _create_flat_points(self) -> np.ndarray:
-        flat_points = self.xp.copy()
-        for i in range(self.nprofs):
-            flat_points[:, i] += self.nbins * i
-        return flat_points
-
-    # Finding the reciprocal of the number of particles in
-    # a bin. Done to counterbalance the different amount of
-    # particles in the different bins.
-    # Bins with fewer particles have a larger amplification,
-    # relative to bins containing many particles.
-    def _reciprocal_particles(self) -> np.ndarray:
-        ppb = np.zeros((self.nbins, self.nprofs))
-        ppb = self._count_particles_in_bins(
-            ppb, self.nprofs, self.xp, self.nparts)
-
-        # Setting bins with zero particles one to avoid division by zero.
-        ppb[ppb == 0] = 1
-        return np.max(ppb) / ppb
-
-    # Needed by reciprocal particles function.
-    # TODO: removed njit, reimplement in C in the future
-    def _count_particles_in_bins(self, ppb: np.ndarray,
-                                 profile_count: int,
-                                 xp: np.ndarray, nparts: int) -> np.ndarray:
-        for i in range(profile_count):
-            for j in range(nparts):
-                ppb[xp[j, i], i] += 1
-        return ppb
-
     @abstractmethod
-    def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+    def run(self, niter: int = 20, verbose: bool = False, mode: Mode = Mode.CUDA) -> cp.ndarray:
         pass

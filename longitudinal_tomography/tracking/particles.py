@@ -9,11 +9,11 @@ like assertions, conversions and filtering of lost particles.
 """
 import logging
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
-
 import numpy as np
 
 from . import phase_space_info as psi
 from .. import assertions as asrt, exceptions as expt
+from ..utils.execution_mode import Mode
 
 if TYPE_CHECKING:
     from .machine import Machine
@@ -230,7 +230,7 @@ class Particles(object):
             'Did you remember to use machine.values_at_turns()?')
 
 
-def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
+def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray, int]:
     """Remove lost particles (particles that leaves the image width).
 
@@ -263,17 +263,36 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
     """
     nr_lost_pts = 0
 
-    # Find all particles outside of image width
-    invalid_pts = np.argwhere(np.logical_or(xp >= img_width, xp < 0))
+    if mode == Mode.CUPY or mode == Mode.CUDA:
+        import cupy as cp
+        # Find all particles outside of image width
+        invalid_pts = cp.argwhere(cp.logical_or(xp >= img_width, xp < 0))
 
-    if np.size(invalid_pts) > 0:
-        # Mark particle as invalid only once
-        invalid_pts = np.unique(invalid_pts.T[1])
-        # Save number of invalid particles
-        nr_lost_pts = len(invalid_pts)
-        # Remove invalid particles
-        xp = np.delete(xp, invalid_pts, axis=1)
-        yp = np.delete(yp, invalid_pts, axis=1)
+        if cp.size(invalid_pts) > 0:
+            # Mark particle as invalid only once
+            invalid_cols = cp.unique(invalid_pts[:, 1])
+            # Save number of invalid particles
+            nr_lost_pts = len(invalid_cols)
+
+            # Create a mask to select valid columns
+            valid_mask = ~cp.isin(cp.arange(xp.shape[1]), invalid_cols)
+
+            # Remove invalid particles
+            xp = xp[:, valid_mask]
+            yp = yp[:, valid_mask]
+    else:
+        # Find all particles outside of image width
+        invalid_pts = np.argwhere(np.any(xp >= img_width) or np.any(xp < 0))
+
+        if np.size(invalid_pts) > 0:
+            # Mark particle as invalid only once
+            invalid_pts = np.unique(invalid_pts[:, 1])
+            # Save number of invalid particles
+            nr_lost_pts = len(invalid_pts)
+
+            # Remove invalid particles
+            xp = np.delete(xp, invalid_pts, axis=1)
+            yp = np.delete(yp, invalid_pts, axis=1)
 
     if xp.size == 0:
         raise expt.InvalidParticleError(
@@ -283,7 +302,7 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
 
 
 def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
-                       machine: 'MachineABC', xorigin: float, dEbin: float) \
+                       machine: 'MachineABC', xorigin: float, dEbin: float, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray]:
     """Function to convert from physical units ([rad], [eV]) to reconstructed
     phase space coordinates (bin numbers).
@@ -329,20 +348,30 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     nprof = tracked_denergy.shape[0]
 
     profiles = np.arange(nprof)
+
     turns = profiles * machine.dturns
 
+    phi0_reshaped = machine.phi0[turns].reshape(-1, 1)
+    omega_rev0_reshaped = machine.omega_rev0[turns].reshape(-1, 1)
+
+    if mode == Mode.CUPY or mode == Mode.CUDA:
+        import cupy as cp
+        phi0_reshaped = cp.asarray(phi0_reshaped)
+        omega_rev0_reshaped = cp.asarray(omega_rev0_reshaped)
+
     xp = ((tracked_dphi
-           + machine.phi0[turns].reshape(-1, 1))
+           + phi0_reshaped)
           / (float(machine.h_num)
-             * machine.omega_rev0[turns].reshape(-1, 1)
+             * omega_rev0_reshaped
              * machine.dtbin) - xorigin)
 
     yp = (tracked_denergy
           / float(dEbin) + machine.synch_part_y)
+
     return xp, yp
 
 
-def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \
+def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int, mode: Mode = Mode.CPP) \
         -> Tuple[np.ndarray, np.ndarray]:
     """Function to prepare tracked particles tomography routine.
 
@@ -387,8 +416,9 @@ def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \
         Array shape: **(M, N)**, where N is the number of profiles,
         and M is the number of particles.
     """
-    xp, yp, lost = filter_lost(xp, yp, nbins)
+    xp, yp, lost = filter_lost(xp, yp, nbins, mode)
     log.info(f'number of lost particles: {lost}')
+
     xp = xp.astype(np.int32).T
     yp = yp.astype(np.int32).T
 
