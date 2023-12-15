@@ -46,27 +46,22 @@ def kick_drift_down_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray,
 
 def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                    denergy: cp.ndarray, dphi: cp.ndarray,
-                   rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
-                   nturns: int, nparts: int,
+                   rfv1: np.ndarray, rfv2: np.ndarray,
                    phi0: np.ndarray,
                    deltaE0: np.ndarray,
                    drift_coef: np.ndarray,
                    phi12: float,
                    h_ratio: float,
                    dturns: int,
-                   deltaturn: int) -> Tuple[cp.ndarray, cp.ndarray]:
+                   rec_prof: int,
+                   deltaturn: int,
+                   nturns: int,
+                   nparts: int,
+                   ftn_out: bool,
+                   callback
+                   ) -> Tuple[cp.ndarray, cp.ndarray]:
     global grid_size
     grid_size = (int(nparts / block_size[0]) + 1, 1, 1)
-
-    xp = xp.astype(dtype)
-    yp = yp.astype(dtype)
-    denergy = denergy.astype(dtype)
-    dphi = dphi.astype(dtype)
-    drift_coef = cp.asarray(drift_coef, dtype=dtype)
-    phi0 = cp.asarray(phi0, dtype=dtype)
-    deltaE0 = cp.asarray(deltaE0, dtype=dtype)
-    rfv1 = cp.asarray(rfv1, dtype=dtype)
-    rfv2 = cp.asarray(rfv2, dtype=dtype)
 
     phi12_arr = cp.full(nturns+1, phi12)
     # Preparation end

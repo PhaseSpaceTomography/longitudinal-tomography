@@ -5,8 +5,6 @@
 from .tomo_output import create_phase_space_image, show
 import os
 
-# Class for encapsulating information about the GPU as used in BLonD
-
 class GPUDev:
     __instance = None
 
@@ -16,14 +14,14 @@ class GPUDev:
             cls.__instance = GPUDev()
         return cls.__instance
 
-    def __init__(self, _gpu_num=0):
+    def __init__(self, _gpu_id=0):
         if GPUDev.__instance is not None:
             return
         else:
             GPUDev.__instance = self
 
         import cupy as cp
-        self.id = _gpu_num
+        self.id = _gpu_id
         self.dev = cp.cuda.Device(self.id)
         self.dev.use()
 

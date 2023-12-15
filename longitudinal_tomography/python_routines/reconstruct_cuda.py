@@ -6,6 +6,7 @@
 import numpy as np
 import cupy as cp
 from ..utils import GPUDev
+from utils.tomo_config import AppConfig as appconf
 import os
 
 gpu_dev = GPUDev.get_gpu_dev()
@@ -125,20 +126,15 @@ def create_flat_points(xp: cp.ndarray,
 def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
-                verbose: bool = False) -> tuple:
-    if single_precision:
-        dtype = cp.float32
-    else:
-        dtype = cp.float64
-
+                verbose: bool = False, callback = None) -> tuple:
     xp = xp.flatten()
     # from wrapper
-    weights = cp.zeros(n_particles, dtype=dtype)
+    weights = cp.zeros(n_particles, dtype=appconf.get_precision())
     discr = np.zeros(n_iter + 1)
-    flat_profiles = waterfall.flatten().astype(dtype)
-    flat_rec = cp.zeros(n_profiles * n_bins, dtype=dtype)
+    flat_profiles = waterfall.flatten().astype(appconf.get_precision())
+    flat_rec = cp.zeros(n_profiles * n_bins, dtype=appconf.get_precision())
     flat_points = cp.zeros(n_particles * n_profiles)
-    rparts = cp.zeros((n_profiles * n_bins), dtype=dtype)
+    rparts = cp.zeros((n_profiles * n_bins), dtype=appconf.get_precision())
 
     # Actual functionality
     rparts = reciprocal_particles(rparts, xp, n_bins, n_profiles, n_particles)

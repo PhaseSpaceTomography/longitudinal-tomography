@@ -10,7 +10,7 @@ import numpy as np
 
 from .. import exceptions as expt
 from ..utils import physics
-from ..utils.execution_mode import Mode
+from ..utils import tomo_config as conf
 from ..cpp_routines import libtomo
 from ..python_routines import data_treatment
 from . import pre_process
@@ -111,7 +111,7 @@ def fit_synch_part_x(profiles: 'Profiles') -> Tuple[np.ndarray, float, float]:
 
 
 def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
-                reconstr_idx: int = 0, mode: Mode = Mode.CPP) \
+                reconstr_idx: int = 0) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -151,13 +151,13 @@ def phase_space(tomo: 'TomographyABC', machine: 'MachineABC',
                                         tomo.weight, machine.nbins,
                                         machine.synch_part_x,
                                         machine.synch_part_y, machine.dtbin,
-                                        machine.dEbin, mode)
+                                        machine.dEbin)
 
 
 def phase_space_from_coordinates(xp: np.ndarray, yp: np.ndarray,
                                  weight: np.ndarray, nbins: int,
                                  synch_x: float, synch_y: float,
-                                 dtbin: float, dEbin: float, mode: Mode = Mode.CPP) \
+                                 dtbin: float, dEbin: float) \
         -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Returns time, energy and phase space density arrays from a
     reconstruction.
@@ -193,10 +193,7 @@ def phase_space_from_coordinates(xp: np.ndarray, yp: np.ndarray,
         2D array of bin weights in phase space.
     """
 
-    if mode == Mode.CPP:
-        density = libtomo.make_phase_space(xp, yp, weight, nbins)
-    else:
-        density = data_treatment.make_phase_space(xp, yp, weight, nbins, mode)
+    density = conf.make_phase_space(xp, yp, weight, nbins)
 
     t_range = (np.arange(nbins) - synch_x) * dtbin
     E_range = (np.arange(nbins) - synch_y) * dEbin
