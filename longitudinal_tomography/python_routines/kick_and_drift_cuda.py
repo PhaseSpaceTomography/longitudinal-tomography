@@ -9,21 +9,12 @@ import logging
 from typing import Tuple
 from ..utils import GPUDev
 
-import os
-
 log = logging.getLogger(__name__)
 
 gpu_dev = GPUDev.get_gpu_dev()
 
-if os.getenv('SINGLE_PREC') is not None:
-    single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
-else:
-    single_precision = False
-
-precis, dtype = ('float', cp.float32) if single_precision else ('double', cp.float64)
-
-kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_" + precis)
-kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_" + precis)
+kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
+kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
 
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size

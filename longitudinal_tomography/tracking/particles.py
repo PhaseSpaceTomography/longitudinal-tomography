@@ -167,7 +167,7 @@ class Particles(object):
         y += np.tile(bin_pts, nbins_y)
 
         coords = np.meshgrid(x, y)
-        coords = conf.array([coords[0].flatten(), coords[1].flatten()])
+        coords = np.array([coords[0].flatten(), coords[1].flatten()])
 
         # Remove particles outside of the limits of i (phase) and j (energy)
         # of the reconstruction area.
@@ -181,7 +181,7 @@ class Particles(object):
 
         # Converting from phase space coordinates to physical units.
         coords = conf.array(self._bin_nr_to_physical_coords(coords, machine, recprof,
-                                                 deltaturn))
+                                                 deltaturn), dtype=conf.AppConfig.get_precision())
         self.coordinates_dphi_denergy = coords
 
     def _bin_nr_to_physical_coords(self,
@@ -330,7 +330,7 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
             'Different shape of arrays containing phase and energies')
     nprof = tracked_denergy.shape[0]
 
-    profiles = conf.arange(nprof)
+    profiles = np.arange(nprof)
 
     turns = profiles * machine.dturns
 

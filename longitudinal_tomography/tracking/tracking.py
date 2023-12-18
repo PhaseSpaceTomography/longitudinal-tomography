@@ -12,7 +12,6 @@ from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import libtomo
 from ..compat import fortran
-from ..utils.execution_mode import Mode
 from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
@@ -201,8 +200,8 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            xp = conf.zeros((machine.nprofiles, nparts))
-            yp = conf.zeros((machine.nprofiles, nparts))
+            xp = conf.zeros((machine.nprofiles, nparts), dtype=conf.AppConfig.get_precision())
+            yp = conf.zeros((machine.nprofiles, nparts), dtype=conf.AppConfig.get_precision())
 
             conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef, machine.phi12,\
                                     machine.h_ratio, machine.dturns, recprof, deltaturn, nturns, nparts, self.fortran_flag, callback=callback)

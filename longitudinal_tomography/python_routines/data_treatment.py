@@ -14,4 +14,4 @@ def make_phase_space(xp: conf.ndarray[conf.int32],
     phase_space = conf.zeros(n_bins**2)
     conf.add.at(phase_space, index, weights)
 
-    return phase_space.reshape((n_bins, n_bins))
+    return phase_space.reshape((n_bins, n_bins)).get()

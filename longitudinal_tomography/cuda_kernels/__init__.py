@@ -3,13 +3,13 @@ import os
 from .. import exceptions as expt
 
 cuda_sources = [
-    os.path.dirname(__file__) + '/kick_and_drift.cu',
-    os.path.dirname(__file__) + '/reconstruct.cu',
+    os.path.dirname(__file__) + '/kick_and_drift',
+    os.path.dirname(__file__) + '/reconstruct',
 ]
 
 print(os.path.dirname(__file__))
 
-if not os.path.isfile(cuda_sources[0] + 'bin') or not os.path.isfile(cuda_sources[1] + 'bin'):
+if not os.path.isfile(cuda_sources[0] + '.cubin') or not os.path.isfile(cuda_sources[1] + '.cubin'):
     print('Compiling the CUDA sources')
 
     cuda_path = os.getenv('CUDA_PATH', default='')
@@ -32,10 +32,14 @@ if not os.path.isfile(cuda_sources[0] + 'bin') or not os.path.isfile(cuda_source
         nvccflags += ['-arch', f'sm_{comp_capability}']
 
         for source in cuda_sources:
-            command = nvccflags + ['-o', source + 'bin', source]
+            command = nvccflags + ['-o', source + '_double.cubin', source + '.cu']
+            subprocess.call(command)
+            command = nvccflags + ['-o', source + '_single.cubin', source + '.cu', '-DUSEFLOAT']
             subprocess.call(command)
 
-        if os.path.isfile(cuda_sources[0] + 'bin') and os.path.isfile(cuda_sources[1] + 'bin'):
+
+        if os.path.isfile(cuda_sources[0] + '_double.cubin') and os.path.isfile(cuda_sources[1] + '_double.cubin')\
+            and os.path.isfile(cuda_sources[0] + '_single.cubin') and os.path.isfile(cuda_sources[1] + '_single.cubin'):
             print('The CUDA sources have been successfully compiled.')
         else:
             raise expt.CudaCompilationException('The CUDA source compilation failed.')

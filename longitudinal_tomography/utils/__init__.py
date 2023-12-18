@@ -14,8 +14,9 @@ class GPUDev:
             cls.__instance = GPUDev()
         return cls.__instance
 
-    def __init__(self, _gpu_id=0):
+    def __init__(self, single_prec = False, _gpu_id=0):
         if GPUDev.__instance is not None:
+            print("GPUDev Instance already exists")
             return
         else:
             GPUDev.__instance = self
@@ -41,20 +42,24 @@ class GPUDev:
 
         self.directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 
-        if os.getenv('SINGLE_PREC') is not None:
-            single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
+        if single_prec:
+            self.load_single_precision_modules()
         else:
-            single_precision = False
+            self.load_double_precision_modules()
 
-        if single_precision:
-            print("Using single precision")
-        else:
-            print("Using double precision")
-
+    def load_double_precision_modules(self):
+        import cupy as cp
         self.kd_mod = cp.RawModule(path=os.path.join(
-                    self.directory, f'../cuda_kernels/kick_and_drift.cubin'))
+                    self.directory, f'../cuda_kernels/kick_and_drift_double.cubin'))
         self.rec_mod = cp.RawModule(path=os.path.join(
-                            self.directory, f'../cuda_kernels/reconstruct.cubin'))
+                            self.directory, f'../cuda_kernels/reconstruct_double.cubin'))
+
+    def load_single_precision_modules(self):
+        import cupy as cp
+        self.kd_mod = cp.RawModule(path=os.path.join(
+                    self.directory, f'../cuda_kernels/kick_and_drift_single.cubin'))
+        self.rec_mod = cp.RawModule(path=os.path.join(
+                            self.directory, f'../cuda_kernels/reconstruct_single.cubin'))
 
     def report_attributes(self):
         # Saves into a file all the device attributes
