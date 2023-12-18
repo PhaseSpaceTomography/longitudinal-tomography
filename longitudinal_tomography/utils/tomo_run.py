@@ -125,11 +125,7 @@ def run(input: str, reconstruct_profile: bool = None,
     xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
     # Tomography!
-    waterfall = conf.array(waterfall, dtype=conf.AppConfig.get_precision())
-
-    print(np.mean(waterfall), np.std(waterfall), np.mean(xp), np.std(xp), np.mean(yp), np.std(yp))
-
-    print(waterfall.clip(0.0))
+    waterfall = conf.array(profiles.waterfall, dtype=conf.AppConfig.get_precision())
 
     tomo = tomography.Tomography(waterfall, xp, yp)
     weight = tomo.run(niter=machine.niter, verbose=tomoscope)
