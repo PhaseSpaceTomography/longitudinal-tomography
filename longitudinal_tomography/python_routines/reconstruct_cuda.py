@@ -23,6 +23,21 @@ create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
 
+def refresh_kernels():
+    global gpu_dev, back_project_kernel, project_kernel, clip_kernel, find_diffprof_kernel,\
+        count_part_bin_kernel, calc_reciprocal_kernel, comp_part_amount_kernel, create_flat_points_kernel
+
+    gpu_dev = GPUDev.get_gpu_dev()
+    back_project_kernel = gpu_dev.rec_mod.get_function("back_project")
+    project_kernel = gpu_dev.rec_mod.get_function("project")
+    clip_kernel = gpu_dev.rec_mod.get_function("clip")
+    find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile")
+    count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin")
+    calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal")
+    comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount")
+    create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
+
+
 def back_project(weights: cp.ndarray,
                  flat_points: cp.ndarray,
                  flat_profiles: cp.ndarray,

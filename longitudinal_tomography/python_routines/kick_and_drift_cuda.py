@@ -19,6 +19,12 @@ kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
 
+def refresh_kernels():
+    global gpu_dev, kick_drift_up_turns, kick_drift_down_turns
+    gpu_dev = GPUDev.get_gpu_dev()
+    kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
+    kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
+
 def kick_drift_up_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, nturns: int, dturns: int, profile: int) -> None:

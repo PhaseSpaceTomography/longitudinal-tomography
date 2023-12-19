@@ -16,7 +16,6 @@ class GPUDev:
 
     def __init__(self, single_prec = False, _gpu_id=0):
         if GPUDev.__instance is not None:
-            print("GPUDev Instance already exists")
             return
         else:
             GPUDev.__instance = self

@@ -173,7 +173,7 @@ class Tracking(ParticleTracker):
 
         else:
             log.info('Using initial particle coordinates set by user.')
-            self.particles.coordinates_dphi_denergy = init_distr
+            self.particles.coordinates_dphi_denergy = conf.array(init_distr, dtype=conf.AppConfig.get_precision())
             coords = self.particles.coordinates_dphi_denergy
 
         dphi = coords[0]
