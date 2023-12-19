@@ -28,7 +28,7 @@ void kick_up(const T *dphi,
                         const T rfv2,
                         const T phi0,
                         const T phi12,
-                        const double hratio,
+                        const T hratio,
                         const int nr_particles,
                         const T acc_kick) {
 
@@ -250,3 +250,63 @@ template void kick_and_drift(
         const int nparts,
         const bool ftn_out,
         const std::function<void(int, int)> callback);
+
+template void kick_up(const double *dphi,
+                        double *denergy,
+                        const double rfv1,
+                        const double rfv2,
+                        const double phi0,
+                        const double phi12,
+                        const double hratio,
+                        const int nr_particles,
+                        const double acc_kick);
+
+template void kick_up(const float *dphi,
+                        float *denergy,
+                        const float rfv1,
+                        const float rfv2,
+                        const float phi0,
+                        const float phi12,
+                        const float hratio,
+                        const int nr_particles,
+                        const float acc_kick);
+
+template void kick_down(const double *dphi,
+                        double *denergy,
+                        const double rfv1,
+                        const double rfv2,
+                        const double phi0,
+                        const double phi12,
+                        const double hratio,
+                        const int nr_particles,
+                        const double acc_kick);
+
+template void kick_down(const float *dphi,
+                        float *denergy,
+                        const float rfv1,
+                        const float rfv2,
+                        const float phi0,
+                        const float phi12,
+                        const float hratio,
+                        const int nr_particles,
+                        const float acc_kick);
+
+template void drift_up(double *dphi,
+                         const double *denergy,
+                         const double drift_coef,
+                         const int nr_particles);
+
+template void drift_up(float *dphi,
+                         const float *denergy,
+                         const float drift_coef,
+                         const int nr_particles);
+
+template void drift_down(double *dphi,
+                         const double *denergy,
+                         const double drift_coef,
+                         const int nr_particles);
+
+template void drift_down(float *dphi,
+                         const float *denergy,
+                         const float drift_coef,
+                         const int nr_particles);

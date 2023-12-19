@@ -264,15 +264,15 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
     nr_lost_pts = 0
     
     # Find all particles outside of image width
-    invalid_pts = conf.argwhere(conf.any(xp >= img_width) or conf.any(xp < 0))
+    invalid_pts = conf.argwhere(conf.logical_or(xp >= img_width, xp < 0))
 
     if conf.size(invalid_pts) > 0:
         # Mark particle as invalid only once
-        invalid_cols = conf.unique(invalid_pts[:, 1])
+        invalid_pts = conf.unique(invalid_pts[:, 1])
         # Save number of invalid particles
         nr_lost_pts = len(invalid_pts)
 
-        valid_mask = ~conf.isin(conf.arange(xp.shape[1]), invalid_cols)
+        valid_mask = ~conf.isin(conf.arange(xp.shape[1]), invalid_pts)
 
         xp = xp[:, valid_mask]
         yp = yp[:, valid_mask]

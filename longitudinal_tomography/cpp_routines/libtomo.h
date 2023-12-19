@@ -159,7 +159,7 @@ py::tuple wrapper_reconstruct(
         const std::optional<const py::object> callback
 );
 
-// template py::tuple wrapper_reconstruct(
+// py::tuple wrapper_reconstruct(
 //         const i_array &input_xp,
 //         const d_array &waterfall,
 //         const int n_iter,
@@ -170,7 +170,7 @@ py::tuple wrapper_reconstruct(
 //         const std::optional<const py::object> callback
 // );
 
-// template py::tuple wrapper_reconstruct(
+// py::tuple wrapper_reconstruct(
 //         const i_array &input_xp,
 //         const f_array &waterfall,
 //         const int n_iter,

@@ -42,7 +42,7 @@ if not os.path.isfile(cuda_sources[0] + '.cubin') or not os.path.isfile(cuda_sou
             and os.path.isfile(cuda_sources[0] + '_single.cubin') and os.path.isfile(cuda_sources[1] + '_single.cubin'):
             print('The CUDA sources have been successfully compiled.')
         else:
-            raise expt.CudaCompilationException('The CUDA source compilation failed.')
+            raise expt.CudaCompilationException('The CUDA source compilation failed. Check if CUDA_PATH has been set.')
     except ImportError as e:
         raise expt.CudaCompilationException("Package CuPy is not installed. CUDA sources cannot be compiled") from e
     except cp.cuda.runtime.CUDARuntimeError as e:

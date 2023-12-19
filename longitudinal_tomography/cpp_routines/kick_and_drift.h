@@ -25,7 +25,7 @@ void kick_up(const T *dphi,
                         const T rfv2,
                         const T phi0,
                         const T phi12,
-                        const double hratio,
+                        const T hratio,
                         const int nr_particles,
                         const T acc_kick);
 
