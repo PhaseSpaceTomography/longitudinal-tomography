@@ -9,21 +9,12 @@ import logging
 from typing import Tuple
 from ..utils import GPUDev
 
-import os
-
 log = logging.getLogger(__name__)
 
 gpu_dev = GPUDev.get_gpu_dev()
 
-if os.getenv('SINGLE_PREC') is not None:
-    single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
-else:
-    single_precision = False
-
-precis, dtype = ('float', cp.float32) if single_precision else ('double', cp.float64)
-
-kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns_" + precis)
-kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns_" + precis)
+kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
+kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
 
 block_size = gpu_dev.block_size
 grid_size = gpu_dev.grid_size
@@ -46,27 +37,22 @@ def kick_drift_down_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray,
 
 def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                    denergy: cp.ndarray, dphi: cp.ndarray,
-                   rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
-                   nturns: int, nparts: int,
+                   rfv1: np.ndarray, rfv2: np.ndarray,
                    phi0: np.ndarray,
                    deltaE0: np.ndarray,
                    drift_coef: np.ndarray,
                    phi12: float,
                    h_ratio: float,
                    dturns: int,
-                   deltaturn: int) -> Tuple[cp.ndarray, cp.ndarray]:
+                   rec_prof: int,
+                   deltaturn: int,
+                   nturns: int,
+                   nparts: int,
+                   ftn_out: bool,
+                   callback
+                   ) -> Tuple[cp.ndarray, cp.ndarray]:
     global grid_size
     grid_size = (int(nparts / block_size[0]) + 1, 1, 1)
-
-    xp = xp.astype(dtype)
-    yp = yp.astype(dtype)
-    denergy = denergy.astype(dtype)
-    dphi = dphi.astype(dtype)
-    drift_coef = cp.asarray(drift_coef, dtype=dtype)
-    phi0 = cp.asarray(phi0, dtype=dtype)
-    deltaE0 = cp.asarray(deltaE0, dtype=dtype)
-    rfv1 = cp.asarray(rfv1, dtype=dtype)
-    rfv2 = cp.asarray(rfv2, dtype=dtype)
 
     phi12_arr = cp.full(nturns+1, phi12)
     # Preparation end

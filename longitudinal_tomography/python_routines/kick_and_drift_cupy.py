@@ -54,15 +54,19 @@ def kick_drift_down_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_
 
 def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                    denergy: cp.ndarray, dphi: cp.ndarray,
-                   rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
-                   nturns: int, nparts: int,
+                   rfv1: np.ndarray, rfv2: np.ndarray,
                    phi0: np.ndarray,
                    deltaE0: np.ndarray,
                    drift_coef: np.ndarray,
                    phi12: float,
                    h_ratio: float,
                    dturns: int,
-                   deltaturn: int) -> Tuple[cp.ndarray, cp.ndarray]:
+                   rec_prof: int,
+                   deltaturn: int,
+                   nturns: int,
+                   nparts: int,
+                   fortran_flag,
+                   callback) -> Tuple[cp.ndarray, cp.ndarray]:
     
     drift_coef = cp.asarray(drift_coef)
     phi0 = cp.asarray(phi0)

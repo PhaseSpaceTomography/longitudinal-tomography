@@ -6,23 +6,18 @@
 import numpy as np
 import cupy as cp
 from ..utils import GPUDev
+from ..utils.tomo_config import AppConfig as appconf
 import os
 
 gpu_dev = GPUDev.get_gpu_dev()
 
-if os.getenv('SINGLE_PREC') is not None:
-    single_precision = True if os.getenv('SINGLE_PREC') == 'True' else False
-else:
-    single_precision = False
-
-precis, dtype = ('float', cp.float32) if single_precision else ('double', cp.float64)
-back_project_kernel = gpu_dev.rec_mod.get_function("back_project_" + precis)
-project_kernel = gpu_dev.rec_mod.get_function("project_" + precis)
-clip_kernel = gpu_dev.rec_mod.get_function("clip_" + precis)
-find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile_" + precis)
-count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin_" + precis)
-calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal_" + precis)
-comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount_" + precis)
+back_project_kernel = gpu_dev.rec_mod.get_function("back_project")
+project_kernel = gpu_dev.rec_mod.get_function("project")
+clip_kernel = gpu_dev.rec_mod.get_function("clip")
+find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile")
+count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin")
+calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal")
+comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount")
 create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 
 block_size = gpu_dev.block_size
@@ -125,20 +120,15 @@ def create_flat_points(xp: cp.ndarray,
 def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
-                verbose: bool = False) -> tuple:
-    if single_precision:
-        dtype = cp.float32
-    else:
-        dtype = cp.float64
-
+                verbose: bool = False, callback = None) -> tuple:
     xp = xp.flatten()
     # from wrapper
-    weights = cp.zeros(n_particles, dtype=dtype)
+    weights = cp.zeros(n_particles, dtype=appconf.get_precision())
     discr = np.zeros(n_iter + 1)
-    flat_profiles = waterfall.flatten().astype(dtype)
-    flat_rec = cp.zeros(n_profiles * n_bins, dtype=dtype)
+    flat_profiles = waterfall.flatten().astype(appconf.get_precision())
+    flat_rec = cp.zeros(n_profiles * n_bins, dtype=appconf.get_precision())
     flat_points = cp.zeros(n_particles * n_profiles)
-    rparts = cp.zeros((n_profiles * n_bins), dtype=dtype)
+    rparts = cp.zeros((n_profiles * n_bins), dtype=appconf.get_precision())
 
     # Actual functionality
     rparts = reciprocal_particles(rparts, xp, n_bins, n_profiles, n_particles)

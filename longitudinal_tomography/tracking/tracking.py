@@ -12,7 +12,7 @@ from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import libtomo
 from ..compat import fortran
-from ..utils.execution_mode import Mode
+from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
     from .machine_base import MachineABC
@@ -56,7 +56,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None, deltaturn: int = 0, mode: Mode = Mode.CPP) \
+              callback: Callable = None, deltaturn: int = 0) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -182,8 +182,11 @@ class Tracking(ParticleTracker):
         self.init_dphi = dphi.copy()
         self.init_denergy = denergy.copy()
 
-        rfv1 = machine.vrf1_at_turn * machine.q
-        rfv2 = machine.vrf2_at_turn * machine.q
+        rfv1 = conf.array(machine.vrf1_at_turn * machine.q, dtype=conf.AppConfig.get_precision())
+        rfv2 = conf.array(machine.vrf2_at_turn * machine.q, dtype=conf.AppConfig.get_precision())
+        phi0 = conf.array(machine.phi0, dtype=conf.AppConfig.get_precision())
+        deltaE0 = conf.array(machine.deltaE0, dtype=conf.AppConfig.get_precision())
+        drift_coef = conf.array(machine.drift_coef, dtype=conf.AppConfig.get_precision())
 
         # Tracking particles
         if self.self_field_flag:
@@ -197,34 +200,30 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            if mode == Mode.CUPY or mode == Mode.CUDA:
-                import cupy as cp
-                xp = cp.zeros((machine.nprofiles, nparts))
-                yp = cp.zeros((machine.nprofiles, nparts))
-                dphi = cp.asarray(dphi)
-                denergy = cp.asarray(denergy)
-            else:
-                xp = np.zeros((machine.nprofiles, nparts))
-                yp = np.zeros((machine.nprofiles, nparts))
+            xp = conf.zeros((machine.nprofiles, nparts), dtype=conf.AppConfig.get_precision())
+            yp = conf.zeros((machine.nprofiles, nparts), dtype=conf.AppConfig.get_precision())
 
-            if mode == Mode.CPP:
-                # Calling C++ implementation of tracking routine.
-                libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-                                      machine.phi0, machine.deltaE0,
-                                      machine.drift_coef, machine.phi12,
-                                      machine.h_ratio, machine.dturns,
-                                      recprof, deltaturn, nturns, nparts,
-                                      self.fortran_flag, callback=callback)
-            elif mode == Mode.CUPY:
-                from longitudinal_tomography.python_routines.kick_and_drift_cupy import kick_and_drift_cupy
-                kick_and_drift_cupy(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
-                                                nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
-                                            machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
-            elif mode == Mode.CUDA:
-                from longitudinal_tomography.python_routines.kick_and_drift_cuda import kick_and_drift_cuda
-                kick_and_drift_cuda(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
-                                                nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
-                                            machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
+            conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef, machine.phi12,\
+                                    machine.h_ratio, machine.dturns, recprof, deltaturn, nturns, nparts, self.fortran_flag, callback=callback)
+
+            # if mode == Mode.CPP:
+            #     # Calling C++ implementation of tracking routine.
+            #     libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
+            #                           machine.phi0, machine.deltaE0,
+            #                           machine.drift_coef, machine.phi12,
+            #                           machine.h_ratio, machine.dturns,
+            #                           recprof, deltaturn, nturns, nparts,
+            #                           self.fortran_flag, callback=callback)
+            # elif mode == Mode.CUPY:
+            #     from longitudinal_tomography.python_routines.kick_and_drift_cupy import kick_and_drift_cupy
+            #     kick_and_drift_cupy(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
+            #                                     nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
+            #                                 machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
+            # elif mode == Mode.CUDA:
+            #     from longitudinal_tomography.python_routines.kick_and_drift_cuda import kick_and_drift_cuda
+            #     kick_and_drift_cuda(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
+            #                                     nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
+            #                                 machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
 
         log.info('Tracking completed!')
         return xp, yp

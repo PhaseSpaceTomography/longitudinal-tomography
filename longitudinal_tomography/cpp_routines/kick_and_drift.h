@@ -18,38 +18,42 @@ using namespace std;
 // Uses BLonD fast_sin function.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void kick_up(const double *dphi,
-                        double *denergy,
-                        const double rfv1,
-                        const double rfv2,
-                        const double phi0,
-                        const double phi12,
-                        const double hratio,
+template <typename T>
+void kick_up(const T *dphi,
+                        T *denergy,
+                        const T rfv1,
+                        const T rfv2,
+                        const T phi0,
+                        const T phi12,
+                        const T hratio,
                         const int nr_particles,
-                        const double acc_kick);
+                        const T acc_kick);
 
-extern "C" void kick_down(const double *dphi,
-                          double *denergy,
-                          const double rfv1,
-                          const double rfv2,
-                          const double phi0,
-                          const double phi12,
-                          const double hratio,
-                          const int nr_particles,
-                          const double acc_kick);
+template <typename T>
+void kick_down(const T *dphi,
+                        T *denergy,
+                        const T rfv1,
+                        const T rfv2,
+                        const T phi0,
+                        const T phi12,
+                        const T hratio,
+                        const int nr_particles,
+                        const T acc_kick);
 
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void drift_up(double *dphi,
-                         const double *denergy,
-                         const double drift_coef,
+template <typename T>
+void drift_up(T *dphi,
+                         const T *denergy,
+                         const T drift_coef,
                          const int nr_particles);
 
-extern "C" void drift_down(double *dphi,
-                           const double *denergy,
-                           const double drift_coef,
+template <typename T>
+void drift_down(T *dphi,
+                           const T *denergy,
+                           const T drift_coef,
                            const int nr_particles);
 
 
@@ -70,18 +74,19 @@ extern "C" void calc_xp_and_yp(double **xp,           // inn/out
                                const int profile,
                                const int nparts);
 
-extern "C" void kick_and_drift(
-        double **xp,             // inn/out
-        double **yp,             // inn/out
-        double *denergy,         // inn
-        double *dphi,            // inn
-        const double *rf1v,      // inn
-        const double *rf2v,      // inn
-        const double *phi0,      // inn
-        const double *deltaE0,   // inn
-        const double *drift_coef,// inn
-        const double *phi12,
-        const double hratio,
+template <typename T>
+void kick_and_drift(
+        T **xp,             // inn/out
+        T **yp,             // inn/out
+        T *denergy,         // inn
+        T *dphi,            // inn
+        const T *rf1v,      // inn
+        const T *rf2v,      // inn
+        const T *phi0,      // inn
+        const T *deltaE0,   // inn
+        const T *drift_coef,// inn
+        const T *phi12,
+        const T hratio,
         const int dturns,
         const int rec_prof,
         const int deltaturn,
