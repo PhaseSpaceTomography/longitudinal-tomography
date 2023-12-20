@@ -279,36 +279,36 @@ void reconstruct(T *weights,             // out
 // Template definitions double
 
 template void back_project(double *weights,                     // inn/out
-                  int *flat_points,       // inn
-                  const double *flat_profiles,         // inn
-                  const int npart, const int nprof);
+                           int *flat_points,                    // inn
+                           const double *flat_profiles,         // inn
+                           const int npart, const int nprof);
 
 template void project(double *flat_rec,                     // inn/out
-             int *flat_points,        // inn
-             const double *weights,   // inn
-             const int npart, const int nprof);
+                      int *flat_points,                     // inn
+                      const double *weights,                // inn
+                      const int npart, const int nprof);
 
-template void normalize(double *flat_rec, // inn/out
-              const int nprof,
-              const int nbins);
+template void normalize(double *flat_rec,       // inn/out
+                        const int nprof,
+                        const int nbins);
 
-template void clip(double *array, // inn/out
-          const int length,
-          const double clip_val);
+template void clip(double *array,               // inn/out
+                   const int length,
+                   const double clip_val);
 
 template void find_difference_profile(double *diff_prof,           // out
-                             const double *flat_rec,      // inn
-                             const double *flat_profiles, // inn
-                             const int all_bins);
+                                      const double *flat_rec,      // inn
+                                      const double *flat_profiles, // inn
+                                      const int all_bins);
 
 template double discrepancy(const double *diff_prof,   // inn
-                   const int nprof,
-                   const int nbins);
+                            const int nprof,
+                            const int nbins);
 
-template void compensate_particle_amount(double *diff_prof,        // inn/out
-                                double *rparts,          // inn
-                                const int nprof,
-                                const int nbins);
+template void compensate_particle_amount(double *diff_prof,     // inn/out
+                                         double *rparts,        // inn
+                                         const int nprof,
+                                         const int nbins);
 
 template double max_2d(double **arr,  // inn
               const int x_axis,
@@ -319,91 +319,91 @@ template double max_1d(double *arr, const int length);
 template double sum(double *arr, const int length);
 
 template void count_particles_in_bin(double *rparts,      // out
-                            const int *xp,       // inn
-                            const int nprof,
-                            const int npart,
-                            const int nbins);
+                                     const int *xp,       // inn
+                                     const int nprof,
+                                     const int npart,
+                                     const int nbins);
 
 template void reciprocal_particles(double *rparts,   // out
-                          const int *xp,     // inn
-                          const int nbins,
-                          const int nprof,
-                          const int npart);
+                                   const int *xp,     // inn
+                                   const int nbins,
+                                   const int nprof,
+                                   const int npart);
 
 template void reconstruct(double *weights,             // out
-                 const int *xp,               // inn
-                 const double *flat_profiles, // inn
-                 double *flat_rec,            // Out
-                 double *discr,               // out
-                 const int niter,
-                 const int nbins,
-                 const int npart,
-                 const int nprof,
-                 const bool verbose,
-                 const std::function<void(int, int)> callback);
+                          const int *xp,               // inn
+                          const double *flat_profiles, // inn
+                          double *flat_rec,            // Out
+                          double *discr,               // out
+                          const int niter,
+                          const int nbins,
+                          const int npart,
+                          const int nprof,
+                          const bool verbose,
+                          const std::function<void(int, int)> callback);
 
 // Template definitions float
 
-template void back_project(float *weights,                     // inn/out
-                  int *flat_points,       // inn
-                  const float *flat_profiles,         // inn
-                  const int npart, const int nprof);
+template void back_project(float *weights,                      // inn/out
+                           int *flat_points,                    // inn
+                           const float *flat_profiles,          // inn
+                           const int npart, const int nprof);
 
-template void project(float *flat_rec,                     // inn/out
-             int *flat_points,        // inn
-             const float *weights,   // inn
-             const int npart, const int nprof);
+template void project(float *flat_rec,                      // inn/out
+                      int *flat_points,                     // inn
+                      const float *weights,                 // inn
+                      const int npart, const int nprof);
 
-template void normalize(float *flat_rec, // inn/out
-              const int nprof,
-              const int nbins);
+template void normalize(float *flat_rec,    // inn/out
+                        const int nprof,
+                        const int nbins);
 
-template void clip(float *array, // inn/out
-          const int length,
-          const double clip_val);
+template void clip(float *array,            // inn/out
+                   const int length,
+                   const double clip_val);
 
 template void find_difference_profile(float *diff_prof,           // out
-                             const float *flat_rec,      // inn
-                             const float *flat_profiles, // inn
-                             const int all_bins);
+                                      const float *flat_rec,      // inn
+                                      const float *flat_profiles, // inn
+                                      const int all_bins);
 
 template float discrepancy(const float *diff_prof,   // inn
-                   const int nprof,
-                   const int nbins);
+                           const int nprof,
+                           const int nbins);
 
-template void compensate_particle_amount(float *diff_prof,        // inn/out
-                                float *rparts,          // inn
-                                const int nprof,
-                                const int nbins);
+template void compensate_particle_amount(float *diff_prof,      // inn/out
+                                         float *rparts,         // inn
+                                         const int nprof,
+                                         const int nbins);
 
 template float max_2d(float **arr,  // inn
-              const int x_axis,
-              const int y_axis);
+                      const int x_axis,
+                      const int y_axis);
 
 template float max_1d(float *arr, const int length);
 
 template float sum(float *arr, const int length);
 
-template void count_particles_in_bin(float *rparts,      // out
-                            const int *xp,       // inn
-                            const int nprof,
-                            const int npart,
-                            const int nbins);
+template void count_particles_in_bin(float *rparts,     // out
+                                     const int *xp,     // inn
+                                     const int nprof,
+                                     const int npart,
+                                     const int nbins);
 
-template void reciprocal_particles(float *rparts,   // out
-                          const int *xp,     // inn
+template void reciprocal_particles(float *rparts,       // out
+                                   const int *xp,       // inn
+                                   const int nbins,
+                                   const int nprof,
+                                   const int npart);
+
+template void reconstruct(float *weights,               // out
+                          const int *xp,                // inn
+                          const float *flat_profiles,   // inn
+                          float *flat_rec,              // out
+                          float *discr,                 // out
+                          const int niter,
                           const int nbins,
+                          const int npart,
                           const int nprof,
-                          const int npart);
-
-template void reconstruct(float *weights,             // out
-                 const int *xp,               // inn
-                 const float *flat_profiles, // inn
-                 float *flat_rec,            // Out
-                 float *discr,               // out
-                 const int niter,
-                 const int nbins,
-                 const int npart,
-                 const int nprof,
-                 const bool verbose,
-                 const std::function<void(int, int)> callback);
+                          const bool verbose,
+                          const std::function<void(int, int)> callback);

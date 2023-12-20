@@ -20,25 +20,25 @@ using namespace std;
 //  Used in hybrid python/C++ class.
 template <typename T>
 void kick_up(const T *dphi,
-                        T *denergy,
-                        const T rfv1,
-                        const T rfv2,
-                        const T phi0,
-                        const T phi12,
-                        const T hratio,
-                        const int nr_particles,
-                        const T acc_kick);
+             T *denergy,
+             const T rfv1,
+             const T rfv2,
+             const T phi0,
+             const T phi12,
+             const T hratio,
+             const int nr_particles,
+             const T acc_kick);
 
 template <typename T>
 void kick_down(const T *dphi,
-                        T *denergy,
-                        const T rfv1,
-                        const T rfv2,
-                        const T phi0,
-                        const T phi12,
-                        const T hratio,
-                        const int nr_particles,
-                        const T acc_kick);
+               T *denergy,
+               const T rfv1,
+               const T rfv2,
+               const T phi0,
+               const T phi12,
+               const T hratio,
+               const int nr_particles,
+               const T acc_kick);
 
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
@@ -46,15 +46,15 @@ void kick_down(const T *dphi,
 //  Used in hybrid python/C++ class.
 template <typename T>
 void drift_up(T *dphi,
-                         const T *denergy,
-                         const T drift_coef,
-                         const int nr_particles);
+              const T *denergy,
+              const T drift_coef,
+              const int nr_particles);
 
 template <typename T>
 void drift_down(T *dphi,
-                           const T *denergy,
-                           const T drift_coef,
-                           const int nr_particles);
+                const T *denergy,
+                const T drift_coef,
+                const int nr_particles);
 
 
 // Calculates X and Y coordinates for particles based on a given
@@ -75,25 +75,24 @@ extern "C" void calc_xp_and_yp(double **xp,           // inn/out
                                const int nparts);
 
 template <typename T>
-void kick_and_drift(
-        T **xp,             // inn/out
-        T **yp,             // inn/out
-        T *denergy,         // inn
-        T *dphi,            // inn
-        const T *rf1v,      // inn
-        const T *rf2v,      // inn
-        const T *phi0,      // inn
-        const T *deltaE0,   // inn
-        const T *drift_coef,// inn
-        const T *phi12,
-        const T hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
-        const bool ftn_out,
-        const std::function<void(int, int)> callback
+void kick_and_drift(T **xp,             // inn/out
+                    T **yp,             // inn/out
+                    T *denergy,         // inn
+                    T *dphi,            // inn
+                    const T *rf1v,      // inn
+                    const T *rf2v,      // inn
+                    const T *phi0,      // inn
+                    const T *deltaE0,   // inn
+                    const T *drift_coef,// inn
+                    const T *phi12,
+                    const T hratio,
+                    const int dturns,
+                    const int rec_prof,
+                    const int deltaturn,
+                    const int nturns,
+                    const int nparts,
+                    const bool ftn_out,
+                    const std::function<void(int, int)> callback
 );
 
 #endif

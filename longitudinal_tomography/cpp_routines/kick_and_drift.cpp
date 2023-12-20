@@ -23,14 +23,14 @@ using namespace std;
 
 template <typename T>
 void kick_up(const T *dphi,
-                        T *denergy,
-                        const T rfv1,
-                        const T rfv2,
-                        const T phi0,
-                        const T phi12,
-                        const T hratio,
-                        const int nr_particles,
-                        const T acc_kick) {
+             T *denergy,
+             const T rfv1,
+             const T rfv2,
+             const T phi0,
+             const T phi12,
+             const T hratio,
+             const int nr_particles,
+             const T acc_kick) {
 
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
@@ -44,14 +44,14 @@ void kick_up(const T *dphi,
 
 template <typename T>
 void kick_down(const T *dphi,
-                          T *denergy,
-                          const T rfv1,
-                          const T rfv2,
-                          const T phi0,
-                          const T phi12,
-                          const T hratio,
-                          const int nr_particles,
-                          const T acc_kick) {
+               T *denergy,
+               const T rfv1,
+               const T rfv2,
+               const T phi0,
+               const T phi12,
+               const T hratio,
+               const int nr_particles,
+               const T acc_kick) {
 
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
@@ -69,9 +69,9 @@ void kick_down(const T *dphi,
 //  Used in hybrid python/C++ class.
 template <typename T>
 void drift_up(T *dphi,
-                         const T *denergy,
-                         const T drift_coef,
-                         const int nr_particles) {
+              const T *denergy,
+              const T drift_coef,
+              const int nr_particles) {
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
         dphi[i] -= drift_coef * denergy[i];
@@ -79,9 +79,9 @@ void drift_up(T *dphi,
 
 template <typename T>
 void drift_down(T *dphi,
-                           const T *denergy,
-                           const T drift_coef,
-                           const int nr_particles) {
+                const T *denergy,
+                const T drift_coef,
+                const int nr_particles) {
 
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
@@ -113,25 +113,24 @@ extern "C" void calc_xp_and_yp(double **xp,           // inn/out
 }
 
 template <typename T>
-void kick_and_drift(
-        T **xp,             // inn/out
-        T **yp,             // inn/out
-        T *denergy,         // inn
-        T *dphi,            // inn
-        const T *rf1v,      // inn
-        const T *rf2v,      // inn
-        const T *phi0,      // inn
-        const T *deltaE0,   // inn
-        const T *drift_coef,// inn
-        const T *phi12,
-        const T hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
-        const bool ftn_out,
-        const std::function<void(int, int)> callback) {
+void kick_and_drift(T **xp,             // inn/out
+                    T **yp,             // inn/out
+                    T *denergy,         // inn
+                    T *dphi,            // inn
+                    const T *rf1v,      // inn
+                    const T *rf2v,      // inn
+                    const T *phi0,      // inn
+                    const T *deltaE0,   // inn
+                    const T *drift_coef,// inn
+                    const T *phi12,
+                    const T hratio,
+                    const int dturns,
+                    const int rec_prof,
+                    const int deltaturn,
+                    const int nturns,
+                    const int nparts,
+                    const bool ftn_out,
+                    const std::function<void(int, int)> callback) {
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
 
@@ -211,65 +210,63 @@ void kick_and_drift(
     }
 }//end func
 
-template void kick_and_drift(
-        double **xp,             // inn/out
-        double **yp,             // inn/out
-        double *denergy,         // inn
-        double *dphi,            // inn
-        const double *rf1v,      // inn
-        const double *rf2v,      // inn
-        const double *phi0,      // inn
-        const double *deltaE0,   // inn
-        const double *drift_coef,// inn
-        const double *phi12,
-        const double hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
-        const bool ftn_out,
-        const std::function<void(int, int)> callback);
+template void kick_and_drift(double **xp,             // inn/out
+                             double **yp,             // inn/out
+                             double *denergy,         // inn
+                             double *dphi,            // inn
+                             const double *rf1v,      // inn
+                             const double *rf2v,      // inn
+                             const double *phi0,      // inn
+                             const double *deltaE0,   // inn
+                             const double *drift_coef,// inn
+                             const double *phi12,
+                             const double hratio,
+                             const int dturns,
+                             const int rec_prof,
+                             const int deltaturn,
+                             const int nturns,
+                             const int nparts,
+                             const bool ftn_out,
+                             const std::function<void(int, int)> callback);
 
-template void kick_and_drift(
-        float **xp,             // inn/out
-        float **yp,             // inn/out
-        float *denergy,         // inn
-        float *dphi,            // inn
-        const float *rf1v,      // inn
-        const float *rf2v,      // inn
-        const float *phi0,      // inn
-        const float *deltaE0,   // inn
-        const float *drift_coef,// inn
-        const float *phi12,
-        const float hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
-        const bool ftn_out,
-        const std::function<void(int, int)> callback);
+template void kick_and_drift(float **xp,             // inn/out
+                             float **yp,             // inn/out
+                             float *denergy,         // inn
+                             float *dphi,            // inn
+                             const float *rf1v,      // inn
+                             const float *rf2v,      // inn
+                             const float *phi0,      // inn
+                             const float *deltaE0,   // inn
+                             const float *drift_coef,// inn
+                             const float *phi12,
+                             const float hratio,
+                             const int dturns,
+                             const int rec_prof,
+                             const int deltaturn,
+                             const int nturns,
+                             const int nparts,
+                             const bool ftn_out,
+                             const std::function<void(int, int)> callback);
 
 template void kick_up(const double *dphi,
-                        double *denergy,
-                        const double rfv1,
-                        const double rfv2,
-                        const double phi0,
-                        const double phi12,
-                        const double hratio,
-                        const int nr_particles,
-                        const double acc_kick);
+                      double *denergy,
+                      const double rfv1,
+                      const double rfv2,
+                      const double phi0,
+                      const double phi12,
+                      const double hratio,
+                      const int nr_particles,
+                      const double acc_kick);
 
 template void kick_up(const float *dphi,
-                        float *denergy,
-                        const float rfv1,
-                        const float rfv2,
-                        const float phi0,
-                        const float phi12,
-                        const float hratio,
-                        const int nr_particles,
-                        const float acc_kick);
+                      float *denergy,
+                      const float rfv1,
+                      const float rfv2,
+                      const float phi0,
+                      const float phi12,
+                      const float hratio,
+                      const int nr_particles,
+                      const float acc_kick);
 
 template void kick_down(const double *dphi,
                         double *denergy,
@@ -292,14 +289,14 @@ template void kick_down(const float *dphi,
                         const float acc_kick);
 
 template void drift_up(double *dphi,
-                         const double *denergy,
-                         const double drift_coef,
-                         const int nr_particles);
+                       const double *denergy,
+                       const double drift_coef,
+                       const int nr_particles);
 
 template void drift_up(float *dphi,
-                         const float *denergy,
-                         const float drift_coef,
-                         const int nr_particles);
+                       const float *denergy,
+                       const float drift_coef,
+                       const int nr_particles);
 
 template void drift_down(double *dphi,
                          const double *denergy,

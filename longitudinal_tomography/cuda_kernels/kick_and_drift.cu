@@ -72,9 +72,9 @@ __global__ void drift_up(real_t * __restrict__ dphi,
 // amount of threads should be equal to nr_particles
 extern "C"
 __global__ void drift_down(real_t * __restrict__ dphi,
-                         const real_t * __restrict__ denergy,
-                         const real_t drift_coef,
-                         const int nr_particles) {
+                           const real_t * __restrict__ denergy,
+                           const real_t drift_coef,
+                           const int nr_particles) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
     if(tid < nr_particles)
         dphi[tid] += drift_coef * denergy[tid];
@@ -85,15 +85,15 @@ __global__ void drift_down(real_t * __restrict__ dphi,
 // amount of threads should be equal to nr_particles
 extern "C"
 __global__ void kick_drift_up_simultaneously(real_t * __restrict__ dphi,
-                         real_t * __restrict__ denergy,
-                         const real_t drift_coef,
-                         const real_t rfv1,
-                         const real_t rfv2,
-                         const real_t phi0,
-                         const real_t phi12,
-                         const real_t hratio,
-                         const int nr_particles,
-                         const real_t acc_kick) {
+                                             real_t * __restrict__ denergy,
+                                             const real_t drift_coef,
+                                             const real_t rfv1,
+                                             const real_t rfv2,
+                                             const real_t phi0,
+                                             const real_t phi12,
+                                             const real_t hratio,
+                                             const int nr_particles,
+                                             const real_t acc_kick) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
     if(tid < nr_particles)
@@ -109,15 +109,15 @@ __global__ void kick_drift_up_simultaneously(real_t * __restrict__ dphi,
 // amount of threads should be equal to nr_particles
 extern "C"
 __global__ void kick_drift_down_simultaneously(real_t * __restrict__ dphi,
-                         real_t * __restrict__ denergy,
-                         const real_t drift_coef,
-                         const real_t rfv1,
-                         const real_t rfv2,
-                         const real_t phi0,
-                         const real_t phi12,
-                         const real_t hratio,
-                         const int nr_particles,
-                         const real_t acc_kick) {
+                                               real_t * __restrict__ denergy,
+                                               const real_t drift_coef,
+                                               const real_t rfv1,
+                                               const real_t rfv2,
+                                               const real_t phi0,
+                                               const real_t phi12,
+                                               const real_t hratio,
+                                               const int nr_particles,
+                                               const real_t acc_kick) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
     if(tid < nr_particles)
@@ -133,21 +133,21 @@ __global__ void kick_drift_down_simultaneously(real_t * __restrict__ dphi,
 // amount of threads should be equal to nr_particles.
 extern "C"
 __global__ void kick_drift_up_turns(const real_t * __restrict__ dphi,
-                         const real_t * __restrict__ denergy,
-                         real_t * __restrict__ xp,
-                         real_t * __restrict__ yp,
-                         const real_t * __restrict__ drift_coef,
-                         const real_t * __restrict__ rfv1,
-                         const real_t * __restrict__ rfv2,
-                         const real_t * __restrict__ phi0,
-                         const real_t * __restrict__ phi12,
-                         const real_t hratio,
-                         const int nr_particles,
-                         const real_t * __restrict__ acc_kick,
-                         int turn,
-                         const int nturns,
-                         const int dturns,
-                         int profile) {
+                                    const real_t * __restrict__ denergy,
+                                    real_t * __restrict__ xp,
+                                    real_t * __restrict__ yp,
+                                    const real_t * __restrict__ drift_coef,
+                                    const real_t * __restrict__ rfv1,
+                                    const real_t * __restrict__ rfv2,
+                                    const real_t * __restrict__ phi0,
+                                    const real_t * __restrict__ phi12,
+                                    const real_t hratio,
+                                    const int nr_particles,
+                                    const real_t * __restrict__ acc_kick,
+                                    int turn,
+                                    const int nturns,
+                                    const int dturns,
+                                    int profile) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
     if (tid < nr_particles)
@@ -178,20 +178,20 @@ __global__ void kick_drift_up_turns(const real_t * __restrict__ dphi,
 // amount of threads should be equal to nr_particles.
 extern "C"
 __global__ void kick_drift_down_turns(const real_t * __restrict__ dphi,
-                         const real_t * __restrict__ denergy,
-                         real_t * __restrict__ xp,
-                         real_t * __restrict__ yp,
-                         const real_t * __restrict__ drift_coef,
-                         const real_t * __restrict__ rfv1,
-                         const real_t * __restrict__ rfv2,
-                         const real_t * __restrict__ phi0,
-                         const real_t * __restrict__ phi12,
-                         const real_t hratio,
-                         const int nr_particles,
-                         const real_t * __restrict__ acc_kick,
-                         int turn,
-                         const int dturns,
-                         int profile) {
+                                      const real_t * __restrict__ denergy,
+                                      real_t * __restrict__ xp,
+                                      real_t * __restrict__ yp,
+                                      const real_t * __restrict__ drift_coef,
+                                      const real_t * __restrict__ rfv1,
+                                      const real_t * __restrict__ rfv2,
+                                      const real_t * __restrict__ phi0,
+                                      const real_t * __restrict__ phi12,
+                                      const real_t hratio,
+                                      const int nr_particles,
+                                      const real_t * __restrict__ acc_kick,
+                                      int turn,
+                                      const int dturns,
+                                      int profile) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
 
     if (tid < nr_particles)
