@@ -106,7 +106,7 @@ def create_phase_space_image(
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
-    conf.sum(phase_space)
+    phase_space /= conf.sum(phase_space)
     return phase_space
 
 
