@@ -2,7 +2,7 @@
 
 Run as python test_phase_space_info.py in console or via coverage
 """
-
+from __future__ import annotations
 import unittest
 
 from .. import commons

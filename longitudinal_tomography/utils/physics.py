@@ -2,6 +2,7 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
+from __future__ import annotations
 import typing as t
 from numbers import Number
 from collections.abc import Sequence

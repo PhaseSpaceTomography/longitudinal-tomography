@@ -3,6 +3,7 @@ a super class for particle trackers.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
+from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 

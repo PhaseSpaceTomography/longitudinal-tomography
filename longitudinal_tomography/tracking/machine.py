@@ -3,7 +3,7 @@ machine and reconstruction parameters
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
-
+from __future__ import annotations
 import logging
 from typing import Tuple
 
