@@ -11,7 +11,7 @@ import numpy as np
 
 from ..cpp_routines import libtomo
 from ..compat import fortran
-from ..utils.execution_mode import Mode
+from ..utils import tomo_config as conf
 
 
 def save_profile_ftn(*args, **kwargs):
@@ -64,7 +64,7 @@ def print_tracking_status_ftn(*args, **kwargs):
 
 def create_phase_space_image(
         xp: np.ndarray, yp: np.ndarray, weight: np.ndarray, n_bins: int,
-        recprof: int, mode: Mode = Mode.CPP) -> np.ndarray:
+        recprof: int) -> np.ndarray:
     """Convert from weighted particles to phase-space image.
 
     The output is equal to the phase space image created
@@ -99,24 +99,14 @@ def create_phase_space_image(
         phase space image has the same format as from the original program.
     """
 
-    if mode == Mode.CPP:
-        phase_space = libtomo.make_phase_space(xp[:, recprof].astype(np.int32),
-                                            yp[:, recprof].astype(np.int32),
-                                            weight, n_bins)
-    else:
-        from ..python_routines import data_treatment
-        phase_space = data_treatment.make_phase_space(xp[:, recprof].astype(np.int32),
-                                                    yp[:, recprof].astype(np.int32),
-                                                    weight, n_bins, mode)
+    phase_space = conf.make_phase_space(xp[:, recprof].astype(np.int32),
+                          yp[:, recprof].astype(np.int32),
+                          weight, n_bins)
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
-    if mode == Mode.CUPY or mode == Mode.CUDA:
-        import cupy as cp
-        phase_space /= cp.sum(phase_space)
-    else:
-        phase_space /= np.sum(phase_space)
+    conf.sum(phase_space)
     return phase_space
 
 

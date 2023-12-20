@@ -14,7 +14,6 @@ from ..tracking import particles as pts
 # Tomo modules
 from ..tracking import tracking as tracking
 from ..utils import tomo_input as tomoin, tomo_output as tomoout
-from ..utils.execution_mode import Mode
 from ..utils import tomo_config as conf
 
 from ..compat import tomoscope as tscp
