@@ -1,5 +1,11 @@
 [project]
 name = "longitudinal_tomography"
+authors = [
+    {name = "Simon Albright", email = "simon.albright@cern.ch"},
+    {name = "Bernardo Abreu Figueiredo", email = "bernardo.abreu.figueiredo@cern.ch"},
+    {name = "Anton Lu", email = "anton.lu@cern.ch"},
+    {name = "Christoffer Hjertø Grindheim"},
+]
 description = "A python library for longitudinal particle beam tomography"
 license = { text = "GNU General Public License version 3" }
 readme = "README.rst"
@@ -10,19 +16,18 @@ classifiers = [
 ]
 requires-python = ">= 3.9"
 dependencies = [
-    "matplotlib",
-    "multipledispatch",
-    "numpy",
-    "scipy",
+    "matplotlib ~= 3.8",
+    "multipledispatch ~= 1.0",
+    "numpy ~= 1.25",
+    "scipy ~= 1.11",
 ]
 dynamic = ["version"]
 
-[[project.authors]]
-name = "Anton Lu"
-email = "anton.lu@cern.ch"
-
 [project.urls]
 homepage = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3"
+documentation = "https://acc-py.web.cern.ch/gitlab/longitudinaltomography/tomographyv3/docs/stable/"
+repository = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3"
+changelog = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3/-/releases"
 
 [project.optional-dependencies]
 test = [
@@ -33,15 +38,12 @@ test = [
     "pytest-cov",
     "pyyaml",
 ]
-testing = [
-    "pyyaml",
-]
 gpu = [
     "cupy"
 ]
 
 [build-system]
-requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel", "pybind11"]
+requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
 build-backend = "setuptools.build_meta"
 
 # For dynamic versioning
