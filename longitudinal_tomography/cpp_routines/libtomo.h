@@ -159,28 +159,6 @@ py::tuple wrapper_reconstruct(
         const std::optional<const py::object> callback
 );
 
-// py::tuple wrapper_reconstruct(
-//         const i_array &input_xp,
-//         const d_array &waterfall,
-//         const int n_iter,
-//         const int n_bins,
-//         const int n_particles,
-//         const int n_profiles,
-//         const bool verbose,
-//         const std::optional<const py::object> callback
-// );
-
-// py::tuple wrapper_reconstruct(
-//         const i_array &input_xp,
-//         const f_array &waterfall,
-//         const int n_iter,
-//         const int n_bins,
-//         const int n_particles,
-//         const int n_profiles,
-//         const bool verbose,
-//         const std::optional<const py::object> callback
-// );
-
 class libtomo {
 
 };

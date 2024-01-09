@@ -24,8 +24,17 @@ if not os.path.isfile(cuda_sources[0] + ".cubin") or not os.path.isfile(
 
     try:
         import cupy as cp
-
         dev = cp.cuda.Device(0)
+    except ImportError as e:
+        raise expt.CudaCompilationException(
+            "Package CuPy is not installed. CUDA sources cannot be compiled"
+        ) from e
+    except cp.cuda.runtime.CUDARuntimeError as e:
+        raise expt.CudaCompilationException(
+            "No capable GPU device has been found.\
+                CUDA sources cannot be compiled"
+        ) from e
+    else:
         dev_name = cp.cuda.runtime.getDeviceProperties(dev)["name"]
         print("Discovering the device compute capability..")
         comp_capability = dev.compute_capability
@@ -36,14 +45,14 @@ if not os.path.isfile(cuda_sources[0] + ".cubin") or not os.path.isfile(
 
         for source in cuda_sources:
             command = nvccflags + ["-o", source + "_double.cubin", source + ".cu"]
-            subprocess.call(command)
+            subprocess.run(command)
             command = nvccflags + [
                 "-o",
                 source + "_single.cubin",
                 source + ".cu",
                 "-DUSEFLOAT",
             ]
-            subprocess.call(command)
+            subprocess.run(command)
 
         if (
             os.path.isfile(cuda_sources[0] + "_double.cubin")
@@ -56,13 +65,4 @@ if not os.path.isfile(cuda_sources[0] + ".cubin") or not os.path.isfile(
             raise expt.CudaCompilationException(
                 "The CUDA source compilation failed.\
                 Check if CUDA_PATH has been set."
-            )
-    except ImportError as e:
-        raise expt.CudaCompilationException(
-            "Package CuPy is not installed. CUDA sources cannot be compiled"
-        ) from e
-    except cp.cuda.runtime.CUDARuntimeError as e:
-        raise expt.CudaCompilationException(
-            "No capable GPU device has been found.\
-                CUDA sources cannot be compiled"
-        ) from e
+        )

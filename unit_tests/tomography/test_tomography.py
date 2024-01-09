@@ -294,11 +294,12 @@ class TestTomographyGPU(unittest.TestCase):
     def setUp(self):
         try:
             import cupy as cp
+        except ImportError:
+            self.skipTest('CuPy not found - skipped tests')
+        else:
             self.cp = cp
             conf.AppConfig.use_gpu()
             conf.AppConfig.set_double_precision()
-        except ImportError:
-            self.skipTest('CuPy not found - skipped tests')
 
     def tearDown(self) -> None:
         conf.AppConfig.use_cpu()

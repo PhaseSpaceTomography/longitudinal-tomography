@@ -9,9 +9,6 @@ import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.utils.tomo_input as tomoin
 from longitudinal_tomography.utils import tomo_config as conf
 
-conf.AppConfig.set_double_precision()
-conf.AppConfig.use_cpu()
-
 if os.getenv("DATAFILE") is not None:
     datafile = os.getenv("DATAFILE")
 else:

@@ -6,10 +6,6 @@ import numpy as np
 
 # Tomo imports
 import longitudinal_tomography.utils.tomo_run as tomorun
-import longitudinal_tomography.utils.tomo_config as conf
-
-conf.AppConfig.set_double_precision()
-conf.AppConfig.use_cpu()
 
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'flatTopINDIVRotate2.dat')

@@ -152,18 +152,18 @@ class TestParticlesMethodsGPU(unittest.TestCase):
 
     def test_filter_lost_correct(self):
         xp = self.cp.array([[1, 2, 3, 4, 5, 6, 7],
-                       [1, 2, 3, 4, 5, 6, 7],
-                       [1, 2, 3, 3, 3, 4, 4],
-                       [1, 2, 3, 3, 3, 4, 6],
-                       [1, 2, 3, 3, 3, 4, 1],
-                       [1, 2, 5, 3, 3, 4, 1]])
+                            [1, 2, 3, 4, 5, 6, 7],
+                            [1, 2, 3, 3, 3, 4, 4],
+                            [1, 2, 3, 3, 3, 4, 6],
+                            [1, 2, 3, 3, 3, 4, 1],
+                            [1, 2, 5, 3, 3, 4, 1]])
         yp = self.cp.ones(xp.shape)
 
         img_width = 5
         xp, yp, nr_lost = pts.filter_lost(xp, yp, img_width)
 
         correct_xp = self.cp.array([[1, 2, 4], [1, 2, 4], [1, 2, 3],
-                               [1, 2, 3], [1, 2, 3], [1, 2, 3]])
+                                    [1, 2, 3], [1, 2, 3], [1, 2, 3]])
         correct_yp = self.cp.ones((6, 3))
 
         for xvec, cxvec in zip(xp, correct_xp):
@@ -181,7 +181,7 @@ class TestParticlesMethodsGPU(unittest.TestCase):
 
     def test_filter_lost_all_pts_lost_error(self):
         xp = self.cp.array([[5, 6, 7], [5, 6, 7], [3, 4, 4],
-                       [3, 4, 6], [3, 4, 1], [3, 4, 1]])
+                            [3, 4, 6], [3, 4, 1], [3, 4, 1]])
         yp = self.cp.ones(xp.shape)
 
         img_width = 5
@@ -237,9 +237,9 @@ class TestParticlesMethodsGPU(unittest.TestCase):
 
     def test_physical_to_coords_error(self):
         phases = self.cp.array([[-0.24180582, 0.04498875, 0.33178332, 0.61857789],
-                  [-0.24180582, 0.04498875, 0.33178332, 0.61857789]])
+                                [-0.24180582, 0.04498875, 0.33178332, 0.61857789]])
         energies = self.cp.array([[-115567.32591061, -115567.32591061, -115567.32591061],
-                    [-38522.4419702, -38522.4419702, -38522.4419702]])
+                                  [-38522.4419702, -38522.4419702, -38522.4419702]])
 
         phases = self.cp.array(phases)
         energies = self.cp.array(energies)

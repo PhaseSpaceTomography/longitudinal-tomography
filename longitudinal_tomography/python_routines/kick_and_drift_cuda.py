@@ -12,15 +12,10 @@ from ..utils import GPUDev
 log = logging.getLogger(__name__)
 
 gpu_dev = GPUDev.get_gpu_dev()
-
-kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
-kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
-
 block_size = gpu_dev.block_size
-grid_size = gpu_dev.grid_size
 
 def refresh_kernels():
-    global gpu_dev, kick_drift_up_turns, kick_drift_down_turns
+    global kick_drift_up_turns, kick_drift_down_turns
     gpu_dev = GPUDev.get_gpu_dev()
     kick_drift_up_turns = gpu_dev.kd_mod.get_function("kick_drift_up_turns")
     kick_drift_down_turns = gpu_dev.kd_mod.get_function("kick_drift_down_turns")
@@ -31,7 +26,7 @@ def kick_drift_up_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, y
     kick_drift_up_turns(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
                             turn, nturns, dturns, profile),
-                        block=block_size, grid=grid_size)
+                        block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1))
 
 def kick_drift_down_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
@@ -39,7 +34,7 @@ def kick_drift_down_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray,
     kick_drift_down_turns(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
                             turn, dturns, profile),
-                        block=block_size, grid=grid_size)
+                        block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1))
 
 def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                    denergy: cp.ndarray, dphi: cp.ndarray,
@@ -57,9 +52,6 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
                    ftn_out: bool,
                    callback
                    ) -> Tuple[cp.ndarray, cp.ndarray]:
-    global grid_size
-    grid_size = (int(nparts / block_size[0]) + 1, 1, 1)
-
     phi12_arr = cp.full(nturns+1, phi12)
     # Preparation end
 
@@ -89,3 +81,5 @@ def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
         kick_drift_down_whole(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                         phi0, phi12_arr, h_ratio, nparts, deltaE0,
                         turn, dturns, profile)
+
+refresh_kernels()

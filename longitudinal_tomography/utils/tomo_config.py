@@ -25,23 +25,25 @@ class AppConfig:
     def set_single_precision(cls):
         cls._precision = np.float32
         if cls._gpu_enabled:
-            from . import GPUDev
-            gpu_dev = GPUDev.get_gpu_dev()
-            gpu_dev.load_single_precision_modules()
-            from longitudinal_tomography.python_routines import kick_and_drift_cuda, reconstruct_cuda
-            kick_and_drift_cuda.refresh_kernels()
-            reconstruct_cuda.refresh_kernels()
+            cls.load_modules_and_refresh_kernels(True)
 
     @classmethod
     def set_double_precision(cls):
         cls._precision = np.float64
         if cls._gpu_enabled:
-            from . import GPUDev
-            gpu_dev = GPUDev.get_gpu_dev()
+            cls.load_modules_and_refresh_kernels(False)
+
+    @classmethod
+    def load_modules_and_refresh_kernels(cls, single_prec_flag=False):
+        from . import GPUDev
+        gpu_dev = GPUDev.get_gpu_dev()
+        if single_prec_flag:
+            gpu_dev.load_single_precision_modules()
+        else:
             gpu_dev.load_double_precision_modules()
-            from longitudinal_tomography.python_routines import kick_and_drift_cuda, reconstruct_cuda
-            kick_and_drift_cuda.refresh_kernels()
-            reconstruct_cuda.refresh_kernels()
+        from longitudinal_tomography.python_routines import kick_and_drift_cuda, reconstruct_cuda
+        kick_and_drift_cuda.refresh_kernels()
+        reconstruct_cuda.refresh_kernels()
 
     @classmethod
     def use_cpu(cls):
