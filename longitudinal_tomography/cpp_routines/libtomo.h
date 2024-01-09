@@ -5,8 +5,8 @@
  * Pybind11 wrappers for tomography C++ routines
  */
 
-#ifndef TOMOGRAPHYV3_LIBTOMO_H
-#define TOMOGRAPHYV3_LIBTOMO_H
+#ifndef real_tOMOGRAPHYV3_LIBTOMO_H
+#define real_tOMOGRAPHYV3_LIBTOMO_H
 
 #include <optional>
 #include <pybind11/pybind11.h>
@@ -19,19 +19,19 @@ typedef py::array_t<double, py::array::c_style | py::array::forcecast> d_array;
 typedef py::array_t<float, py::array::c_style | py::array::forcecast> f_array;
 typedef py::array_t<int, py::array::c_style | py::array::forcecast> i_array;
 
-template <typename Tarr, typename T>
+template <typename real_Tarr, typename real_t>
 py::tuple wrapper_kick_and_drift_scalar(
-        const Tarr &input_xp,
-        const Tarr &input_yp,
-        const Tarr &input_denergy,
-        const Tarr &input_dphi,
-        const Tarr &input_rf1v,
-        const Tarr &input_rf2v,
-        const Tarr &input_phi0,
-        const Tarr &input_deltaE0,
-        const Tarr &input_drift_coef,
-        const T phi12,
-        const T hratio,
+        const real_Tarr &input_xp,
+        const real_Tarr &input_yp,
+        const real_Tarr &input_denergy,
+        const real_Tarr &input_dphi,
+        const real_Tarr &input_rf1v,
+        const real_Tarr &input_rf2v,
+        const real_Tarr &input_phi0,
+        const real_Tarr &input_deltaE0,
+        const real_Tarr &input_drift_coef,
+        const real_t phi12,
+        const real_t hratio,
         const int dturns,
         const int rec_prof,
         const int deltaturn,
@@ -83,19 +83,19 @@ template py::tuple wrapper_kick_and_drift_scalar(
         const std::optional<const py::object> callback
 );
 
-template <typename Tarr, typename T>
+template <typename real_Tarr, typename real_t>
 py::tuple wrapper_kick_and_drift_array(
-        const Tarr &input_xp,
-        const Tarr &input_yp,
-        const Tarr &input_denergy,
-        const Tarr &input_dphi,
-        const Tarr &input_rf1v,
-        const Tarr &input_rf2v,
-        const Tarr &input_phi0,
-        const Tarr &input_deltaE0,
-        const Tarr &input_drift_coef,
-        const Tarr &input_phi12,
-        const T hratio,
+        const real_Tarr &input_xp,
+        const real_Tarr &input_yp,
+        const real_Tarr &input_denergy,
+        const real_Tarr &input_dphi,
+        const real_Tarr &input_rf1v,
+        const real_Tarr &input_rf2v,
+        const real_Tarr &input_phi0,
+        const real_Tarr &input_deltaE0,
+        const real_Tarr &input_drift_coef,
+        const real_Tarr &input_phi12,
+        const real_t hratio,
         const int dturns,
         const int rec_prof,
         const int deltaturn,
@@ -147,10 +147,10 @@ template py::tuple wrapper_kick_and_drift_array(
         const std::optional<const py::object> callback
 );
 
-template <typename Tarr, typename T>
+template <typename real_Tarr, typename real_t>
 py::tuple wrapper_reconstruct(
         const i_array &input_xp,
-        const Tarr &waterfall,
+        const real_Tarr &waterfall,
         const int n_iter,
         const int n_bins,
         const int n_particles,

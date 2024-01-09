@@ -47,6 +47,10 @@ class AppConfig:
 
     @classmethod
     def use_cpu(cls):
+        """Use the CPU to perform the calculations.
+        The precision of the functions is not set here.
+        It will be automatically inferred when calling the libtomo functions.
+        """
         from longitudinal_tomography.cpp_routines import libtomo
         cpu_func_dict = {
             'kick_and_drift': libtomo.kick_and_drift,

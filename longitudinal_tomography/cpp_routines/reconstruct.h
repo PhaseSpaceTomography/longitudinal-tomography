@@ -20,63 +20,63 @@
 #include "pybind11/pybind11.h"
 
 // Back projection using flattened arrays
-template <typename T>
-void back_project(T *weights,
+template <typename real_t>
+void back_project(real_t *weights,
                   int *flat_points,
-                  const T *flat_profiles,
+                  const real_t *flat_profiles,
                   const int npart, const int nprof);
 
 // Projections using flattened arrays
-template <typename T>
-void project(T *flat_rec,
+template <typename real_t>
+void project(real_t *flat_rec,
              int *flat_points,
-             const T *weights,
+             const real_t *weights,
              const int npart, const int nprof);
 
-template <typename T>
-void normalize(T *flat_rec,
+template <typename real_t>
+void normalize(real_t *flat_rec,
                const int nprof,
                const int nbins);
 
-template <typename T>
-void clip(T *array,
+template <typename real_t>
+void clip(real_t *array,
           const int length,
           const double clip_val);
 
-template <typename T>
-void find_difference_profile(T *diff_prof,
-                             const T *flat_rec,
-                             const T *flat_profiles,
+template <typename real_t>
+void find_difference_profile(real_t *diff_prof,
+                             const real_t *flat_rec,
+                             const real_t *flat_profiles,
                              const int all_bins);
 
-template <typename T>
-T discrepancy(const T *diff_prof,
+template <typename real_t>
+real_t discrepancy(const real_t *diff_prof,
               const int nprof,
               const int nbins);
 
-template <typename T>
-void compensate_particle_amount(T *diff_prof,
-                                T *rparts,
+template <typename real_t>
+void compensate_particle_amount(real_t *diff_prof,
+                                real_t *rparts,
                                 const int nprof,
                                 const int nbins);
 
-template <typename T>
-T max_2d(T **arr,
+template <typename real_t>
+real_t max_2d(real_t **arr,
          const int x_axis,
          const int y_axis);
 
-template <typename T>
-T max_1d(T *arr, const int length);
+template <typename real_t>
+real_t max_1d(real_t *arr, const int length);
 
-template <typename T>
-void count_particles_in_bin(T *rparts,
+template <typename real_t>
+void count_particles_in_bin(real_t *rparts,
                             const int *xp,
                             const int nprof,
                             const int npart,
                             const int nbins);
 
-template <typename T>
-void reciprocal_particles(T *rparts,
+template <typename real_t>
+void reciprocal_particles(real_t *rparts,
                           const int *xp,
                           const int nbins,
                           const int nprof,
@@ -88,12 +88,12 @@ void create_flat_points(const int *xp,
                         const int nprof,
                         const int nbins);
 
-template <typename T>
-void reconstruct(T *weights,
+template <typename real_t>
+void reconstruct(real_t *weights,
                  const int *xp,
-                 const T *flat_profiles,
-                 T *flat_rec,
-                 T *discr,
+                 const real_t *flat_profiles,
+                 real_t *flat_rec,
+                 real_t *discr,
                  const int niter,
                  const int nbins,
                  const int npart,

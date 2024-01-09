@@ -18,42 +18,42 @@ using namespace std;
 // Uses BLonD fast_sin function.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-template <typename T>
-void kick_up(const T *dphi,
-             T *denergy,
-             const T rfv1,
-             const T rfv2,
-             const T phi0,
-             const T phi12,
-             const T hratio,
+template <typename real_t>
+void kick_up(const real_t *dphi,
+             real_t *denergy,
+             const real_t rfv1,
+             const real_t rfv2,
+             const real_t phi0,
+             const real_t phi12,
+             const real_t hratio,
              const int nr_particles,
-             const T acc_kick);
+             const real_t acc_kick);
 
-template <typename T>
-void kick_down(const T *dphi,
-               T *denergy,
-               const T rfv1,
-               const T rfv2,
-               const T phi0,
-               const T phi12,
-               const T hratio,
+template <typename real_t>
+void kick_down(const real_t *dphi,
+               real_t *denergy,
+               const real_t rfv1,
+               const real_t rfv2,
+               const real_t phi0,
+               const real_t phi12,
+               const real_t hratio,
                const int nr_particles,
-               const T acc_kick);
+               const real_t acc_kick);
 
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-template <typename T>
-void drift_up(T *dphi,
-              const T *denergy,
-              const T drift_coef,
+template <typename real_t>
+void drift_up(real_t *dphi,
+              const real_t *denergy,
+              const real_t drift_coef,
               const int nr_particles);
 
-template <typename T>
-void drift_down(T *dphi,
-                const T *denergy,
-                const T drift_coef,
+template <typename real_t>
+void drift_down(real_t *dphi,
+                const real_t *denergy,
+                const real_t drift_coef,
                 const int nr_particles);
 
 
@@ -74,18 +74,18 @@ extern "C" void calc_xp_and_yp(double **xp,           // inn/out
                                const int profile,
                                const int nparts);
 
-template <typename T>
-void kick_and_drift(T **xp,             // inn/out
-                    T **yp,             // inn/out
-                    T *denergy,         // inn
-                    T *dphi,            // inn
-                    const T *rf1v,      // inn
-                    const T *rf2v,      // inn
-                    const T *phi0,      // inn
-                    const T *deltaE0,   // inn
-                    const T *drift_coef,// inn
-                    const T *phi12,
-                    const T hratio,
+template <typename real_t>
+void kick_and_drift(real_t **xp,             // inn/out
+                    real_t **yp,             // inn/out
+                    real_t *denergy,         // inn
+                    real_t *dphi,            // inn
+                    const real_t *rf1v,      // inn
+                    const real_t *rf2v,      // inn
+                    const real_t *phi0,      // inn
+                    const real_t *deltaE0,   // inn
+                    const real_t *drift_coef,// inn
+                    const real_t *phi12,
+                    const real_t hratio,
                     const int dturns,
                     const int rec_prof,
                     const int deltaturn,
