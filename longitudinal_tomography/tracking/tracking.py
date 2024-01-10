@@ -173,7 +173,7 @@ class Tracking(ParticleTracker):
 
         else:
             log.info('Using initial particle coordinates set by user.')
-            self.particles.coordinates_dphi_denergy = conf.array(init_distr, dtype=conf.AppConfig.get_precision())
+            self.particles.coordinates_dphi_denergy = conf.cast(init_distr)
             coords = self.particles.coordinates_dphi_denergy
 
         dphi = coords[0]
@@ -182,11 +182,11 @@ class Tracking(ParticleTracker):
         self.init_dphi = dphi.copy()
         self.init_denergy = denergy.copy()
 
-        rfv1 = conf.array(machine.vrf1_at_turn * machine.q, dtype=conf.AppConfig.get_precision())
-        rfv2 = conf.array(machine.vrf2_at_turn * machine.q, dtype=conf.AppConfig.get_precision())
-        phi0 = conf.array(machine.phi0, dtype=conf.AppConfig.get_precision())
-        deltaE0 = conf.array(machine.deltaE0, dtype=conf.AppConfig.get_precision())
-        drift_coef = conf.array(machine.drift_coef, dtype=conf.AppConfig.get_precision())
+        rfv1 = conf.cast(machine.vrf1_at_turn * machine.q)
+        rfv2 = conf.cast(machine.vrf2_at_turn * machine.q)
+        phi0 = conf.cast(machine.phi0)
+        deltaE0 = conf.cast(machine.deltaE0)
+        drift_coef = conf.cast(machine.drift_coef)
 
         # Tracking particles
         if self.self_field_flag:
@@ -200,8 +200,8 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            xp = conf.zeros((machine.nprofiles, nparts), dtype=conf.AppConfig.get_precision())
-            yp = conf.zeros((machine.nprofiles, nparts), dtype=conf.AppConfig.get_precision())
+            xp = conf.cast(np.zeros((machine.nprofiles, nparts)))
+            yp = conf.cast(np.zeros((machine.nprofiles, nparts)))
 
             conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef, machine.phi12,\
                                     machine.h_ratio, machine.dturns, recprof, deltaturn, nturns, nparts, self.fortran_flag, callback=callback)

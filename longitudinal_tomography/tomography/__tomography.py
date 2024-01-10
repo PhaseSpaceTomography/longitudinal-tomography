@@ -53,6 +53,7 @@ class TomographyABC(ABC):
 
     def __init__(self, waterfall: np.ndarray,
                  x_coords: np.ndarray = None, y_coords: np.ndarray = None):
+        waterfall = conf.cast(waterfall)
         self._waterfall = self._normalize_profiles(waterfall.clip(0.0))
 
         self._nprofs: int = self.waterfall.shape[0]
@@ -113,7 +114,7 @@ class TomographyABC(ABC):
                     'The object x-coordinates are None. x-coordinates'
                     'must be provided before the y-coordinates.')
             elif value.shape == self.xp.shape:
-                self._yp = value.astype(conf.int32)
+                self._yp = conf.cast(value).astype(conf.int32)
             else:
                 raise expt.CoordinateImportError(
                     'The given y-coordinates should be of the '
@@ -160,7 +161,7 @@ class TomographyABC(ABC):
     def xp(self, value: np.ndarray):
 
         if hasattr(value, '__iter__'):
-            value = conf.array(value)
+            value = conf.cast(value)
 
             if value.ndim != 2:
                 msg = 'X coordinates have two dimensions ' \

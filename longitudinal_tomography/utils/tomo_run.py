@@ -124,9 +124,7 @@ def run(input: str, reconstruct_profile: bool = None,
     xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
     # Tomography!
-    waterfall = conf.array(profiles.waterfall, dtype=conf.AppConfig.get_precision())
-
-    tomo = tomography.Tomography(waterfall, xp, yp)
+    tomo = tomography.Tomography(profiles.waterfall, xp, yp)
     weight = tomo.run(niter=machine.niter, verbose=tomoscope)
 
     if tomoscope:
@@ -147,6 +145,6 @@ def run(input: str, reconstruct_profile: bool = None,
     phase_space /= conf.sum(phase_space)
 
     if plot:
-        tomoout.show(np.array(phase_space), tomo.diff, profiles.waterfall[reconstr_idx])
+        tomoout.show(conf.cast_to_cpu(phase_space), tomo.diff, profiles.waterfall[reconstr_idx])
 
     return t_range, E_range, phase_space

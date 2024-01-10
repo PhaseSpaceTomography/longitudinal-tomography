@@ -7,7 +7,6 @@ import longitudinal_tomography.tomography.tomography as tomography
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.utils.tomo_input as tomoin
-from longitudinal_tomography.utils import tomo_config as conf
 
 if os.getenv("DATAFILE") is not None:
     datafile = os.getenv("DATAFILE")

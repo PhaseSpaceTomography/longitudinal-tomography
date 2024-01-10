@@ -7,7 +7,7 @@ import numpy as np
 import cupy as cp
 from ..utils import GPUDev
 from ..utils.tomo_config import AppConfig as conf
-import os
+import longitudinal_tomography.cuda_kernels as cuda_kernels
 
 gpu_dev = GPUDev.get_gpu_dev()
 block_size = gpu_dev.block_size
@@ -33,7 +33,7 @@ def back_project(weights: cp.ndarray,
                  n_particles: int,
                  n_profiles: int) -> cp.ndarray:
     back_project_kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
-                            block=(32, 1, 1),
+                            block=(cuda_kernels.REDUCTION_BLOCK_SIZE, 1, 1),
                             grid=(n_particles, 1, 1))
     return weights
 

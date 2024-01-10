@@ -180,8 +180,7 @@ class Particles(object):
         self.jmax = psinfo.jmax
 
         # Converting from phase space coordinates to physical units.
-        coords = conf.array(self._bin_nr_to_physical_coords(coords, machine, recprof,
-                                                 deltaturn), dtype=conf.AppConfig.get_precision())
+        coords = conf.cast(self._bin_nr_to_physical_coords(coords, machine, recprof, deltaturn))
         self.coordinates_dphi_denergy = coords
 
     def _bin_nr_to_physical_coords(self,

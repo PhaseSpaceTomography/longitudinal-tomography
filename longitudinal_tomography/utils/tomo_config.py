@@ -46,6 +46,10 @@ class AppConfig:
         reconstruct_cuda.refresh_kernels()
 
     @classmethod
+    def is_gpu_enabled(cls):
+        return cls._gpu_enabled
+
+    @classmethod
     def use_cpu(cls):
         """Use the CPU to perform the calculations.
         The precision of the functions is not set here.
@@ -65,6 +69,7 @@ class AppConfig:
                 cpu_func_dict[fname] = getattr(np, fname)
 
         cls.__update_active_dict(cpu_func_dict)
+        _gpu_enabled = False
 
 
     @classmethod
@@ -97,5 +102,20 @@ class AppConfig:
                 gpu_func_dict[fname] = getattr(cp, fname)
         cls.__update_active_dict(gpu_func_dict)
         cls._gpu_enabled = True
+
+def cast(arr):
+    return cast_to_gpu(arr) if AppConfig.is_gpu_enabled() else cast_to_cpu(arr)
+
+def cast_to_gpu(arr):
+    import cupy as cp
+    arr = cp.array(arr, dtype=AppConfig.get_precision())
+    return arr
+
+def cast_to_cpu(arr):
+    if hasattr(arr, 'get'):
+        arr = arr.get().astype(AppConfig.get_precision())
+    else:
+        arr = np.array(arr, dtype=AppConfig.get_precision())
+    return arr
 
 AppConfig.use_cpu()

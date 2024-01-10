@@ -15,16 +15,19 @@
     typedef double real_t;
 #endif
 
+#ifndef BLOCK_SIZE
+#define BLOCK_SIZE 32
+#endif
+
 // Back projection using flattened arrays and a block-wide reduction.
 // Implementation with fixed block_size and items_per_array, but variable number of profiles for the reduction
-// Must be called with block size 32.
+// Must be called with block size it was compiled with (BLOCK_SIZE variable)
 extern "C"
-__global__ void back_project(real_t * __restrict__ weights,                     // inn/out
-                             int * __restrict__ flat_points,               // inn
-                             const real_t * __restrict__ flat_profiles,         // inn
-                             const int npart, const int nprof) {           // inn
-    const int BLOCK_SIZE = 32;
-    const int ITEMS_PER_ARRAY = 16;
+__global__ void back_project(real_t * __restrict__ weights,                 // inn/out
+                             int * __restrict__ flat_points,                // inn
+                             const real_t * __restrict__ flat_profiles,     // inn
+                             const int npart, const int nprof) {            // inn
+    const int ITEMS_PER_ARRAY = 512 / BLOCK_SIZE;
     const int ITEMS_PER_IT = BLOCK_SIZE * ITEMS_PER_ARRAY;
     int iterations = (nprof + ITEMS_PER_IT - 1) / ITEMS_PER_IT;
 
