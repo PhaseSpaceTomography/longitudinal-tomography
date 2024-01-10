@@ -62,7 +62,7 @@ class TomographyABC(ABC):
         self.xp = x_coords
         self.yp = y_coords
 
-        self.recreated = conf.zeros(self.waterfall.shape)
+        self.recreated = conf.cast(np.zeros(self.waterfall.shape))
         self.diff: np.ndarray = None
         self.weight: np.ndarray = None
 

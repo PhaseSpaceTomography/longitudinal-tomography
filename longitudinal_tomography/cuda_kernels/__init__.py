@@ -9,7 +9,7 @@ def compile_gpu():
     If it cannot find nvcc naturally, please set the environment variable CUDA_PATH
     to be able to call the compiler.
     """
-    
+
     cuda_sources = [
         os.path.dirname(__file__) + "/kick_and_drift",
         os.path.dirname(__file__) + "/reconstruct",
