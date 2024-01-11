@@ -34,7 +34,7 @@ version = longitudinal_tomography.__version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['acc_py_sphinx.theme'
+extensions = ['acc_py_sphinx.theme',
               'sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.mathjax',
