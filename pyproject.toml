@@ -11,10 +11,11 @@ license = { text = "GNU General Public License version 3" }
 readme = "README.rst"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
-requires-python = ">= 3.9"
+requires-python = ">= 3.11"
 dependencies = [
     "matplotlib ~= 3.8",
     "multipledispatch ~= 1.0",
