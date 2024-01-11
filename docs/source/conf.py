@@ -14,6 +14,8 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import datetime
+import longitudinal_tomography
 
 # -- Project information -----------------------------------------------------
 
@@ -21,8 +23,10 @@ project = 'longitudinal_tomography'
 copyright = '2020, Christoffer Hjertø Grindheim'
 author = 'Christoffer Hjertø Grindheim'
 
+copyright = "{0}, CERN".format(datetime.datetime.now().year)
+
 # The full version, including alpha/beta/rc tags
-release = '1.0'
+version = longitudinal_tomography.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -62,7 +66,17 @@ exclude_patterns = []
 # html_theme = 'alabaster'
 # html_theme = 'pyramid'
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'acc_py'
+
+html_show_sphinx = False
+html_show_sourcelink = True
+
+
+# -- Options for sphinx.ext.autosummary
+
+autosummary_generate = True
+autosummary_imported_members = True
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
