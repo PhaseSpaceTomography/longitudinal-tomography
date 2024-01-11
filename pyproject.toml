@@ -42,6 +42,7 @@ test = [
 gpu = [
     "cupy"
 ]
+doc = ["acc-py-sphinx"]
 
 [build-system]
 requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
