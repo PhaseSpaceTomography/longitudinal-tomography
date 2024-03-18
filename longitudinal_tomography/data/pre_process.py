@@ -6,6 +6,7 @@ longitudinal_tomography.data.data_treatment
 
 :Author(s): **Anton Lu**, **Christoffer Hjertø Grindheim**
 """
+from __future__ import annotations
 import logging
 import typing as t
 

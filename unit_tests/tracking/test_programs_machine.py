@@ -3,7 +3,7 @@ Unit-tests for the ProgramsMachine class.
 
 Run as python test_programs_machine.py in console or via coverage
 """
-
+from __future__ import annotations
 import unittest
 
 import numpy as np
