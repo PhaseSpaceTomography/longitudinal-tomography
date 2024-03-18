@@ -145,6 +145,6 @@ def run(input: str, reconstruct_profile: bool = None,
     phase_space /= conf.sum(phase_space)
 
     if plot:
-        tomoout.show(conf.cast_to_cpu(phase_space), tomo.diff, profiles.waterfall[reconstr_idx])
+        tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])
 
     return t_range, E_range, phase_space
