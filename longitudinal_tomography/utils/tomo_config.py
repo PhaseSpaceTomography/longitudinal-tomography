@@ -69,7 +69,7 @@ class AppConfig:
                 cpu_func_dict[fname] = getattr(np, fname)
 
         cls.__update_active_dict(cpu_func_dict)
-        _gpu_enabled = False
+        cls._gpu_enabled = False
 
 
     @classmethod
