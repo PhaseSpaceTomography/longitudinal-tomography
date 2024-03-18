@@ -8,8 +8,6 @@ class AppConfig:
 
     @classmethod
     def __update_active_dict(cls, new_dict):
-        if not hasattr(cls._active_dict, 'active_dict'):
-            cls._active_dict = new_dict
         for key in cls._active_dict.keys():
             if key in globals():
                 del globals()[key]
