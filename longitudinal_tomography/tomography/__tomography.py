@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 import typing as t
 import numpy as np
 
+import longitudinal_tomography.utils.tomo_config as conf
 from .. import exceptions as expt
 
 log = logging.getLogger(__name__)
@@ -52,6 +53,7 @@ class TomographyABC(ABC):
 
     def __init__(self, waterfall: np.ndarray,
                  x_coords: np.ndarray = None, y_coords: np.ndarray = None):
+        waterfall = conf.cast(waterfall)
         self._waterfall = self._normalize_profiles(waterfall.clip(0.0))
 
         self._nprofs: int = self.waterfall.shape[0]
@@ -60,7 +62,7 @@ class TomographyABC(ABC):
         self.xp = x_coords
         self.yp = y_coords
 
-        self.recreated = np.zeros(self.waterfall.shape)
+        self.recreated = conf.cast(np.zeros(self.waterfall.shape))
         self.diff: np.ndarray = None
         self.weight: np.ndarray = None
 
@@ -112,7 +114,7 @@ class TomographyABC(ABC):
                     'The object x-coordinates are None. x-coordinates'
                     'must be provided before the y-coordinates.')
             elif value.shape == self.xp.shape:
-                self._yp = value.astype(np.int32)
+                self._yp = conf.cast(value).astype(conf.int32)
             else:
                 raise expt.CoordinateImportError(
                     'The given y-coordinates should be of the '
@@ -159,7 +161,7 @@ class TomographyABC(ABC):
     def xp(self, value: np.ndarray):
 
         if hasattr(value, '__iter__'):
-            value = np.array(value)
+            value = conf.cast(value)
 
             if value.ndim != 2:
                 msg = 'X coordinates have two dimensions ' \
@@ -173,11 +175,11 @@ class TomographyABC(ABC):
                       f'{value.shape[1]} profiles.'
                 raise expt.CoordinateImportError(msg)
 
-            if np.any(value < 0) or np.any(value >= self.nbins):
+            if conf.any(value < 0) or conf.any(value >= self.nbins):
                 msg = 'X coordinate of particles outside of image width'
                 raise expt.XPOutOfImageWidthError(msg)
 
-            self._xp = np.ascontiguousarray(value, dtype=np.int32)
+            self._xp = conf.ascontiguousarray(value, dtype=conf.int32)
             self._nparts = self._xp.shape[0]
             log.info(f'X coordinates of shape {self.xp.shape} loaded.')
 
@@ -224,7 +226,7 @@ class TomographyABC(ABC):
     def _normalize_profiles(self, waterfall: np.ndarray) -> np.ndarray:
         if not waterfall.any():
             raise expt.WaterfallReducedToZero()
-        waterfall /= np.sum(waterfall, axis=1)[:, None]
+        waterfall /= conf.sum(waterfall, axis=1)[:, None]
         return waterfall
 
     # Calculates discrepancy for the whole waterfall

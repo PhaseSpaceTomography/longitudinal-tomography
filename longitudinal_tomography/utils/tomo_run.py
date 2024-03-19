@@ -14,7 +14,7 @@ from ..tracking import particles as pts
 # Tomo modules
 from ..tracking import tracking as tracking
 from ..utils import tomo_input as tomoin, tomo_output as tomoout
-from ..utils.execution_mode import Mode
+from ..utils import tomo_config as conf
 
 from ..compat import tomoscope as tscp
 
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 def run(input: str, reconstruct_profile: bool = None,
         output_dir: str = None, tomoscope: bool = False,
-        plot: bool = False, mode: Mode = Mode.CPP) \
+        plot: bool = False) \
         -> t.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Function to perform full reconstruction based on the original
     algorithm.
@@ -110,32 +110,22 @@ def run(input: str, reconstruct_profile: bool = None,
         profiles.calc_self_fields()
         tracker.enable_self_fields(profiles)
 
-    xp, yp = tracker.track(reconstr_idx, mode=mode)
+    xp, yp = tracker.track(reconstr_idx)
 
     # Converting from physical coordinates ([rad], [eV])
     # to phase space coordinates.
     if not tracker.self_field_flag:
         xp, yp = pts.physical_to_coords(
             xp, yp, machine, tracker.particles.xorigin,
-            tracker.particles.dEbin, mode=mode)
+            tracker.particles.dEbin)
 
     # Filters out lost particles, transposes particle matrix,
     # casts to np.int32.
-    xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins, mode=mode)
+    xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
     # Tomography!
-    if mode == Mode.CUPY or mode == Mode.CUDA:
-        # TODO Discuss if this is necessary
-        from ..tomography import tomography_cupy as tomography
-        import cupy as cp
-        waterfall_gpu = cp.asarray(profiles.waterfall)
-        tomo = tomography.TomographyCuPy(waterfall_gpu, xp, yp)
-        weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
-    else:
-        from ..tomography import tomography as tomography
-        tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
-        weight = tomo.run(niter=machine.niter, verbose=tomoscope, mode=mode)
-
+    tomo = tomography.Tomography(profiles.waterfall, xp, yp)
+    weight = tomo.run(niter=machine.niter, verbose=tomoscope)
 
     if tomoscope:
         for film in range(machine.filmstart, machine.filmstop + 1,
@@ -146,18 +136,13 @@ def run(input: str, reconstruct_profile: bool = None,
         tscp.save_difference(tomo.diff, output_dir, film)
 
     # TODO mode is new and only phase_space is then in GPU. Discuss if necessary
-    t_range, E_range, phase_space = dtreat.phase_space(tomo, machine,
-                                                       reconstr_idx, mode)
+    t_range, E_range, phase_space = dtreat.phase_space(tomo, machine, reconstr_idx)
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
     # See line 147
-    if mode == Mode.CUPY or mode == Mode.CUDA:
-        phase_space /= cp.sum(phase_space)
-        phase_space = phase_space.get()
-    else:
-        phase_space /= np.sum(phase_space)
+    phase_space /= conf.sum(phase_space)
 
     if plot:
         tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])
