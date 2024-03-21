@@ -310,8 +310,13 @@ class TestTracker(unittest.TestCase):
 class TestTracker(unittest.TestCase):
 
     def setUp(self):
-        conf.AppConfig.use_gpu()
-        conf.AppConfig.set_double_precision()
+        try:
+            import cupy as cp
+        except ImportError:
+            self.skipTest('CuPy not found - skipped tests')
+        else:
+            conf.AppConfig.use_gpu()
+            conf.AppConfig.set_double_precision()
 
     def test_parameter_notMachine_fails(self):
         with self.assertRaises(

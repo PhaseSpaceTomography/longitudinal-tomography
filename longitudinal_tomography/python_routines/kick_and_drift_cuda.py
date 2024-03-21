@@ -7,7 +7,7 @@ import numpy as np
 import cupy as cp
 import logging
 from typing import Tuple
-from ..utils import GPUDev
+from ..utils.tomo_config import GPUDev
 
 log = logging.getLogger(__name__)
 
