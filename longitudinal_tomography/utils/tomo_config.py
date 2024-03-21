@@ -98,6 +98,13 @@ class AppConfig:
                 gpu_func_dict[fname] = getattr(cp, fname)
         cls.__update_active_dict(gpu_func_dict)
         cls._gpu_enabled = True
+    
+    @classmethod
+    def compile_kernels(cls):
+        from longitudinal_tomography import cuda_kernels
+        if not cuda_kernels.check_compiled_kernels():
+            cuda_kernels.compile_kernels()
+
 
 class GPUDev:
     __instance = None
