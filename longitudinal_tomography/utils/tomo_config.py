@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from warnings import warn
 
 class AppConfig:
     _precision = np.float64
@@ -33,6 +34,7 @@ class AppConfig:
 
     @classmethod
     def load_modules_and_refresh_kernels(cls, single_prec_flag=False):
+        cls.compile_kernels() # Check if compilation needed
         gpu_dev = GPUDev.get_gpu_dev()
         if single_prec_flag:
             gpu_dev.load_single_precision_modules()
@@ -48,7 +50,8 @@ class AppConfig:
 
     @classmethod
     def use_cpu(cls):
-        """Use the CPU to perform the calculations.
+        """
+        Use the CPU to perform the calculations.
         The precision of the functions is not set here.
         It will be automatically inferred when calling the libtomo functions.
         """
@@ -71,7 +74,8 @@ class AppConfig:
 
     @classmethod
     def use_gpu(cls, gpu_id=0):
-        """Use the GPU device to perform the calculations
+        """
+        Use the GPU device to perform the calculations
         
         Args:
             gpu_id (int, optional): Device id, default = 0
@@ -100,9 +104,18 @@ class AppConfig:
         cls._gpu_enabled = True
     
     @classmethod
-    def compile_kernels(cls):
+    def compile_kernels(cls, force=False):
+        """
+        Compile CUDA kernels if they have not been compiled yet or if forced.
+
+        Args:
+            force (bool, optional): If True, forces the compilation of CUDA kernels
+                regardless whether they have already been compiled. Defaults to False.
+        """
         from longitudinal_tomography import cuda_kernels
-        if not cuda_kernels.check_compiled_kernels():
+        if force or not cuda_kernels.check_compiled_kernels():
+            if not force:
+                warn("No compiled CUDA kernels found. Compiling CUDA kernels...")
             cuda_kernels.compile_kernels()
 
 
@@ -142,10 +155,8 @@ class GPUDev:
 
         self.directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 
-        ## Check if compilation is needed
-        from longitudinal_tomography import cuda_kernels
-        if not cuda_kernels.check_compiled_kernels():
-            cuda_kernels.compile_kernels()
+        ## Compile if needed
+        AppConfig.compile_kernels()
 
         if single_prec:
             self.load_single_precision_modules()
@@ -173,14 +184,41 @@ class GPUDev:
                 f.write(f"{k}:{v}\n")
 
 def cast(arr):
+    """
+    Cast an array (only floats) to a CuPy array if GPU is enabled, otherwise to a NumPy array
+
+    Args:
+        arr (numpy.ndarray or cupy.ndarray): The input array to be cast.
+
+    Returns:
+        numpy.ndarray or cupy.ndarray: The input array casted on the current device.
+    """
     return cast_to_gpu(arr) if AppConfig.is_gpu_enabled() else cast_to_cpu(arr)
 
 def cast_to_gpu(arr):
+    """
+    Cast an array (only floats) to GPU
+
+    Args:
+        arr (numpy.ndarray or cupy.ndarray): The input array to be cast to a CuPy array.
+
+    Returns:
+        cupy.ndarray: The input array on GPU.
+    """
     import cupy as cp
     arr = cp.array(arr, dtype=AppConfig.get_precision())
     return arr
 
 def cast_to_cpu(arr):
+    """
+    Cast an array (only floats) to CPU
+
+    Args:
+        arr (numpy.ndarray or cupy.ndarray): The input array to be cast to a NumPy memory.
+
+    Returns:
+        numpy.ndarray: The input array on CPU.
+    """
     if hasattr(arr, 'get'):
         arr = arr.get().astype(AppConfig.get_precision())
     else:

@@ -10,7 +10,8 @@ cuda_sources = [
 ]
 
 def compile_kernels():
-    """Compiles the CUDA source files to binaries which will be imported.
+    """
+    Compiles the CUDA source files to binaries which will be imported.
     If it cannot find nvcc naturally, please set the environment variable CUDA_PATH
     to be able to call the compiler.
     """
@@ -70,12 +71,7 @@ def compile_kernels():
                 + f"Subprocess returned the following error: {e}"
             )
 
-        if (
-            os.path.isfile(cuda_sources[0] + "_double.cubin")
-            and os.path.isfile(cuda_sources[1] + "_double.cubin")
-            and os.path.isfile(cuda_sources[0] + "_single.cubin")
-            and os.path.isfile(cuda_sources[1] + "_single.cubin")
-        ):
+        if check_compiled_kernels():
             print("The CUDA sources have been successfully compiled.")
         else:
             raise expt.CudaCompilationException(
@@ -83,6 +79,12 @@ def compile_kernels():
         )
 
 def check_compiled_kernels():
+    """
+    Check if the compiled CUDA kernels for both double and single precision exist.
+
+    Returns:
+        bool: True if all compiled CUDA kernels exist, False otherwise.
+    """
     return os.path.isfile(cuda_sources[0] + "_double.cubin")\
         and os.path.isfile(cuda_sources[1] + "_double.cubin")\
         and os.path.isfile(cuda_sources[0] + "_single.cubin")\
