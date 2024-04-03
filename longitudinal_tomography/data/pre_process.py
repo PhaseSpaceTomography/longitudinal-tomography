@@ -8,7 +8,7 @@ longitudinal_tomography.data.data_treatment
 """
 from __future__ import annotations
 import logging
-import typing as t
+from typing import TYPE_CHECKING
 
 import numpy as np
 from multipledispatch import dispatch
@@ -20,15 +20,20 @@ from .. import assertions as asrt
 from ..tracking import Machine
 from ..tracking.machine_base import MachineABC
 
+if TYPE_CHECKING:
+    from typing import Iterable, Union, Tuple
+
+    FloatArr = np.ndarray[float]
 
 log = logging.getLogger(__name__)
 
 
-def rebin(waterfall: np.ndarray, rbn: int, dtbin: float = None,
+def rebin(waterfall: Iterable[float], rbn: int, dtbin: float = None,
           synch_part_x: float = None) \
-        -> t.Union[t.Tuple[np.ndarray, float, float],
-                   t.Tuple[np.ndarray, float]]:
-    """Rebin waterfall from shape (P, X) to (P, Y).
+                                      -> Union[Tuple[FloatArr, float, float],
+                                               Tuple[FloatArr, float]]:
+    """
+    Rebin waterfall from shape (P, X) to (P, Y).
     P is the number of profiles, X is the original number of bins,
     and Y is the number of bins after the re-binning.
 
@@ -182,8 +187,10 @@ def fit_synch_part_x(profiles: Profiles) -> t.Tuple[np.ndarray, float, float]:
     return fit_synch_part_x(profiles.waterfall, profiles.machine)
 
 
-def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) \
-        -> t.Tuple[t.Union[float, np.ndarray], t.Union[float, np.ndarray]]:
+#TODO: Confirm return types
+def get_cuts(waterfall: Iterable[float], threshold: int = None,
+             margin: int = 20) -> Tuple[int, int]:
+
     if isinstance(waterfall, tuple) or isinstance(waterfall, list):
         waterfall = np.array(waterfall).real
 
@@ -213,8 +220,8 @@ def get_cuts(waterfall: t.Sequence, threshold: int = None, margin: int = 20) \
     return int(cut_left), int(cut_right)
 
 
-def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
-                  cut_left: int, cut_right: int) -> np.ndarray:
+def cut_waterfall(waterfall: Iterable[float], cut_left: int,
+                  cut_right: int) -> FloatArr:
     """
     Cut a waterfall array of shape (n_profiles, n_bins) to shape
     (n_profiles, (cut_right - cut_left)) by shaving off the bins
@@ -236,8 +243,8 @@ def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
     np.ndarray :
         A cut waterfall of shape (n_profiles, (cut_right - cut_left))
     """
-    if isinstance(waterfall, list):
-        waterfall = np.ndarray(waterfall)
+    if not isinstance(waterfall, np.ndarray):
+        waterfall = np.array(waterfall)
 
     n_bins = len(waterfall[0])
     asrt.assert_greater_or_equal(cut_left, 'cut_left', 0, ValueError)
@@ -258,14 +265,15 @@ def cut_waterfall(waterfall: t.Union[t.List[np.ndarray], np.ndarray],
     return waterfall
 
 
-def filter_profiles(waterfall: np.ndarray, xp: np.ndarray = None,
-                    yp: np.ndarray = None, rec_prof: int = None) \
-        -> t.Union[
-            np.ndarray,
-            t.Tuple[np.ndarray, np.ndarray],
-            t.Tuple[np.ndarray, np.ndarray, np.ndarray],
-            t.Tuple[np.ndarray, np.ndarray, int],
-            t.Tuple[np.ndarray, int]]:
+#TODO: Confirm return flexibility, make it clearer with @typing.overload?
+def filter_profiles(waterfall: Iterable[float], xp: Iterable[float] = None,
+                    yp: Iterable[float] = None, rec_prof: int = None) \
+                                    -> Union[
+                                        FloatArr,
+                                        Tuple[FloatArr, FloatArr],
+                                        Tuple[FloatArr, FloatArr, FloatArr],
+                                        Tuple[FloatArr, FloatArr, int],
+                                        Tuple[FloatArr, int]]:
     """
     Filters out empty profiles from measured data. Empty profiles are
     considered just noise. Returned arrays are truncated with the noise frames
