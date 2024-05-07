@@ -14,3 +14,19 @@ if patch_level != 0:
 
 if dev_version != -1:
     __version__ += '-dev{}'.format(dev_version)
+
+def use_gpu():
+    from .utils import tomo_config as conf
+    conf.AppConfig.use_gpu()
+
+def use_cpu():
+    from .utils import tomo_config as conf
+    conf.AppConfig.use_cpu()
+
+def set_double_precision():
+    from .utils import tomo_config as conf
+    conf.AppConfig.set_double_precision()
+
+def set_single_precision():
+    from .utils import tomo_config as conf
+    conf.AppConfig.set_single_precision()

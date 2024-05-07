@@ -5,7 +5,7 @@
 
 import numpy as np
 import cupy as cp
-from ..utils import GPUDev
+from ..utils.tomo_config import GPUDev
 from ..utils.tomo_config import AppConfig as conf
 import longitudinal_tomography.cuda_kernels as cuda_kernels
 
