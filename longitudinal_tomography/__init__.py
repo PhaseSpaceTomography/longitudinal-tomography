@@ -9,11 +9,11 @@
 #     minor_version,
 # )
 
-if patch_level != 0:
-    __version__ += f'.{patch_level}'
+# if patch_level != 0:
+#     __version__ += f'.{patch_level}'
 
-if dev_version != -1:
-    __version__ += '-dev{}'.format(dev_version)
+# if dev_version != -1:
+#     __version__ += '-dev{}'.format(dev_version)
 
 def use_gpu():
     from .utils import tomo_config as conf
