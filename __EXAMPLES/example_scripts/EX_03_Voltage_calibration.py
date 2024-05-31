@@ -37,7 +37,7 @@ profiles = tomoin.raw_data_to_profiles(
     measured_waterfall, machine, frames.rebin, frames.sampling_time
 )
 
-tomo = tomography.Tomography(conf.array(profiles.waterfall))
+tomo = tomography.Tomography(profiles.waterfall)
 
 
 diffs = []
