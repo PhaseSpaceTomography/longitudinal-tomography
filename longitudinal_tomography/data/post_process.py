@@ -3,13 +3,17 @@
 :Author(s): **Anton Lu**
 """
 from __future__ import annotations
-from numbers import Number
-from typing import Union, Dict
+from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy import constants as cont
 from multipledispatch import dispatch
 from .. import assertions as asrt
+
+if TYPE_CHECKING:
+    from typing import Union, Dict
+
+    FloatArr = np.ndarray[float]
 
 __all__ = ['post_process', 'rms_dpp', 'emittance_rms',
            'emittance_90', 'emittance_fractional']
@@ -17,9 +21,9 @@ __all__ = ['post_process', 'rms_dpp', 'emittance_rms',
 m_p = cont.value('proton mass energy equivalent in MeV') * 1e6
 
 
-def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
-                 e_bins: np.ndarray, energy: Number, mass: Number = m_p) \
-        -> Dict[str, Union[float, np.ndarray]]:
+def post_process(phase_space: Iterable[float], t_bins: Iterable[float],
+                 e_bins: Iterable[float], energy: float, mass: float = m_p) \
+                                -> Dict[str, Union[float, FloatArr]]:
     """
     Convenience function that provides an all-on-one post-processing method.
 
@@ -64,7 +68,7 @@ def post_process(phase_space: np.ndarray, t_bins: np.ndarray,
 
     return out
 
-
+#TODO: How does static analysis handle @dispatch functions?
 @dispatch(np.ndarray, np.ndarray, np.ndarray)
 def emittance_rms(histogram: np.ndarray,
                   t_bins: np.ndarray,
@@ -118,9 +122,8 @@ def emittance_rms(sigma_t: Union[float, np.ndarray],
     return np.pi * sigma_t * sigma_e
 
 
-def emittance_90(phase_space: np.ndarray,
-                 t_bins: np.ndarray,
-                 e_bins: np.ndarray) -> float:
+def emittance_90(phase_space: Iterable[float], t_bins: Iterable[float],
+                 e_bins: Iterable[float]) -> float:
     """
     Convenience function to calculate the 90% emittance that calls
     the emittance_fractional function.
@@ -256,7 +259,8 @@ def rms_dpp(energy_proj: np.ndarray, energy_bins: np.ndarray,
     return rms_dpp(energy_std, energy, mass)
 
 
-def _std_from_histogram(histogram: np.ndarray, bins: np.ndarray) -> float:
+def _std_from_histogram(histogram: Iterable[float], bins: Iterable[float])\
+                                                                      -> float:
     """
     Calculates the standard deviation of a given histogram and the bin values
 

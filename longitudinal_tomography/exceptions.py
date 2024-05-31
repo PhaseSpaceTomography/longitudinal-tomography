@@ -136,3 +136,10 @@ class CoordinateImportError(TomoException, ValueError):
 
 class CoordinateError(TomoException, ValueError):
     pass
+
+# ============================
+# ANALYSIS EXCEPTIONS
+# ============================
+
+class InvalidProfileError(TomoException, ValueError):
+    pass
