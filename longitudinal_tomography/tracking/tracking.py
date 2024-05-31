@@ -157,7 +157,7 @@ class Tracking(ParticleTracker):
                                      'Reconstruction turn '
                                      + '(machine.dturn*recprof + deltaturn) '
                                      + 'must be greater than 0.')
-        
+
         if init_distr is None:
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
@@ -203,27 +203,11 @@ class Tracking(ParticleTracker):
             xp = conf.zeros((machine.nprofiles, nparts))
             yp = conf.zeros((machine.nprofiles, nparts))
 
-            conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0, deltaE0, drift_coef, machine.phi12,\
-                                    machine.h_ratio, machine.dturns, recprof, deltaturn, nturns, nparts, self.fortran_flag, callback=callback)
-
-            # if mode == Mode.CPP:
-            #     # Calling C++ implementation of tracking routine.
-            #     libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-            #                           machine.phi0, machine.deltaE0,
-            #                           machine.drift_coef, machine.phi12,
-            #                           machine.h_ratio, machine.dturns,
-            #                           recprof, deltaturn, nturns, nparts,
-            #                           self.fortran_flag, callback=callback)
-            # elif mode == Mode.CUPY:
-            #     from longitudinal_tomography.python_routines.kick_and_drift_cupy import kick_and_drift_cupy
-            #     kick_and_drift_cupy(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
-            #                                     nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
-            #                                 machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
-            # elif mode == Mode.CUDA:
-            #     from longitudinal_tomography.python_routines.kick_and_drift_cuda import kick_and_drift_cuda
-            #     kick_and_drift_cuda(xp, yp, denergy, dphi, rfv1, rfv2, recprof, nturns,\
-            #                                     nparts, machine.phi0, machine.deltaE0, machine.drift_coef,\
-            #                                 machine.phi12, machine.h_ratio, machine.dturns, deltaturn)
+            conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
+                                deltaE0, drift_coef, machine.phi12,
+                                machine.h_ratio, machine.dturns, recprof,
+                                deltaturn, nturns, nparts, self.fortran_flag,
+                                callback=callback)
 
         log.info('Tracking completed!')
         return xp, yp
