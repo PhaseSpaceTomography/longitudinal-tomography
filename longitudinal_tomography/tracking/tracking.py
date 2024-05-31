@@ -200,8 +200,8 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            xp = conf.zeros((machine.nprofiles, nparts))
-            yp = conf.zeros((machine.nprofiles, nparts))
+            xp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
+            yp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
 
             conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, machine.phi12,
