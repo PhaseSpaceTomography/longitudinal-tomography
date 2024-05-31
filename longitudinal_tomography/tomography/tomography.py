@@ -11,6 +11,7 @@ import numpy as np
 from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
+from longitudinal_tomography.utils import tomo_config as conf
 
 log = logging.getLogger(__name__)
 
@@ -248,7 +249,7 @@ class Tomography(TomographyABC):
 
         (self.weight,
          self.diff,
-         self.recreated) = libtomo.reconstruct(
+         self.recreated) = conf.reconstruct(
             self.xp, self.waterfall, niter, self.nbins,
             self.nparts, self.nprofs, verbose, callback)
         return self.weight

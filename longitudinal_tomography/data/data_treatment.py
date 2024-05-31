@@ -11,7 +11,9 @@ import itertools as itl
 
 from .. import exceptions as expt
 from ..utils import physics
+from ..utils import tomo_config as conf
 from ..cpp_routines import libtomo
+from ..python_routines import data_treatment
 from . import pre_process
 
 import logging
@@ -198,7 +200,7 @@ def phase_space_from_coordinates(xp: Iterable[int], yp: Iterable[int],
         2D array of bin weights in phase space.
     """
 
-    density = libtomo.make_phase_space(xp, yp, weight, nbins)
+    density = conf.make_phase_space(xp, yp, weight, nbins)
 
     t_range = (np.arange(nbins) - synch_x) * dtbin
     E_range = (np.arange(nbins) - synch_y) * dEbin

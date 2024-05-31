@@ -10,11 +10,11 @@ like assertions, conversions and filtering of lost particles.
 from __future__ import annotations
 import logging
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
-
 import numpy as np
 
 from . import phase_space_info as psi
 from .. import assertions as asrt, exceptions as expt
+from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
     from .machine import Machine
@@ -181,8 +181,7 @@ class Particles(object):
         self.jmax = psinfo.jmax
 
         # Converting from phase space coordinates to physical units.
-        coords = self._bin_nr_to_physical_coords(coords, machine, recprof,
-                                                 deltaturn)
+        coords = conf.cast(self._bin_nr_to_physical_coords(coords, machine, recprof, deltaturn))
         self.coordinates_dphi_denergy = coords
 
     def _bin_nr_to_physical_coords(self,
@@ -263,18 +262,20 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
 
     """
     nr_lost_pts = 0
-
+    
     # Find all particles outside of image width
-    invalid_pts = np.argwhere(np.logical_or(xp >= img_width, xp < 0))
+    invalid_pts = conf.argwhere(conf.logical_or(xp >= img_width, xp < 0))
 
-    if np.size(invalid_pts) > 0:
+    if conf.size(invalid_pts) > 0:
         # Mark particle as invalid only once
-        invalid_pts = np.unique(invalid_pts.T[1])
+        invalid_pts = conf.unique(invalid_pts[:, 1])
         # Save number of invalid particles
         nr_lost_pts = len(invalid_pts)
-        # Remove invalid particles
-        xp = np.delete(xp, invalid_pts, axis=1)
-        yp = np.delete(yp, invalid_pts, axis=1)
+
+        valid_mask = ~conf.isin(conf.arange(xp.shape[1]), invalid_pts)
+
+        xp = xp[:, valid_mask]
+        yp = yp[:, valid_mask]
 
     if xp.size == 0:
         raise expt.InvalidParticleError(
@@ -330,16 +331,21 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     nprof = tracked_denergy.shape[0]
 
     profiles = np.arange(nprof)
+
     turns = profiles * machine.dturns
 
+    phi0_reshaped = conf.array(machine.phi0[turns].reshape(-1, 1))
+    omega_rev0_reshaped = conf.array(machine.omega_rev0[turns].reshape(-1, 1))
+
     xp = ((tracked_dphi
-           + machine.phi0[turns].reshape(-1, 1))
+           + phi0_reshaped)
           / (float(machine.h_num)
-             * machine.omega_rev0[turns].reshape(-1, 1)
+             * omega_rev0_reshaped
              * machine.dtbin) - xorigin)
 
     yp = (tracked_denergy
           / float(dEbin) + machine.synch_part_y)
+
     return xp, yp
 
 
@@ -390,8 +396,9 @@ def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \
     """
     xp, yp, lost = filter_lost(xp, yp, nbins)
     log.info(f'number of lost particles: {lost}')
-    xp = xp.astype(np.int32).T
-    yp = yp.astype(np.int32).T
+
+    xp = xp.astype(conf.int32).T
+    yp = yp.astype(conf.int32).T
 
     return xp, yp
 

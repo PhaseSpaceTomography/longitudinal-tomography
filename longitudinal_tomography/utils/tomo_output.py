@@ -12,6 +12,7 @@ import numpy as np
 
 from ..cpp_routines import libtomo
 from ..compat import fortran
+from ..utils import tomo_config as conf
 
 
 def save_profile_ftn(*args, **kwargs):
@@ -99,14 +100,14 @@ def create_phase_space_image(
         phase space image has the same format as from the original program.
     """
 
-    phase_space = libtomo.make_phase_space(xp[:, recprof].astype(np.int32),
-                                           yp[:, recprof].astype(np.int32),
-                                           weight, n_bins)
+    phase_space = conf.make_phase_space(xp[:, recprof].astype(np.int32),
+                          yp[:, recprof].astype(np.int32),
+                          weight, n_bins)
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
-    phase_space /= np.sum(phase_space)
+    phase_space /= conf.sum(phase_space)
     return phase_space
 
 

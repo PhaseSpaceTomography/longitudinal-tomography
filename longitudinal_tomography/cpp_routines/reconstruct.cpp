@@ -17,10 +17,11 @@
 #include "reconstruct.h"
 
 // Back projection using flattened arrays
-extern "C" void back_project(double *weights,                     // inn/out
-                             int *flat_points,       // inn
-                             const double *flat_profiles,         // inn
-                             const int npart, const int nprof) {     // inn
+template <typename real_t>
+void back_project(real_t *weights,                           // inn/out
+                  int *flat_points,                     // inn
+                  const real_t *flat_profiles,               // inn
+                  const int npart, const int nprof) {   // inn
 #pragma omp parallel for
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
@@ -28,22 +29,24 @@ extern "C" void back_project(double *weights,                     // inn/out
 }
 
 // Projections using flattened arrays
-extern "C" void project(double *flat_rec,                     // inn/out
-                        int *flat_points,        // inn
-                        const double *weights,   // inn
-                        const int npart, const int nprof) {      // inn
+template <typename real_t>
+void project(real_t *flat_rec,                           // inn/out
+             int *flat_points,                      // inn
+             const real_t *weights,                      // inn
+             const int npart, const int nprof) {    // inn
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++)
             flat_rec[flat_points[i * nprof + j]] += weights[i];
 }
 
-void normalize(double *flat_rec, // inn/out
+template <typename real_t>
+void normalize(real_t *flat_rec,         // inn/out
                const int nprof,
                const int nbins) {
-    double sum_waterfall = 0.0;
+    real_t sum_waterfall = 0.0;
 #pragma omp parallel for reduction(+ : sum_waterfall)
     for (int i = 0; i < nprof; i++) {
-        double sum_profile = 0;
+        real_t sum_profile = 0;
         for (int j = 0; j < nbins; j++)
             sum_profile += flat_rec[i * nbins + j];
         for (int j = 0; j < nbins; j++)
@@ -55,7 +58,8 @@ void normalize(double *flat_rec, // inn/out
         throw std::runtime_error("Phase space reduced to zeroes!");
 }
 
-void clip(double *array, // inn/out
+template <typename real_t>
+void clip(real_t *array,            // inn/out
           const int length,
           const double clip_val) {
 #pragma omp parallel for
@@ -65,20 +69,22 @@ void clip(double *array, // inn/out
 }
 
 
-void find_difference_profile(double *diff_prof,           // out
-                             const double *flat_rec,      // inn
-                             const double *flat_profiles, // inn
+template <typename real_t>
+void find_difference_profile(real_t *diff_prof,           // out
+                             const real_t *flat_rec,      // inn
+                             const real_t *flat_profiles, // inn
                              const int all_bins) {
 #pragma omp parallel for
     for (int i = 0; i < all_bins; i++)
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
 }
 
-double discrepancy(const double *diff_prof,   // inn
+template <typename real_t>
+real_t discrepancy(const real_t *diff_prof,   // inn
                    const int nprof,
                    const int nbins) {
     int all_bins = nprof * nbins;
-    double squared_sum = 0;
+    real_t squared_sum = 0;
 
     for (int i = 0; i < all_bins; i++) {
         squared_sum += std::pow(diff_prof[i], 2.0);
@@ -87,8 +93,9 @@ double discrepancy(const double *diff_prof,   // inn
     return std::sqrt(squared_sum / (nprof * nbins));
 }
 
-void compensate_particle_amount(double *diff_prof,        // inn/out
-                                double *rparts,          // inn
+template <typename real_t>
+void compensate_particle_amount(real_t *diff_prof,        // inn/out
+                                real_t *rparts,          // inn
                                 const int nprof,
                                 const int nbins) {
 #pragma omp parallel for
@@ -99,10 +106,11 @@ void compensate_particle_amount(double *diff_prof,        // inn/out
         }
 }
 
-double max_2d(double **arr,  // inn
+template <typename real_t>
+real_t max_2d(real_t **arr,  // inn
               const int x_axis,
               const int y_axis) {
-    double max_bin_val = 0;
+    real_t max_bin_val = 0;
     for (int i = 0; i < y_axis; i++)
         for (int j = 0; j < x_axis; j++)
             if (max_bin_val < arr[i][j])
@@ -110,8 +118,9 @@ double max_2d(double **arr,  // inn
     return max_bin_val;
 }
 
-double max_1d(double *arr, const int length) {
-    double max_bin_val = 0;
+template <typename real_t>
+real_t max_1d(real_t *arr, const int length) {
+    real_t max_bin_val = 0;
     for (int i = 0; i < length; i++)
         if (max_bin_val < arr[i])
             max_bin_val = arr[i];
@@ -119,14 +128,16 @@ double max_1d(double *arr, const int length) {
 }
 
 
-double sum(double *arr, const int length) {
-    double sum = 0;
+template <typename real_t>
+real_t sum(real_t *arr, const int length) {
+    real_t sum = 0;
     for (int i = 0; i < length; i++)
         sum += arr[i];
     return sum;
 }
 
-void count_particles_in_bin(double *rparts,      // out
+template <typename real_t>
+void count_particles_in_bin(real_t *rparts,      // out
                             const int *xp,       // inn
                             const int nprof,
                             const int npart,
@@ -139,7 +150,8 @@ void count_particles_in_bin(double *rparts,      // out
         }
 }
 
-void reciprocal_particles(double *rparts,   // out
+template <typename real_t>
+void reciprocal_particles(real_t *rparts,   // out
                           const int *xp,     // inn
                           const int nbins,
                           const int nprof,
@@ -162,7 +174,7 @@ void reciprocal_particles(double *rparts,   // out
     for (int i = 0; i < nprof; i++)
         for (int j = 0; j < nbins; j++) {
             idx = i * nbins + j;
-            rparts[idx] = (double) max_bin_val / rparts[idx];
+            rparts[idx] = (real_t) max_bin_val / rparts[idx];
         }
 }
 
@@ -180,23 +192,23 @@ void create_flat_points(const int *xp,       //inn
 }
 
 
-extern "C" void reconstruct(double *weights,             // out
-                            const int *xp,              // inn
-                            const double *flat_profiles, // inn
-                            double *flat_rec,            // Out
-                            double *discr,               // out
-                            const int niter,
-                            const int nbins,
-                            const int npart,
-                            const int nprof,
-                            const bool verbose,
-                            const std::function<void(int, int)> callback
-) {
+template <typename real_t>
+void reconstruct(real_t *weights,             // out
+                 const int *xp,               // inn
+                 const real_t *flat_profiles, // inn
+                 real_t *flat_rec,            // Out
+                 real_t *discr,               // out
+                 const int niter,
+                 const int nbins,
+                 const int npart,
+                 const int nprof,
+                 const bool verbose,
+                 const std::function<void(int, int)> callback) {
     // Creating arrays...
     int all_bins = nprof * nbins;
-    double *diff_prof = new double[all_bins]();
+    real_t *diff_prof = new real_t[all_bins]();
 
-    double *rparts = new double[all_bins]();
+    real_t *rparts = new real_t[all_bins]();
 
     int *flat_points = new int[npart * nprof]();
 
@@ -263,3 +275,135 @@ extern "C" void reconstruct(double *weights,             // out
     if (verbose)
         std::cout << " Done!" << std::endl;
 }
+
+// Template definitions double
+
+template void back_project(double *weights,                     // inn/out
+                           int *flat_points,                    // inn
+                           const double *flat_profiles,         // inn
+                           const int npart, const int nprof);
+
+template void project(double *flat_rec,                     // inn/out
+                      int *flat_points,                     // inn
+                      const double *weights,                // inn
+                      const int npart, const int nprof);
+
+template void normalize(double *flat_rec,       // inn/out
+                        const int nprof,
+                        const int nbins);
+
+template void clip(double *array,               // inn/out
+                   const int length,
+                   const double clip_val);
+
+template void find_difference_profile(double *diff_prof,           // out
+                                      const double *flat_rec,      // inn
+                                      const double *flat_profiles, // inn
+                                      const int all_bins);
+
+template double discrepancy(const double *diff_prof,   // inn
+                            const int nprof,
+                            const int nbins);
+
+template void compensate_particle_amount(double *diff_prof,     // inn/out
+                                         double *rparts,        // inn
+                                         const int nprof,
+                                         const int nbins);
+
+template double max_2d(double **arr,  // inn
+              const int x_axis,
+              const int y_axis);
+
+template double max_1d(double *arr, const int length);
+
+template double sum(double *arr, const int length);
+
+template void count_particles_in_bin(double *rparts,      // out
+                                     const int *xp,       // inn
+                                     const int nprof,
+                                     const int npart,
+                                     const int nbins);
+
+template void reciprocal_particles(double *rparts,   // out
+                                   const int *xp,     // inn
+                                   const int nbins,
+                                   const int nprof,
+                                   const int npart);
+
+template void reconstruct(double *weights,             // out
+                          const int *xp,               // inn
+                          const double *flat_profiles, // inn
+                          double *flat_rec,            // Out
+                          double *discr,               // out
+                          const int niter,
+                          const int nbins,
+                          const int npart,
+                          const int nprof,
+                          const bool verbose,
+                          const std::function<void(int, int)> callback);
+
+// Template definitions float
+
+template void back_project(float *weights,                      // inn/out
+                           int *flat_points,                    // inn
+                           const float *flat_profiles,          // inn
+                           const int npart, const int nprof);
+
+template void project(float *flat_rec,                      // inn/out
+                      int *flat_points,                     // inn
+                      const float *weights,                 // inn
+                      const int npart, const int nprof);
+
+template void normalize(float *flat_rec,    // inn/out
+                        const int nprof,
+                        const int nbins);
+
+template void clip(float *array,            // inn/out
+                   const int length,
+                   const double clip_val);
+
+template void find_difference_profile(float *diff_prof,           // out
+                                      const float *flat_rec,      // inn
+                                      const float *flat_profiles, // inn
+                                      const int all_bins);
+
+template float discrepancy(const float *diff_prof,   // inn
+                           const int nprof,
+                           const int nbins);
+
+template void compensate_particle_amount(float *diff_prof,      // inn/out
+                                         float *rparts,         // inn
+                                         const int nprof,
+                                         const int nbins);
+
+template float max_2d(float **arr,  // inn
+                      const int x_axis,
+                      const int y_axis);
+
+template float max_1d(float *arr, const int length);
+
+template float sum(float *arr, const int length);
+
+template void count_particles_in_bin(float *rparts,     // out
+                                     const int *xp,     // inn
+                                     const int nprof,
+                                     const int npart,
+                                     const int nbins);
+
+template void reciprocal_particles(float *rparts,       // out
+                                   const int *xp,       // inn
+                                   const int nbins,
+                                   const int nprof,
+                                   const int npart);
+
+template void reconstruct(float *weights,               // out
+                          const int *xp,                // inn
+                          const float *flat_profiles,   // inn
+                          float *flat_rec,              // out
+                          float *discr,                 // out
+                          const int niter,
+                          const int nbins,
+                          const int npart,
+                          const int nprof,
+                          const bool verbose,
+                          const std::function<void(int, int)> callback);

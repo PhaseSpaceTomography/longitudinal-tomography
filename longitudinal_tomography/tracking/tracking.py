@@ -13,6 +13,7 @@ from .. import assertions as asrt
 from .__tracking import ParticleTracker
 from ..cpp_routines import libtomo
 from ..compat import fortran
+from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
     from .machine_base import MachineABC
@@ -173,7 +174,7 @@ class Tracking(ParticleTracker):
 
         else:
             log.info('Using initial particle coordinates set by user.')
-            self.particles.coordinates_dphi_denergy = init_distr
+            self.particles.coordinates_dphi_denergy = conf.cast(init_distr)
             coords = self.particles.coordinates_dphi_denergy
 
         dphi = coords[0]
@@ -182,8 +183,11 @@ class Tracking(ParticleTracker):
         self.init_dphi = dphi.copy()
         self.init_denergy = denergy.copy()
 
-        rfv1 = machine.vrf1_at_turn * machine.q
-        rfv2 = machine.vrf2_at_turn * machine.q
+        rfv1 = conf.cast(machine.vrf1_at_turn * machine.q)
+        rfv2 = conf.cast(machine.vrf2_at_turn * machine.q)
+        phi0 = conf.cast(machine.phi0)
+        deltaE0 = conf.cast(machine.deltaE0)
+        drift_coef = conf.cast(machine.drift_coef)
 
         # Tracking particles
         if self.self_field_flag:
@@ -197,16 +201,14 @@ class Tracking(ParticleTracker):
             # Tracking without self-fields
             nparts = len(dphi)
             nturns = machine.dturns * (machine.nprofiles - 1)
-            xp = np.zeros((machine.nprofiles, nparts))
-            yp = np.zeros((machine.nprofiles, nparts))
+            xp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
+            yp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
 
-            # Calling C++ implementation of tracking routine.
-            libtomo.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2,
-                                   machine.phi0, machine.deltaE0,
-                                   machine.drift_coef, machine.phi12,
-                                   machine.h_ratio, machine.dturns,
-                                   recprof, deltaturn, nturns, nparts,
-                                   self.fortran_flag, callback=callback)
+            conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
+                                deltaE0, drift_coef, machine.phi12,
+                                machine.h_ratio, machine.dturns, recprof,
+                                deltaturn, nturns, nparts, self.fortran_flag,
+                                callback=callback)
 
         log.info('Tracking completed!')
         return xp, yp

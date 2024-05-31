@@ -24,3 +24,4 @@ longitudinal_tomography/_version.py
 *.npy
 *.so
 *.o
+*.cubin

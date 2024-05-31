@@ -18,39 +18,43 @@ using namespace std;
 // Uses BLonD fast_sin function.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void kick_up(const double *dphi,
-                        double *denergy,
-                        const double rfv1,
-                        const double rfv2,
-                        const double phi0,
-                        const double phi12,
-                        const double hratio,
-                        const int nr_particles,
-                        const double acc_kick);
+template <typename real_t>
+void kick_up(const real_t *dphi,
+             real_t *denergy,
+             const real_t rfv1,
+             const real_t rfv2,
+             const real_t phi0,
+             const real_t phi12,
+             const real_t hratio,
+             const int nr_particles,
+             const real_t acc_kick);
 
-extern "C" void kick_down(const double *dphi,
-                          double *denergy,
-                          const double rfv1,
-                          const double rfv2,
-                          const double phi0,
-                          const double phi12,
-                          const double hratio,
-                          const int nr_particles,
-                          const double acc_kick);
+template <typename real_t>
+void kick_down(const real_t *dphi,
+               real_t *denergy,
+               const real_t rfv1,
+               const real_t rfv2,
+               const real_t phi0,
+               const real_t phi12,
+               const real_t hratio,
+               const int nr_particles,
+               const real_t acc_kick);
 
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
 // Can be called directly from python.
 //  Used in hybrid python/C++ class.
-extern "C" void drift_up(double *dphi,
-                         const double *denergy,
-                         const double drift_coef,
-                         const int nr_particles);
+template <typename real_t>
+void drift_up(real_t *dphi,
+              const real_t *denergy,
+              const real_t drift_coef,
+              const int nr_particles);
 
-extern "C" void drift_down(double *dphi,
-                           const double *denergy,
-                           const double drift_coef,
-                           const int nr_particles);
+template <typename real_t>
+void drift_down(real_t *dphi,
+                const real_t *denergy,
+                const real_t drift_coef,
+                const int nr_particles);
 
 
 // Calculates X and Y coordinates for particles based on a given
@@ -70,25 +74,25 @@ extern "C" void calc_xp_and_yp(double **xp,           // inn/out
                                const int profile,
                                const int nparts);
 
-extern "C" void kick_and_drift(
-        double **xp,             // inn/out
-        double **yp,             // inn/out
-        double *denergy,         // inn
-        double *dphi,            // inn
-        const double *rf1v,      // inn
-        const double *rf2v,      // inn
-        const double *phi0,      // inn
-        const double *deltaE0,   // inn
-        const double *drift_coef,// inn
-        const double *phi12,
-        const double hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
-        const bool ftn_out,
-        const std::function<void(int, int)> callback
+template <typename real_t>
+void kick_and_drift(real_t **xp,             // inn/out
+                    real_t **yp,             // inn/out
+                    real_t *denergy,         // inn
+                    real_t *dphi,            // inn
+                    const real_t *rf1v,      // inn
+                    const real_t *rf2v,      // inn
+                    const real_t *phi0,      // inn
+                    const real_t *deltaE0,   // inn
+                    const real_t *drift_coef,// inn
+                    const real_t *phi12,
+                    const real_t hratio,
+                    const int dturns,
+                    const int rec_prof,
+                    const int deltaturn,
+                    const int nturns,
+                    const int nparts,
+                    const bool ftn_out,
+                    const std::function<void(int, int)> callback
 );
 
 #endif
