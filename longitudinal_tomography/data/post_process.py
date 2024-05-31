@@ -9,9 +9,10 @@ import numpy as np
 from scipy import constants as cont
 from multipledispatch import dispatch
 from .. import assertions as asrt
+from numbers import Number
 
 if TYPE_CHECKING:
-    from typing import Union, Dict
+    from typing import Union, Dict, Iterable
 
     FloatArr = np.ndarray[float]
 
