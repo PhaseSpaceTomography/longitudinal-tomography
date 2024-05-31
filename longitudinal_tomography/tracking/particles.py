@@ -7,6 +7,7 @@ like assertions, conversions and filtering of lost particles.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
+from __future__ import annotations
 import logging
 from typing import Tuple, Sequence, TYPE_CHECKING, Union
 import numpy as np

@@ -3,6 +3,8 @@
 .coverage
 __doc/build
 
+longitudinal_tomography/_version.py
+
 # build folders
 /build/
 /wheelhouse/

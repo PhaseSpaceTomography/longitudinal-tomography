@@ -2,7 +2,7 @@
 
 Run as python test_tracking.py in console or via coverage
 """
-
+from __future__ import annotations
 import os
 import unittest
 

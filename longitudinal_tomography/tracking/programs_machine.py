@@ -2,6 +2,7 @@
 
 :Author(s): **Anton Lu**
 """
+from __future__ import annotations
 import numpy as np
 import scipy.constants as c
 import logging

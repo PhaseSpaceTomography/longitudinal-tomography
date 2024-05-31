@@ -98,20 +98,15 @@ pypi:
   only:
     - tags
 
-docs:
-  stage: deploy
-  script:
-    - mv htmlcov/ public/
-    - pip install sphinx sphinxcontrib-napoleon sphinx-rtd-theme
-    - cd __doc
-    - make html
-    - mv build/html ../public
-  artifacts:
-    paths:
-      - public
-    expire_in: 30 days
-  only:
-    - master
+build_docs:
+ extends:
+   - .acc_py_build_docs
+
+
+build_docs_on_tag:
+ extends:
+   - .acc_py_build_docs_on_tag
+
 
 release_sdist_on_tag:
   extends: .acc_py_release_sdist

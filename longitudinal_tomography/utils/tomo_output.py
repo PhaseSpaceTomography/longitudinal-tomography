@@ -5,6 +5,7 @@ output equal original Fortran program.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
+from __future__ import annotations
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np

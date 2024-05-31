@@ -2,6 +2,7 @@
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
+from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING, Callable
 
 import numpy as np

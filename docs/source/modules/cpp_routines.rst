@@ -1,10 +1,10 @@
 cpp_routines Package
 ====================
 
-:mod:`tomolib_wrappers` Module
+:mod:`libtomo` Module
 ------------------------------
 
-.. automodule:: longitudinal_tomography.cpp_routines.tomolib_wrappers
+.. automodule:: longitudinal_tomography.cpp_routines.libtomo
     :members:
     :undoc-members:
     :show-inheritance:

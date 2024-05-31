@@ -3,6 +3,7 @@ tomography
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
+from __future__ import annotations
 from numbers import Number
 from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
 

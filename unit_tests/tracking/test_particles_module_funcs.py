@@ -2,7 +2,7 @@
 
 Run as python test_particles_class.py in console or via coverage
 """
-
+from __future__ import annotations
 import unittest
 
 import numpy as np
