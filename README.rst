@@ -81,17 +81,24 @@ which will compile the C++ extension using the available compiler (decided by se
 **MacOS**
 
 MacOS requires some special treatment for the extension to compile.
-You need to tell pip to use Homebrew clang.
+You need to tell pip to use Homebrew `clang` and `llvm` instead of the default
+compiler and libraries. This can be done by setting the `CC`, `LDFLAGS` and `CPPFLAGS` environment variables.
+You also need to install the `libomp` package with Homebrew.
 
 On arm64 (M1/M2) MacBooks, use the following:
 ::
-    CC=/opt/homebrew/opt/llvm/bin/clang++ pip install .
+    export LDFLAGS="-L/opt/homebrew/lib -L/opt/homebrew/opt/llvm/lib"
+    export CPPFLAGS="-I/opt/homebrew/include -I/opt/homebrew/opt/llvm/include"
+    CC=/opt/homebrew/opt/llvm/bin/clang++
+    pip install .
 
 Or use the :code:`-e` flag for an editable installation.
 For Intel MacBooks, Homebrew packages are installed in a different location.
 
 Hence, for Intel MacBooks, use the following:
 ::
+    export LDFLAGS="-L/usr/local/opt/homebrew/lib -L/usr/local/opt/homebrew/opt/llvm/lib"
+    export CPPFLAGS="-I/usr/local/opt/homebrew/include -I/usr/local/opt/homebrew/opt/llvm/include"
     CC=/usr/local/opt/llvm/bin/clang++ pip install .
 
 """""""""""""

@@ -1,105 +1,74 @@
 include:
-  - project: acc-co/devops/python/acc-py-devtools
-    file: acc_py_devtools/templates/gitlab-ci/python.yml
+ - project: acc-co/devops/python/acc-py-gitlab-ci-templates
+   file: v2/python.gitlab-ci.yml
 
-stages:
-  - test
-  - build
-  - build-test
-  - deploy
 
 variables:
   project_name: longitudinal_tomography
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/opt/cache/pip"
+  PY_VERSION: "3.11"
+  ACC_PY_BASE_IMAGE_TAG: "2023.06"
 
-image: python:$PY_VERSION
+# ================ Build ==================
+
+build_wheel:
+  extends: .acc_py_build_wheel
+
+
+build_sdist:
+  extends: .acc_py_build_sdist
+
+
+# ================ Test ==================
+  
 
 test_dev:
   extends: .acc_py_dev_test
   script:
-    - coverage run -m pytest unit_tests/
-    - coverage report -m
-    - coverage html
-    - coverage xml -o report.xml
-    - coverage-badge -o coverage.svg
-  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
-  artifacts:
-    paths:
-      - htmlcov/*
-      - coverage.svg
-    expire_in: 1 day
+    # Run the unit-tests with coverage output.
+    - cd ${project_root}
+    - python -m pytest ./unit_tests
+      --cov=${project_name}
+      --cov-report term
+      --cov-report html:coverage-html
+      --cov-report xml:coverage-report.xml
+      --junitxml=junit-report.xml
+
+
+test_wheel:
+  extends: .acc_py_wheel_test
+  needs:
+    - build_wheel
+  script:
+    - mkdir -p ~/not-the-source-dir && cp -r ${project_root}/unit_tests ~/not-the-source-dir && cd ~/not-the-source-dir
+    - python -m pytest ./unit_tests
 
 pep8:
   # Checks for conformity to PEP8 style guidelines
   stage: test
+  before_script:
+    - python -m ensurepip
+    - python -m pip install flake8
   script:
-    - pip install flake8
     - flake8 --count
 
   only:
     - merge_requests
   allow_failure: true
 
-build-wheels:
-  image: quay.io/pypa/manylinux2014_x86_64
-  stage: build
-  script:
-    - bash tools/build-wheels.sh
+
+# ================ Deploy ==================
+
+
+._build_docs:
   variables:
-    PLAT: manylinux2014_x86_64
-  artifacts:
-    expire_in: 7 days
-    paths:
-      - wheelhouse/longitudinal_tomography*manylinux*.whl
-  only:
-    - master
-    - nightly
-    - tags
+    SPHINX_BUILD_ADDOPTS: "-W --keep-going"  # Error if we have warnings in the doc build.
+  needs:
+    - build_wheel
 
-build-sdist:
-  image: python:3
-  stage: build
-  script:
-    - pip install build
-    - python -m build -s
-  artifacts:
-    expire_in: 7 days
-    paths:
-      - dist/*.tar.gz
-  only:
-    - master
-    - nightly
-    - tags
-
-test-wheels:
-  image: quay.io/pypa/manylinux2014_x86_64
-  stage: build-test
-  dependencies:
-    - build-wheels
-  script: bash tools/test-wheels.sh
-  only:
-    - master
-    - nightly
-    - tags
-
-pypi:
-  image: python:3
-  stage: deploy
-  dependencies:
-    - build-wheels
-    - build-sdist
-    - test-wheels
-  script:
-    - pip install -U twine
-    # upload to testpypi first for error checking
-    - twine upload -r testpypi --username __token__ --password $TWINE_TESTPYPI_PASSWORD wheelhouse/longitudinal_tomography*manylinux*.whl dist/*.tar.gz
-    # upload to pypi
-    - twine upload --username $TWINE_USERNAME --password $TWINE_PYPI_PASSWORD wheelhouse/longitudinal_tomography*manylinux*.whl dist/*.tar.gz
-  only:
-    - tags
 
 build_docs:
  extends:
+   - ._build_docs
    - .acc_py_build_docs
 
 
@@ -108,10 +77,16 @@ build_docs_on_tag:
    - .acc_py_build_docs_on_tag
 
 
-release_sdist_on_tag:
-  extends: .acc_py_release_sdist
+release_dist:
+  extends: .acc_py_publish
 
-release_wheels_on_tag:
-  dependencies:
-    - build-wheels
-  extends: .acc_py_release_wheel
+
+release_dist_pypi:
+  stage: deploy
+  extends: .acc_py_publish
+  script:  # override the default acc py publish script
+    - shopt -s nullglob
+    # upload to testpypi first for error checking
+    - python -m twine upload --non-interactive -r testpypi --username __token__ --password $TWINE_TESTPYPI_PASSWORD ${project_root}/dist/*.whl ${project_root}/dist/*.tar.gz
+    # upload to pypi
+    - python -m twine upload --non-interactive --username $TWINE_USERNAME --password $TWINE_PYPI_PASSWORD ${project_root}/dist/*.whl ${project_root}/dist/*.tar.gz
