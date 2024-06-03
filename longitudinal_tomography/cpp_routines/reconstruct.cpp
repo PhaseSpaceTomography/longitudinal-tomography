@@ -597,6 +597,14 @@ template void count_particles_in_bin(double *rparts,      // out
                                      const int npart,
                                      const int nbins);
 
+template void count_particles_in_bin_multi(double *rparts,
+                                           const int *xpRound0,
+                                           const int *centers,
+                                           const int nprof,
+                                           const int npart,
+                                           const int nbins,
+                                           const int ncenters);
+
 template void reciprocal_particles(double *rparts,   // out
                                    const int *xp,     // inn
                                    const int nbins,
@@ -688,6 +696,14 @@ template void count_particles_in_bin(float *rparts,     // out
                                      const int nprof,
                                      const int npart,
                                      const int nbins);
+
+template void count_particles_in_bin_multi(float *rparts,
+                                           const int *xpRound0,
+                                           const int *centers,
+                                           const int nprof,
+                                           const int npart,
+                                           const int nbins,
+                                           const int ncenters);
 
 template void reciprocal_particles(float *rparts,       // out
                                    const int *xp,       // inn
