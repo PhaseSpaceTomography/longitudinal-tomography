@@ -159,6 +159,14 @@ py::tuple wrapper_reconstruct(
         const std::optional<const py::object> callback
 );
 
+template <typename real_Tarr, typename real_t>
+py::array_t<real_t> wrapper_make_phase_space(
+        const i_array &input_xp,
+        const i_array &input_yp,
+        const real_Tarr &input_weight,
+        const int n_bins
+);
+
 class libtomo {
 
 };

@@ -18,9 +18,10 @@
  * @param n_bins Number of bins in the phase space
  * @return A n_bins*n_bins array (1d) representing the density plot of the phase space
  */
-double *make_phase_space(const int *const xp, const int *const yp, const double *const weight, const int n_particles,
+template <typename real_t>
+real_t *make_phase_space(const int *const xp, const int *const yp, const real_t *const weight, const int n_particles,
                          const int n_bins) {
-    double *phase_space = new double[n_bins * n_bins]();
+    real_t *phase_space = new real_t[n_bins * n_bins]();
     int n_bins2 = n_bins * n_bins;
 
     for (int i = 0; i < n_particles; i++) {
@@ -32,3 +33,15 @@ double *make_phase_space(const int *const xp, const int *const yp, const double 
 
     return phase_space;
 }
+
+template double *make_phase_space(const int *const xp,
+                                  const int *const yp,
+                                  const double *const weight,
+                                  const int n_particles,
+                                  const int n_bins);
+
+template float *make_phase_space(const int *const xp,
+                                  const int *const yp,
+                                  const float *const weight,
+                                  const int n_particles,
+                                  const int n_bins);
