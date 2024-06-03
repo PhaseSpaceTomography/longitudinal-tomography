@@ -11,6 +11,7 @@ import numpy as np
 
 import longitudinal_tomography.utils.tomo_config as conf
 from .. import exceptions as expt
+from ..cpp_routines import libtomo
 
 log = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ class TomographyABC(ABC):
 
         self.recreated = conf.cast(np.zeros(self.waterfall.shape))
         self.diff: np.ndarray = None
+        self.diff_split: np.ndarray = None
         self.weight: np.ndarray = None
 
     @property
@@ -255,11 +257,29 @@ class TomographyABC(ABC):
         ppb[ppb == 0] = 1
         return np.max(ppb) / ppb
 
+    def _reciprocal_particles_multi(self, centers) -> np.ndarray:
+
+        ppb = np.zeros((self.nprofs, self.nbins))
+        # for c in centers:
+        #     ppb = self._count_particles_in_bins(
+        #         ppb, self.nprofs, self.xp+int(np.floor(c)), self.nparts)
+        ppb = libtomo.count_particles_in_bins_multi(ppb, self.xp.T, centers,
+                                                    self.nprofs, self.nparts,
+                                                    self.nbins, len(centers))
+
+        # Setting bins with zero particles one to avoid division by zero.
+        ppb[ppb == 0] = 1
+        return np.max(ppb) / ppb
+
     # Needed by reciprocal particles function.
     # TODO: removed njit, reimplement in C in the future
     def _count_particles_in_bins(self, ppb: np.ndarray,
                                  profile_count: int,
                                  xp: np.ndarray, nparts: int) -> np.ndarray:
+
+        # ppb = libtomo.count_particles_in_bins(ppb, xp, profile_count, nparts,
+        #                                       ppb.shape[0])
+        # ppb = libtomo.count_particles_in_bins(ppb, xp, nparts, nbins, profile_count)
         for i in range(profile_count):
             for j in range(nparts):
                 ppb[xp[j, i], i] += 1

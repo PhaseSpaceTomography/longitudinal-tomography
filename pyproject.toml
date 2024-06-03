@@ -59,6 +59,8 @@ packages = [
     "longitudinal_tomography",
     "longitudinal_tomography.compat",
     "longitudinal_tomography.cpp_routines",
+    "longitudinal_tomography.cuda_kernels",
+    "longitudinal_tomography.python_routines",
     "longitudinal_tomography.data",
     "longitudinal_tomography.tomography",
     "longitudinal_tomography.tracking",
