@@ -181,7 +181,7 @@ class TomographyABC(ABC):
                 msg = 'X coordinate of particles outside of image width'
                 raise expt.XPOutOfImageWidthError(msg)
 
-            self._xp = np.ascontiguousarray(value).astype(np.int32)
+            self._xp = conf.ascontiguousarray(value, dtype=conf.int32)
             self._nparts = self._xp.shape[0]
             log.info(f'X coordinates of shape {self.xp.shape} loaded.')
 
