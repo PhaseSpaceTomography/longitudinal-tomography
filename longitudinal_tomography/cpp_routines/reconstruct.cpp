@@ -226,7 +226,6 @@ void count_particles_in_bin(real_t *rparts,      // out
 
     for (int i = 0; i < npart; i++)
         for (int j = 0; j < nprof; j++) {
-
             bin = xp[i * nprof + j];
             rparts[j * nbins + bin] += 1;
         }
@@ -546,7 +545,7 @@ template void back_project(double *weights,                     // inn/out
                            int *flat_points,                    // inn
                            const double *flat_profiles,         // inn
                            const int npart, const int nprof);
-                           
+
 template void back_project_multi(double *weights,                     // inn/out
                                  int *flat_points,       // inn
                                  const double *flat_profiles,         // inn
@@ -646,7 +645,7 @@ template void back_project(float *weights,                      // inn/out
                            int *flat_points,                    // inn
                            const float *flat_profiles,          // inn
                            const int npart, const int nprof);
-                           
+
 template void back_project_multi(float *weights,                     // inn/out
                                  int *flat_points,       // inn
                                  const float *flat_profiles,         // inn

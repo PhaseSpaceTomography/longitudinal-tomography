@@ -96,9 +96,7 @@ if os.getenv('SINGLE_PREC') is not None:
     conf.AppConfig.set_single_precision() if os.getenv('SINGLE_PREC') == 'True' else conf.AppConfig.set_double_precision()
 
 if os.getenv('MODE') is not None:
-    if os.getenv('MODE') == "Numba":
-        conf.AppConfig.use_numba()
-    elif os.getenv('MODE') == "CPP":
+    if os.getenv('MODE') == "CPP":
         conf.AppConfig.use_cpu()
     elif os.getenv('MODE') == "CuPy":
         conf.AppConfig.use_cupy()
@@ -160,7 +158,7 @@ timing.stop_timing()
 
 # TOMOGRAPHY PROCESS ----------------------------------------------------------
 
-# DEFINE MACHINE 
+# DEFINE MACHINE
 
 timing.start_timing('define_machine_object')
 
@@ -264,7 +262,7 @@ for prec in precisions:
     for i in range(it):
         if firstit:
             start_time = time.time()
-        
+
         timing.start_timing("cast_coords")
         xp1 = conf.cast(xp)
         yp1 = conf.cast(yp)
