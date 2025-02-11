@@ -3,7 +3,7 @@ style tomographic reconstruction.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
-
+from __future__ import annotations
 import logging
 import typing as t
 import numpy as np
@@ -14,6 +14,7 @@ from ..tracking import particles as pts
 # Tomo modules
 from ..tracking import tracking as tracking
 from ..utils import tomo_input as tomoin, tomo_output as tomoout
+from ..utils import tomo_config as conf
 
 from ..compat import tomoscope as tscp
 
@@ -40,6 +41,8 @@ def run(input: str, reconstruct_profile: bool = None,
         Enable tomoscope specific output for progress tracking.
     plot: bool = False
         Plot phase space after reconstruction.
+    mode: Mode
+        Decide which execution mode should be used
 
     Returns
     -------
@@ -121,7 +124,7 @@ def run(input: str, reconstruct_profile: bool = None,
     xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
 
     # Tomography!
-    tomo = tomography.TomographyCpp(profiles.waterfall, xp, yp)
+    tomo = tomography.Tomography(profiles.waterfall, xp, yp)
     weight = tomo.run(niter=machine.niter, verbose=tomoscope)
 
     if tomoscope:
@@ -132,13 +135,14 @@ def run(input: str, reconstruct_profile: bool = None,
 
         tscp.save_difference(tomo.diff, output_dir, film)
 
-    t_range, E_range, phase_space = dtreat.phase_space(tomo, machine,
-                                                       reconstr_idx)
+    # TODO mode is new and only phase_space is then in GPU. Discuss if necessary
+    t_range, E_range, phase_space = dtreat.phase_space(tomo, machine, reconstr_idx)
 
     # Removing (if any) negative areas.
     phase_space = phase_space.clip(0.0)
     # Normalizing phase space.
-    phase_space /= np.sum(phase_space)
+    # See line 147
+    phase_space /= conf.sum(phase_space)
 
     if plot:
         tomoout.show(phase_space, tomo.diff, profiles.waterfall[reconstr_idx])

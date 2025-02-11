@@ -1,6 +1,13 @@
 class TomoException(Exception):
     pass
 
+# ==========================
+# CUDA Compilation Exception
+# ==========================
+
+class CudaCompilationException(Exception):
+    pass
+
 # ================
 # Array Exceptions
 # ================
@@ -135,4 +142,11 @@ class CoordinateImportError(TomoException, ValueError):
 
 
 class CoordinateError(TomoException, ValueError):
+    pass
+
+# ============================
+# ANALYSIS EXCEPTIONS
+# ============================
+
+class InvalidProfileError(TomoException, ValueError):
     pass

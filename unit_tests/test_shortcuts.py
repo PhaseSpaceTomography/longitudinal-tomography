@@ -3,7 +3,7 @@ Unit-tests for the shortcuts module
 
 Run as python test_shortcuts.py in console or via coverage
 """
-
+from __future__ import annotations
 import unittest
 import numpy as np
 import numpy.testing as nptest

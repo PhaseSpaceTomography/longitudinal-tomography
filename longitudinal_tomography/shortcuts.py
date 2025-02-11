@@ -3,6 +3,7 @@ Macro functions provided for convenience
 
 :Author(s): **Anton Lu**
 """
+from __future__ import annotations
 import typing as t
 import numpy as np
 

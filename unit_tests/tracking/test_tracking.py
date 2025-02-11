@@ -2,7 +2,7 @@
 
 Run as python test_tracking.py in console or via coverage
 """
-
+from __future__ import annotations
 import os
 import unittest
 
@@ -13,12 +13,17 @@ import longitudinal_tomography.data.profiles as prof
 import longitudinal_tomography.tracking.machine as mch
 import longitudinal_tomography.tracking.tracking as tck
 from longitudinal_tomography import exceptions as expt
+from longitudinal_tomography.utils import tomo_config as conf
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
-
+MAX_DEV_FACTOR = 1e-6
 
 class TestTracker(unittest.TestCase):
+
+    def setUp(self):
+        conf.AppConfig.use_cpu()
+        conf.AppConfig.set_double_precision()
 
     def test_parameter_notMachine_fails(self):
         with self.assertRaises(
@@ -75,6 +80,55 @@ class TestTracker(unittest.TestCase):
                 y, cy, msg='Error in tracking of particle '
                            'found in y-coordinate')
 
+    def test_tracking_aut_distr_singleprec(self):
+        conf.set_single_precision()
+        machine = mch.Machine(**MACHINE_ARGS)
+
+        # Tracking only a few particles for 20 time frames.
+        machine.snpt = 1
+        rbn = 13
+        machine.rbn = rbn
+        machine.nbins = int(machine.nbins / rbn)
+        machine.dtbin *= rbn
+        machine.nprofiles = 20
+
+        machine.values_at_turns()
+
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.track(recprof=10)
+
+        # Comparing the coordinates of particle #0 only.
+        correct_x = [-19.432295466713434, -19.3925512994595,
+                     -19.35163208683023, -19.309627946073313,
+                     -19.266631745225464, -19.222738757376533,
+                     -19.178046284007912, -19.132653251008257,
+                     -19.086659781737467, -19.04016675218461,
+                     -18.99327533382096, -18.946086530163132,
+                     -18.898700713317176, -18.851217166861232,
+                     -18.803733641339306, -18.75634592838512,
+                     -18.709147459083823, -18.662228931627606,
+                     -18.615677972651334, -18.5695788358727]
+
+        correct_y = [-233614.99041969655, -240836.66283342137,
+                     -247530.01310891184, -253677.7708608252,
+                     -259264.64084817207, -264277.4952538157,
+                     -268705.5465303423, -272540.4960483705,
+                     -275776.6542680894, -278411.0288037383,
+                     -280443.3775430866, -281876.2248907341,
+                     -282714.8401894965, -282967.17839776503,
+                     -282643.784119737, -281757.6610572577,
+                     -280324.1098370269, -278360.53793064784,
+                     -275886.24600012705, -272922.19544914237]
+
+        for x, cx in zip(xp[:, 0], correct_x):
+            self.assertAlmostEqual(
+                x, cx, delta = abs(MAX_DEV_FACTOR * cx), msg='Error in tracking of particle '
+                           'found in x-coordinate')
+        for y, cy in zip(yp[:, 0], correct_y):
+            self.assertAlmostEqual(
+                y, cy, delta = abs(MAX_DEV_FACTOR * cy), msg='Error in tracking of particle '
+                           'found in y-coordinate')
+
     def test_tracking_man_distr(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.nprofiles = 20
@@ -108,6 +162,42 @@ class TestTracker(unittest.TestCase):
         for y, cy in zip(yp[:, 0], correct_y):
             self.assertAlmostEqual(
                 y, cy, msg='Error in tracking of particle '
+                           'found in y-coordinate')
+
+    def test_tracking_man_distr_singleprec(self):
+        conf.AppConfig.set_single_precision()
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.nprofiles = 20
+        machine.values_at_turns()
+
+        phase_0 = np.array([0.33178332])
+        energy_0 = np.array([-115567.32591061])
+        in_coordinates = (phase_0, energy_0)
+
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.track(recprof=10, init_distr=in_coordinates)
+
+        correct_x = [0.11217504, 0.13585361, 0.1592622, 0.1823566,
+                     0.20509384, 0.22743227, 0.24933161, 0.27075299,
+                     0.29165905, 0.31201393, 0.33178332, 0.35093449,
+                     0.36943629, 0.38725915, 0.40437511, 0.4207578,
+                     0.4363824, 0.45122569, 0.46526597, 0.47848306]
+
+        for x, cx in zip(xp[:, 0], correct_x):
+            self.assertAlmostEqual(
+                x, cx, delta = abs(MAX_DEV_FACTOR * cx), msg='Error in tracking of particle '
+                           'found in x-coordinate')
+
+        correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
+                     -136242.257239, -133976.14426166, -131466.51658527,
+                     -128721.71792799, -125750.39872057, -122561.4633275,
+                     -119164.01883305, -115567.32591061, -111780.75223935,
+                     -107813.72887332, -103675.70990658, -99376.1357149,
+                     -94924.39999134, -90329.82073156, -85601.61526492,
+                     -80748.87937168,  -75780.57047406]
+        for y, cy in zip(yp[:, 0], correct_y):
+            self.assertAlmostEqual(
+                y, cy, delta = abs(MAX_DEV_FACTOR * cy), msg='Error in tracking of particle '
                            'found in y-coordinate')
 
     def test_self_field_tracking(self):
@@ -216,3 +306,189 @@ class TestTracker(unittest.TestCase):
             self.assertAlmostEqual(
                 float(y), cy, msg='An error was found in the y-coordinates '
                                   'tracked using self-fields.')
+
+class TestTracker(unittest.TestCase):
+
+    def setUp(self):
+        try:
+            import cupy as cp
+        except ImportError:
+            self.skipTest('CuPy not found - skipped tests')
+        else:
+            conf.AppConfig.use_gpu()
+            conf.AppConfig.set_double_precision()
+
+    def test_parameter_notMachine_fails(self):
+        with self.assertRaises(
+                expt.MachineParameterError, msg='arguments not being of type '
+                                                'Machine should raise '
+                                                'an Exception'):
+            tracker = tck.Tracking(None)
+
+    def test_tracking_aut_distr(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+
+        # Tracking only a few particles for 20 time frames.
+        machine.snpt = 1
+        rbn = 13
+        machine.rbn = rbn
+        machine.nbins = int(machine.nbins / rbn)
+        machine.dtbin *= rbn
+        machine.nprofiles = 20
+
+        machine.values_at_turns()
+
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.track(recprof=10)
+
+        # Comparing the coordinates of particle #0 only.
+        correct_x = [-19.432295466713434, -19.3925512994595,
+                     -19.35163208683023, -19.309627946073313,
+                     -19.266631745225464, -19.222738757376533,
+                     -19.178046284007912, -19.132653251008257,
+                     -19.086659781737467, -19.04016675218461,
+                     -18.99327533382096, -18.946086530163132,
+                     -18.898700713317176, -18.851217166861232,
+                     -18.803733641339306, -18.75634592838512,
+                     -18.709147459083823, -18.662228931627606,
+                     -18.615677972651334, -18.5695788358727]
+
+        correct_y = [-233614.99041969655, -240836.66283342137,
+                     -247530.01310891184, -253677.7708608252,
+                     -259264.64084817207, -264277.4952538157,
+                     -268705.5465303423, -272540.4960483705,
+                     -275776.6542680894, -278411.0288037383,
+                     -280443.3775430866, -281876.2248907341,
+                     -282714.8401894965, -282967.17839776503,
+                     -282643.784119737, -281757.6610572577,
+                     -280324.1098370269, -278360.53793064784,
+                     -275886.24600012705, -272922.19544914237]
+
+        for x, cx in zip(xp[:, 0], correct_x):
+            self.assertAlmostEqual(
+                x.item(), cx, msg='Error in tracking of particle '
+                           'found in x-coordinate')
+        for y, cy in zip(yp[:, 0], correct_y):
+            self.assertAlmostEqual(
+                y.item(), cy, msg='Error in tracking of particle '
+                           'found in y-coordinate')
+
+    def test_tracking_aut_distr_singleprec(self):
+        conf.AppConfig.set_single_precision()
+        machine = mch.Machine(**MACHINE_ARGS)
+
+        # Tracking only a few particles for 20 time frames.
+        machine.snpt = 1
+        rbn = 13
+        machine.rbn = rbn
+        machine.nbins = int(machine.nbins / rbn)
+        machine.dtbin *= rbn
+        machine.nprofiles = 20
+
+        machine.values_at_turns()
+
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.track(recprof=10)
+
+        # Comparing the coordinates of particle #0 only.
+        correct_x = [-19.432295466713434, -19.3925512994595,
+                     -19.35163208683023, -19.309627946073313,
+                     -19.266631745225464, -19.222738757376533,
+                     -19.178046284007912, -19.132653251008257,
+                     -19.086659781737467, -19.04016675218461,
+                     -18.99327533382096, -18.946086530163132,
+                     -18.898700713317176, -18.851217166861232,
+                     -18.803733641339306, -18.75634592838512,
+                     -18.709147459083823, -18.662228931627606,
+                     -18.615677972651334, -18.5695788358727]
+
+        correct_y = [-233614.99041969655, -240836.66283342137,
+                     -247530.01310891184, -253677.7708608252,
+                     -259264.64084817207, -264277.4952538157,
+                     -268705.5465303423, -272540.4960483705,
+                     -275776.6542680894, -278411.0288037383,
+                     -280443.3775430866, -281876.2248907341,
+                     -282714.8401894965, -282967.17839776503,
+                     -282643.784119737, -281757.6610572577,
+                     -280324.1098370269, -278360.53793064784,
+                     -275886.24600012705, -272922.19544914237]
+
+        for x, cx in zip(xp[:, 0], correct_x):
+            self.assertAlmostEqual(
+                x.item(), cx, delta = abs(MAX_DEV_FACTOR * cx), msg='Error in tracking of particle '
+                           'found in x-coordinate')
+        for y, cy in zip(yp[:, 0], correct_y):
+            self.assertAlmostEqual(
+                y.item(), cy, delta = abs(MAX_DEV_FACTOR * cy), msg='Error in tracking of particle '
+                           'found in y-coordinate')
+
+    def test_tracking_man_distr(self):
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.nprofiles = 20
+        machine.values_at_turns()
+
+        phase_0 = np.array([0.33178332])
+        energy_0 = np.array([-115567.32591061])
+        in_coordinates = (phase_0, energy_0)
+
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.track(recprof=10, init_distr=in_coordinates)
+
+        correct_x = [0.11217504, 0.13585361, 0.1592622, 0.1823566,
+                     0.20509384, 0.22743227, 0.24933161, 0.27075299,
+                     0.29165905, 0.31201393, 0.33178332, 0.35093449,
+                     0.36943629, 0.38725915, 0.40437511, 0.4207578,
+                     0.4363824, 0.45122569, 0.46526597, 0.47848306]
+
+        for x, cx in zip(xp[:, 0], correct_x):
+            self.assertAlmostEqual(
+                x.item(), cx, msg='Error in tracking of particle '
+                           'found in x-coordinate')
+
+        correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
+                     -136242.257239, -133976.14426166, -131466.51658527,
+                     -128721.71792799, -125750.39872057, -122561.4633275,
+                     -119164.01883305, -115567.32591061, -111780.75223935,
+                     -107813.72887332, -103675.70990658, -99376.1357149,
+                     -94924.39999134, -90329.82073156, -85601.61526492,
+                     -80748.87937168,  -75780.57047406]
+        for y, cy in zip(yp[:, 0], correct_y):
+            self.assertAlmostEqual(
+                y.item(), cy, msg='Error in tracking of particle '
+                           'found in y-coordinate')
+
+    def test_tracking_man_distr_singleprec(self):
+        conf.AppConfig.set_single_precision()
+        machine = mch.Machine(**MACHINE_ARGS)
+        machine.nprofiles = 20
+        machine.values_at_turns()
+
+        phase_0 = np.array([0.33178332])
+        energy_0 = np.array([-115567.32591061])
+        in_coordinates = (phase_0, energy_0)
+
+        tracker = tck.Tracking(machine)
+        xp, yp = tracker.track(recprof=10, init_distr=in_coordinates)
+
+        correct_x = [0.11217504, 0.13585361, 0.1592622, 0.1823566,
+                     0.20509384, 0.22743227, 0.24933161, 0.27075299,
+                     0.29165905, 0.31201393, 0.33178332, 0.35093449,
+                     0.36943629, 0.38725915, 0.40437511, 0.4207578,
+                     0.4363824, 0.45122569, 0.46526597, 0.47848306]
+
+        for x, cx in zip(xp[:, 0], correct_x):
+            self.assertAlmostEqual(
+                x.item(), cx, delta = abs(MAX_DEV_FACTOR * cx), msg='Error in tracking of particle '
+                           'found in x-coordinate')
+
+        correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
+                     -136242.257239, -133976.14426166, -131466.51658527,
+                     -128721.71792799, -125750.39872057, -122561.4633275,
+                     -119164.01883305, -115567.32591061, -111780.75223935,
+                     -107813.72887332, -103675.70990658, -99376.1357149,
+                     -94924.39999134, -90329.82073156, -85601.61526492,
+                     -80748.87937168,  -75780.57047406]
+        for y, cy in zip(yp[:, 0], correct_y):
+            self.assertAlmostEqual(
+                y.item(), cy, delta = abs(MAX_DEV_FACTOR * cy), msg='Error in tracking of particle '
+                           'found in y-coordinate')

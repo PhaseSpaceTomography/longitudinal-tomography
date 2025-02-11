@@ -1,6 +1,82 @@
+[project]
+name = "longitudinal_tomography"
+authors = [
+    {name = "Simon Albright", email = "simon.albright@cern.ch"},
+    {name = "Bernardo Abreu Figueiredo", email = "bernardo.abreu.figueiredo@cern.ch"},
+    {name = "Anton Lu", email = "anton.lu@cern.ch"},
+    {name = "Christoffer Hjertø Grindheim"},
+]
+description = "A python library for longitudinal particle beam tomography"
+license = { text = "GNU General Public License version 3" }
+readme = "README.rst"
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+requires-python = ">= 3.11"
+dependencies = [
+    "matplotlib ~= 3.8",
+    "multipledispatch ~= 1.0",
+    "numpy ~= 1.25",
+    "scipy ~= 1.11",
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3"
+documentation = "https://acc-py.web.cern.ch/gitlab/longitudinaltomography/tomographyv3/docs/stable/"
+repository = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3"
+changelog = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3/-/releases"
+
+[project.optional-dependencies]
+test = [
+    "coverage",
+    "coverage-badge",
+    "flake8",
+    "pylint",
+    "pytest-cov",
+    "pyyaml",
+]
+gpu = [
+    "cupy"
+]
+doc = ["acc-py-sphinx"]
+
 [build-system]
-requires = ["setuptools", "wheel", "pybind11"]
+requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
 build-backend = "setuptools.build_meta"
+
+# For dynamic versioning
+[tool.setuptools_scm]
+write_to = "longitudinal_tomography/_version.py"
+local_scheme = "no-local-version"
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "longitudinal_tomography",
+    "longitudinal_tomography.compat",
+    "longitudinal_tomography.cpp_routines",
+    "longitudinal_tomography.cuda_kernels",
+    "longitudinal_tomography.python_routines",
+    "longitudinal_tomography.data",
+    "longitudinal_tomography.tomography",
+    "longitudinal_tomography.tracking",
+    "longitudinal_tomography.utils",
+    "tomo",
+]
+platforms = [
+    "Windows",
+    "Linux",
+]
+
+[tool.setuptools.dynamic.version]
+attr = "longitudinal_tomography.__version__"
+
+[tool.flake8]
+extend-ignore = "\nF"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -8,4 +84,3 @@ addopts = "-ra -q"
 testpaths = [
     "unit_tests",
 ]
-

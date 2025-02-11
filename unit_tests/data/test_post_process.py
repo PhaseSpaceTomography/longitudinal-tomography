@@ -2,7 +2,7 @@
 
 Run as python test_post_process.py in console or via coverage
 """
-
+from __future__ import annotations
 import unittest
 
 import longitudinal_tomography.data.data_treatment as treat

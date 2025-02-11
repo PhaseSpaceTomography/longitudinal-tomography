@@ -1,7 +1,7 @@
 """Module containing the Profiles class for storing measurements.
 
 :Author(s): **Christoffer Hjertø Grindheim**"""
-
+from __future__ import annotations
 import logging
 
 import typing as t

@@ -2,7 +2,7 @@
 
 Run as python test.py in console or via coverage
 """
-
+from __future__ import annotations
 import os
 import shutil
 import unittest

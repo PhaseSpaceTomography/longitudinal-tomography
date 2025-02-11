@@ -2,7 +2,7 @@
 
 Run as python test_pre_process.py in console or via coverage
 """
-
+from __future__ import annotations
 import unittest
 
 import numpy as np

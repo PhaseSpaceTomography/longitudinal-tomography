@@ -3,6 +3,7 @@ Fortran style text files.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
+from __future__ import annotations
 import os
 import sys
 import typing as t
