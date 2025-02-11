@@ -126,7 +126,7 @@ void find_difference_profile(real_t *diff_prof,           // out
     // real_t profAtMin;
     // real_t recAtMax;
     // real_t recAtMin;
-// #pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < all_bins; i++)
     {
         diff_prof[i] = flat_profiles[i] - flat_rec[i];
