@@ -8,7 +8,6 @@ authors = [
 ]
 description = "A python library for longitudinal particle beam tomography"
 license = { text = "GNU General Public License version 3" }
-readme = "README.rst"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
@@ -22,7 +21,7 @@ dependencies = [
     "numpy ~= 1.25",
     "scipy ~= 1.11",
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 
 [project.urls]
 homepage = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3"
@@ -42,7 +41,7 @@ test = [
 gpu = [
     "cupy"
 ]
-doc = ["acc-py-sphinx"]
+doc = ["acc-py-sphinx", "myst-parser", "sphinx-copybutton"]
 
 [build-system]
 requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
@@ -71,6 +70,9 @@ platforms = [
     "Windows",
     "Linux",
 ]
+
+[tool.setuptools.dynamic]
+readme = { file = ["README.rst"], content-type = "text/x-rst" }
 
 [tool.setuptools.dynamic.version]
 attr = "longitudinal_tomography.__version__"
