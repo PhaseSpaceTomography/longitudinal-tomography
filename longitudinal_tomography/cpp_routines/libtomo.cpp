@@ -345,7 +345,7 @@ d_array wrapper_project(
 
     project(flat_rec, flat_points, weights, n_particles, n_profiles);
 
-    buffer_flat_rec.shape = std::vector<ssize_t>{n_profiles, n_bins};
+    buffer_flat_rec.shape = std::vector<py::ssize_t>{n_profiles, n_bins};
 
     return input_flat_rec;
 }
