@@ -238,7 +238,7 @@ template void kick_and_drift(float **xp,             // inn/out
                              const float *phi0,      // inn
                              const float *deltaE0,   // inn
                              const float *drift_coef,// inn
-                             const float *phi12,
+                             const float *phi12, 
                              const float hratio,
                              const int dturns,
                              const int rec_prof,
