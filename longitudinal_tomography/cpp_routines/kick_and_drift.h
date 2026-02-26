@@ -95,4 +95,25 @@ void kick_and_drift(real_t **xp,             // inn/out
                     const std::function<void(int, int)> callback
 );
 
+template <typename int_t>
+void kick_and_drift_int(int_t **xp,             // inn/out
+                    int_t **yp,             // inn/out
+                    int_t *denergy,         // inn
+                    int_t *dphi,            // inn
+                    const int_t *rf1v,      // inn
+                    const int_t *rf2v,      // inn
+                    const int_t *phi0,      // inn
+                    const int_t *deltaE0,   // inn
+                    const int_t *drift_coef,// inn
+                    const int_t *phi12,
+                    const int_t hratio,
+                    const int dturns,
+                    const int rec_prof,
+                    const int deltaturn,
+                    const int nturns,
+                    const int nparts,
+                    const bool ftn_out,
+                    const int S,
+                    const std::function<void(int, int)> callback
+);
 #endif

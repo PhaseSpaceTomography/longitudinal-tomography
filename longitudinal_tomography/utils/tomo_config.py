@@ -33,6 +33,10 @@ class AppConfig:
             cls.load_modules_and_refresh_kernels(False)
 
     @classmethod
+    def set_double_precision_int(cls):
+        cls._precision = np.int32
+    
+    @classmethod
     def load_modules_and_refresh_kernels(cls, single_prec_flag=False):
         cls.compile_kernels() # Check if compilation needed
         gpu_dev = GPUDev.get_gpu_dev()
@@ -58,6 +62,7 @@ class AppConfig:
         from longitudinal_tomography.cpp_routines import libtomo
         cpu_func_dict = {
             'kick_and_drift': libtomo.kick_and_drift,
+            'kick_and_drift_int': libtomo.kick_and_drift_int,
             'reconstruct': libtomo.reconstruct,
             'make_phase_space': libtomo.make_phase_space,
             'device': 'CPU'

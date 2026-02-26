@@ -133,7 +133,7 @@ void kick_and_drift(real_t **xp,             // inn/out
                     const std::function<void(int, int)> callback) {
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
-
+    cout << "Float kick_and_drift is used" << endl;
     if (deltaturn < 0) profile--;
 
 #pragma omp parallel for
@@ -210,6 +210,125 @@ void kick_and_drift(real_t **xp,             // inn/out
     }
 }//end func
 
+template <typename int_t>
+void kick_and_drift_int(int_t **xp,             // inn/out
+                    int_t **yp,             // inn/out
+                    int_t *denergy,         // inn
+                    int_t *dphi,            // inn
+                    const int_t *rf1v,      // inn
+                    const int_t *rf2v,      // inn
+                    const int_t *phi0,      // inn
+                    const int_t *deltaE0,   // inn
+                    const int_t *drift_coef,// inn
+                    const int_t *phi12,
+                    const int_t hratio,
+                    const int dturns,
+                    const int rec_prof,
+                    const int deltaturn,
+                    const int nturns,
+                    const int nparts,
+                    const bool ftn_out,
+                    const int S,
+                    const std::function<void(int, int)> callback) {
+    int profile = rec_prof;
+    int turn = rec_prof * dturns + deltaturn;
+    cout << "Int kick_and_drift is used, S = " << S << endl;
+    if (deltaturn < 0) profile--;
+
+#pragma omp parallel for
+    for (int i = 0; i < nparts; i++) {
+        xp[profile][i] = dphi[i];
+        yp[profile][i] = denergy[i];
+    }
+
+    int progress = 0;
+    const int total = nturns;
+    // Upwards 
+    while (turn < nturns) {
+        drift_up<int>(dphi, denergy, drift_coef[turn], nparts);
+
+        turn++;
+
+        kick_up<int>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
+                hratio, nparts, deltaE0[turn]);
+
+        if (turn % dturns == 0) {
+            profile++;
+#pragma omp parallel for
+            for (int i = 0; i < nparts; i++) {
+                xp[profile][i] = dphi[i];
+                yp[profile][i] = denergy[i];
+            }
+
+            if (ftn_out)
+                std::cout << " Tracking from time slice  "
+                          << rec_prof + 1 << " to  " << profile + 1
+                          << ",   0.000% went outside the image width."
+                          << std::endl;
+        } //if
+        callback(++progress, total);
+    } //while
+
+    profile = rec_prof;
+    turn = rec_prof * dturns;
+
+    if (profile > 0) {
+
+        // Going back to initial coordinates
+#pragma omp parallel for
+        for (int i = 0; i < nparts; i++) {
+            dphi[i] = xp[rec_prof][i];
+            denergy[i] = yp[rec_prof][i];
+        }
+
+        // Downwards
+        while (turn > 0) {
+            kick_down<int>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
+                      phi12[turn], hratio, nparts, deltaE0[turn]);
+            turn--;
+
+            drift_down<int>(dphi, denergy, drift_coef[turn], nparts);
+
+            if (turn % dturns == 0) {
+                profile--;
+
+#pragma omp parallel for
+                for (int i = 0; i < nparts; i++) {
+                    xp[profile][i] = dphi[i];
+                    yp[profile][i] = denergy[i];
+                }
+
+                if (ftn_out)
+                    std::cout << " Tracking from time slice  "
+                              << rec_prof + 1 << " to  " << profile + 1
+                              << ",   0.000% went outside the image width."
+                              << std::endl;
+            }
+            callback(++progress, total);
+        }//while
+    }
+}//end func
+
+template void kick_and_drift_int(int **xp,             // inn/out
+                             int **yp,             // inn/out
+                             int *denergy,         // inn
+                             int *dphi,            // inn
+                             const int *rf1v,      // inn
+                             const int *rf2v,      // inn
+                             const int *phi0,      // inn
+                             const int *deltaE0,   // inn
+                             const int *drift_coef,// inn
+                             const int *phi12,
+                             const int hratio,
+                             const int dturns,
+                             const int rec_prof,
+                             const int deltaturn,
+                             const int nturns,
+                             const int nparts,
+                             const bool ftn_out,
+                             const int S,
+                             const std::function<void(int, int)> callback);
+
 template void kick_and_drift(double **xp,             // inn/out
                              double **yp,             // inn/out
                              double *denergy,         // inn
@@ -238,7 +357,7 @@ template void kick_and_drift(float **xp,             // inn/out
                              const float *phi0,      // inn
                              const float *deltaE0,   // inn
                              const float *drift_coef,// inn
-                             const float *phi12, 
+                             const float *phi12,
                              const float hratio,
                              const int dturns,
                              const int rec_prof,

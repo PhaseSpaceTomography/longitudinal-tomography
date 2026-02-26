@@ -147,6 +147,96 @@ template py::tuple wrapper_kick_and_drift_array(
         const std::optional<const py::object> callback
 );
 
+/*template <typename int_Tarr, typename int_t>
+py::tuple wrapper_kick_and_drift_int_scalar(
+        const int_Tarr &input_xp,
+        const int_Tarr &input_yp,
+        const int_Tarr &input_denergy,
+        const int_Tarr &input_dphi,
+        const int_Tarr &input_rf1v,
+        const int_Tarr &input_rf2v,
+        const int_Tarr &input_phi0,
+        const int_Tarr &input_deltaE0,
+        const int_Tarr &input_drift_coef,
+        const int_t phi12,
+        const int_t hratio,
+        const int dturns,
+        const int rec_prof,
+        const int deltaturn,
+        const int nturns,
+        const int nparts,
+        const bool ftn_out,
+        const int S,
+        const std::optional<const py::object> callback
+);
+
+template py::tuple wrapper_kick_and_drift_int_scalar(
+        const i_array &input_xp,
+        const i_array &input_yp,
+        const i_array &input_denergy,
+        const i_array &input_dphi,
+        const i_array &input_rf1v,
+        const i_array &input_rf2v,
+        const i_array &input_phi0,
+        const i_array &input_deltaE0,
+        const i_array &input_drift_coef,
+        const int phi12,
+        const int hratio,
+        const int dturns,
+        const int rec_prof,
+        const int deltaturn,
+        const int nturns,
+        const int nparts,
+        const bool ftn_out,
+        const int S,
+        const std::optional<const py::object> callback
+);
+*/
+template <typename int_Tarr, typename int_t>
+py::tuple wrapper_kick_and_drift_int_array(
+        const int_Tarr &input_xp,
+        const int_Tarr &input_yp,
+        const int_Tarr &input_denergy,
+        const int_Tarr &input_dphi,
+        const int_Tarr &input_rf1v,
+        const int_Tarr &input_rf2v,
+        const int_Tarr &input_phi0,
+        const int_Tarr &input_deltaE0,
+        const int_Tarr &input_drift_coef,
+        const int_Tarr &input_phi12,
+        const int_t hratio,
+        const int dturns,
+        const int rec_prof,
+        const int deltaturn,
+        const int nturns,
+        const int nparts,
+        const bool ftn_out,
+        const int S,
+        const std::optional<const py::object> callback
+);
+
+py::tuple wrapper_kick_and_drift_int_array(
+        const i_array &input_xp,
+        const i_array &input_yp,
+        const i_array &input_denergy,
+        const i_array &input_dphi,
+        const i_array &input_rf1v,
+        const i_array &input_rf2v,
+        const i_array &input_phi0,
+        const i_array &input_deltaE0,
+        const i_array &input_drift_coef,
+        const i_array &input_phi12,
+        const int hratio,
+        const int dturns,
+        const int rec_prof,
+        const int deltaturn,
+        const int nturns,
+        const int nparts,
+        const bool ftn_out,
+        const int S,
+        const std::optional<const py::object> callback
+);
+
 template <typename real_Tarr, typename real_t>
 py::tuple wrapper_reconstruct(
         const i_array &input_xp,
