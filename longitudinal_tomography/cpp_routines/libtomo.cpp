@@ -225,7 +225,7 @@ py::tuple wrapper_kick_and_drift_scalar(
     return py::make_tuple(input_xp, input_yp);
 }
 
-/*template <typename int_Tarr, typename int_t>
+template <typename int_Tarr, typename int_t>
 py::tuple wrapper_kick_and_drift_int_scalar(
         const int_Tarr &input_xp,
         const int_Tarr &input_yp,
@@ -259,7 +259,7 @@ py::tuple wrapper_kick_and_drift_int_scalar(
                                  callback);
 
     return py::make_tuple(input_xp, input_yp);
-}*/
+}
 
 template <typename real_Tarr, typename real_t>
 py::tuple wrapper_kick_and_drift_array(
@@ -709,11 +709,11 @@ m.def("kick_and_drift", wrapper_kick_and_drift_array<f_array, float>, kick_and_d
 "rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
-/*m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i_array, int>, kick_and_drift_docs,
+m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i_array, int>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
 "rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "callback"_a = py::none()
-);*/
+);
 
 m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i_array, int>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,

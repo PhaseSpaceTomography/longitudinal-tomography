@@ -206,13 +206,8 @@ class Tracking(ParticleTracker):
 
             if conf.AppConfig.get_precision() == np.int64 or conf.AppConfig.get_precision() == np.int32:
                 S = 10
-                phi12 = conf.cast(np.repeat(int(machine.phi12), nturns+1))
-                print(xp.dtype, yp.dtype, dphi.dtype, rfv1.dtype, rfv2.dtype, phi0.dtype)
-                print(deltaE0.dtype, drift_coef.dtype, phi12.dtype)
-                print(type(machine.h_ratio), type(machine.dturns), type(recprof))
-                print(type(deltaturn), type(nturns), type(nparts), type(self.fortran_flag), type(S))
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
-                                deltaE0, drift_coef, phi12,
+                                deltaE0, drift_coef, int(machine.phi12),
                                 int(machine.h_ratio), machine.dturns, recprof,
                                 deltaturn, nturns+1, nparts, self.fortran_flag, S=S,
                                 callback=callback)

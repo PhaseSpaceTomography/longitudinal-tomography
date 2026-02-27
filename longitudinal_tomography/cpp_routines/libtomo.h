@@ -147,7 +147,7 @@ template py::tuple wrapper_kick_and_drift_array(
         const std::optional<const py::object> callback
 );
 
-/*template <typename int_Tarr, typename int_t>
+template <typename int_Tarr, typename int_t>
 py::tuple wrapper_kick_and_drift_int_scalar(
         const int_Tarr &input_xp,
         const int_Tarr &input_yp,
@@ -191,7 +191,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const int S,
         const std::optional<const py::object> callback
 );
-*/
+
 template <typename int_Tarr, typename int_t>
 py::tuple wrapper_kick_and_drift_int_array(
         const int_Tarr &input_xp,
@@ -215,7 +215,7 @@ py::tuple wrapper_kick_and_drift_int_array(
         const std::optional<const py::object> callback
 );
 
-py::tuple wrapper_kick_and_drift_int_array(
+template py::tuple wrapper_kick_and_drift_int_array(
         const i_array &input_xp,
         const i_array &input_yp,
         const i_array &input_denergy,
