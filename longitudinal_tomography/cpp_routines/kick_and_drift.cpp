@@ -63,6 +63,48 @@ void kick_down(const real_t *dphi,
                         + rfv2 * vdt::fast_sinf(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
 }
 
+template <typename int_t>
+void kick_up_int(const int_t *dphi,
+             int_t *denergy,
+             const int_t rfv1,
+             const int_t rfv2,
+             const int_t phi0,
+             const int_t phi12,
+             const int_t hratio,
+             const int_t nr_particles,
+             const int_t acc_kick) {
+
+#pragma omp parallel for
+    for (int i = 0; i < nr_particles; i++)
+        if (std::is_same<int_t, double>::value)
+            denergy[i] += rfv1 * vdt::fast_sin(dphi[i] + phi0)
+                        + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+        else if(std::is_same<int_t, float>::value)
+            denergy[i] += rfv1 * vdt::fast_sinf(dphi[i] + phi0)
+                        + rfv2 * vdt::fast_sinf(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+}
+
+template <typename int_t>
+void kick_down_int(const int_t *dphi,
+               int_t *denergy,
+               const int_t rfv1,
+               const int_t rfv2,
+               const int_t phi0,
+               const int_t phi12,
+               const int_t hratio,
+               const int_t nr_particles,
+               const int_t acc_kick) {
+
+#pragma omp parallel for
+    for (int i = 0; i < nr_particles; i++)
+        if (std::is_same<int_t, double>::value)
+            denergy[i] -= rfv1 * vdt::fast_sin(dphi[i] + phi0)
+                        + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+        else if(std::is_same<int_t, float>::value)
+            denergy[i] -= rfv1 * vdt::fast_sinf(dphi[i] + phi0)
+                        + rfv2 * vdt::fast_sinf(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+}
+
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
 // Can be called directly from python.
@@ -88,6 +130,26 @@ void drift_down(real_t *dphi,
         dphi[i] += drift_coef * denergy[i];
 }
 
+template <typename int_t>
+void drift_up_int(int_t *dphi,
+              const int_t *denergy,
+              const int_t drift_coef,
+              const int_t nr_particles) {
+#pragma omp parallel for
+    for (int i = 0; i < nr_particles; i++)
+        dphi[i] -= drift_coef * denergy[i];
+}
+
+template <typename int_t>
+void drift_down_int(int_t *dphi,
+                const int_t *denergy,
+                const int_t drift_coef,
+                const int_t nr_particles) {
+
+#pragma omp parallel for
+    for (int i = 0; i < nr_particles; i++)
+        dphi[i] += drift_coef * denergy[i];
+}
 
 // Calculates X and Y coordinates for particles based on a given
 //  phase and energy.
@@ -133,7 +195,6 @@ void kick_and_drift(real_t **xp,             // inn/out
                     const std::function<void(int, int)> callback) {
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
-    cout << "Float kick_and_drift is used" << endl;
     if (deltaturn < 0) profile--;
 
 #pragma omp parallel for
@@ -222,17 +283,27 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const int_t *drift_coef,// inn
                     const int_t *phi12,
                     const int_t hratio,
-                    const int dturns,
-                    const int rec_prof,
-                    const int deltaturn,
-                    const int nturns,
-                    const int nparts,
+                    const int_t dturns,
+                    const int_t rec_prof,
+                    const int_t deltaturn,
+                    const int_t nturns,
+                    const int_t nparts,
                     const bool ftn_out,
-                    const int S,
+                    const int_t S,
                     const std::function<void(int, int)> callback) {
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
-    cout << "Int kick_and_drift is used, S = " << S << endl;
+    int_t a = pow(2, 40);
+    cout << "Int kick_and_drift is used, a = " << a << endl;
+    if (std::is_same<int_t, int64_t>::value){
+        cout << "Int64 is used." << endl;
+    }
+    else if(std::is_same<int_t, int32_t>::value){
+        cout << "Int32 is used." << endl;
+    }
+            
+
+
     if (deltaturn < 0) profile--;
 
 #pragma omp parallel for
@@ -245,11 +316,11 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     const int total = nturns;
     // Upwards 
     while (turn < nturns) {
-        drift_up<int>(dphi, denergy, drift_coef[turn], nparts);
+        drift_up_int<int_t>(dphi, denergy, drift_coef[turn], nparts);
 
         turn++;
 
-        kick_up<int>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
+        kick_up_int<int_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
                 hratio, nparts, deltaE0[turn]);
 
         if (turn % dturns == 0) {
@@ -283,11 +354,11 @@ void kick_and_drift_int(int_t **xp,             // inn/out
 
         // Downwards
         while (turn > 0) {
-            kick_down<int>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
+            kick_down_int<int_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
                       phi12[turn], hratio, nparts, deltaE0[turn]);
             turn--;
 
-            drift_down<int>(dphi, denergy, drift_coef[turn], nparts);
+            drift_down_int<int_t>(dphi, denergy, drift_coef[turn], nparts);
 
             if (turn % dturns == 0) {
                 profile--;
@@ -309,24 +380,44 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     }
 }//end func
 
-template void kick_and_drift_int(int **xp,             // inn/out
-                             int **yp,             // inn/out
-                             int *denergy,         // inn
-                             int *dphi,            // inn
-                             const int *rf1v,      // inn
-                             const int *rf2v,      // inn
-                             const int *phi0,      // inn
-                             const int *deltaE0,   // inn
-                             const int *drift_coef,// inn
-                             const int *phi12,
-                             const int hratio,
-                             const int dturns,
-                             const int rec_prof,
-                             const int deltaturn,
-                             const int nturns,
-                             const int nparts,
+template void kick_and_drift_int(int32_t **xp,             // inn/out
+                             int32_t **yp,             // inn/out
+                             int32_t *denergy,         // inn
+                             int32_t *dphi,            // inn
+                             const int32_t *rf1v,      // inn
+                             const int32_t *rf2v,      // inn
+                             const int32_t *phi0,      // inn
+                             const int32_t *deltaE0,   // inn
+                             const int32_t *drift_coef,// inn
+                             const int32_t *phi12,
+                             const int32_t hratio,
+                             const int32_t dturns,
+                             const int32_t rec_prof,
+                             const int32_t deltaturn,
+                             const int32_t nturns,
+                             const int32_t nparts,
                              const bool ftn_out,
-                             const int S,
+                             const int32_t S,
+                             const std::function<void(int, int)> callback);
+
+template void kick_and_drift_int(int64_t **xp,             // inn/out
+                             int64_t **yp,             // inn/out
+                             int64_t *denergy,         // inn
+                             int64_t *dphi,            // inn
+                             const int64_t *rf1v,      // inn
+                             const int64_t *rf2v,      // inn
+                             const int64_t *phi0,      // inn
+                             const int64_t *deltaE0,   // inn
+                             const int64_t *drift_coef,// inn
+                             const int64_t *phi12,
+                             const int64_t hratio,
+                             const int64_t dturns,
+                             const int64_t rec_prof,
+                             const int64_t deltaturn,
+                             const int64_t nturns,
+                             const int64_t nparts,
+                             const bool ftn_out,
+                             const int64_t S,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift(double **xp,             // inn/out
@@ -387,6 +478,26 @@ template void kick_up(const float *dphi,
                       const int nr_particles,
                       const float acc_kick);
 
+template void kick_up_int(const int32_t *dphi,
+                      int32_t *denergy,
+                      const int32_t rfv1,
+                      const int32_t rfv2,
+                      const int32_t phi0,
+                      const int32_t phi12,
+                      const int32_t hratio,
+                      const int32_t nr_particles,
+                      const int32_t acc_kick);
+
+template void kick_up_int(const int64_t *dphi,
+                      int64_t *denergy,
+                      const int64_t rfv1,
+                      const int64_t rfv2,
+                      const int64_t phi0,
+                      const int64_t phi12,
+                      const int64_t hratio,
+                      const int64_t nr_particles,
+                      const int64_t acc_kick);
+
 template void kick_down(const double *dphi,
                         double *denergy,
                         const double rfv1,
@@ -407,6 +518,26 @@ template void kick_down(const float *dphi,
                         const int nr_particles,
                         const float acc_kick);
 
+template void kick_down_int(const int32_t *dphi,
+                      int32_t *denergy,
+                      const int32_t rfv1,
+                      const int32_t rfv2,
+                      const int32_t phi0,
+                      const int32_t phi12,
+                      const int32_t hratio,
+                      const int32_t nr_particles,
+                      const int32_t acc_kick);
+
+template void kick_down_int(const int64_t *dphi,
+                      int64_t *denergy,
+                      const int64_t rfv1,
+                      const int64_t rfv2,
+                      const int64_t phi0,
+                      const int64_t phi12,
+                      const int64_t hratio,
+                      const int64_t nr_particles,
+                      const int64_t acc_kick);
+
 template void drift_up(double *dphi,
                        const double *denergy,
                        const double drift_coef,
@@ -417,6 +548,16 @@ template void drift_up(float *dphi,
                        const float drift_coef,
                        const int nr_particles);
 
+template void drift_up_int(int32_t *dphi,
+                       const int32_t *denergy,
+                       const int32_t drift_coef,
+                       const int32_t nr_particles);
+
+template void drift_up_int(int64_t *dphi,
+                       const int64_t *denergy,
+                       const int64_t drift_coef,
+                       const int64_t nr_particles);
+
 template void drift_down(double *dphi,
                          const double *denergy,
                          const double drift_coef,
@@ -426,3 +567,13 @@ template void drift_down(float *dphi,
                          const float *denergy,
                          const float drift_coef,
                          const int nr_particles);
+
+template void drift_down_int(int32_t *dphi,
+                       const int32_t *denergy,
+                       const int32_t drift_coef,
+                       const int32_t nr_particles);
+
+template void drift_down_int(int64_t *dphi,
+                       const int64_t *denergy,
+                       const int64_t drift_coef,
+                       const int64_t nr_particles);

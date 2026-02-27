@@ -204,7 +204,7 @@ class Tracking(ParticleTracker):
             xp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
             yp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
 
-            if conf.AppConfig.get_precision() == np.int64 or conf.AppConfig.get_precision() == np.int32:
+            if conf.AppConfig.get_precision() in [np.int32, np.int64]:
                 S = 10
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12),

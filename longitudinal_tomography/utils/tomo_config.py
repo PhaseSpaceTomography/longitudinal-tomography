@@ -33,8 +33,12 @@ class AppConfig:
             cls.load_modules_and_refresh_kernels(False)
 
     @classmethod
-    def set_double_precision_int(cls):
+    def set_single_precision_int(cls):
         cls._precision = np.int32
+    
+    @classmethod
+    def set_double_precision_int(cls):
+        cls._precision = np.int64
     
     @classmethod
     def load_modules_and_refresh_kernels(cls, single_prec_flag=False):

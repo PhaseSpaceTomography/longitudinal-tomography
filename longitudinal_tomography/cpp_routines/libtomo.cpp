@@ -238,13 +238,13 @@ py::tuple wrapper_kick_and_drift_int_scalar(
         const int_Tarr &input_drift_coef,
         const int_t phi12,
         const int_t hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
+        const int_t dturns,
+        const int_t rec_prof,
+        const int_t deltaturn,
+        const int_t nturns,
+        const int_t nparts,
         const bool ftn_out,
-        const int S,
+        const int_t S,
         const std::optional<const py::object> callback
 ) {
     int_t *ptr_phi12 = new int_t[nturns];
@@ -354,13 +354,13 @@ py::tuple wrapper_kick_and_drift_int_array(
         const int_Tarr &input_drift_coef,
         const int_Tarr &input_phi12,
         const int_t hratio,
-        const int dturns,
-        const int rec_prof,
-        const int deltaturn,
-        const int nturns,
-        const int nparts,
+        const int_t dturns,
+        const int_t rec_prof,
+        const int_t deltaturn,
+        const int_t nturns,
+        const int_t nparts,
         const bool ftn_out,
-        const int S,
+        const int_t S,
         const std::optional<const py::object> callback
 ) {
     py::buffer_info xp_buffer = input_xp.request();
@@ -709,13 +709,25 @@ m.def("kick_and_drift", wrapper_kick_and_drift_array<f_array, float>, kick_and_d
 "rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "callback"_a = py::none()
 );
 
-m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i_array, int>, kick_and_drift_docs,
+m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i32_array, int32_t>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
 "rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "callback"_a = py::none()
 );
 
-m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i_array, int>, kick_and_drift_docs,
+m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i64_array, int64_t>, kick_and_drift_docs,
+"xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
+"deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "callback"_a = py::none()
+);
+
+m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i32_array, int32_t>, kick_and_drift_docs,
+"xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
+"deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "callback"_a = py::none()
+);
+
+m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i64_array, int64_t>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
 "rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "callback"_a = py::none()

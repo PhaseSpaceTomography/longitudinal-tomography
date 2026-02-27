@@ -10,7 +10,7 @@
 #define TOMOGRAPHY_KICK_AND_DRIFT_CPP_H
 
 #include <functional>
-
+#include <cstdint>
 
 using namespace std;
 
@@ -40,6 +40,28 @@ void kick_down(const real_t *dphi,
                const int nr_particles,
                const real_t acc_kick);
 
+template <typename int_t>
+void kick_up_int(const int_t *dphi,
+             int_t *denergy,
+             const int_t rfv1,
+             const int_t rfv2,
+             const int_t phi0,
+             const int_t phi12,
+             const int_t hratio,
+             const int_t nr_particles,
+             const int_t acc_kick);
+
+template <typename int_t>
+void kick_down_int(const int_t *dphi,
+               int_t *denergy,
+               const int_t rfv1,
+               const int_t rfv2,
+               const int_t phi0,
+               const int_t phi12,
+               const int_t hratio,
+               const int_t nr_particles,
+               const int_t acc_kick);
+
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
 // Can be called directly from python.
@@ -56,6 +78,17 @@ void drift_down(real_t *dphi,
                 const real_t drift_coef,
                 const int nr_particles);
 
+template <typename int_t>
+void drift_up_int(int_t *dphi,
+              const int_t *denergy,
+              const int_t drift_coef,
+              const int_t nr_particles);
+
+template <typename int_t>
+void drift_down_int(int_t *dphi,
+                const int_t *denergy,
+                const int_t drift_coef,
+                const int_t nr_particles);
 
 // Calculates X and Y coordinates for particles based on a given
 //  phase and energy.
@@ -107,13 +140,13 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const int_t *drift_coef,// inn
                     const int_t *phi12,
                     const int_t hratio,
-                    const int dturns,
-                    const int rec_prof,
-                    const int deltaturn,
-                    const int nturns,
-                    const int nparts,
+                    const int_t dturns,
+                    const int_t rec_prof,
+                    const int_t deltaturn,
+                    const int_t nturns,
+                    const int_t nparts,
                     const bool ftn_out,
-                    const int S,
+                    const int_t S,
                     const std::function<void(int, int)> callback
 );
 #endif
