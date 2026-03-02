@@ -290,19 +290,21 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const int_t nparts,
                     const bool ftn_out,
                     const int_t S,
+                    const int_t N,
                     const std::function<void(int, int)> callback) {
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
-    int_t a = pow(2, 40);
-    cout << "Int kick_and_drift is used, a = " << a << endl;
-    if (std::is_same<int_t, int64_t>::value){
-        cout << "Int64 is used." << endl;
-    }
-    else if(std::is_same<int_t, int32_t>::value){
-        cout << "Int32 is used." << endl;
-    }
-            
+    
+    double x0 = -3;
+    double x1 = 4;
+    int_t x0_int = x0 * S;
+    int_t lut[N];
+    int_t dx_int = generate_sin_lut(lut, x0, x1, N, S);
 
+    double x = 2;
+    int_t x_int = x * S;
+
+    cout << sin_fixed_point(x_int, x0_int, dx_int, lut, N) << endl;
 
     if (deltaturn < 0) profile--;
 
@@ -380,6 +382,80 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     }
 }//end func
 
+template <typename int_t, typename real_t>
+int_t generate_sin_lut(int_t *lut,
+                       real_t x0,
+                       real_t x1,
+                       int_t N,
+                       int_t S){
+    real_t dx = (x1 - x0) / (N - 1);
+    for (int i = 0; i < N; i++){
+        real_t x = x0 + i*dx;
+        lut[i] = sin(x) * S;
+    }
+
+    int_t dx_int = dx * S;
+    return dx_int;
+}
+
+template <typename int_t>
+int_t sin_fixed_point(int_t x_int,
+                      int_t x0_int,
+                      int_t dx_int,
+                      const int_t *lut,
+                      int_t N,
+                      bool fail_silently){
+    int idx = (x_int - x0_int) / dx_int;
+    if (idx < 0){
+        if (fail_silently){
+            return lut[0];
+        } else {
+            throw range_error("The given value is less then the lower bound for the look-up table.");
+        }
+    } else if (idx >= N){
+        if (fail_silently){
+            return lut[N - 1];
+        } else {
+            throw range_error("The given value is greater then the lower bound for the look-up table.");
+        }
+    }
+    return lut[idx];
+}
+
+template int32_t sin_fixed_point(int32_t x_int,
+                                 int32_t x0_int,
+                                 int32_t dx_int,
+                                 const int32_t *lut,
+                                 int32_t N,
+                                 bool fail_silently);
+template int64_t sin_fixed_point(int64_t x_int,
+                                 int64_t x0_int,
+                                 int64_t dx_int,
+                                 const int64_t *lut,
+                                 int64_t N,
+                                 bool fail_silently);
+
+template int32_t generate_sin_lut(int32_t *lut,
+                                  float x0,
+                                  float x1,
+                                  int32_t N,
+                                  int32_t S);
+template int64_t generate_sin_lut(int64_t *lut,
+                                  float x0,
+                                  float x1,
+                                  int64_t N,
+                                  int64_t S);
+template int32_t generate_sin_lut(int32_t *lut,
+                                  double x0,
+                                  double x1,
+                                  int32_t N,
+                                  int32_t S);
+template int64_t generate_sin_lut(int64_t *lut,
+                                  double x0,
+                                  double x1,
+                                  int64_t N,
+                                  int64_t S);
+
 template void kick_and_drift_int(int32_t **xp,             // inn/out
                              int32_t **yp,             // inn/out
                              int32_t *denergy,         // inn
@@ -398,6 +474,7 @@ template void kick_and_drift_int(int32_t **xp,             // inn/out
                              const int32_t nparts,
                              const bool ftn_out,
                              const int32_t S,
+                             const int32_t N,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift_int(int64_t **xp,             // inn/out
@@ -418,6 +495,7 @@ template void kick_and_drift_int(int64_t **xp,             // inn/out
                              const int64_t nparts,
                              const bool ftn_out,
                              const int64_t S,
+                             const int64_t N,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift(double **xp,             // inn/out

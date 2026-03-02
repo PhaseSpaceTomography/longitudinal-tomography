@@ -205,11 +205,12 @@ class Tracking(ParticleTracker):
             yp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
 
             if conf.AppConfig.get_precision() in [np.int32, np.int64]:
-                S = 10
+                S = 10**6
+                N = 2**10
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12),
                                 int(machine.h_ratio), machine.dturns, recprof,
-                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S,
+                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, N=N,
                                 callback=callback)
             else:
                 conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
