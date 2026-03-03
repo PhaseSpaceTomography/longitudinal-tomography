@@ -207,10 +207,21 @@ class Tracking(ParticleTracker):
             if conf.AppConfig.get_precision() in [np.int32, np.int64]:
                 S = 10**6
                 N = 2**10
+
+                omega_rf = machine.omega_rev0[machine.filmstart]/machine.h_num
+                phi_min = -machine.synch_part_x*machine.dtbin*omega_rf
+                phi_max = (machine.nbins-machine.synch_part_x)*machine.dtbin*omega_rf
+                x0 = np.min([machine.h_ratio*(phi_min+machine.phi0.min()-machine.phi12), 
+                             phi_min+machine.phi0.min()])
+                x1 = np.max([machine.h_ratio*(phi_max+machine.phi0.max()-machine.phi12),
+                             phi_max+machine.phi0.max()])
+                # Adding 10% margin
+                x0 *= 1.1 if x0 < 0 else 0.9
+                x1 *= 1.1
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12),
                                 int(machine.h_ratio), machine.dturns, recprof,
-                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, N=N,
+                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, N=N, x0=x0, x1=x1,
                                 callback=callback)
             else:
                 conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,

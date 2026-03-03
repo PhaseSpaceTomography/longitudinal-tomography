@@ -128,7 +128,7 @@ void kick_and_drift(real_t **xp,             // inn/out
                     const std::function<void(int, int)> callback
 );
 
-template <typename int_t>
+template <typename int_t, typename real_t>
 void kick_and_drift_int(int_t **xp,             // inn/out
                     int_t **yp,             // inn/out
                     int_t *denergy,         // inn
@@ -148,6 +148,8 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const bool ftn_out,
                     const int_t S,
                     const int_t N,
+                    const real_t x0,
+                    const real_t x1,
                     const std::function<void(int, int)> callback
 );
 
