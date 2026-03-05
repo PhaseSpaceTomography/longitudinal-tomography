@@ -57,7 +57,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None, deltaturn: int = 0) \
+              callback: Callable = None, deltaturn: int = 0, S: int = 10**6, N: int = 2**10) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -132,7 +132,9 @@ class Tracking(ParticleTracker):
             * If self-fields are disabled, the returned y-coordinates will be
               given as energy [eV] relative to the synchronous particle.
         """
-
+        if conf.AppConfig.get_precision() not in [np.int32, np.int64]:
+            S = 1
+        
         if deltaturn != 0:
             warnings.warn("deltaturn is still an experimental "
                           + "feature, results may not be reliable and it may"
@@ -164,7 +166,7 @@ class Tracking(ParticleTracker):
             # original Fortran algorithm.
             log.info('Creating homogeneous distribution of particles.')
             self.particles.homogeneous_distribution(machine, recprof,
-                                                    deltaturn)
+                                                    deltaturn, S)
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
@@ -185,9 +187,9 @@ class Tracking(ParticleTracker):
 
         rfv1 = conf.cast(machine.vrf1_at_turn * machine.q)
         rfv2 = conf.cast(machine.vrf2_at_turn * machine.q)
-        phi0 = conf.cast(machine.phi0)
-        deltaE0 = conf.cast(machine.deltaE0)
-        drift_coef = conf.cast(machine.drift_coef)
+        phi0 = conf.cast(machine.phi0 * S)
+        deltaE0 = conf.cast(machine.deltaE0 * S)
+        drift_coef = conf.cast(machine.drift_coef * S * S)
 
         # Tracking particles
         if self.self_field_flag:
@@ -205,9 +207,6 @@ class Tracking(ParticleTracker):
             yp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
 
             if conf.AppConfig.get_precision() in [np.int32, np.int64]:
-                S = 10**6
-                N = 2**10
-
                 omega_rf = machine.omega_rev0[machine.filmstart]/machine.h_num
                 phi_min = -machine.synch_part_x*machine.dtbin*omega_rf
                 phi_max = (machine.nbins-machine.synch_part_x)*machine.dtbin*omega_rf
@@ -219,7 +218,7 @@ class Tracking(ParticleTracker):
                 x0 *= 1.1 if x0 < 0 else 0.9
                 x1 *= 1.1
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
-                                deltaE0, drift_coef, int(machine.phi12),
+                                deltaE0, drift_coef, int(machine.phi12*S),
                                 int(machine.h_ratio), machine.dturns, recprof,
                                 deltaturn, nturns+1, nparts, self.fortran_flag, S=S, N=N, x0=x0, x1=x1,
                                 callback=callback)

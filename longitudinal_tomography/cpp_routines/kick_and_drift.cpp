@@ -13,6 +13,7 @@
 #include "sin.h"
 #include <cmath>
 #include "kick_and_drift.h"
+#include <atomic>
 
 using namespace std;
 
@@ -72,16 +73,41 @@ void kick_up_int(const int_t *dphi,
              const int_t phi12,
              const int_t hratio,
              const int_t nr_particles,
-             const int_t acc_kick) {
+             const int_t acc_kick,
+             const int_t S,
+             const int_t N,
+             const int_t x0_int,
+             const int_t dx_int,
+             const int_t *lut
+            ) {
+
+    atomic<bool> exception_caught(false);
+    exception_ptr first_exception = nullptr;
 
 #pragma omp parallel for
-    for (int i = 0; i < nr_particles; i++)
-        if (std::is_same<int_t, double>::value)
-            denergy[i] += rfv1 * vdt::fast_sin(dphi[i] + phi0)
-                        + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
-        else if(std::is_same<int_t, float>::value)
-            denergy[i] += rfv1 * vdt::fast_sinf(dphi[i] + phi0)
-                        + rfv2 * vdt::fast_sinf(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+    for (int i = 0; i < nr_particles; i++){
+        // If an exception was already caught, skip work
+        if (exception_caught.load(memory_order_relaxed)){
+            continue;
+        }
+        try{
+            //if (i == 448){
+            //    cout << i << ": " << dphi[i] + phi0 << " "<< hratio * (dphi[i] + phi0 - phi12) << " - "<< dphi[i] << " " << phi0 << " " << phi12 << endl;
+            //}
+            denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, N)/S
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, N)/S - acc_kick;
+        }
+        catch (const exception &e) {
+            // Only first thread stores the exception
+            bool expected = false;
+            if (exception_caught.compare_exchange_strong(expected, true)){
+                first_exception = std::current_exception();
+            }
+        }
+    }
+    if (exception_caught){
+        rethrow_exception(first_exception);
+    }
 }
 
 template <typename int_t>
@@ -93,16 +119,38 @@ void kick_down_int(const int_t *dphi,
                const int_t phi12,
                const int_t hratio,
                const int_t nr_particles,
-               const int_t acc_kick) {
+               const int_t acc_kick,
+               const int_t S,
+               const int_t N,
+               const int_t x0_int,
+               const int_t dx_int,
+               const int_t *lut
+            ) {
+
+    atomic<bool> exception_caught(false);
+    exception_ptr first_exception = nullptr;
 
 #pragma omp parallel for
-    for (int i = 0; i < nr_particles; i++)
-        if (std::is_same<int_t, double>::value)
-            denergy[i] -= rfv1 * vdt::fast_sin(dphi[i] + phi0)
-                        + rfv2 * vdt::fast_sin(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
-        else if(std::is_same<int_t, float>::value)
-            denergy[i] -= rfv1 * vdt::fast_sinf(dphi[i] + phi0)
-                        + rfv2 * vdt::fast_sinf(hratio * (dphi[i] + phi0 - phi12)) - acc_kick;
+    for (int i = 0; i < nr_particles; i++){
+        // If an exception was already caught, skip work
+        if (exception_caught.load(memory_order_relaxed)){
+            continue;
+        }
+        try{
+            denergy[i] -= rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, N)/S
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, N)/S - acc_kick;
+        }
+        catch (const exception &e) {
+            // Only first thread stores the exception
+            bool expected = false;
+            if (exception_caught.compare_exchange_strong(expected, true)){
+                first_exception = std::current_exception();
+            }
+        }
+    }
+    if (exception_caught){
+        rethrow_exception(first_exception);
+    }
 }
 
 // "Drift" function.
@@ -134,21 +182,23 @@ template <typename int_t>
 void drift_up_int(int_t *dphi,
               const int_t *denergy,
               const int_t drift_coef,
-              const int_t nr_particles) {
+              const int_t nr_particles,
+              const int_t S) {
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
-        dphi[i] -= drift_coef * denergy[i];
+        dphi[i] -= drift_coef * denergy[i] / S;
 }
 
 template <typename int_t>
 void drift_down_int(int_t *dphi,
                 const int_t *denergy,
                 const int_t drift_coef,
-                const int_t nr_particles) {
+                const int_t nr_particles,
+                const int_t S) {
 
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
-        dphi[i] += drift_coef * denergy[i];
+        dphi[i] += drift_coef * denergy[i] / S;
 }
 
 // Calculates X and Y coordinates for particles based on a given
@@ -211,8 +261,8 @@ void kick_and_drift(real_t **xp,             // inn/out
 
         turn++;
 
-        kick_up<real_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
-                hratio, nparts, deltaE0[turn]);
+        kick_up<real_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1], phi12[turn-1],
+                hratio, nparts, deltaE0[turn-1]);
 
         if (turn % dturns == 0) {
             profile++;
@@ -245,8 +295,8 @@ void kick_and_drift(real_t **xp,             // inn/out
 
         // Downwards
         while (turn > 0) {
-            kick_down<real_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
-                      phi12[turn], hratio, nparts, deltaE0[turn]);
+            kick_down<real_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1],
+                      phi12[turn-1], hratio, nparts, deltaE0[turn-1]);
             turn--;
 
             drift_down<real_t>(dphi, denergy, drift_coef[turn], nparts);
@@ -301,10 +351,6 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     int_t lut[N];
     int_t dx_int = generate_sin_lut(lut, x0, x1, N, S);
 
-    double x = 1.1;
-    int_t x_int = x * S;
-
-    cout << sin_fixed_point(x_int, x0_int, dx_int, lut, N) << endl;
 
     if (deltaturn < 0) profile--;
 
@@ -318,12 +364,13 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     const int total = nturns;
     // Upwards 
     while (turn < nturns) {
-        drift_up_int<int_t>(dphi, denergy, drift_coef[turn], nparts);
-
+        // cout << turn << " " << nturns << " " << phi0[turn+1] << endl;
+        drift_up_int<int_t>(dphi, denergy, drift_coef[turn], nparts, S);
+        
         turn++;
-
-        kick_up_int<int_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
-                hratio, nparts, deltaE0[turn]);
+        //cout << turn << " " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
+        kick_up_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1], phi12[turn-1],
+                hratio, nparts, deltaE0[turn-1], S, N, x0_int, dx_int, lut);
 
         if (turn % dturns == 0) {
             profile++;
@@ -355,12 +402,13 @@ void kick_and_drift_int(int_t **xp,             // inn/out
         }
 
         // Downwards
-        while (turn > 0) {
-            kick_down_int<int_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
-                      phi12[turn], hratio, nparts, deltaE0[turn]);
+        while (turn > 0) {          
+            //cout << turn << " - " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
+            kick_down_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1],
+                      phi12[turn-1], hratio, nparts, deltaE0[turn-1], S, N, x0_int, dx_int, lut);
             turn--;
 
-            drift_down_int<int_t>(dphi, denergy, drift_coef[turn], nparts);
+            drift_down_int<int_t>(dphi, denergy, drift_coef[turn], nparts, S);
 
             if (turn % dturns == 0) {
                 profile--;
@@ -410,13 +458,17 @@ int_t sin_fixed_point(int_t x_int,
         if (fail_silently){
             return lut[0];
         } else {
-            throw range_error("The given value is less then the lower bound for the look-up table.");
+            throw range_error("The given value (" + to_string(x_int) 
+                            + ") is less then the lower bound (" + to_string(x0_int)
+                            + ") for the look-up table.");
         }
     } else if (idx >= N){
         if (fail_silently){
             return lut[N - 1];
         } else {
-            throw range_error("The given value is greater then the lower bound for the look-up table.");
+            throw range_error("The given value (" + to_string(x_int)
+                            + ") is greater then the upper bound (approx. " + to_string(x0_int+dx_int*N)
+                            + ") for the look-up table.");
         }
     }
     return lut[idx];
@@ -614,7 +666,12 @@ template void kick_up_int(const int32_t *dphi,
                       const int32_t phi12,
                       const int32_t hratio,
                       const int32_t nr_particles,
-                      const int32_t acc_kick);
+                      const int32_t acc_kick,
+                      const int32_t S,
+                      const int32_t N,
+                      const int32_t x0_int,
+                      const int32_t dx_int,
+                      const int32_t *lut);
 
 template void kick_up_int(const int64_t *dphi,
                       int64_t *denergy,
@@ -624,7 +681,12 @@ template void kick_up_int(const int64_t *dphi,
                       const int64_t phi12,
                       const int64_t hratio,
                       const int64_t nr_particles,
-                      const int64_t acc_kick);
+                      const int64_t acc_kick,
+                      const int64_t S,
+                      const int64_t N,
+                      const int64_t x0_int,
+                      const int64_t dx_int,
+                      const int64_t *lut);
 
 template void kick_down(const double *dphi,
                         double *denergy,
@@ -654,7 +716,12 @@ template void kick_down_int(const int32_t *dphi,
                       const int32_t phi12,
                       const int32_t hratio,
                       const int32_t nr_particles,
-                      const int32_t acc_kick);
+                      const int32_t acc_kick,
+                      const int32_t S,
+                      const int32_t N,
+                      const int32_t x0_int,
+                      const int32_t dx_int,
+                      const int32_t *lut);
 
 template void kick_down_int(const int64_t *dphi,
                       int64_t *denergy,
@@ -664,7 +731,12 @@ template void kick_down_int(const int64_t *dphi,
                       const int64_t phi12,
                       const int64_t hratio,
                       const int64_t nr_particles,
-                      const int64_t acc_kick);
+                      const int64_t acc_kick,
+                      const int64_t S,
+                      const int64_t N,
+                      const int64_t x0_int,
+                      const int64_t dx_int,
+                      const int64_t *lut);
 
 template void drift_up(double *dphi,
                        const double *denergy,
@@ -679,12 +751,14 @@ template void drift_up(float *dphi,
 template void drift_up_int(int32_t *dphi,
                        const int32_t *denergy,
                        const int32_t drift_coef,
-                       const int32_t nr_particles);
+                       const int32_t nr_particles,
+                       const int32_t S);
 
 template void drift_up_int(int64_t *dphi,
                        const int64_t *denergy,
                        const int64_t drift_coef,
-                       const int64_t nr_particles);
+                       const int64_t nr_particles,
+                       const int64_t S);
 
 template void drift_down(double *dphi,
                          const double *denergy,
@@ -699,9 +773,11 @@ template void drift_down(float *dphi,
 template void drift_down_int(int32_t *dphi,
                        const int32_t *denergy,
                        const int32_t drift_coef,
-                       const int32_t nr_particles);
+                       const int32_t nr_particles,
+                       const int32_t S);
 
 template void drift_down_int(int64_t *dphi,
                        const int64_t *denergy,
                        const int64_t drift_coef,
-                       const int64_t nr_particles);
+                       const int64_t nr_particles,
+                       const int64_t S);

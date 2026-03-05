@@ -5,7 +5,7 @@ from pybind11.setup_helpers import Pybind11Extension
 
 HERE = path.split(path.abspath(__file__))[0]
 
-extra_compile_args = []
+extra_compile_args = ["-g"]
 extra_link_args = []
 if platform.system() == 'Windows':
     extra_compile_args.append('-openmp')

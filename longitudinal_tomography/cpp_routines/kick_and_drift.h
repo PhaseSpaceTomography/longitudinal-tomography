@@ -49,7 +49,13 @@ void kick_up_int(const int_t *dphi,
              const int_t phi12,
              const int_t hratio,
              const int_t nr_particles,
-             const int_t acc_kick);
+             const int_t acc_kick,
+             const int_t S,
+             const int_t N,
+             const int_t x0_int,
+             const int_t dx_int,
+             const int_t *lut
+            );
 
 template <typename int_t>
 void kick_down_int(const int_t *dphi,
@@ -60,7 +66,13 @@ void kick_down_int(const int_t *dphi,
                const int_t phi12,
                const int_t hratio,
                const int_t nr_particles,
-               const int_t acc_kick);
+               const int_t acc_kick,
+               const int_t S,
+               const int_t N,
+               const int_t x0_int,
+               const int_t dx_int,
+               const int_t *lut
+            );
 
 // "Drift" function.
 // Calculates the difference in phase between two macine turns.
@@ -82,13 +94,15 @@ template <typename int_t>
 void drift_up_int(int_t *dphi,
               const int_t *denergy,
               const int_t drift_coef,
-              const int_t nr_particles);
+              const int_t nr_particles,
+              const int_t S);
 
 template <typename int_t>
 void drift_down_int(int_t *dphi,
                 const int_t *denergy,
                 const int_t drift_coef,
-                const int_t nr_particles);
+                const int_t nr_particles,
+                const int_t S);
 
 // Calculates X and Y coordinates for particles based on a given
 //  phase and energy.
