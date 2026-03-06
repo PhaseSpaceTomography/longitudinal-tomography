@@ -28,6 +28,11 @@ class TomographyABC(ABC):
     x_coords: ndarray: int
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
+    y_coords: ndarray: int
+        y-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
+    S: int
+        Scaling factor for the fixed-point arithmetics. Default is 1.
 
     Attributes
     ----------
@@ -44,17 +49,23 @@ class TomographyABC(ABC):
     xp: ndarray
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
+    yp: ndarray
+        y-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
     recreated: ndarray
         Recreated waterfall. Directly comparable with
         *Tomography.waterfall*. Shape: (nprofiles, nbins).
     diff: ndarray
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
+    S: int
+        Scaling factor for the fixed point arithmetics.
     """
 
     def __init__(self, waterfall: np.ndarray,
-                 x_coords: np.ndarray = None, y_coords: np.ndarray = None):
+                 x_coords: np.ndarray = None, y_coords: np.ndarray = None, S: int = 1):
         waterfall = conf.cast(waterfall)
+        self._S = S
         self._waterfall = self._normalize_profiles(waterfall.clip(0.0))
 
         self._nprofs: int = self.waterfall.shape[0]
@@ -228,7 +239,8 @@ class TomographyABC(ABC):
     def _normalize_profiles(self, waterfall: np.ndarray) -> np.ndarray:
         if not waterfall.any():
             raise expt.WaterfallReducedToZero()
-        waterfall /= conf.sum(waterfall, axis=1)[:, None]
+        waterfall = waterfall / conf.sum(waterfall, axis=1)[:, None]
+        waterfall = conf.cast(self._S * waterfall)
         return waterfall
 
     # Calculates discrepancy for the whole waterfall

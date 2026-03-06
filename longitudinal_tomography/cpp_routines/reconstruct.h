@@ -20,10 +20,10 @@
 #include "pybind11/pybind11.h"
 
 // Back projection using flattened arrays
-template <typename real_t>
-void back_project(real_t *weights,
-                  int *flat_points,
-                  const real_t *flat_profiles,
+template <typename real_int_t, typename int_t>
+void back_project(real_int_t *weights,
+                  int_t *flat_points,
+                  const real_int_t *flat_profiles,
                   const int npart, const int nprof);
 
 template <typename real_t>
@@ -37,10 +37,10 @@ void back_project_multi(real_t *weights,
                         const int ncenter);
 
 // Projections using flattened arrays
-template <typename real_t>
-void project(real_t *flat_rec,
-             int *flat_points,
-             const real_t *weights,
+template <typename real_int_t, typename int_t>
+void project(real_int_t *flat_rec,
+             int_t *flat_points,
+             const real_int_t *weights,
              const int npart, const int nprof);
 
 template <typename real_t>
@@ -52,25 +52,25 @@ void project_multi(real_t *flat_rec,
                               const int nprof,
                               const int ncenter);
 
-
-template <typename real_t>
-void normalize(real_t *flat_rec,
+template <typename real_int_t, typename int_t>
+void normalize(real_int_t *flat_rec,
                const int nprof,
-               const int nbins);
+               const int nbins,
+               const int_t S = 1);
 
-template <typename real_t>
-void clip(real_t *array,
+template <typename real_int_t>
+void clip(real_int_t *array,
           const int length,
-          const double clip_val);
+          const real_int_t clip_val);
 
-template <typename real_t>
-void find_difference_profile(real_t *diff_prof,
-                             const real_t *flat_rec,
-                             const real_t *flat_profiles,
+template <typename real_int_t>
+void find_difference_profile(real_int_t *diff_prof,
+                             const real_int_t *flat_rec,
+                             const real_int_t *flat_profiles,
                              const int all_bins);
 
-template <typename real_t>
-real_t discrepancy(const real_t *diff_prof,
+template <typename real_int_t>
+real_int_t discrepancy(const real_int_t *diff_prof,
               const int nprof,
               const int nbins);
 
@@ -85,23 +85,23 @@ void discrepancy_multi(const real_t *diff_prof,
                          const int ncenter);
 
 
-template <typename real_t>
-void compensate_particle_amount(real_t *diff_prof,
-                                real_t *rparts,
+template <typename real_int_t>
+void compensate_particle_amount(real_int_t *diff_prof,
+                                real_int_t *rparts,
                                 const int nprof,
                                 const int nbins);
 
-template <typename real_t>
-real_t max_2d(real_t **arr,
+template <typename real_int_t>
+real_int_t max_2d(real_int_t **arr,
          const int x_axis,
          const int y_axis);
 
-template <typename real_t>
-real_t max_1d(real_t *arr, const int length);
+template <typename real_int_t>
+real_int_t max_1d(real_int_t *arr, const int length);
 
-template <typename real_t>
-void count_particles_in_bin(real_t *rparts,
-                            const int *xp,
+template <typename real_int_t, typename int_t>
+void count_particles_in_bin(real_int_t *rparts,
+                            const int_t *xp,
                             const int nprof,
                             const int npart,
                             const int nbins);
@@ -116,9 +116,9 @@ void count_particles_in_bin_multi(real_t *rparts,
                                   const int ncenters);
 
 
-template <typename real_t>
-void reciprocal_particles(real_t *rparts,
-                          const int *xp,
+template <typename real_int_t, typename int_t>
+void reciprocal_particles(real_int_t *rparts,
+                          const int_t *xp,
                           const int nbins,
                           const int nprof,
                           const int npart);
@@ -132,8 +132,9 @@ void reciprocal_particles_multi(real_t *rparts,
                                 const int npart,
                                 const int ncenters);
 
-void create_flat_points(const int *xp,
-                        int *flat_points,
+template <typename int_t>
+void create_flat_points(const int_t *xp,
+                        int_t *flat_points,
                         const int npart,
                         const int nprof,
                         const int nbins);
@@ -147,16 +148,17 @@ void create_mask(const int *xpRound0,
                  const int nprof,
                  const int ncenter);
 
-template <typename real_t>
-void reconstruct(real_t *weights,
-                 const int *xp,
-                 const real_t *flat_profiles,
-                 real_t *flat_rec,
-                 real_t *discr,
+template <typename real_int_t, typename int_t>
+void reconstruct(real_int_t *weights,
+                 const int_t *xp,
+                 const real_int_t *flat_profiles,
+                 real_int_t *flat_rec,
+                 real_int_t *discr,
                  const int niter,
                  const int nbins,
                  const int npart,
                  const int nprof,
+                 const int_t S,
                  const bool verbose,
                  const std::function<void(int, int)> callback = 0);
 

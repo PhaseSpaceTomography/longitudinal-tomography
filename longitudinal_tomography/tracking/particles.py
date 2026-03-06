@@ -347,7 +347,7 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     yp = (tracked_denergy
           / float(dEbin) + machine.synch_part_y)
 
-    return xp, yp
+    return conf.cast(xp), conf.cast(yp)
 
 
 def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \

@@ -39,6 +39,11 @@ class Tomography(TomographyABC):
     x_coords: ndarray
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
+    y_coords: ndarray: int
+        y-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
+    S: int
+        Scaling factor for the fixed-point arithmetics. Default is 1.
 
     Attributes
     ----------
@@ -55,17 +60,22 @@ class Tomography(TomographyABC):
     xp: ndarray
         x-coordinates of particles, given as coordinates of the reconstructed
         phase space coordinate system. Shape: (nparts, nprofiles).
+    yp: ndarray
+        y-coordinates of particles, given as coordinates of the reconstructed
+        phase space coordinate system. Shape: (nparts, nprofiles).
     recreated: ndarray
         Recreated waterfall. Directly comparable with *Tomography.waterfall*.
         Shape: (nprofiles, nbins).
     diff: ndarray
         Discrepancy for phase space reconstruction at each iteration
         of the reconstruction process.
+    S: int
+        Scaling factor for the fixed point arithmetics.
     """
 
     def __init__(self, waterfall: np.ndarray, x_coords: np.ndarray = None,
-                 y_coords: np.ndarray = None):
-        super().__init__(waterfall, x_coords, y_coords)
+                 y_coords: np.ndarray = None, S: int = 1):
+        super().__init__(waterfall, x_coords, y_coords, S=S)
 
     def run_hybrid(self, niter=20, verbose=False):
         """Function to perform tomographic reconstruction, implemented
@@ -399,8 +409,8 @@ class Tomography(TomographyABC):
         (self.weight,
          self.diff,
          self.recreated) = conf.reconstruct(
-            self.xp, self.waterfall, niter, self.nbins,
-            self.nparts, self.nprofs, verbose, callback)
+            conf.cast(self.xp), self.waterfall, niter, self.nbins,
+            self.nparts, self.nprofs, self._S, verbose, callback)
         return self.weight
 
 

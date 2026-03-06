@@ -18,10 +18,13 @@
  * @param n_bins Number of bins in the phase space
  * @return A n_bins*n_bins array (1d) representing the density plot of the phase space
  */
-template <typename real_t>
-real_t *make_phase_space(const int *const xp, const int *const yp, const real_t *const weight, const int n_particles,
-                         const int n_bins) {
-    real_t *phase_space = new real_t[n_bins * n_bins]();
+template <typename real_int_t, typename int_t>
+real_int_t *make_phase_space(const int_t *const xp,
+                             const int_t *const yp,
+                             const real_int_t *const weight,
+                             const int n_particles,
+                             const int n_bins) {
+    real_int_t *phase_space = new real_int_t[n_bins * n_bins]();
     int n_bins2 = n_bins * n_bins;
 
     for (int i = 0; i < n_particles; i++) {
@@ -34,14 +37,38 @@ real_t *make_phase_space(const int *const xp, const int *const yp, const real_t 
     return phase_space;
 }
 
-template double *make_phase_space(const int *const xp,
-                                  const int *const yp,
+template double *make_phase_space(const int32_t *const xp,
+                                  const int32_t *const yp,
                                   const double *const weight,
                                   const int n_particles,
                                   const int n_bins);
 
-template float *make_phase_space(const int *const xp,
-                                  const int *const yp,
-                                  const float *const weight,
+template float *make_phase_space(const int32_t *const xp,
+                                 const int32_t *const yp,
+                                 const float *const weight,
+                                 const int n_particles,
+                                 const int n_bins);
+
+template double *make_phase_space(const int64_t *const xp,
+                                  const int64_t *const yp,
+                                  const double *const weight,
                                   const int n_particles,
                                   const int n_bins);
+
+template float *make_phase_space(const int64_t *const xp,
+                                 const int64_t *const yp,
+                                 const float *const weight,
+                                 const int n_particles,
+                                 const int n_bins);
+
+template int32_t *make_phase_space(const int32_t *const xp,
+                                   const int32_t *const yp,
+                                   const int32_t *const weight,
+                                   const int n_particles,
+                                   const int n_bins);
+
+template int64_t *make_phase_space(const int64_t *const xp,
+                                   const int64_t *const yp,
+                                   const int64_t *const weight,
+                                   const int n_particles,
+                                   const int n_bins);

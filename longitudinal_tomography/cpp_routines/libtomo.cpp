@@ -28,6 +28,8 @@ using namespace pybind11::literals;
 typedef py::array_t<double, py::array::c_style | py::array::forcecast> d_array;
 typedef py::array_t<float, py::array::c_style | py::array::forcecast> f_array;
 typedef py::array_t<int, py::array::c_style | py::array::forcecast> i_array;
+typedef py::array_t<int32_t, py::array::c_style | py::array::forcecast> i32_array;
+typedef py::array_t<int64_t, py::array::c_style | py::array::forcecast> i64_array;
 
 
 void wrapper_set_num_threads(const int num_threads) {
@@ -427,11 +429,12 @@ py::tuple wrapper_kick_and_drift_int_array(
 
     return py::make_tuple(input_xp, input_yp);
 }
-
-d_array wrapper_back_project(
-        const d_array &input_weights,
-        const i_array &input_flat_points,
-        const d_array &input_flat_profiles,
+template<typename real_int_Tarr, typename int_Tarr, 
+         typename real_int_t, typename int_t>
+real_int_Tarr wrapper_back_project(
+        const real_int_Tarr &input_weights,
+        const int_Tarr &input_flat_points,
+        const real_int_Tarr &input_flat_profiles,
         const int n_particles,
         const int n_profiles
 ) {
@@ -439,21 +442,22 @@ d_array wrapper_back_project(
     py::buffer_info buffer_flat_points = input_flat_points.request();
     py::buffer_info buffer_flat_profiles = input_flat_profiles.request();
 
-    auto *weights = static_cast<double *>(buffer_weights.ptr);
-    auto *flat_points = static_cast<int *>(buffer_flat_points.ptr);
+    auto *weights = static_cast<real_int_t *>(buffer_weights.ptr);
+    auto *flat_points = static_cast<int_t *>(buffer_flat_points.ptr);
 
-    auto *const flat_profiles = static_cast<double *>(buffer_flat_profiles.ptr);
+    auto *const flat_profiles = static_cast<real_int_t *>(buffer_flat_profiles.ptr);
 
     back_project(weights, flat_points, flat_profiles, n_particles, n_profiles);
 
     return input_weights;
 }
 
-
-d_array wrapper_project(
-        const d_array &input_flat_rec,
-        const i_array &input_flat_points,
-        const d_array &input_weights,
+template<typename real_int_Tarr, typename int_Tarr,
+         typename real_int_t, typename int_t>
+real_int_Tarr wrapper_project(
+        const real_int_Tarr &input_flat_rec,
+        const int_Tarr &input_flat_points,
+        const real_int_Tarr &input_weights,
         const int n_particles,
         const int n_profiles,
         const int n_bins
@@ -462,9 +466,9 @@ d_array wrapper_project(
     py::buffer_info buffer_flat_points = input_flat_points.request();
     py::buffer_info buffer_weights = input_weights.request();
 
-    auto *weights = static_cast<double *>(buffer_weights.ptr);
-    auto *flat_points = static_cast<int *>(buffer_flat_points.ptr);
-    auto *const flat_rec = static_cast<double *>(buffer_flat_rec.ptr);
+    auto *weights = static_cast<real_int_t *>(buffer_weights.ptr);
+    auto *flat_points = static_cast<int_t *>(buffer_flat_points.ptr);
+    auto *const flat_rec = static_cast<real_int_t *>(buffer_flat_rec.ptr);
 
     project(flat_rec, flat_points, weights, n_particles, n_profiles);
 
@@ -473,10 +477,11 @@ d_array wrapper_project(
     return input_flat_rec;
 }
 
-template <typename real_Tarr, typename real_t>
-real_Tarr wrapper_count_particles_in_bin(
-        const real_Tarr &input_parts,
-        const i_array &input_xp,
+template <typename real_int_Tarr, typename int_Tarr,
+          typename real_t, typename int_t>
+real_int_Tarr wrapper_count_particles_in_bin(
+        const real_int_Tarr &input_parts,
+        const int_Tarr &input_xp,
         const int n_profiles,
         const int n_particles,
         const int n_bins
@@ -485,7 +490,7 @@ real_Tarr wrapper_count_particles_in_bin(
     py::buffer_info buffer_xp = input_xp.request();
 
     auto *parts = static_cast<real_t *>(buffer_parts.ptr);
-    auto *xp = static_cast<int *>(buffer_xp.ptr);
+    auto *xp = static_cast<int_t *>(buffer_xp.ptr);
 
     count_particles_in_bin(parts, xp, n_profiles, n_particles, n_bins);
 
@@ -515,26 +520,28 @@ real_Tarr wrapper_count_particles_in_bin_multi(
     return input_parts;
 }
 
-template <typename real_Tarr, typename real_t>
+template <typename real_int_Tarr, typename int_Tarr,
+          typename real_int_t, typename int_t>
 py::tuple wrapper_reconstruct(
-        const i_array &input_xp,
-        const real_Tarr &waterfall,
+        const int_Tarr &input_xp,
+        const real_int_Tarr &waterfall,
         const int n_iter,
         const int n_bins,
         const int n_particles,
         const int n_profiles,
+        const int_t S,
         const bool verbose,
         const std::optional<const py::object> callback
 ) {
     py::buffer_info buffer_xp = input_xp.request();
     py::buffer_info buffer_waterfall = waterfall.request();
 
-    auto *weights = new real_t[n_particles]();
-    auto *discr = new real_t[n_iter + 1]();
-    auto *flat_profs = static_cast<real_t *>(buffer_waterfall.ptr);
-    auto *recreated = new real_t[n_profiles * n_bins]();
+    auto *weights = new real_int_t[n_particles]();
+    auto *discr = new real_int_t[n_iter + 1]();
+    auto *flat_profs = static_cast<real_int_t *>(buffer_waterfall.ptr);
+    auto *recreated = new real_int_t[n_profiles * n_bins]();
 
-    const int *const xp = static_cast<int *>(buffer_xp.ptr);
+    const int_t *const xp = static_cast<int_t *>(buffer_xp.ptr);
 
     std::function<void(int, int)> cb;
     if (callback.has_value()) {
@@ -545,7 +552,7 @@ py::tuple wrapper_reconstruct(
         cb = [](const int progress, const int total) { (void) progress, (void) total; };
 
     try {
-        reconstruct<real_t>(weights, xp, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, verbose, cb);
+        reconstruct<real_int_t>(weights, xp, flat_profs, recreated, discr, n_iter, n_bins, n_particles, n_profiles, S, verbose, cb);
     } catch (const std::exception &e) {
         delete[] weights;
         delete[] discr;
@@ -554,13 +561,13 @@ py::tuple wrapper_reconstruct(
         throw;
     }
 
-    py::capsule capsule_weights(weights, [](void *p) { delete[] reinterpret_cast<real_t *>(p); });
-    py::capsule capsule_discr(discr, [](void *p) { delete[] reinterpret_cast<real_t *>(p); });
-    py::capsule capsule_recreated(recreated, [](void *p) { delete[] reinterpret_cast<real_t *>(p); });
+    py::capsule capsule_weights(weights, [](void *p) { delete[] reinterpret_cast<real_int_t *>(p); });
+    py::capsule capsule_discr(discr, [](void *p) { delete[] reinterpret_cast<real_int_t *>(p); });
+    py::capsule capsule_recreated(recreated, [](void *p) { delete[] reinterpret_cast<real_int_t *>(p); });
 
-    py::array_t<real_t> arr_weights = py::array_t<real_t>({n_particles}, weights, capsule_weights);
-    py::array_t<real_t> arr_discr = py::array_t<real_t>({n_iter + 1}, discr, capsule_discr);
-    py::array_t<real_t> arr_recreated = py::array_t<real_t>({n_profiles, n_bins}, recreated, capsule_recreated);
+    py::array_t<real_int_t> arr_weights = py::array_t<real_int_t>({n_particles}, weights, capsule_weights);
+    py::array_t<real_int_t> arr_discr = py::array_t<real_int_t>({n_iter + 1}, discr, capsule_discr);
+    py::array_t<real_int_t> arr_recreated = py::array_t<real_int_t>({n_profiles, n_bins}, recreated, capsule_recreated);
 
     return py::make_tuple(arr_weights, arr_discr, arr_recreated);
 }
@@ -632,11 +639,12 @@ py::tuple wrapper_reconstruct_multi(
     return py::make_tuple(arr_weights, arr_discr, arr_discr_split, arr_recreated);
 }
 
-template <typename real_Tarr, typename real_t>
-py::array_t<real_t> wrapper_make_phase_space(
-        const i_array &input_xp,
-        const i_array &input_yp,
-        const real_Tarr &input_weight,
+template <typename real_int_Tarr, typename int_Tarr,
+          typename real_int_t, typename int_t>
+py::array_t<real_int_t> wrapper_make_phase_space(
+        const int_Tarr &input_xp,
+        const int_Tarr &input_yp,
+        const real_int_Tarr &input_weight,
         const int n_bins
 ) {
     py::buffer_info buffer_xp = input_xp.request();
@@ -645,14 +653,14 @@ py::array_t<real_t> wrapper_make_phase_space(
 
     const int n_particles = buffer_xp.shape[0];
 
-    const auto *xp = static_cast<int *>(buffer_xp.ptr);
-    const auto *yp = static_cast<int *>(buffer_yp.ptr);
-    const auto *weights = static_cast<real_t *>(buffer_weight.ptr);
+    const auto *xp = static_cast<int_t *>(buffer_xp.ptr);
+    const auto *yp = static_cast<int_t *>(buffer_yp.ptr);
+    const auto *weights = static_cast<real_int_t *>(buffer_weight.ptr);
 
-    real_t *phase_space = make_phase_space(xp, yp, weights, n_particles, n_bins);
-    py::capsule capsule(phase_space, [](void *p) { delete[] reinterpret_cast<real_t *>(p); });
+    real_int_t *phase_space = make_phase_space(xp, yp, weights, n_particles, n_bins);
+    py::capsule capsule(phase_space, [](void *p) { delete[] reinterpret_cast<real_int_t *>(p); });
 
-    return py::array_t<real_t>({n_bins, n_bins}, phase_space, capsule);
+    return py::array_t<real_int_t>({n_bins, n_bins}, phase_space, capsule);
 }
 
 
@@ -763,18 +771,70 @@ m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i64_array, int64_t,
 "rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "N"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
 );
 
-m.def("project", &wrapper_project, project_docs,
+m.def("project", &wrapper_project<f_array, i32_array, float, int32_t>, project_docs,
 "flat_rec"_a, "flat_points"_a, "weights"_a,
 "n_particles"_a, "n_profiles"_a, "n_bins"_a);
 
-m.def("back_project", &wrapper_back_project, back_project_docs,
+m.def("project", &wrapper_project<f_array, i64_array, float, int64_t>, project_docs,
+"flat_rec"_a, "flat_points"_a, "weights"_a,
+"n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("project", &wrapper_project<d_array, i32_array, double, int32_t>, project_docs,
+"flat_rec"_a, "flat_points"_a, "weights"_a,
+"n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("project", &wrapper_project<d_array, i64_array, double, int64_t>, project_docs,
+"flat_rec"_a, "flat_points"_a, "weights"_a,
+"n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("project", &wrapper_project<i32_array, i32_array, int32_t, int32_t>, project_docs,
+"flat_rec"_a, "flat_points"_a, "weights"_a,
+"n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("project", &wrapper_project<i64_array, i64_array, int64_t, int64_t>, project_docs,
+"flat_rec"_a, "flat_points"_a, "weights"_a,
+"n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("back_project", &wrapper_back_project<f_array, i32_array, float, int32_t>, back_project_docs,
 "weights"_a, "flat_points"_a, "flat_profiles"_a,
 "n_particles"_a, "n_profiles"_a);
 
-m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<d_array, double>, count_particles_in_bin_docs,
+m.def("back_project", &wrapper_back_project<f_array, i64_array, float, int64_t>, back_project_docs,
+"weights"_a, "flat_points"_a, "flat_profiles"_a,
+"n_particles"_a, "n_profiles"_a);
+
+m.def("back_project", &wrapper_back_project<d_array, i32_array, double, int32_t>, back_project_docs,
+"weights"_a, "flat_points"_a, "flat_profiles"_a,
+"n_particles"_a, "n_profiles"_a);
+
+m.def("back_project", &wrapper_back_project<d_array, i64_array, double, int64_t>, back_project_docs,
+"weights"_a, "flat_points"_a, "flat_profiles"_a,
+"n_particles"_a, "n_profiles"_a);
+
+m.def("back_project", &wrapper_back_project<i32_array, i32_array, int32_t, int32_t>, back_project_docs,
+"weights"_a, "flat_points"_a, "flat_profiles"_a,
+"n_particles"_a, "n_profiles"_a);
+
+m.def("back_project", &wrapper_back_project<i64_array, i64_array, int64_t, int64_t>, back_project_docs,
+"weights"_a, "flat_points"_a, "flat_profiles"_a,
+"n_particles"_a, "n_profiles"_a);
+
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<f_array, i32_array, float, int32_t>, count_particles_in_bin_docs,
     "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
 
-m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<f_array, float>, count_particles_in_bin_docs,
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<f_array, i64_array, float, int64_t>, count_particles_in_bin_docs,
+    "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<d_array, i32_array, double, int32_t>, count_particles_in_bin_docs,
+    "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<d_array, i64_array, double, int64_t>, count_particles_in_bin_docs,
+    "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<i32_array, i32_array, int32_t, int32_t>, count_particles_in_bin_docs,
+    "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
+
+m.def("count_particles_in_bins", &wrapper_count_particles_in_bin<i64_array, i64_array, int64_t, int64_t>, count_particles_in_bin_docs,
     "input_parts"_a, "input_xp"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a);
 
 m.def("count_particles_in_bins_multi", &wrapper_count_particles_in_bin_multi<d_array, double>, count_particles_in_bin_docs,
@@ -783,14 +843,34 @@ m.def("count_particles_in_bins_multi", &wrapper_count_particles_in_bin_multi<d_a
 m.def("count_particles_in_bins_multi", &wrapper_count_particles_in_bin_multi<f_array, float>, count_particles_in_bin_docs,
     "input_parts"_a, "input_xp"_a, "input_centers"_a, "n_particles"_a, "n_profiles"_a, "n_bins"_a, "n_centers"_a);
 
-m.def("reconstruct", &wrapper_reconstruct<d_array, double>, reconstruct_docs,
+m.def("reconstruct", &wrapper_reconstruct<f_array, i32_array, float, int32_t>, reconstruct_docs,
 "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
-"n_profiles"_a, "verbose"_a = false, "callback"_a = py::none()
+"n_profiles"_a, "S"_a = 1, "verbose"_a = false, "callback"_a = py::none()
 );
 
-m.def("reconstruct", &wrapper_reconstruct<f_array, float>, reconstruct_docs,
+m.def("reconstruct", &wrapper_reconstruct<f_array, i64_array, float, int64_t>, reconstruct_docs,
 "xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
-"n_profiles"_a, "verbose"_a = false, "callback"_a = py::none()
+"n_profiles"_a, "S"_a = 1, "verbose"_a = false, "callback"_a = py::none()
+);
+
+m.def("reconstruct", &wrapper_reconstruct<d_array, i32_array, double, int32_t>, reconstruct_docs,
+"xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
+"n_profiles"_a, "S"_a = 1, "verbose"_a = false, "callback"_a = py::none()
+);
+
+m.def("reconstruct", &wrapper_reconstruct<d_array, i64_array, double, int64_t>, reconstruct_docs,
+"xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
+"n_profiles"_a, "S"_a = 1, "verbose"_a = false, "callback"_a = py::none()
+);
+
+m.def("reconstruct", &wrapper_reconstruct<i32_array, i32_array, int32_t, int32_t>, reconstruct_docs,
+"xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
+"n_profiles"_a, "S"_a = 1, "verbose"_a = false, "callback"_a = py::none()
+);
+
+m.def("reconstruct", &wrapper_reconstruct<i64_array, i64_array, int64_t, int64_t>, reconstruct_docs,
+"xp"_a, "waterfall"_a, "n_iter"_a, "n_bins"_a, "n_particles"_a,
+"n_profiles"_a, "S"_a = 1, "verbose"_a = false, "callback"_a = py::none()
 );
 
 m.def("reconstruct_multi", &wrapper_reconstruct_multi<d_array, double>, reconstruct_docs,
@@ -803,10 +883,22 @@ m.def("reconstruct_multi", &wrapper_reconstruct_multi<f_array, float>, reconstru
 "n_bins"_a, "n_particles"_a, "n_profiles"_a, "n_centers"_a, "verbose"_a = false, "callback"_a = py::none()
 );
 
-m.def("make_phase_space", &wrapper_make_phase_space<d_array, double>, make_phase_space_docs,
+m.def("make_phase_space", &wrapper_make_phase_space<f_array, i32_array, float, int32_t>, make_phase_space_docs,
 "xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
 
-m.def("make_phase_space", &wrapper_make_phase_space<f_array, float>, make_phase_space_docs,
+m.def("make_phase_space", &wrapper_make_phase_space<f_array, i64_array, float, int64_t>, make_phase_space_docs,
+"xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
+
+m.def("make_phase_space", &wrapper_make_phase_space<d_array, i32_array, double, int32_t>, make_phase_space_docs,
+"xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
+
+m.def("make_phase_space", &wrapper_make_phase_space<d_array, i64_array, double, int64_t>, make_phase_space_docs,
+"xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
+
+m.def("make_phase_space", &wrapper_make_phase_space<i32_array, i32_array, int32_t, int32_t>, make_phase_space_docs,
+"xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
+
+m.def("make_phase_space", &wrapper_make_phase_space<i64_array, i64_array, int64_t, int64_t>, make_phase_space_docs,
 "xp"_a, "yp"_a, "weights"_a, "n_bins"_a);
 
 }

@@ -401,23 +401,25 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const std::optional<const py::object> callback
 );
 
-template <typename real_Tarr, typename real_t>
+template <typename real_int_Tarr, typename real_int_t>
 py::tuple wrapper_reconstruct(
-        const i_array &input_xp,
-        const real_Tarr &waterfall,
+        const real_int_Tarr &input_xp,
+        const real_int_Tarr &waterfall,
         const int n_iter,
         const int n_bins,
         const int n_particles,
         const int n_profiles,
+        const real_int_t S,
         const bool verbose,
         const std::optional<const py::object> callback
 );
 
-template <typename real_Tarr, typename real_t>
-py::array_t<real_t> wrapper_make_phase_space(
-        const i_array &input_xp,
-        const i_array &input_yp,
-        const real_Tarr &input_weight,
+template <typename real_int_Tarr, typename int_Tarr,
+          typename real_int_t, typename int_t>
+py::array_t<real_int_t> wrapper_make_phase_space(
+        const int_Tarr &input_xp,
+        const int_Tarr &input_yp,
+        const real_int_Tarr &input_weight,
         const int n_bins
 );
 

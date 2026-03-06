@@ -100,14 +100,15 @@ def create_phase_space_image(
         phase space image has the same format as from the original program.
     """
 
-    phase_space = conf.make_phase_space(xp[:, recprof].astype(np.int32),
-                          yp[:, recprof].astype(np.int32),
+    phase_space = conf.make_phase_space(conf.cast(xp[:, recprof]),
+                          conf.cast(yp[:, recprof]),
                           weight, n_bins)
 
     # Removing (if any) negative areas.
-    phase_space = phase_space.clip(0.0)
+    phase_space = phase_space.clip(0)
+    phase_space = conf.cast(phase_space)
     # Normalizing phase space.
-    phase_space /= conf.sum(phase_space)
+    #phase_space /= conf.sum(phase_space)
     return phase_space
 
 
