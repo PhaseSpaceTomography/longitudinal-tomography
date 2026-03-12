@@ -57,7 +57,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None, deltaturn: int = 0, S: int = 10**6, N: int = 2**10) \
+              callback: Callable = None, deltaturn: int = 0, S: int = 10**6, G: int = 2**10) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -207,7 +207,7 @@ class Tracking(ParticleTracker):
             yp = conf.cast(conf.zeros((machine.nprofiles, nparts)))
 
             if conf.AppConfig.get_precision() in [np.int32, np.int64]:
-                omega_rf = machine.omega_rev0[machine.filmstart]/machine.h_num
+                omega_rf = machine.omega_rev0[machine.filmstart]*machine.h_num
                 phi_min = -machine.synch_part_x*machine.dtbin*omega_rf
                 phi_max = (machine.nbins-machine.synch_part_x)*machine.dtbin*omega_rf
                 x0 = np.min([machine.h_ratio*(phi_min+machine.phi0.min()-machine.phi12), 
@@ -220,7 +220,7 @@ class Tracking(ParticleTracker):
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12*S),
                                 int(machine.h_ratio), machine.dturns, recprof,
-                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, N=N, x0=x0, x1=x1,
+                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, G=G, x0=x0, x1=x1,
                                 callback=callback)
             else:
                 conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,

@@ -51,7 +51,7 @@ void kick_up_int(const int_t *dphi,
              const int_t nr_particles,
              const int_t acc_kick,
              const int_t S,
-             const int_t N,
+             const int_t G,
              const int_t x0_int,
              const int_t dx_int,
              const int_t *lut
@@ -68,7 +68,7 @@ void kick_down_int(const int_t *dphi,
                const int_t nr_particles,
                const int_t acc_kick,
                const int_t S,
-               const int_t N,
+               const int_t G,
                const int_t x0_int,
                const int_t dx_int,
                const int_t *lut
@@ -161,7 +161,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const int_t nparts,
                     const bool ftn_out,
                     const int_t S,
-                    const int_t N,
+                    const int_t G,
                     const real_t x0,
                     const real_t x1,
                     const std::function<void(int, int)> callback
@@ -171,7 +171,7 @@ template <typename int_t, typename real_t>
 int_t generate_sin_lut(int_t *lut,
                        real_t x0,
                        real_t x1,
-                       int_t N,
+                       int_t G,
                        int_t S
 );
 
@@ -180,7 +180,7 @@ int_t sin_fixed_point(int_t x_int,
                       int_t x0_int,
                       int_t dx_int,
                       const int_t *lut,
-                      int_t N,
+                      int_t G,
                       bool fail_silently = false
 );
 

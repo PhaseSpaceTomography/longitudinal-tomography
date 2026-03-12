@@ -75,7 +75,7 @@ void kick_up_int(const int_t *dphi,
              const int_t nr_particles,
              const int_t acc_kick,
              const int_t S,
-             const int_t N,
+             const int_t G,
              const int_t x0_int,
              const int_t dx_int,
              const int_t *lut
@@ -94,8 +94,8 @@ void kick_up_int(const int_t *dphi,
             //if (i == 448){
             //    cout << i << ": " << dphi[i] + phi0 << " "<< hratio * (dphi[i] + phi0 - phi12) << " - "<< dphi[i] << " " << phi0 << " " << phi12 << endl;
             //}
-            denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, N)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, N)/S - acc_kick;
+            denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -121,7 +121,7 @@ void kick_down_int(const int_t *dphi,
                const int_t nr_particles,
                const int_t acc_kick,
                const int_t S,
-               const int_t N,
+               const int_t G,
                const int_t x0_int,
                const int_t dx_int,
                const int_t *lut
@@ -137,8 +137,8 @@ void kick_down_int(const int_t *dphi,
             continue;
         }
         try{
-            denergy[i] -= rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, N)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, N)/S - acc_kick;
+            denergy[i] -= rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -340,7 +340,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const int_t nparts,
                     const bool ftn_out,
                     const int_t S,
-                    const int_t N,
+                    const int_t G,
                     const real_t x0,
                     const real_t x1,
                     const std::function<void(int, int)> callback) {
@@ -348,8 +348,8 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     int turn = rec_prof * dturns + deltaturn;
 
     int_t x0_int = x0 * S;
-    int_t lut[N];
-    int_t dx_int = generate_sin_lut(lut, x0, x1, N, S);
+    int_t lut[G];
+    int_t dx_int = generate_sin_lut(lut, x0, x1, G, S);
 
 
     if (deltaturn < 0) profile--;
@@ -370,7 +370,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
         turn++;
         //cout << turn << " " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
         kick_up_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1], phi12[turn-1],
-                hratio, nparts, deltaE0[turn-1], S, N, x0_int, dx_int, lut);
+                hratio, nparts, deltaE0[turn-1], S, G, x0_int, dx_int, lut);
 
         if (turn % dturns == 0) {
             profile++;
@@ -405,7 +405,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
         while (turn > 0) {          
             //cout << turn << " - " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
             kick_down_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1],
-                      phi12[turn-1], hratio, nparts, deltaE0[turn-1], S, N, x0_int, dx_int, lut);
+                      phi12[turn-1], hratio, nparts, deltaE0[turn-1], S, G, x0_int, dx_int, lut);
             turn--;
 
             drift_down_int<int_t>(dphi, denergy, drift_coef[turn], nparts, S);
@@ -434,10 +434,10 @@ template <typename int_t, typename real_t>
 int_t generate_sin_lut(int_t *lut,
                        real_t x0,
                        real_t x1,
-                       int_t N,
+                       int_t G,
                        int_t S){
-    real_t dx = (x1 - x0) / (N - 1);
-    for (int i = 0; i < N; i++){
+    real_t dx = (x1 - x0) / (G - 1);
+    for (int i = 0; i < G; i++){
         real_t x = x0 + i*dx;
         lut[i] = sin(x) * S;
     }
@@ -451,7 +451,7 @@ int_t sin_fixed_point(int_t x_int,
                       int_t x0_int,
                       int_t dx_int,
                       const int_t *lut,
-                      int_t N,
+                      int_t G,
                       bool fail_silently){
     int idx = (x_int - x0_int) / dx_int;
     if (idx < 0){
@@ -462,12 +462,12 @@ int_t sin_fixed_point(int_t x_int,
                             + ") is less then the lower bound (" + to_string(x0_int)
                             + ") for the look-up table.");
         }
-    } else if (idx >= N){
+    } else if (idx >= G){
         if (fail_silently){
-            return lut[N - 1];
+            return lut[G - 1];
         } else {
             throw range_error("The given value (" + to_string(x_int)
-                            + ") is greater then the upper bound (approx. " + to_string(x0_int+dx_int*N)
+                            + ") is greater then the upper bound (approx. " + to_string(x0_int+dx_int*G)
                             + ") for the look-up table.");
         }
     }
@@ -478,45 +478,45 @@ template int32_t sin_fixed_point(int32_t x_int,
                                  int32_t x0_int,
                                  int32_t dx_int,
                                  const int32_t *lut,
-                                 int32_t N,
+                                 int32_t G,
                                  bool fail_silently);
 template int64_t sin_fixed_point(int64_t x_int,
                                  int64_t x0_int,
                                  int64_t dx_int,
                                  const int64_t *lut,
-                                 int64_t N,
+                                 int64_t G,
                                  bool fail_silently);
 
 template int32_t generate_sin_lut(int32_t *lut,
                                   float x0,
                                   float x1,
-                                  int32_t N,
+                                  int32_t G,
                                   int32_t S);
 template int64_t generate_sin_lut(int64_t *lut,
                                   float x0,
                                   float x1,
-                                  int64_t N,
+                                  int64_t G,
                                   int64_t S);
 template int32_t generate_sin_lut(int32_t *lut,
                                   double x0,
                                   double x1,
-                                  int32_t N,
+                                  int32_t G,
                                   int32_t S);
 template int64_t generate_sin_lut(int64_t *lut,
                                   double x0,
                                   double x1,
-                                  int64_t N,
+                                  int64_t G,
                                   int64_t S);
 
-template void kick_and_drift_int(int32_t **xp,             // inn/out
-                             int32_t **yp,             // inn/out
-                             int32_t *denergy,         // inn
-                             int32_t *dphi,            // inn
-                             const int32_t *rf1v,      // inn
-                             const int32_t *rf2v,      // inn
-                             const int32_t *phi0,      // inn
-                             const int32_t *deltaE0,   // inn
-                             const int32_t *drift_coef,// inn
+template void kick_and_drift_int(int32_t **xp,
+                             int32_t **yp,
+                             int32_t *denergy,
+                             int32_t *dphi,
+                             const int32_t *rf1v,
+                             const int32_t *rf2v,
+                             const int32_t *phi0,
+                             const int32_t *deltaE0,
+                             const int32_t *drift_coef,
                              const int32_t *phi12,
                              const int32_t hratio,
                              const int32_t dturns,
@@ -526,20 +526,20 @@ template void kick_and_drift_int(int32_t **xp,             // inn/out
                              const int32_t nparts,
                              const bool ftn_out,
                              const int32_t S,
-                             const int32_t N,
+                             const int32_t G,
                              const float x0,
                              const float x1,
                              const std::function<void(int, int)> callback);
 
-template void kick_and_drift_int(int32_t **xp,             // inn/out
-                             int32_t **yp,             // inn/out
-                             int32_t *denergy,         // inn
-                             int32_t *dphi,            // inn
-                             const int32_t *rf1v,      // inn
-                             const int32_t *rf2v,      // inn
-                             const int32_t *phi0,      // inn
-                             const int32_t *deltaE0,   // inn
-                             const int32_t *drift_coef,// inn
+template void kick_and_drift_int(int32_t **xp,
+                             int32_t **yp,
+                             int32_t *denergy,
+                             int32_t *dphi,
+                             const int32_t *rf1v,
+                             const int32_t *rf2v,
+                             const int32_t *phi0,
+                             const int32_t *deltaE0,
+                             const int32_t *drift_coef,
                              const int32_t *phi12,
                              const int32_t hratio,
                              const int32_t dturns,
@@ -549,20 +549,20 @@ template void kick_and_drift_int(int32_t **xp,             // inn/out
                              const int32_t nparts,
                              const bool ftn_out,
                              const int32_t S,
-                             const int32_t N,
+                             const int32_t G,
                              const double x0,
                              const double x1,
                              const std::function<void(int, int)> callback);
 
-template void kick_and_drift_int(int64_t **xp,             // inn/out
-                             int64_t **yp,             // inn/out
-                             int64_t *denergy,         // inn
-                             int64_t *dphi,            // inn
-                             const int64_t *rf1v,      // inn
-                             const int64_t *rf2v,      // inn
-                             const int64_t *phi0,      // inn
-                             const int64_t *deltaE0,   // inn
-                             const int64_t *drift_coef,// inn
+template void kick_and_drift_int(int64_t **xp,
+                             int64_t **yp,
+                             int64_t *denergy,
+                             int64_t *dphi,
+                             const int64_t *rf1v,
+                             const int64_t *rf2v,
+                             const int64_t *phi0,
+                             const int64_t *deltaE0,
+                             const int64_t *drift_coef,
                              const int64_t *phi12,
                              const int64_t hratio,
                              const int64_t dturns,
@@ -572,20 +572,20 @@ template void kick_and_drift_int(int64_t **xp,             // inn/out
                              const int64_t nparts,
                              const bool ftn_out,
                              const int64_t S,
-                             const int64_t N,
+                             const int64_t G,
                              const float x0,
                              const float x1,
                              const std::function<void(int, int)> callback);
 
-template void kick_and_drift_int(int64_t **xp,             // inn/out
-                             int64_t **yp,             // inn/out
-                             int64_t *denergy,         // inn
-                             int64_t *dphi,            // inn
-                             const int64_t *rf1v,      // inn
-                             const int64_t *rf2v,      // inn
-                             const int64_t *phi0,      // inn
-                             const int64_t *deltaE0,   // inn
-                             const int64_t *drift_coef,// inn
+template void kick_and_drift_int(int64_t **xp,
+                             int64_t **yp,
+                             int64_t *denergy,
+                             int64_t *dphi,
+                             const int64_t *rf1v,
+                             const int64_t *rf2v,
+                             const int64_t *phi0,
+                             const int64_t *deltaE0,
+                             const int64_t *drift_coef,
                              const int64_t *phi12,
                              const int64_t hratio,
                              const int64_t dturns,
@@ -595,20 +595,20 @@ template void kick_and_drift_int(int64_t **xp,             // inn/out
                              const int64_t nparts,
                              const bool ftn_out,
                              const int64_t S,
-                             const int64_t N,
+                             const int64_t G,
                              const double x0,
                              const double x1,
                              const std::function<void(int, int)> callback);
 
-template void kick_and_drift(double **xp,             // inn/out
-                             double **yp,             // inn/out
-                             double *denergy,         // inn
-                             double *dphi,            // inn
-                             const double *rf1v,      // inn
-                             const double *rf2v,      // inn
-                             const double *phi0,      // inn
-                             const double *deltaE0,   // inn
-                             const double *drift_coef,// inn
+template void kick_and_drift(double **xp,
+                             double **yp,
+                             double *denergy,
+                             double *dphi,
+                             const double *rf1v,
+                             const double *rf2v,
+                             const double *phi0,
+                             const double *deltaE0,
+                             const double *drift_coef,
                              const double *phi12,
                              const double hratio,
                              const int dturns,
@@ -619,15 +619,15 @@ template void kick_and_drift(double **xp,             // inn/out
                              const bool ftn_out,
                              const std::function<void(int, int)> callback);
 
-template void kick_and_drift(float **xp,             // inn/out
-                             float **yp,             // inn/out
-                             float *denergy,         // inn
-                             float *dphi,            // inn
-                             const float *rf1v,      // inn
-                             const float *rf2v,      // inn
-                             const float *phi0,      // inn
-                             const float *deltaE0,   // inn
-                             const float *drift_coef,// inn
+template void kick_and_drift(float **xp,
+                             float **yp,
+                             float *denergy,
+                             float *dphi,
+                             const float *rf1v,
+                             const float *rf2v,
+                             const float *phi0,
+                             const float *deltaE0,
+                             const float *drift_coef,
                              const float *phi12,
                              const float hratio,
                              const int dturns,
@@ -668,7 +668,7 @@ template void kick_up_int(const int32_t *dphi,
                       const int32_t nr_particles,
                       const int32_t acc_kick,
                       const int32_t S,
-                      const int32_t N,
+                      const int32_t G,
                       const int32_t x0_int,
                       const int32_t dx_int,
                       const int32_t *lut);
@@ -683,7 +683,7 @@ template void kick_up_int(const int64_t *dphi,
                       const int64_t nr_particles,
                       const int64_t acc_kick,
                       const int64_t S,
-                      const int64_t N,
+                      const int64_t G,
                       const int64_t x0_int,
                       const int64_t dx_int,
                       const int64_t *lut);
@@ -718,7 +718,7 @@ template void kick_down_int(const int32_t *dphi,
                       const int32_t nr_particles,
                       const int32_t acc_kick,
                       const int32_t S,
-                      const int32_t N,
+                      const int32_t G,
                       const int32_t x0_int,
                       const int32_t dx_int,
                       const int32_t *lut);
@@ -733,7 +733,7 @@ template void kick_down_int(const int64_t *dphi,
                       const int64_t nr_particles,
                       const int64_t acc_kick,
                       const int64_t S,
-                      const int64_t N,
+                      const int64_t G,
                       const int64_t x0_int,
                       const int64_t dx_int,
                       const int64_t *lut);

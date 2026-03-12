@@ -169,7 +169,7 @@ py::tuple wrapper_kick_and_drift_int_scalar(
         const int_t nparts,
         const bool ftn_out,
         const int_t S,
-        const int_t N,
+        const int_t G,
         const real_t x0,
         const real_t x1,
         const std::optional<const py::object> callback
@@ -194,7 +194,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const int32_t nparts,
         const bool ftn_out,
         const int32_t S,
-        const int32_t N,
+        const int32_t G,
         const float x0,
         const float x1,
         const std::optional<const py::object> callback
@@ -219,7 +219,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const int32_t nparts,
         const bool ftn_out,
         const int32_t S,
-        const int32_t N,
+        const int32_t G,
         const double x0,
         const double x1,
         const std::optional<const py::object> callback
@@ -244,7 +244,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const int64_t nparts,
         const bool ftn_out,
         const int64_t S,
-        const int64_t N,
+        const int64_t G,
         const float x0,
         const float x1,
         const std::optional<const py::object> callback
@@ -269,7 +269,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const int64_t nparts,
         const bool ftn_out,
         const int64_t S,
-        const int64_t N,
+        const int64_t G,
         const double x0,
         const double x1,
         const std::optional<const py::object> callback
@@ -295,7 +295,7 @@ py::tuple wrapper_kick_and_drift_int_array(
         const int_t nparts,
         const bool ftn_out,
         const int_t S,
-        const int_t N,
+        const int_t G,
         const real_t x0,
         const real_t x1,
         const std::optional<const py::object> callback
@@ -320,7 +320,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const int32_t nparts,
         const bool ftn_out,
         const int32_t S,
-        const int32_t N,
+        const int32_t G,
         const float x0,
         const float x1,
         const std::optional<const py::object> callback
@@ -345,7 +345,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const int32_t nparts,
         const bool ftn_out,
         const int32_t S,
-        const int32_t N,
+        const int32_t G,
         const double x0,
         const double x1,
         const std::optional<const py::object> callback
@@ -370,7 +370,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const int64_t nparts,
         const bool ftn_out,
         const int64_t S,
-        const int64_t N,
+        const int64_t G,
         const float x0,
         const float x1,
         const std::optional<const py::object> callback
@@ -395,7 +395,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const int64_t nparts,
         const bool ftn_out,
         const int64_t S,
-        const int64_t N,
+        const int64_t G,
         const double x0,
         const double x1,
         const std::optional<const py::object> callback
