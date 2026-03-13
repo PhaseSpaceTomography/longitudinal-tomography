@@ -91,11 +91,12 @@ void kick_up_int(const int_t *dphi,
             continue;
         }
         try{
-            //if (i == 448){
-            //    cout << i << ": " << dphi[i] + phi0 << " "<< hratio * (dphi[i] + phi0 - phi12) << " - "<< dphi[i] << " " << phi0 << " " << phi12 << endl;
+            //if (i == 0){
+            //    cout << i << ": " << dphi[i] + phi0 << " "<< hratio * (dphi[i] + phi0 - phi12) << " - "<< dphi[i] << " " << phi0 << " " << phi12 << " " << acc_kick << endl;
+            //    cout << sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G) << " " << sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G) << endl;
             //}
             denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick/S;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -138,7 +139,7 @@ void kick_down_int(const int_t *dphi,
         }
         try{
             denergy[i] -= rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick/S;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -163,8 +164,9 @@ void drift_up(real_t *dphi,
               const real_t drift_coef,
               const int nr_particles) {
 #pragma omp parallel for
-    for (int i = 0; i < nr_particles; i++)
+    for (int i = 0; i < nr_particles; i++){
         dphi[i] -= drift_coef * denergy[i];
+    }
 }
 
 template <typename real_t>
@@ -364,11 +366,11 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     const int total = nturns;
     // Upwards 
     while (turn < nturns) {
-        // cout << turn << " " << nturns << " " << phi0[turn+1] << endl;
+        // cout << turn << " " << nturns << " " << dphi[0] << " " << denergy[0] << " " << drift_coef[turn] << endl;
         drift_up_int<int_t>(dphi, denergy, drift_coef[turn], nparts, S);
         
         turn++;
-        //cout << turn << " " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
+        // cout << turn << " " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
         kick_up_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1], phi12[turn-1],
                 hratio, nparts, deltaE0[turn-1], S, G, x0_int, dx_int, lut);
 
