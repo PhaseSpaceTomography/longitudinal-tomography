@@ -445,6 +445,11 @@ int_t generate_sin_lut(int_t *lut,
     }
 
     int_t dx_int = dx * S;
+
+    if (dx_int <= 0){
+        throw range_error("Error in generating the look-up table, `dx_int` <= 0.");
+    }
+
     return dx_int;
 }
 
