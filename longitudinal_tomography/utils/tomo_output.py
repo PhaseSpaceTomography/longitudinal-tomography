@@ -108,7 +108,8 @@ def create_phase_space_image(
     phase_space = phase_space.clip(0)
     phase_space = conf.cast(phase_space)
     # Normalizing phase space.
-    #phase_space /= conf.sum(phase_space)
+    if conf.AppConfig.get_precision() not in [conf.int32, conf.int64]:
+        phase_space /= conf.sum(phase_space)
     return phase_space
 
 

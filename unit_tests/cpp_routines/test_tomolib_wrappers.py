@@ -12,6 +12,7 @@ import numpy.testing as nptest
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 from longitudinal_tomography.cpp_routines import libtomo
+from longitudinal_tomography.utils import tomo_config as conf
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
@@ -325,7 +326,7 @@ class TestTLW(unittest.TestCase):
         nparts = 50
         nbins = 100
         niter = 1
-
+        S = 1
         xp = np.meshgrid(np.arange(0, nparts), np.arange(nprofs))[0]
         xp = xp.T
 
@@ -336,9 +337,9 @@ class TestTLW(unittest.TestCase):
         (weights,
          discr,
          recreated) = libtomo.reconstruct(
-            xp, waterfall, niter,
+            conf.cast(xp), conf.cast(waterfall), niter,
             nbins, nparts, nprofs,
-            verbose=False)
+            S=S, verbose=False)
 
         correct_w = np.array([1.40130575, 1.4324645,  1.45323701, 1.47954884,
                               1.49478201, 1.50101376, 1.51001518, 1.51001518,

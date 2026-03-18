@@ -263,8 +263,8 @@ void kick_and_drift(real_t **xp,             // inn/out
 
         turn++;
 
-        kick_up<real_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1], phi12[turn-1],
-                hratio, nparts, deltaE0[turn-1]);
+        kick_up<real_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn], phi12[turn],
+                hratio, nparts, deltaE0[turn]);
 
         if (turn % dturns == 0) {
             profile++;
@@ -297,8 +297,8 @@ void kick_and_drift(real_t **xp,             // inn/out
 
         // Downwards
         while (turn > 0) {
-            kick_down<real_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1],
-                      phi12[turn-1], hratio, nparts, deltaE0[turn-1]);
+            kick_down<real_t>(dphi, denergy, rf1v[turn], rf2v[turn], phi0[turn],
+                      phi12[turn], hratio, nparts, deltaE0[turn]);
             turn--;
 
             drift_down<real_t>(dphi, denergy, drift_coef[turn], nparts);
