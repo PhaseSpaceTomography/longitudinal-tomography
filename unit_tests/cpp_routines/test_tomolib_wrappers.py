@@ -375,7 +375,7 @@ class TestTLW(unittest.TestCase):
                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                 0., 0., 0., 0., 0., 0., 0., 0.])
 
-        nptest.assert_almost_equal(
+        nptest.assert_array_almost_equal(
             weights, correct_w,
             err_msg='Error in weights after reconstruction.')
 
