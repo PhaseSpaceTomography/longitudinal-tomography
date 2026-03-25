@@ -35,10 +35,14 @@ class AppConfig:
     @classmethod
     def set_single_precision_int(cls):
         cls._precision = np.int32
+        if cls._gpu_enabled:
+            cls.load_modules_and_refresh_kernels(True)
     
     @classmethod
     def set_double_precision_int(cls):
         cls._precision = np.int64
+        if cls._gpu_enabled:
+            cls.load_modules_and_refresh_kernels(False)
     
     @classmethod
     def load_modules_and_refresh_kernels(cls, single_prec_flag=False):
@@ -101,6 +105,7 @@ class AppConfig:
 
         gpu_func_dict = {
             'kick_and_drift': kick_and_drift_cuda.kick_and_drift_cuda,
+            'kick_and_drift_int': kick_and_drift_cuda.kick_and_drift_cuda_int,
             'reconstruct': reconstruct_cuda.reconstruct_cuda,
             'make_phase_space': data_treatment.make_phase_space,
             'device': 'GPU'

@@ -10,8 +10,10 @@
 
 #ifdef USEFLOAT
     typedef float real_t;
+    typedef int32_t int_t;
 #else
     typedef double real_t;
+    typedef int64_t int_t;
 #endif
 
 
@@ -203,6 +205,118 @@ __global__ void kick_drift_down_turns(const real_t * __restrict__ dphi,
         {
             current_denergy -= (rfv1[turn] * sin(current_dphi + phi0[turn])
                         + rfv2[turn] * sin(hratio * (current_dphi + phi0[turn] - phi12[turn])) - acc_kick[turn]);
+            turn--;
+            current_dphi += drift_coef[turn] * current_denergy;
+
+            if (turn % dturns == 0)
+            {
+                profile--;
+                xp[nr_particles * profile + tid] = current_dphi;
+                yp[nr_particles * profile + tid] = current_denergy;
+            }
+        }
+    }
+}
+
+extern "C"
+__global__ void generate_sin_lut(int_t *lut,
+                                 real_t x0,
+                                 real_t x1,
+                                 int_t G,
+                                 int_t S){
+    std::size_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    std::size_t stride = blockDim.x * gridDim.x;
+    
+    real_t dx = (x1 - x0) / (G - 1);
+    for (std::size_t i = tid; i < G; i += stride){
+        real_t x = x0 + i*dx;
+        lut[i] = sin(x) * S;
+    }
+}
+
+// Calculates the entire process of the kick/drift loop up.
+// This function does not iterate with respect to the amount of particles, so the
+// amount of threads should be equal to nr_particles.
+extern "C"
+__global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
+                                    const int_t * __restrict__ denergy,
+                                    int_t * __restrict__ xp,
+                                    int_t * __restrict__ yp,
+                                    const int_t * __restrict__ drift_coef,
+                                    const int_t * __restrict__ rfv1,
+                                    const int_t * __restrict__ rfv2,
+                                    const int_t * __restrict__ phi0,
+                                    const int_t * __restrict__ phi12,
+                                    const int_t hratio,
+                                    const int_t nr_particles,
+                                    const int_t * __restrict__ acc_kick,
+                                    int_t turn,
+                                    const int_t nturns,
+                                    const int_t dturns,
+                                    int_t profile,
+                                    int_t S,
+                                    int_t G,
+                                    real_t x0,
+                                    real_t x1) {
+    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+
+    if (tid < nr_particles)
+    {
+        int_t current_dphi = dphi[tid];
+        int_t current_denergy = denergy[tid];
+
+        while (turn < nturns)
+        {
+
+            current_dphi -= drift_coef[turn] * current_denergy;
+            turn++;
+            //current_denergy += (rfv1[turn] * sin(current_dphi + phi0[turn])
+            //            + rfv2[turn] * sin(hratio * (current_dphi + phi0[turn] - phi12[turn])) - acc_kick[turn]);
+
+            if (turn % dturns == 0)
+            {
+                profile++;
+                xp[nr_particles * profile + tid] = current_dphi;
+                yp[nr_particles * profile + tid] = current_denergy;
+            }
+        }
+    }
+}
+
+// Calculates the entire process of the kick/drift loop down.
+// This function does not iterate with respect to the amount of particles, so the
+// amount of threads should be equal to nr_particles.
+extern "C"
+__global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
+                                      const int_t * __restrict__ denergy,
+                                      int_t * __restrict__ xp,
+                                      int_t * __restrict__ yp,
+                                      const int_t * __restrict__ drift_coef,
+                                      const int_t * __restrict__ rfv1,
+                                      const int_t * __restrict__ rfv2,
+                                      const int_t * __restrict__ phi0,
+                                      const int_t * __restrict__ phi12,
+                                      const int_t hratio,
+                                      const int_t nr_particles,
+                                      const int_t * __restrict__ acc_kick,
+                                      int_t turn,
+                                      const int_t dturns,
+                                      int_t profile,
+                                      int_t S,
+                                      int_t G,
+                                      real_t x0,
+                                      real_t x1) {
+    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+
+    if (tid < nr_particles)
+    {
+        int_t current_dphi = dphi[tid];
+        int_t current_denergy = denergy[tid];
+
+        while (turn > 0)
+        {
+            //current_denergy -= (rfv1[turn] * sin(current_dphi + phi0[turn])
+            //            + rfv2[turn] * sin(hratio * (current_dphi + phi0[turn] - phi12[turn])) - acc_kick[turn]);
             turn--;
             current_dphi += drift_coef[turn] * current_denergy;
 
