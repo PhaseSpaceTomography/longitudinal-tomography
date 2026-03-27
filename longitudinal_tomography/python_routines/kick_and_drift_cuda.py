@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 gpu_dev = GPUDev.get_gpu_dev()
 block_size = gpu_dev.block_size
+grid_size = gpu_dev.grid_size
 
 def refresh_kernels():
     global kick_drift_up_turns, kick_drift_down_turns
@@ -48,8 +49,7 @@ def kick_drift_up_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarra
     kick_drift_up_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
                             turn, nturns, dturns, profile, S, G, x0, x1, lut),
-                        #block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1)
-                        block=(128,), grid=(256,)
+                        block=block_size, grid=grid_size
                         )
 
 def kick_drift_down_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
@@ -59,8 +59,7 @@ def kick_drift_down_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndar
     kick_drift_down_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
                             turn, dturns, profile, S, G, x0, x1, lut),
-                        #block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1)
-                        block=(128,), grid=(256,)
+                        block=block_size, grid=grid_size
                         )
 
 def generate_sin_lut_wrapper(lut: cp.ndarray, x0: float, x1: float, G: int, S: int) -> None:
@@ -143,7 +142,6 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
 
     lut = cp.zeros(G, dtype=xp.dtype)
     generate_sin_lut_wrapper(lut, x0, x1, G, S)
-    print(lut)
 
     profile = rec_prof
     turn = rec_prof * dturns + deltaturn
