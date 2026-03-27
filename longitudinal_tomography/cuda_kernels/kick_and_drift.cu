@@ -234,9 +234,31 @@ __global__ void generate_sin_lut(int_t *lut,
     }
 }
 
+extern "C"
+__device__ int_t sin_fixed_point(int_t x_int,
+                      int_t x0_int,
+                      int_t dx_int,
+                      const int_t *lut,
+                      int_t G,
+                      bool fail_silently = false){
+    int_t idx = (x_int - x0_int) / dx_int;
+    if (idx < 0){
+        if (fail_silently){
+            return lut[0];
+        } else {
+            printf("The given value (%d) is less then the lower bound (%d) for the look-up table.\n", (int)(x_int), (int)(x0_int));
+        }
+    } else if (idx >= G){
+        if (fail_silently){
+            return lut[G - 1];
+        } else {
+            printf("The given value (%d) is greater then the upper bound (%d) for the look-up table.\n", (int)(x_int), (int)(x0_int+dx_int*G));
+        }
+    }
+    return lut[idx];
+} 
+
 // Calculates the entire process of the kick/drift loop up.
-// This function does not iterate with respect to the amount of particles, so the
-// amount of threads should be equal to nr_particles.
 extern "C"
 __global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
                                     const int_t * __restrict__ denergy,
@@ -257,35 +279,47 @@ __global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
                                     int_t S,
                                     int_t G,
                                     real_t x0,
-                                    real_t x1) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
-
-    if (tid < nr_particles)
+                                    real_t x1,
+                                    const int_t * __restrict__ lut) {
+    std::size_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    std::size_t stride = blockDim.x * gridDim.x;
+    
+    int_t x0_int = x0 * S;
+    real_t dx = (x1 - x0) / (G - 1);
+    int_t dx_int = dx * S;
+    int_t curr_turn = turn;
+    int_t curr_profile = profile;
+    
+    for (int i = tid; i < nr_particles; i += stride)
     {
-        int_t current_dphi = dphi[tid];
-        int_t current_denergy = denergy[tid];
+        int_t current_dphi = dphi[i];
+        int_t current_denergy = denergy[i];
+        curr_turn = turn;
+        curr_profile = profile;
 
-        while (turn < nturns)
+        while (curr_turn < nturns)
         {
 
-            current_dphi -= drift_coef[turn] * current_denergy;
-            turn++;
-            //current_denergy += (rfv1[turn] * sin(current_dphi + phi0[turn])
-            //            + rfv2[turn] * sin(hratio * (current_dphi + phi0[turn] - phi12[turn])) - acc_kick[turn]);
+            current_dphi -= drift_coef[curr_turn] * current_denergy / S;
+            curr_turn++;
 
-            if (turn % dturns == 0)
+            current_denergy += (rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1], 
+                                                                x0_int, dx_int, lut, G) / S
+                              + rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
+                                                                x0_int, dx_int, lut, G) / S
+                              - acc_kick[curr_turn-1] / S);
+
+            if (curr_turn % dturns == 0)
             {
-                profile++;
-                xp[nr_particles * profile + tid] = current_dphi;
-                yp[nr_particles * profile + tid] = current_denergy;
+                curr_profile++;
+                xp[nr_particles * curr_profile + i] = current_dphi;
+                yp[nr_particles * curr_profile + i] = current_denergy;
             }
         }
     }
 }
 
 // Calculates the entire process of the kick/drift loop down.
-// This function does not iterate with respect to the amount of particles, so the
-// amount of threads should be equal to nr_particles.
 extern "C"
 __global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
                                       const int_t * __restrict__ denergy,
@@ -305,26 +339,40 @@ __global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
                                       int_t S,
                                       int_t G,
                                       real_t x0,
-                                      real_t x1) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+                                      real_t x1,
+                                      const int_t * __restrict__ lut) {
+    std::size_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    std::size_t stride = blockDim.x * gridDim.x;
+    
+    int_t x0_int = x0 * S;
+    real_t dx = (x1 - x0) / (G - 1);
+    int_t dx_int = dx * S;
+    int_t curr_turn = turn;
+    int_t curr_profile = profile;
 
-    if (tid < nr_particles)
+    for (int i = tid; i < nr_particles; i += stride)
     {
-        int_t current_dphi = dphi[tid];
-        int_t current_denergy = denergy[tid];
+        int_t current_dphi = dphi[i];
+        int_t current_denergy = denergy[i];
+        curr_turn = turn;
+        curr_profile = profile;
 
-        while (turn > 0)
+        while (curr_turn > 0)
         {
-            //current_denergy -= (rfv1[turn] * sin(current_dphi + phi0[turn])
-            //            + rfv2[turn] * sin(hratio * (current_dphi + phi0[turn] - phi12[turn])) - acc_kick[turn]);
-            turn--;
-            current_dphi += drift_coef[turn] * current_denergy;
+            current_denergy -= (rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1], 
+                                                                x0_int, dx_int, lut, G) / S
+                              + rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
+                                                                x0_int, dx_int, lut, G) / S
+                              - acc_kick[curr_turn-1] / S);
+            
+            curr_turn--;
+            current_dphi += drift_coef[curr_turn] * current_denergy / S;
 
-            if (turn % dturns == 0)
+            if (curr_turn % dturns == 0)
             {
-                profile--;
-                xp[nr_particles * profile + tid] = current_dphi;
-                yp[nr_particles * profile + tid] = current_denergy;
+                curr_profile--;
+                xp[nr_particles * curr_profile + i] = current_dphi;
+                yp[nr_particles * curr_profile + i] = current_denergy;
             }
         }
     }

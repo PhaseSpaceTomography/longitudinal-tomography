@@ -44,20 +44,24 @@ def kick_drift_down_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray,
 def kick_drift_up_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, nturns: int, dturns: int, profile: int,
-                        S: int, G: int, x0: float, x1: float) -> None:
+                        S: int, G: int, x0: float, x1: float, lut: cp.ndarray) -> None:
     kick_drift_up_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
-                            turn, nturns, dturns, profile, S, G, x0, x1),
-                        block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1))
+                            turn, nturns, dturns, profile, S, G, x0, x1, lut),
+                        #block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1)
+                        block=(128,), grid=(256,)
+                        )
 
 def kick_drift_down_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, dturns: int, profile: int,
-                        S: int, G: int, x0: float, x1: float) -> None:
+                        S: int, G: int, x0: float, x1: float, lut: cp.ndarray) -> None:
     kick_drift_down_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
-                            turn, dturns, profile, S, G, x0, x1),
-                        block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1))
+                            turn, dturns, profile, S, G, x0, x1, lut),
+                        #block=block_size, grid=(int(n_particles / block_size[0] + 1), 1, 1)
+                        block=(128,), grid=(256,)
+                        )
 
 def generate_sin_lut_wrapper(lut: cp.ndarray, x0: float, x1: float, G: int, S: int) -> None:
     generate_sin_lut(args=(lut, x0, x1, G, S),
@@ -153,7 +157,7 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
 
     kick_drift_up_whole_int(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                         phi0, phi12_arr, h_ratio, nparts, deltaE0,
-                        turn, nturns, dturns, profile, S, G, x0, x1)
+                        turn, nturns, dturns, profile, S, G, x0, x1, lut)
 
     profile = rec_prof
     turn = rec_prof * dturns
@@ -166,6 +170,6 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
 
         kick_drift_down_whole_int(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                         phi0, phi12_arr, h_ratio, nparts, deltaE0,
-                        turn, dturns, profile, S, G, x0, x1)
+                        turn, dturns, profile, S, G, x0, x1, lut)
 
 refresh_kernels()
