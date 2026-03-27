@@ -17,14 +17,20 @@ def refresh_kernels():
         count_part_bin_kernel, calc_reciprocal_kernel, comp_part_amount_kernel, create_flat_points_kernel
 
     gpu_dev = GPUDev.get_gpu_dev()
-    back_project_kernel = gpu_dev.rec_mod.get_function("back_project")
-    project_kernel = gpu_dev.rec_mod.get_function("project")
-    clip_kernel = gpu_dev.rec_mod.get_function("clip")
-    find_diffprof_kernel = gpu_dev.rec_mod.get_function("find_difference_profile")
-    count_part_bin_kernel = gpu_dev.rec_mod.get_function("count_particles_in_bin")
-    calc_reciprocal_kernel = gpu_dev.rec_mod.get_function("calculate_reciprocal")
-    comp_part_amount_kernel = gpu_dev.rec_mod.get_function("compensate_particle_amount")
-    create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
+
+    if conf.get_precision() in [np.int32, np.int64, cp.int32, cp.int64]:
+        rec_mod = gpu_dev.rec_mod_int
+    else:
+        rec_mod = gpu_dev.rec_mod
+
+    back_project_kernel = rec_mod.get_function("back_project")
+    project_kernel = rec_mod.get_function("project")
+    clip_kernel = rec_mod.get_function("clip")
+    find_diffprof_kernel = rec_mod.get_function("find_difference_profile")
+    count_part_bin_kernel = rec_mod.get_function("count_particles_in_bin")
+    calc_reciprocal_kernel = rec_mod.get_function("calculate_reciprocal")
+    comp_part_amount_kernel = rec_mod.get_function("compensate_particle_amount")
+    create_flat_points_kernel = rec_mod.get_function("create_flat_points")
 
 
 def back_project(weights: cp.ndarray,
@@ -48,10 +54,11 @@ def project(flat_rec: cp.ndarray,
     return flat_rec
 
 def normalize(flat_rec: cp.ndarray,
-              n_profiles: int, n_bins: int) -> cp.ndarray:
+              n_profiles: int, n_bins: int, S: int = 1) -> cp.ndarray:
     flat_rec = flat_rec.reshape((n_profiles, n_bins))
     sum_profile = cp.sum(flat_rec, axis=1)
-    flat_rec /= cp.expand_dims(sum_profile, axis=1)
+    flat_rec = flat_rec * S / cp.expand_dims(sum_profile, axis=1)
+    flat_rec = flat_rec.astype(conf.get_precision())
     flat_rec = flat_rec.reshape(-1)
     sum_waterfall = cp.sum(sum_profile)
 
@@ -124,7 +131,7 @@ def create_flat_points(xp: cp.ndarray,
 def reconstruct_cuda(xp: cp.ndarray,
                 waterfall: cp.ndarray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
-                verbose: bool = False, callback = None) -> tuple:
+                S:int = 1, verbose: bool = False, callback = None) -> tuple:
     xp = xp.flatten()
     # from wrapper
     weights = cp.zeros(n_particles, dtype=conf.get_precision())
@@ -151,7 +158,7 @@ def reconstruct_cuda(xp: cp.ndarray,
             print(f"{iteration+1:3}")
 
         flat_rec = project(flat_rec, flat_points, weights, n_particles, n_profiles, n_bins)
-        flat_rec = normalize(flat_rec, n_profiles, n_bins)
+        flat_rec = normalize(flat_rec, n_profiles, n_bins, S)
         diff_prof = find_difference_profile(flat_rec, flat_profiles)
         discr[iteration] = discrepancy(diff_prof, n_profiles, n_bins)
         diff_prof = compensate_particle_amount(diff_prof, rparts, n_profiles, n_bins)
@@ -163,7 +170,7 @@ def reconstruct_cuda(xp: cp.ndarray,
 
     # Calculating final discrepancy
     flat_rec = project(flat_rec, flat_points, weights, n_particles, n_profiles, n_bins)
-    flat_rec = normalize(flat_rec, n_profiles, n_bins)
+    flat_rec = normalize(flat_rec, n_profiles, n_bins, S)
     diff_prof = find_difference_profile(flat_rec, flat_profiles)
     discr[n_iter] = discrepancy(diff_prof, n_profiles, n_bins)
 

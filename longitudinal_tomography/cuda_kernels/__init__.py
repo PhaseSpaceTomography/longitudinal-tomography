@@ -7,6 +7,7 @@ REDUCTION_BLOCK_SIZE = 32
 cuda_sources = [
     os.path.dirname(__file__) + "/kick_and_drift",
     os.path.dirname(__file__) + "/reconstruct",
+    os.path.dirname(__file__) + "/reconstruct_int",
 ]
 
 def compile_kernels():

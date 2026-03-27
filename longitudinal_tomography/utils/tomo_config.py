@@ -182,14 +182,18 @@ class GPUDev:
         self.kd_mod = cp.RawModule(path=os.path.join(
                     self.directory, f'../cuda_kernels/kick_and_drift_double.cubin'))
         self.rec_mod = cp.RawModule(path=os.path.join(
-                            self.directory, f'../cuda_kernels/reconstruct_double.cubin'))
+                    self.directory, f'../cuda_kernels/reconstruct_double.cubin'))
+        self.rec_mod_int = cp.RawModule(path=os.path.join(
+                    self.directory, f'../cuda_kernels/reconstruct_int_double.cubin'))
 
     def load_single_precision_modules(self):
         import cupy as cp
         self.kd_mod = cp.RawModule(path=os.path.join(
                     self.directory, f'../cuda_kernels/kick_and_drift_single.cubin'))
         self.rec_mod = cp.RawModule(path=os.path.join(
-                            self.directory, f'../cuda_kernels/reconstruct_single.cubin'))
+                    self.directory, f'../cuda_kernels/reconstruct_single.cubin'))
+        self.rec_mod_int = cp.RawModule(path=os.path.join(
+                    self.directory, f'../cuda_kernels/reconstruct_int_single.cubin'))
 
     def report_attributes(self):
         # Saves into a file all the device attributes

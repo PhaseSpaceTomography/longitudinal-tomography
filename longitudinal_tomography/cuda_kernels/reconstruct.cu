@@ -84,7 +84,7 @@ __global__ void project(real_t * __restrict__ flat_rec,         // inn/out
 extern "C"
 __global__ void clip(real_t *array,             // inn/out
                      const int length,
-                     const double clip_val) {
+                     const real_t clip_val) {
     int tid = threadIdx.x + blockDim.x * blockIdx.x;
     if(tid < length)
     {
