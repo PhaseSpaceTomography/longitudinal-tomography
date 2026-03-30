@@ -12,23 +12,25 @@ variables:
 
 build_wheel:
   extends: .acc_py_build_wheel
+  tags:
+    - k8s-gpu
 
 
 build_sdist:
   extends: .acc_py_build_sdist
+  tags:
+    - k8s-gpu
+
 
 # ================ Test ==================
   
 
 test_dev:
-  extends:
-    - .acc_py_dev_test
-    - .gitlab-registry.cern.ch/blond/blond/python310
+  image: gitlab-registry.cern.ch/blond/blond/python310
+  extends: .acc_py_dev_test
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
-    - nvidias-smi
-    - pip install cupy
     - pip list
     - python -m pytest ./unit_tests
       --cov=${project_name}
