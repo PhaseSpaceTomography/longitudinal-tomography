@@ -32,6 +32,8 @@ test_dev:
       --cov-report html:coverage-html
       --cov-report xml:coverage-report.xml
       --junitxml=junit-report.xml
+  tags:
+    - k8s-gpu
 
 
 test_wheel:
