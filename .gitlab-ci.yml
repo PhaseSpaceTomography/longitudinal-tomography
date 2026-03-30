@@ -26,6 +26,7 @@ test_dev:
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
+    - pip list
     - python -m pytest ./unit_tests
       --cov=${project_name}
       --cov-report term
