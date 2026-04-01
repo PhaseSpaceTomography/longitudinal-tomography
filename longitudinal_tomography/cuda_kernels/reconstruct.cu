@@ -11,7 +11,7 @@
 
 #ifdef USEFLOAT
     typedef float real_t;
-    typedef int int_t;
+    typedef int32_t int_t;
 #else
     typedef double real_t;
     typedef int64_t int_t;
@@ -156,7 +156,7 @@ __global__ void calculate_reciprocal(real_t *rparts,        // inn/out
     // Setting 0's to 1's to avoid zero division and creating reciprocal
     int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
     if (tid < all_bins) {
-        if (rparts[tid] == 0.0)
+        if (rparts[tid] == static_cast<real_t>(0.0))
             rparts[tid] = 1.0;
         rparts[tid] = maxVal / rparts[tid];
     }

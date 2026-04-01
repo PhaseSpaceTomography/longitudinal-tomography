@@ -77,7 +77,7 @@ def clip(array: cp.ndarray,
 def find_difference_profile(flat_rec: cp.ndarray,
                             flat_profiles: cp.ndarray) -> cp.ndarray:
     length = len(flat_rec)
-    diff_prof = cp.empty(length, dtype=flat_rec.dtype)
+    diff_prof = cp.zeros(length, dtype=flat_rec.dtype)
     find_diffprof_kernel(args=(diff_prof, flat_rec, flat_profiles, length),
                          block=block_size,
                          grid=(int(length / block_size[0] + 1), 1, 1))
@@ -108,10 +108,15 @@ def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
                           grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
+    if rparts.dtype in [cp.float32, cp.int32, np.float32, np.int32]:
+        int_type = np.int32
+        real_type = np.float32
+    else:
+        int_type = np.int64
+        real_type = np.float64
 
-    max_bin_val = float(cp.max(rparts))
-
-    calc_reciprocal_kernel(args=(rparts, n_bins, n_profiles, max_bin_val),
+    max_bin_val = real_type(cp.max(rparts).get())
+    calc_reciprocal_kernel(args=(rparts, int_type(n_bins), int_type(n_profiles), max_bin_val),
                            block=block_size,
                            grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))
 
@@ -140,6 +145,7 @@ def reconstruct_cuda(xp: cp.ndarray,
     flat_rec = cp.zeros(n_profiles * n_bins, dtype=conf.get_precision())
     flat_points = cp.zeros(n_particles * n_profiles, dtype=conf.get_precision())
     rparts = cp.zeros((n_profiles * n_bins), dtype=conf.get_precision())
+    diff_prof = cp.zeros_like(flat_rec)
 
     # Actual functionality
     rparts = reciprocal_particles(rparts, xp, n_bins, n_profiles, n_particles)
