@@ -22,7 +22,6 @@ build_sdist:
   
 test_dev2:
   image: registry.cern.ch/docker.io/cupy/cupy:latest
-  extends: .acc_py_dev_test
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
