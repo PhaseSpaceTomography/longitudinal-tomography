@@ -20,7 +20,7 @@ build_sdist:
 
 # ================ Test ==================
   
-test_dev2:
+test_dev_gpu:
   image: registry.cern.ch/docker.io/cupy/cupy:latest
   script:
     # Run the unit-tests with coverage output.
@@ -30,7 +30,7 @@ test_dev2:
     - pip3 --version
     - nvidia-smi
     - apt-get update
-    - apt-get install -y python3.14 python3.14-venv python3.14-dev
+    - apt-get install -y python3.10 python3.10-venv python3.10-dev
     - apt-get install -y python3-pip || true # try to install pip
     - python3 -m ensurepip --upgrade || true
     - python3 -m pip install --upgrade pip
