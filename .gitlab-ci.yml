@@ -20,6 +20,21 @@ build_sdist:
 
 # ================ Test ==================
   
+test_dev2:
+  image: registry.cern.ch/docker.io/cupy/cupy:latest
+  extends: .acc_py_dev_test
+  script:
+    # Run the unit-tests with coverage output.
+    - cd ${project_root}
+    - pip list
+    - python -m pytest ./unit_tests
+      --cov=${project_name}
+      --cov-report term
+      --cov-report html:coverage-html
+      --cov-report xml:coverage-report.xml
+      --junitxml=junit-report.xml
+  tags:
+    - k8s-gpu
 
 test_dev:
   extends: .acc_py_dev_test
