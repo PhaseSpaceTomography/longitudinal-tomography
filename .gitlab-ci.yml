@@ -25,8 +25,14 @@ test_dev2:
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
-    - pip list
-    - python -m pytest ./unit_tests
+    - which python3
+    - python3 --version
+    - pip3 --version
+    - nvidia-smi
+    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
+    - python3 -m pip install pytest pytest-cov
+    - pip3 list
+    - python3 -m pytest ./unit_tests
       --cov=${project_name}
       --cov-report term
       --cov-report html:coverage-html
