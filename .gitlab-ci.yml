@@ -29,11 +29,15 @@ test_dev2:
     - python3 --version
     - pip3 --version
     - nvidia-smi
-    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
-    - python3 -m ensurepip --upgrade
+    - apt-get update
+    - apt-get install -y python3.14 python3.14-venv python3.14-dev
+    - apt-get install -y python3-pip || true # try to install pip
+    - python3 -m ensurepip --upgrade || true
+    - python3 -m pip install --upgrade pip
     - python3 -m venv .venv
     - source .venv/bin/activate
     - which python
+    - python -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
     - pip install pytest pytest-cov
     - pip3 list
     - python -m pytest ./unit_tests
