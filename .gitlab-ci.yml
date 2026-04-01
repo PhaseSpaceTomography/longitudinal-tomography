@@ -19,35 +19,31 @@ build_sdist:
 
 
 # ================ Test ==================
-  
 test_dev_gpu:
   image: registry.cern.ch/docker.io/cupy/cupy:latest
+
   script:
-    # Run the unit-tests with coverage output.
     - cd ${project_root}
+
     - which python3
     - python3 --version
     - pip3 --version
+
     - nvidia-smi
-    - apt update
-    - apt install -y python3.11 python3.11-venv python3.11-dev
-    - apt install -y python3-pip || true # try to install pip
-    - python3 -m ensurepip --upgrade || true
-    - python3 -m pip install --upgrade pip
-    - python3 -m venv .venv
-    - source .venv/bin/activate
-    - which python
     - python -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
-    - pip install pytest pytest-cov
-    - pip3 list
-    - python -m pytest ./unit_tests
-      --cov=${project_name}
-      --cov-report term
-      --cov-report html:coverage-html
-      --cov-report xml:coverage-report.xml
-      --junitxml=junit-report.xml
+
+    - pip3 install pytest pytest-cov
+    - pip3 install -e .
+
+    - python3 -m pytest ./unit_tests \
+        --cov=${project_name} \
+        --cov-report term \
+        --cov-report html:coverage-html \
+        --cov-report xml:coverage-report.xml \
+        --junitxml=junit-report.xml
+
   tags:
-    - k8s-gpu
+    - k8s-gpu 
 
 test_dev:
   extends: .acc_py_dev_test
