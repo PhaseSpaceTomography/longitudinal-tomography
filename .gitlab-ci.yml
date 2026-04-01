@@ -30,9 +30,12 @@ test_dev2:
     - pip3 --version
     - nvidia-smi
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
-    - python3 -m pip install pytest pytest-cov
+    - python3 -m venv .venv
+    - source .venv/bin/activate
+    - which python
+    - pip install pytest pytest-cov
     - pip3 list
-    - python3 -m pytest ./unit_tests
+    - python -m pytest ./unit_tests
       --cov=${project_name}
       --cov-report term
       --cov-report html:coverage-html
