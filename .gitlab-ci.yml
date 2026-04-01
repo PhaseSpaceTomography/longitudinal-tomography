@@ -30,6 +30,7 @@ test_dev2:
     - pip3 --version
     - nvidia-smi
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
+    - python3 -m ensurepip --upgrade
     - python3 -m venv .venv
     - source .venv/bin/activate
     - which python
