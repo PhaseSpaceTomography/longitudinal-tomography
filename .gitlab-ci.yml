@@ -21,7 +21,7 @@ build_sdist:
 # ================ Test ==================
   
 test_dev_gpu:
-  image: registry.cern.ch/docker.io/cupy/cupy:latest
+  image: docker://registry.cern.ch/docker.io/cupy/cupy:latest
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
@@ -29,9 +29,9 @@ test_dev_gpu:
     - python3 --version
     - pip3 --version
     - nvidia-smi
-    - apt-get update
-    - apt-get install -y python3.10 python3.10-venv python3.10-dev
-    - apt-get install -y python3-pip || true # try to install pip
+    - apt update
+    - apt install -y python3.11 python3.11-venv python3.11-dev
+    - apt install -y python3-pip || true # try to install pip
     - python3 -m ensurepip --upgrade || true
     - python3 -m pip install --upgrade pip
     - python3 -m venv .venv
