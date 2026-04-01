@@ -100,8 +100,20 @@ def create_phase_space_image(
         phase space image has the same format as from the original program.
     """
 
-    phase_space = conf.make_phase_space(conf.cast(xp[:, recprof]),
-                          conf.cast(yp[:, recprof]),
+    if conf.AppConfig.get_precision() in [conf.int32, conf.int64]:
+        xp = conf.cast(xp)
+        yp = conf.cast(yp)
+    elif conf.AppConfig.get_precision() in [conf.float32]:
+        xp = xp.astype(conf.int32)
+        yp = yp.astype(conf.int32)
+    elif conf.AppConfig.get_precision() in [conf.float64]:
+        xp = xp.astype(conf.int64)
+        yp = yp.astype(conf.int64)
+
+    weight = conf.cast(weight)
+
+    phase_space = conf.make_phase_space(xp[:, recprof],
+                          yp[:, recprof],
                           weight, n_bins)
 
     # Removing (if any) negative areas.

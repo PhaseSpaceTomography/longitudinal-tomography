@@ -14,6 +14,7 @@ import numpy.testing as nptest
 from .. import commons
 import longitudinal_tomography.utils.tomo_output as tout
 import longitudinal_tomography.data.data_treatment as dtreat
+from longitudinal_tomography.utils import tomo_config as conf
 
 base_dir = os.path.split(os.path.realpath(__file__))[0]
 base_dir = os.path.split(base_dir)[0]
@@ -44,6 +45,8 @@ class TestTomoOut(unittest.TestCase):
         nbins = 5
         recprof = 0
         img = tout.create_phase_space_image(xp, yp, weights, nbins, recprof)
+        if conf.AppConfig.is_gpu_enabled():
+            img = img.get()
 
         correct = np.array([[0.04, 0.04, 0.04, 0.04, 0.04],
                             [0.04, 0.04, 0.04, 0.04, 0.04],
@@ -51,7 +54,7 @@ class TestTomoOut(unittest.TestCase):
                             [0.04, 0.04, 0.04, 0.04, 0.04],
                             [0.04, 0.04, 0.04, 0.04, 0.04]])
 
-        nptest.assert_equal(
+        nptest.assert_almost_equal(
             img, correct, err_msg='Phase space image was created incorrectly')
 
     @patch('matplotlib.pyplot.show')
