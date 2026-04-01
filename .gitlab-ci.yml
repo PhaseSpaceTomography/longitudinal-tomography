@@ -30,10 +30,11 @@ test_dev_gpu:
     - pip3 --version
 
     - nvidia-smi
-    - python -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
+    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
 
     - pip3 install pytest pytest-cov
     - pip3 install -e .
+    - pip3 list
 
     - python3 -m pytest ./unit_tests \
         --cov=${project_name} \
@@ -57,8 +58,6 @@ test_dev:
       --cov-report html:coverage-html
       --cov-report xml:coverage-report.xml
       --junitxml=junit-report.xml
-  tags:
-    - k8s-gpu
 
 
 test_wheel:
