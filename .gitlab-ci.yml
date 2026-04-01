@@ -21,7 +21,7 @@ build_sdist:
 # ================ Test ==================
   
 test_dev_gpu:
-  image: docker://registry.cern.ch/docker.io/cupy/cupy:latest
+  image: registry.cern.ch/docker.io/cupy/cupy:latest
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
