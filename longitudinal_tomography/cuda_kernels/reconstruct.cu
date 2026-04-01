@@ -11,8 +11,10 @@
 
 #ifdef USEFLOAT
     typedef float real_t;
+    typedef int int_t;
 #else
     typedef double real_t;
+    typedef int64_t int_t;
 #endif
 
 #ifndef BLOCK_SIZE
@@ -24,16 +26,16 @@
 // Must be called with block size it was compiled with (BLOCK_SIZE variable)
 extern "C"
 __global__ void back_project(real_t * __restrict__ weights,                 // inn/out
-                             int * __restrict__ flat_points,                // inn
+                             int_t * __restrict__ flat_points,                // inn
                              const real_t * __restrict__ flat_profiles,     // inn
-                             const int npart, const int nprof) {            // inn
-    const int ITEMS_PER_ARRAY = 512 / BLOCK_SIZE;
-    const int ITEMS_PER_IT = BLOCK_SIZE * ITEMS_PER_ARRAY;
-    int iterations = (nprof + ITEMS_PER_IT - 1) / ITEMS_PER_IT;
+                             const int_t npart, const int_t nprof) {            // inn
+    const int_t ITEMS_PER_ARRAY = 512 / BLOCK_SIZE;
+    const int_t ITEMS_PER_IT = BLOCK_SIZE * ITEMS_PER_ARRAY;
+    int_t iterations = (nprof + ITEMS_PER_IT - 1) / ITEMS_PER_IT;
 
     real_t aggregate = 0.0;
 
-    for(int i = 0; i < iterations; i++)
+    for(int_t i = 0; i < iterations; i++)
     {
         typedef cub::BlockReduce<real_t, BLOCK_SIZE> BlockReduce;
 
@@ -42,9 +44,9 @@ __global__ void back_project(real_t * __restrict__ weights,                 // i
 
         real_t weight_prof[ITEMS_PER_ARRAY];
 
-        for (int j = 0; j < ITEMS_PER_ARRAY; j++)
+        for (int_t j = 0; j < ITEMS_PER_ARRAY; j++)
         {
-            int index = i * ITEMS_PER_IT + j * blockDim.x + threadIdx.x;
+            int_t index = i * ITEMS_PER_IT + j * blockDim.x + threadIdx.x;
             if (index < nprof)
                 weight_prof[j] = flat_profiles[flat_points[blockIdx.x * nprof + index]];
             else
@@ -65,14 +67,14 @@ __global__ void back_project(real_t * __restrict__ weights,                 // i
 // amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void project(real_t * __restrict__ flat_rec,         // inn/out
-                        const int * __restrict__ flat_points,   // inn
+                        const int_t * __restrict__ flat_points,   // inn
                         const real_t * __restrict__ weights,    // inn
-                        const int npart, const int nprof) {     // inn
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+                        const int_t npart, const int_t nprof) {     // inn
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
 
     if (tid < npart * nprof)
     {
-        int idx = flat_points[tid];
+        int_t idx = flat_points[tid];
         atomicAdd(&flat_rec[idx], weights[tid / nprof]);
     }
 }
@@ -83,9 +85,9 @@ __global__ void project(real_t * __restrict__ flat_rec,         // inn/out
 // amount of threads should be at least equal to the length.
 extern "C"
 __global__ void clip(real_t *array,             // inn/out
-                     const int length,
+                     const int_t length,
                      const real_t clip_val) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
     if(tid < length)
     {
         if (array[tid] < clip_val)
@@ -101,9 +103,9 @@ extern "C"
 __global__ void find_difference_profile(real_t * __restrict__ diff_prof,            // out
                                         const real_t * __restrict__ flat_rec,       // inn
                                         const real_t * __restrict__ flat_profiles,  // inn
-                                        const int all_bins) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
-    for (int i = tid; i < all_bins; i += blockDim.x * gridDim.x)
+                                        const int_t all_bins) {
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
+    for (int_t i = tid; i < all_bins; i += blockDim.x * gridDim.x)
         if (i < all_bins)
             diff_prof[i] = flat_profiles[i] - flat_rec[i];
 }
@@ -115,9 +117,9 @@ __global__ void find_difference_profile(real_t * __restrict__ diff_prof,        
 extern "C"
 __global__ void compensate_particle_amount(real_t * __restrict__ diff_prof,     // inn/out
                                            const real_t * __restrict__ rparts,  // inn
-                                           const int nprof,
-                                           const int nbins) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+                                           const int_t nprof,
+                                           const int_t nbins) {
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
     if (tid < nprof * nbins) {
         diff_prof[tid] *= rparts[tid];
     }
@@ -128,15 +130,15 @@ __global__ void compensate_particle_amount(real_t * __restrict__ diff_prof,     
 // amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void count_particles_in_bin(real_t * __restrict__ rparts,    // out
-                                       const int * __restrict__ xp,     // inn
-                                       const int nprof,
-                                       const int npart,
-                                       const int nbins) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+                                       const int_t * __restrict__ xp,     // inn
+                                       const int_t nprof,
+                                       const int_t npart,
+                                       const int_t nbins) {
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
     if(tid < npart * nprof)
     {
-        int j = tid % nprof;
-        int bin = xp[tid];
+        int_t j = tid % nprof;
+        int_t bin = xp[tid];
         atomicAdd(&rparts[j * nbins + bin], 1);
     }
 }
@@ -146,13 +148,13 @@ __global__ void count_particles_in_bin(real_t * __restrict__ rparts,    // out
 // amount of threads should be at least equal to the product of nprof and nbins.
 extern "C"
 __global__ void calculate_reciprocal(real_t *rparts,        // inn/out
-                                     const int nbins,
-                                     const int nprof,
-                                     const double maxVal) {
-    const int all_bins = nprof * nbins;
+                                     const int_t nbins,
+                                     const int_t nprof,
+                                     const real_t maxVal) {
+    const int_t all_bins = nprof * nbins;
 
     // Setting 0's to 1's to avoid zero division and creating reciprocal
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
     if (tid < all_bins) {
         if (rparts[tid] == 0.0)
             rparts[tid] = 1.0;
@@ -165,11 +167,11 @@ __global__ void calculate_reciprocal(real_t *rparts,        // inn/out
 // This function does not iterate, so the
 // amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
-__global__ void create_flat_points(int *flat_points,    // inn/out
-                                   const int npart,
-                                   const int nprof,
-                                   const int nbins) {
-    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+__global__ void create_flat_points(int_t *flat_points,    // inn/out
+                                   const int_t npart,
+                                   const int_t nprof,
+                                   const int_t nbins) {
+    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
     if (tid < npart * nprof)
         flat_points[tid] += nbins * (tid % nprof);
 }

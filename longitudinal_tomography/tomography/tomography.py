@@ -406,10 +406,17 @@ class Tomography(TomographyABC):
             raise expt.CoordinateError(
                 'x-coordinates has value None, and must be provided')
 
+        if conf.AppConfig.get_precision() in [conf.int32, conf.int64]:
+            xp = conf.cast(self.xp)
+        elif conf.AppConfig.get_precision() in [conf.float32]:
+            xp = self.xp.astype(conf.int32)
+        elif conf.AppConfig.get_precision() in [conf.float64]:
+            xp = self.xp.astype(conf.int64)
+
         (self.weight,
          self.diff,
          self.recreated) = conf.reconstruct(
-            conf.cast(self.xp), self.waterfall, niter, self.nbins,
+            xp, self.waterfall, niter, self.nbins,
             self.nparts, self.nprofs, self._S, verbose, callback)
         return self.weight
 

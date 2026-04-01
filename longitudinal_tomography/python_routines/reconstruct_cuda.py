@@ -135,10 +135,10 @@ def reconstruct_cuda(xp: cp.ndarray,
     xp = xp.flatten()
     # from wrapper
     weights = cp.zeros(n_particles, dtype=conf.get_precision())
-    discr = np.zeros(n_iter + 1)
+    discr = cp.zeros(n_iter + 1)
     flat_profiles = waterfall.flatten().astype(conf.get_precision())
     flat_rec = cp.zeros(n_profiles * n_bins, dtype=conf.get_precision())
-    flat_points = cp.zeros(n_particles * n_profiles)
+    flat_points = cp.zeros(n_particles * n_profiles, dtype=conf.get_precision())
     rparts = cp.zeros((n_profiles * n_bins), dtype=conf.get_precision())
 
     # Actual functionality

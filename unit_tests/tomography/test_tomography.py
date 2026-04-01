@@ -5,6 +5,7 @@ Run as python test_tomography_cpp.py in console or via coverage
 from __future__ import annotations
 import os
 import unittest
+import gc
 
 import numpy as np
 import numpy.testing as nptest
@@ -302,6 +303,12 @@ class TestTomographyGPU(unittest.TestCase):
             conf.AppConfig.set_double_precision()
 
     def tearDown(self) -> None:
+        gc.collect()
+        mempool = self.cp.get_default_memory_pool()
+        pinned_mempool = self.cp.get_default_pinned_memory_pool()
+        mempool.free_all_blocks()
+        pinned_mempool.free_all_blocks()
+
         conf.AppConfig.use_cpu()
         conf.AppConfig.set_double_precision()
 
