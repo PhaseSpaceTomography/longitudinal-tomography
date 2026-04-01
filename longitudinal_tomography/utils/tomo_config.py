@@ -160,8 +160,10 @@ class GPUDev:
         self.func_dict = {}
 
         # set the default grid and block sizes
-        default_blocks = 2 * self.attributes['MultiProcessorCount']
-        default_threads = self.attributes['MaxThreadsPerBlock']
+        #default_blocks = 2 * self.attributes['MultiProcessorCount']
+        #default_threads = self.attributes['MaxThreadsPerBlock']
+        default_blocks = 128
+        default_threads = 256
         blocks = int(os.environ.get('GPU_BLOCKS', default_blocks))
         threads = int(os.environ.get('GPU_THREADS', default_threads))
         self.grid_size = (blocks, 1, 1)
