@@ -20,29 +20,17 @@ build_sdist:
 
 # ================ Test ==================
 test_dev_gpu:
-  image: registry.cern.ch/docker.io/nvidia/cuda:12.8.0-devel-ubuntu22.04
+  image: registry.cern.ch/docker.io/cupy/cupy:latest
 
   script:
     - cd ${project_root}
 
-    - |
-      export DEBIAN_FRONTEND=noninteractive
-      apt update
-      apt install -y software-properties-common
-      add-apt-repository -y ppa:deadsnakes/ppa
-      apt update
-      apt install -y python3.11 python3.11-venv python3.11-dev python3-pip git
-
-    - update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-    - update-alternatives --set python3 /usr/bin/python3.11
-
-    - python3 -m pip install --upgrade pip
-    - python3 -m pip install pytest pytest-cov
-    - python3 -m pip install -e .[test,gpu]
-
     - which python3
     - python3 --version
     - pip3 --version
+    
+    - pip3 install pytest pytest-cov
+    - pip3 install -e .[test,gpu]
 
     - nvidia-smi
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
