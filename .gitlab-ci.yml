@@ -43,12 +43,12 @@ test_dev_gpu:
     - python3 --version
     - pip3 --version
 
-    - nvidia-smi
-    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
-
     - pip3 install pytest pytest-cov
     - pip3 install -e .
     - pip3 list
+
+    - nvidia-smi
+    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
 
     - python3 -m pytest ./unit_tests \
         --cov=${project_name} \
