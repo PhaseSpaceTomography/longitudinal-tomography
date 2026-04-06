@@ -20,10 +20,24 @@ build_sdist:
 
 # ================ Test ==================
 test_dev_gpu:
-  image: registry.cern.ch/docker.io/cupy/cupy:latest
+  image: registry.cern.ch/docker.io/nvidia/cuda:12.8.0-devel-ubuntu22.04
 
   script:
     - cd ${project_root}
+
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update && \
+      apt-get install -y software-properties-common && \
+      add-apt-repository ppa:deadsnakes/ppa && \
+      apt-get update && \
+      apt-get install -y python3.11 python3.11-venv python3.11-dev
+
+    - apt-get install -y python3-pip || true # try to install pip
+    - apt-get install -y git
+    - update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+      update-alternatives --set python3 /usr/bin/python3.11
+    - python3 -m ensurepip --upgrade || true
+    - python3 -m pip install --upgrade pip
 
     - which python3
     - python3 --version
