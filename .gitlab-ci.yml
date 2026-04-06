@@ -31,11 +31,12 @@ test_dev_gpu:
       add-apt-repository ppa:deadsnakes/ppa && \
       apt-get update && \
       apt-get install -y python3.11 python3.11-venv python3.11-dev
-
-    - apt-get install -y python3-pip || true # try to install pip
-    - apt-get install -y git
+    - which python3
     - update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
       update-alternatives --set python3 /usr/bin/python3.11
+    - apt-get install -y python3-pip || true # try to install pip
+    - apt-get install -y git
+
     - python3 -m ensurepip --upgrade || true
     - python3 -m pip install --upgrade pip
 
