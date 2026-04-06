@@ -25,32 +25,30 @@ test_dev_gpu:
   script:
     - cd ${project_root}
 
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt update && \
-      apt install -y software-properties-common && \
-      add-apt-repository ppa:deadsnakes/ppa
-    - apt update && \
-      apt install -y python3.11 python3.11-venv python3.11-dev
-    - update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
-      update-alternatives --set python3 /usr/bin/python3.11
-    - apt install -y python3-pip || true # try to install pip
-    - apt install -y git
+    - |
+      export DEBIAN_FRONTEND=noninteractive
+      apt update
+      apt install -y software-properties-common
+      add-apt-repository -y ppa:deadsnakes/ppa
+      apt update
+      apt install -y python3.11 python3.11-venv python3.11-dev python3-pip git
 
-    - python3 -m ensurepip --upgrade || true
+    - update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+    - update-alternatives --set python3 /usr/bin/python3.11
+
     - python3 -m pip install --upgrade pip
+    - python3 -m pip install pytest pytest-cov
+    - python3 -m pip install -e .
 
     - which python3
     - python3 --version
     - pip3 --version
 
-    - pip3 install pytest pytest-cov
-    - pip3 install -e .
-    - pip3 list
-
     - nvidia-smi
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
 
-    - python3 -m pytest ./unit_tests \
+    - |
+      python3 -m pytest ./unit_tests \
         --cov=${project_name} \
         --cov-report term \
         --cov-report html:coverage-html \
@@ -58,7 +56,7 @@ test_dev_gpu:
         --junitxml=junit-report.xml
 
   tags:
-    - k8s-gpu 
+    - k8s-gpu
 
 test_dev:
   extends: .acc_py_dev_test
