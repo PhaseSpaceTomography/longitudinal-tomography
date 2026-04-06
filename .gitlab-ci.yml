@@ -24,21 +24,23 @@ test_dev_gpu:
 
   script:
     - cd ${project_root}
-
     - apt-get update
-    - apt-get install -y git
-
-    - pip3 install --break-system-packages pytest pytest-cov
-    - pip3 install --break-system-packages -e .[test]
-
-    # restore compatible NumPy ABI
-    - pip3 install --break-system-packages "numpy<2.0"
-
-    - python3 -c "import numpy; print(numpy.__version__)"
-    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
+    - apt-get install -y git python3-venv
 
     - |
-      python3 -m pytest ./unit_tests \
+      python3 -m venv .venv
+      source .venv/bin/activate
+
+      python -m pip install --upgrade pip
+      python -m pip install pytest pytest-cov
+
+      # install your package but do NOT install cupy again
+      python -m pip install -e .[test]
+
+      # verify that venv sees system cupy
+      python -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
+
+      python -m pytest ./unit_tests \
         --cov=${project_name} \
         --cov-report term \
         --cov-report html:coverage-html \
