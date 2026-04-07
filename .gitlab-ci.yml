@@ -9,16 +9,6 @@ variables:
   ACC_PY_BASE_IMAGE_TAG: "2023.06"
 
 # ================ Build ==================
-
-build_wheel:
-  extends: .acc_py_build_wheel
-
-
-build_sdist:
-  extends: .acc_py_build_sdist
-
-
-# ================ Test ==================
 test_dev_gpu:
   image: registry.cern.ch/docker.io/cupy/cupy:latest
 
@@ -31,6 +21,7 @@ test_dev_gpu:
     - pip3 install --break-system-packages pytest pytest-cov
     - pip3 install --break-system-packages cupy-cuda12x
     - pip3 install --break-system-packages -e .[test]
+    - pip3 list
 
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
 
@@ -44,6 +35,16 @@ test_dev_gpu:
 
   tags:
     - k8s-gpu
+
+build_wheel:
+  extends: .acc_py_build_wheel
+
+
+build_sdist:
+  extends: .acc_py_build_sdist
+
+
+# ================ Test ==================
 
 test_dev:
   extends: .acc_py_dev_test
