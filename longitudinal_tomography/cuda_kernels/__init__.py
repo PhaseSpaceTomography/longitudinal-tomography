@@ -7,7 +7,6 @@ REDUCTION_BLOCK_SIZE = 32
 cuda_sources = [
     os.path.dirname(__file__) + "/kick_and_drift",
     os.path.dirname(__file__) + "/reconstruct",
-    os.path.dirname(__file__) + "/reconstruct_int",
 ]
 
 def compile_kernels():
@@ -61,10 +60,30 @@ def compile_kernels():
                     "-o",
                     source + "_single.cubin",
                     source + ".cu",
-                    "-DUSEFLOAT",
+                    "-DUSE32BITS",
                     f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
                 ]
                 subprocess.run(command)
+            
+            # Compile integer kernels
+            source = os.path.dirname(__file__) + "/reconstruct"
+            command = nvccflags + [
+                    "-o",
+                    source + "_int_double.cubin",
+                    source + ".cu",
+                    "-DUSEINT",
+                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
+            ]
+            subprocess.run(command)
+            command = nvccflags + [
+                    "-o",
+                    source + "_int_single.cubin",
+                    source + ".cu",
+                    "-DUSE32BITS",
+                    "-DUSEINT",
+                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
+            ]
+            subprocess.run(command)
         except FileNotFoundError as e:
             raise expt.CudaCompilationException(
                 "The NVCC compiler could not be found. "\

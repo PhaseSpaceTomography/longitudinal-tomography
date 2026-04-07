@@ -108,14 +108,20 @@ def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
                           grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
-    if rparts.dtype in [cp.float32, cp.int32, np.float32, np.int32]:
+    if rparts.dtype in [cp.float32, np.float32]:
         int_type = np.int32
-        real_type = np.float32
-    else:
+        real_int_type = np.float32
+    elif rparts.dtype in [cp.float64, np.float64]:
         int_type = np.int64
-        real_type = np.float64
-
-    max_bin_val = real_type(cp.max(rparts).get())
+        real_int_type = np.float64
+    elif rparts.dtype in [cp.int32, np.int32]:
+        int_type = np.int32
+        real_int_type = np.int32
+    elif rparts.dtype in [cp.int64, np.int64]:
+        int_type = np.int64
+        real_int_type = np.int64
+    
+    max_bin_val = real_int_type(cp.max(rparts).get())
     calc_reciprocal_kernel(args=(rparts, int_type(n_bins), int_type(n_profiles), max_bin_val),
                            block=block_size,
                            grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))

@@ -8,7 +8,7 @@
  * drifting.
  */
 
-#ifdef USEFLOAT
+#ifdef USE32BITS
     typedef float real_t;
     typedef int32_t int_t;
 #else
