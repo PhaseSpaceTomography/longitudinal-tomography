@@ -11,6 +11,7 @@ import longitudinal_tomography.cuda_kernels as cuda_kernels
 
 gpu_dev = GPUDev.get_gpu_dev()
 block_size = gpu_dev.block_size
+grid_size = gpu_dev.grid_size
 
 def refresh_kernels():
     global back_project_kernel, project_kernel, clip_kernel, find_diffprof_kernel,\
@@ -50,7 +51,7 @@ def project(flat_rec: cp.ndarray,
             n_profiles: int, n_bins: int) -> cp.ndarray:
     project_kernel(args=(flat_rec, flat_points, weights, n_particles, n_profiles),
                         block=block_size,
-                        grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
+                        grid=grid_size)
     return flat_rec
 
 def normalize(flat_rec: cp.ndarray,
@@ -71,7 +72,7 @@ def clip(array: cp.ndarray,
         clip_val: float) -> cp.ndarray:
     clip_kernel(args=(array, array_length, clip_val),
                 block=block_size,
-                grid=(int(array_length / block_size[0] + 1), 1, 1))
+                grid=grid_size)
     return array
 
 def find_difference_profile(flat_rec: cp.ndarray,
@@ -80,7 +81,7 @@ def find_difference_profile(flat_rec: cp.ndarray,
     diff_prof = cp.zeros(length, dtype=flat_rec.dtype)
     find_diffprof_kernel(args=(diff_prof, flat_rec, flat_profiles, length),
                          block=block_size,
-                         grid=(int(length / block_size[0] + 1), 1, 1))
+                         grid=grid_size)
     return diff_prof
 
 def discrepancy(diff_prof: cp.ndarray,
@@ -95,7 +96,7 @@ def compensate_particle_amount(diff_prof: cp.ndarray,
                                n_profiles: int, n_bins: int) -> cp.ndarray:
     comp_part_amount_kernel(args=(diff_prof, rparts, n_profiles, n_bins),
                             block=block_size,
-                            grid=(int((n_profiles * n_bins) / block_size[0] + 1), 1, 1))
+                            grid=grid_size)
     return diff_prof
 
 def max_2d(array: cp.ndarray,
@@ -107,7 +108,7 @@ def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
                          n_particles: int) -> cp.ndarray:
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
-                          grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
+                          grid=grid_size)
     if rparts.dtype in [cp.float32, np.float32]:
         int_type = np.int32
         real_int_type = np.float32
@@ -124,7 +125,7 @@ def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
     max_bin_val = real_int_type(cp.max(rparts).get())
     calc_reciprocal_kernel(args=(rparts, int_type(n_bins), int_type(n_profiles), max_bin_val),
                            block=block_size,
-                           grid=(int((n_bins * n_profiles) / block_size[0] + 1), 1, 1))
+                           grid=grid_size)
 
     return rparts
 
@@ -135,7 +136,7 @@ def create_flat_points(xp: cp.ndarray,
 
     create_flat_points_kernel(args=(flat_points, n_particles, n_profiles, n_bins),
                               block=block_size,
-                              grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
+                              grid=grid_size)
 
     return flat_points
 

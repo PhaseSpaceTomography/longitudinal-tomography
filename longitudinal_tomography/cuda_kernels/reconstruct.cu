@@ -1,8 +1,8 @@
 /**
  * @file reconstruct.cu
  *
- * @author Bernardo Abreu Figueiredo
- * Contact: bernardo.abreu.figueiredo@cern.ch
+ * @author Bernardo Abreu Figueiredo, Balazs Paszkal Halmos
+ * Contact: bernardo.abreu.figueiredo@cern.ch, balazs.paszkal.halmos@cern.ch
  *
  * CUDA kernels that handle phase space reconstruction for real_int_t precision floating-point numbers.
  */
@@ -71,42 +71,41 @@ __global__ void back_project(real_int_t * __restrict__ weights,                 
 }
 
 // Projection using flattened arrays.
-// This function does not iterate, so the
-// amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void project(real_int_t * __restrict__ flat_rec,         // inn/out
                         const int_t * __restrict__ flat_points,   // inn
                         const real_int_t * __restrict__ weights,    // inn
                         const int_t npart, const int_t nprof) {     // inn
-    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
+    int_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    int_t stride = blockDim.x * gridDim.x;
 
-    if (tid < npart * nprof)
+    for (int_t i = tid; i < npart * nprof; i += stride)
     {
-        int_t idx = flat_points[tid];
+        int_t idx = flat_points[i];
         #ifdef USEINT
             atomicAdd(
                 reinterpret_cast<unsigned long long*>(&flat_rec[idx]),
-                static_cast<unsigned long long>(weights[tid / nprof])
+                static_cast<unsigned long long>(weights[i / nprof])
             );
         #else
-            atomicAdd(&flat_rec[idx], weights[tid / nprof]);
+            atomicAdd(&flat_rec[idx], weights[i / nprof]);
         #endif
     }
 }
 
 // Array clipping function to set values below a threshold
 // to the respective value.
-// This function does not iterate, so the
-// amount of threads should be at least equal to the length.
 extern "C"
 __global__ void clip(real_int_t *array,             // inn/out
                      const int_t length,
                      const real_int_t clip_val) {
-    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if(tid < length)
+    int_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    int_t stride = blockDim.x * gridDim.x;
+    
+    for (int_t i = tid; i < length; i += stride)
     {
-        if (array[tid] < clip_val)
-            array[tid] = clip_val;
+        if (array[i] < clip_val)
+            array[i] = clip_val;
     }
 }
 
@@ -127,33 +126,33 @@ __global__ void find_difference_profile(real_int_t * __restrict__ diff_prof,    
 
 // Multiplies the profile differences with the reciprocal particle array
 // to compensate for the amount of particles.
-// This function does not iterate, so the
-// amount of threads should be at least equal to the product of nprof and nbins.
 extern "C"
 __global__ void compensate_particle_amount(real_int_t * __restrict__ diff_prof,     // inn/out
                                            const real_int_t * __restrict__ rparts,  // inn
                                            const int_t nprof,
                                            const int_t nbins) {
-    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if (tid < nprof * nbins) {
-        diff_prof[tid] *= rparts[tid];
+    int_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    int_t stride = blockDim.x * gridDim.x;
+
+    for (int_t i = tid; i < nprof * nbins; i += stride) {
+        diff_prof[i] *= rparts[i];
     }
 }
 
 // Counts the particles in each bin.
-// This function does not iterate, so the
-// amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void count_particles_in_bin(real_int_t * __restrict__ rparts,    // out
                                        const int_t * __restrict__ xp,     // inn
                                        const int_t nprof,
                                        const int_t npart,
                                        const int_t nbins) {
-    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if(tid < npart * nprof)
+    int_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    int_t stride = blockDim.x * gridDim.x;
+    
+    for (int_t i = tid; i < npart * nprof; i += stride)
     {
         int_t j = tid % nprof;
-        int_t bin = xp[tid];
+        int_t bin = xp[i];
         #ifdef USEINT
             atomicAdd(reinterpret_cast<unsigned long long*>(&rparts[j * nbins + bin]), 1);
         #else
@@ -163,8 +162,6 @@ __global__ void count_particles_in_bin(real_int_t * __restrict__ rparts,    // o
 }
 
 // Calculates the reciprocal of the counted particles per bin.
-// This function does not iterate, so the
-// amount of threads should be at least equal to the product of nprof and nbins.
 extern "C"
 __global__ void calculate_reciprocal(real_int_t *rparts,        // inn/out
                                      const int_t nbins,
@@ -173,24 +170,26 @@ __global__ void calculate_reciprocal(real_int_t *rparts,        // inn/out
     const int_t all_bins = nprof * nbins;
 
     // Setting 0's to 1's to avoid zero division and creating reciprocal
-    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if (tid < all_bins) {
-        if (rparts[tid] == static_cast<real_int_t>(0.0))
-            rparts[tid] = 1.0;
-        rparts[tid] = maxVal / rparts[tid];
+    int_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    int_t stride = blockDim.x * gridDim.x;
+    
+    for (int_t i = tid; i < all_bins; i += stride) {
+        if (rparts[i] == static_cast<real_int_t>(0.0))
+            rparts[i] = 1.0;
+        rparts[i] = maxVal / rparts[i];
     }
 }
 
 // Creates a flattened representation of the particle coordinates
 // used for indexing. 
-// This function does not iterate, so the
-// amount of threads should be at least equal to the product of npart and nprof.
 extern "C"
 __global__ void create_flat_points(int_t *flat_points,    // inn/out
                                    const int_t npart,
                                    const int_t nprof,
                                    const int_t nbins) {
-    int_t tid = threadIdx.x + blockDim.x * blockIdx.x;
-    if (tid < npart * nprof)
-        flat_points[tid] += nbins * (tid % nprof);
+    int_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    int_t stride = blockDim.x * gridDim.x;
+    
+    for (int_t i = tid; i < npart * nprof; i += stride)
+        flat_points[i] += nbins * (i % nprof);
 }
