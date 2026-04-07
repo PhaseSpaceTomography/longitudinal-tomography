@@ -28,16 +28,9 @@ test_dev_gpu:
     - apt-get update
     - apt-get install -y git
 
-    - python3 -m venv .venv
-    - sourve .venv/bin/activate
-
-    - nvcc --version
-    - which python
-    - python --version
-    - pip install cupy-cuda13x
-    - pip install -e .[test]
-    - pip list
-    - nvidia-smi
+    - pip3 install --break-system-packages -e .[test]
+    - pip3 install --break-system-packages "numpy>=2.0,<2.4"
+    - pip3 list
 
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
 
