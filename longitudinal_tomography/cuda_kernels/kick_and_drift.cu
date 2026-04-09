@@ -247,12 +247,14 @@ __device__ int_t sin_fixed_point(int_t x_int,
             return lut[0];
         } else {
             printf("The given value (%d) is less then the lower bound (%d) for the look-up table.\n", (int)(x_int), (int)(x0_int));
+            __trap();
         }
     } else if (idx >= G){
         if (fail_silently){
             return lut[G - 1];
         } else {
             printf("The given value (%d) is greater then the upper bound (%d) for the look-up table.\n", (int)(x_int), (int)(x0_int+dx_int*G));
+            __trap();
         }
     }
     return lut[idx];
