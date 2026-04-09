@@ -6,6 +6,7 @@
 import numpy as np
 import cupy as cp
 import logging
+import os
 from typing import Tuple
 from ..utils.tomo_config import GPUDev
 
@@ -46,21 +47,31 @@ def kick_drift_up_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarra
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, nturns: int, dturns: int, profile: int,
                         S: int, G: int, x0: float, x1: float, lut: cp.ndarray) -> None:
-    kick_drift_up_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
+    try:
+        kick_drift_up_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
                             turn, nturns, dturns, profile, S, G, x0, x1, lut),
                         block=block_size, grid=grid_size
                         )
+        cp.cuda.Stream.null.synchronize()
+    except Exception as e:
+        print(e)
+        os._exit(1)
 
 def kick_drift_down_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, dturns: int, profile: int,
                         S: int, G: int, x0: float, x1: float, lut: cp.ndarray) -> None:
-    kick_drift_down_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
+    try:
+        kick_drift_down_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
                             turn, dturns, profile, S, G, x0, x1, lut),
                         block=block_size, grid=grid_size
                         )
+        cp.cuda.Stream.null.synchronize()
+    except Exception as e:
+        print(e)
+        os._exit(1)
 
 def generate_sin_lut_wrapper(lut: cp.ndarray, x0: float, x1: float, G: int, S: int) -> None:
     generate_sin_lut(args=(lut, x0, x1, G, S),
