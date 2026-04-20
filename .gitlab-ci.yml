@@ -54,6 +54,7 @@ test_dev_gpu:
     paths:
       - ${project_root}/coverage-html/*
       - ${project_root}/coverage-report.xml
+      - ${project_root}/junit-report.xml
 
   tags:
     - k8s-gpu 
