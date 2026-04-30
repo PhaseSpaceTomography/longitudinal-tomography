@@ -24,7 +24,7 @@ def compile_kernels():
     else:
         nvcc = "nvcc"
 
-    nvccflags = [nvcc, "--cubin", "-O3", "-g", "-G", "--use_fast_math"]
+    nvccflags = [nvcc, "--cubin", "-O3", "--use_fast_math"]
 
     try:
         import cupy as cp
