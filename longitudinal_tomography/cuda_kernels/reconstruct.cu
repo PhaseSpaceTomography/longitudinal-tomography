@@ -151,7 +151,7 @@ __global__ void count_particles_in_bin(real_int_t * __restrict__ rparts,    // o
     
     for (int_t i = tid; i < npart * nprof; i += stride)
     {
-        int_t j = tid % nprof;
+        int_t j = i % nprof;
         int_t bin = xp[i];
         #ifdef USEINT
             atomicAdd(reinterpret_cast<unsigned long long*>(&rparts[j * nbins + bin]), 1);
