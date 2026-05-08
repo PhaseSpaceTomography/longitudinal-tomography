@@ -18,7 +18,7 @@ requires-python = ">= 3.11"
 dependencies = [
     "matplotlib ~= 3.8",
     "multipledispatch ~= 1.0",
-    "numpy ~= 1.25",
+    "numpy >= 1.25",
     "scipy ~= 1.11",
 ]
 dynamic = ["version", "readme"]
