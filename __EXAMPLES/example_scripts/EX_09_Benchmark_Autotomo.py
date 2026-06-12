@@ -6,12 +6,12 @@ Second, the tracking and the reconstruction will be executed.
 The runtime will be measured using Pyprof and saved.
 """
 
-from pyprof import timing
+#from pyprof import timing
 import time
 
 start_time = time.time()
 
-timing.start_timing('import_packages')
+#timing.start_timing('import_packages')
 
 # General imports
 import numpy as np
@@ -41,10 +41,10 @@ from longitudinal_tomography.utils import tomo_config as conf
 # Constant imports
 from scipy.constants import c, e, m_p
 
-timing.stop_timing()
+#timing.stop_timing()
 
 # SIMULATION PARAMETERS -------------------------------------------------------
-timing.start_timing('blond::set_params')
+#timing.start_timing('blond::set_params')
 
 # Beam parameters
 n_particles = int(1e11) # ?
@@ -88,10 +88,10 @@ h = 1.0 # for PSB
 voltage_program = 24e3 # for PSB
 phi_offset = np.pi
 
-timing.stop_timing()
+#timing.stop_timing()
 # DEFINE BLonD OBJECTS --------------------------------------------------------
 
-timing.start_timing("set_device")
+#timing.start_timing("set_device")
 if os.getenv('SINGLE_PREC') is not None:
     conf.AppConfig.set_single_precision() if os.getenv('SINGLE_PREC') == 'True' else conf.AppConfig.set_double_precision()
 
@@ -100,16 +100,16 @@ if os.getenv('MODE') is not None:
         conf.AppConfig.use_cpu()
     elif os.getenv('MODE') == "CuPy":
         conf.AppConfig.use_cupy()
-        timing.mode = timing.Mode.CUPY
+        #timing.mode = timing.Mode.CUPY
     elif os.getenv('MODE') == "CUDA":
         conf.AppConfig.use_gpu()
-        timing.mode = timing.Mode.CUPY
+        #timing.mode = timing.Mode.CUPY
     else:
         print("No mode given, using CPP")
         conf.AppConfig.use_cpu()
-timing.stop_timing()
+#timing.stop_timing()
 
-timing.start_timing('blond:create_objects')
+#timing.start_timing('blond:create_objects')
 general_params = Ring(C, momentum_compaction, sync_momentum, Proton(),
                     n_turns, bending_radius=bending_radius)
 RF_st_par = RFStation(general_params, [h], [voltage_program], [phi_offset],
@@ -124,11 +124,11 @@ bucket_length = 2.0 * np.pi / RF_st_par.omega_rf[0,0]
 slice_beam = Profile(beam, CutOptions(cut_left=0, cut_right=bucket_length, n_slices=n_bins))
 monitor = SlicesMonitor('./blonddata', n_turns, slice_beam)
 
-timing.stop_timing()
+#timing.stop_timing()
 
 # BEAM GENERATION -------------------------------------------------------------
 
-timing.start_timing('blond::match_and_track')
+#timing.start_timing('blond::match_and_track')
 
 distr = matched_from_distribution_function(beam, full_tracker,
                                 distribution_type=distribution_type,
@@ -150,7 +150,7 @@ for i in range(n_turns):
     # BUNCH parameter?
     monitor.track("")
 monitor.close()
-timing.stop_timing()
+#timing.stop_timing()
 
 #import blond.plots.plot_beams as bpb
 
@@ -160,7 +160,7 @@ timing.stop_timing()
 
 # DEFINE MACHINE
 
-timing.start_timing('define_machine_object')
+#timing.start_timing('define_machine_object')
 
 n_profiles = len(bunch_profiles)
 dtbin = slice_beam.bin_centers[1] - slice_beam.bin_centers[0]
@@ -203,48 +203,48 @@ machine_args = {
     'max_dt':               dtbin * n_bins
 }
 machine = mch.Machine(**machine_args)
-timing.stop_timing()
+#timing.stop_timing()
 
 # bunch_profiles = waterfall?
-timing.start_timing('create_profile')
+#timing.start_timing('create_profile')
 waterfall = conf.array(bunch_profiles)
-timing.stop_timing()
+#timing.stop_timing()
 
-timing.start_timing('values_at_turns')
+#timing.start_timing('values_at_turns')
 machine.values_at_turns()
-timing.stop_timing()
+#timing.stop_timing()
 
-timing.start_timing('tracking::create_tracker')
+#timing.start_timing('tracking::create_tracker')
 tracker = tracking.Tracking(machine)
 reconstruct_idx = machine.filmstart
-timing.stop_timing()
+#timing.stop_timing()
 
 xp, yp = tracker.track(reconstruct_idx)
 
-timing.start_timing("physical_to_coords")
+#timing.start_timing("physical_to_coords")
 xp, yp = parts.physical_to_coords(
     xp, yp, machine, tracker.particles.xorigin,
     tracker.particles.dEbin)
-timing.stop_timing()
+#timing.stop_timing()
 
-timing.start_timing("ready_for_tomo")
+#timing.start_timing("ready_for_tomo")
 xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
-timing.stop_timing()
+#timing.stop_timing()
 
-timing.start_timing("cast_coords_to_cpu")
+#timing.start_timing("cast_coords_to_cpu")
 xp = conf.cast_to_cpu(xp)
 yp = conf.cast_to_cpu(yp)
-timing.stop_timing()
+#timing.stop_timing()
 
 end_time = time.time()
 
 if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
         report_filename = os.getenv("REPORT_FILENAME")
-        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-baseprog-Autotomo")
-        timing.reset()
-else:
-    timing.report(total_time = (end_time - start_time) * 1e3)
-    timing.reset()
+#        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-baseprog-Autotomo")
+#        timing.reset()
+#else:
+#    timing.report(total_time = (end_time - start_time) * 1e3)
+#    timing.reset()
 
 precisions = ["single", "double"]
 
@@ -263,42 +263,42 @@ for prec in precisions:
         if firstit:
             start_time = time.time()
 
-        timing.start_timing("cast_coords")
+        #timing.start_timing("cast_coords")
         xp1 = conf.cast(xp)
         yp1 = conf.cast(yp)
-        timing.stop_timing()
+        #timing.stop_timing()
 
-        timing.start_timing("create_tomo_object")
+        #timing.start_timing("create_tomo_object")
         tomo = tomography.Tomography(waterfall, xp1, yp1)
-        timing.stop_timing()
+        #timing.stop_timing()
         weight = tomo.run(niter=machine.niter)
 
-        timing.start_timing("create_phase_space")
+        #timing.start_timing("create_phase_space")
         t_range, E_range, density = dtreat.phase_space(tomo, machine,
                                                     reconstruct_idx)
-        timing.stop_timing()
+        #timing.stop_timing()
 
-        timing.start_timing("cast_to_cpu_density")
+        #timing.start_timing("cast_to_cpu_density")
         density = conf.cast_to_cpu(density)
-        timing.stop_timing()
+        #timing.stop_timing()
 
         if firstit:
             end_time = time.time()
             if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
                 report_filename = os.getenv("REPORT_FILENAME")
-                timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Autotomo-it1")
-                timing.reset()
-            else:
-                timing.report(total_time = (end_time - start_time) * 1e3)
-                timing.reset()
+#                timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Autotomo-it1")
+#                timing.reset()
+#            else:
+#                timing.report(total_time = (end_time - start_time) * 1e3)
+#                timing.reset()
             firstit = False
             start_time = time.time()
 
     end_time = time.time()
     if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
         report_filename = os.getenv("REPORT_FILENAME")
-        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Autotomo-itrest")
-        timing.reset()
-    else:
-        timing.report(total_time = (end_time - start_time) * 1e3)
-        timing.reset()
+#        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Autotomo-itrest")
+#        timing.reset()
+#    else:
+#        timing.report(total_time = (end_time - start_time) * 1e3)
+#        timing.reset()
