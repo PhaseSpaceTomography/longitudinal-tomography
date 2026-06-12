@@ -156,7 +156,8 @@ for i in range(n_turns):
     slice_beam.track()
     bunch_profiles[i] = slice_beam.n_macroparticles
     # BUNCH parameter?
-    monitor.track("")
+    # This throws errors? How does it worK? Don't need it anyway...
+    #monitor.track("")
 monitor.close()
 #timing.stop_timing()
 
