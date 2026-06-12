@@ -170,8 +170,7 @@ py::tuple wrapper_kick_and_drift_int_scalar(
         const bool ftn_out,
         const int_t S,
         const int_t G,
-        const real_t x0,
-        const real_t x1,
+        const real_t abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -195,8 +194,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const bool ftn_out,
         const int32_t S,
         const int32_t G,
-        const float x0,
-        const float x1,
+        const float abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -220,8 +218,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const bool ftn_out,
         const int32_t S,
         const int32_t G,
-        const double x0,
-        const double x1,
+        const double abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -245,8 +242,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const bool ftn_out,
         const int64_t S,
         const int64_t G,
-        const float x0,
-        const float x1,
+        const float abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -270,8 +266,7 @@ template py::tuple wrapper_kick_and_drift_int_scalar(
         const bool ftn_out,
         const int64_t S,
         const int64_t G,
-        const double x0,
-        const double x1,
+        const double abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -296,8 +291,7 @@ py::tuple wrapper_kick_and_drift_int_array(
         const bool ftn_out,
         const int_t S,
         const int_t G,
-        const real_t x0,
-        const real_t x1,
+        const real_t abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -321,8 +315,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const bool ftn_out,
         const int32_t S,
         const int32_t G,
-        const float x0,
-        const float x1,
+        const float abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -346,8 +339,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const bool ftn_out,
         const int32_t S,
         const int32_t G,
-        const double x0,
-        const double x1,
+        const double abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -371,8 +363,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const bool ftn_out,
         const int64_t S,
         const int64_t G,
-        const float x0,
-        const float x1,
+        const float abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 
@@ -396,8 +387,7 @@ template py::tuple wrapper_kick_and_drift_int_array(
         const bool ftn_out,
         const int64_t S,
         const int64_t G,
-        const double x0,
-        const double x1,
+        const double abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 );
 

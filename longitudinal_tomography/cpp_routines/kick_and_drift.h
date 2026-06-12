@@ -52,8 +52,8 @@ void kick_up_int(const int_t *dphi,
              const int_t acc_kick,
              const int_t S,
              const int_t G,
-             const int_t x0_int,
-             const int_t dx_int,
+             const int_t abs_of_lowest_possible_angle_int,
+             const int_t reciprocal_lut_index_factor,
              const int_t *lut
             );
 
@@ -69,8 +69,8 @@ void kick_down_int(const int_t *dphi,
                const int_t acc_kick,
                const int_t S,
                const int_t G,
-               const int_t x0_int,
-               const int_t dx_int,
+               const int_t abs_of_lowest_possible_angle_int,
+               const int_t reciprocal_lut_index_factor,
                const int_t *lut
             );
 
@@ -162,26 +162,23 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const bool ftn_out,
                     const int_t S,
                     const int_t G,
-                    const real_t x0,
-                    const real_t x1,
+                    const real_t abs_of_lowest_possible_angle,
                     const std::function<void(int, int)> callback
 );
 
 template <typename int_t, typename real_t>
 int_t generate_sin_lut(int_t *lut,
-                       real_t x0,
-                       real_t x1,
+                       real_t two_pi_angle,
                        int_t G,
                        int_t S
 );
 
 template <typename int_t>
 int_t sin_fixed_point(int_t x_int,
-                      int_t x0_int,
-                      int_t dx_int,
+                      int_t abs_of_lowest_possible_angle,
+                      int_t reciprocal_lut_index_factor,
                       const int_t *lut,
-                      int_t G,
-                      bool fail_silently = false
+                      int_t G
 );
 
 #endif

@@ -8,6 +8,8 @@
  * drifting). Meant to be called by a Python/C++ wrapper.
  */
 
+#define _USE_MATH_DEFINES
+
 #include <iostream>
 #include <string>
 #include "sin.h"
@@ -76,8 +78,8 @@ void kick_up_int(const int_t *dphi,
              const int_t acc_kick,
              const int_t S,
              const int_t G,
-             const int_t x0_int,
-             const int_t dx_int,
+             const int_t abs_of_lowest_possible_angle_int,
+             const int_t reciprocal_lut_index_factor,
              const int_t *lut
             ) {
 
@@ -95,8 +97,8 @@ void kick_up_int(const int_t *dphi,
             //    cout << i << ": " << dphi[i] + phi0 << " "<< hratio * (dphi[i] + phi0 - phi12) << " - "<< dphi[i] << " " << phi0 << " " << phi12 << " " << acc_kick << endl;
             //    cout << sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G) << " " << sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G) << endl;
             //}
-            denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
+            denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, abs_of_lowest_possible_angle_int, reciprocal_lut_index_factor, lut, G)/S
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), abs_of_lowest_possible_angle_int, reciprocal_lut_index_factor, lut, G)/S - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -123,8 +125,8 @@ void kick_down_int(const int_t *dphi,
                const int_t acc_kick,
                const int_t S,
                const int_t G,
-               const int_t x0_int,
-               const int_t dx_int,
+               const int_t abs_of_lowest_possible_angle_int,
+               const int_t reciprocal_lut_index_factor,
                const int_t *lut
             ) {
 
@@ -138,8 +140,8 @@ void kick_down_int(const int_t *dphi,
             continue;
         }
         try{
-            denergy[i] -= ((rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)) >> S)
-                        + ((rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)) >> S) - acc_kick;
+            denergy[i] -= ((rfv1 * sin_fixed_point(dphi[i] + phi0, abs_of_lowest_possible_angle_int, reciprocal_lut_index_factor, lut, G)) >> S)
+                        + ((rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), abs_of_lowest_possible_angle_int, reciprocal_lut_index_factor, lut, G)) >> S) - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -343,15 +345,17 @@ void kick_and_drift_int(int_t **xp,             // inn/out
                     const bool ftn_out,
                     const int_t S,
                     const int_t G,
-                    const real_t x0,
-                    const real_t x1,
+                    const real_t abs_of_lowest_possible_angle,
                     const std::function<void(int, int)> callback) {
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
 
-    int_t x0_int = (int_t) std::ldexp(x0, S);
-    int_t lut[G];
-    int_t dx_int = generate_sin_lut(lut, x0, x1, G, S);
+    int_t abs_of_lowest_possible_angle_int = std::ldexp(abs_of_lowest_possible_angle, S);
+
+    real_t reciprocal_lut_index_factor = (1 << (G + 24)) / (2 * M_PI * (1 << S));
+    int_t lut[1<<G];
+    int_t dx_int = generate_sin_lut(lut, 2 * M_PI, G, S);
+
 
 
     if (deltaturn < 0) profile--;
@@ -372,7 +376,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
         turn++;
         // cout << turn << " " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
         kick_up_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1], phi12[turn-1],
-                hratio, nparts, deltaE0[turn-1], S, G, x0_int, dx_int, lut);
+                hratio, nparts, deltaE0[turn-1], S, G, abs_of_lowest_possible_angle_int, (int_t) reciprocal_lut_index_factor, lut);
 
         if (turn % dturns == 0) {
             profile++;
@@ -407,7 +411,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
         while (turn > 0) {          
             //cout << turn << " - " << rf1v[turn-1] << " " << rf2v[turn-1] << " " << phi0[turn-1] << " " << phi12[turn-1] << " " << deltaE0[turn-1] << endl;
             kick_down_int<int_t>(dphi, denergy, rf1v[turn-1], rf2v[turn-1], phi0[turn-1],
-                      phi12[turn-1], hratio, nparts, deltaE0[turn-1], S, G, x0_int, dx_int, lut);
+                      phi12[turn-1], hratio, nparts, deltaE0[turn-1], S, G, abs_of_lowest_possible_angle_int, (int_t) reciprocal_lut_index_factor, lut);
             turn--;
 
             drift_down_int<int_t>(dphi, denergy, drift_coef[turn], nparts, S);
@@ -434,13 +438,13 @@ void kick_and_drift_int(int_t **xp,             // inn/out
 
 template <typename int_t, typename real_t>
 int_t generate_sin_lut(int_t *lut,
-                       real_t x0,
-                       real_t x1,
+                       real_t two_pi_angle,
                        int_t G,
                        int_t S){
-    real_t dx = (x1 - x0) / (G - 1);
-    for (int i = 0; i < G; i++){
-        real_t x = x0 + i*dx;
+    // The increment for the values in the LUT is 2*pi/(2**G)
+    real_t dx = std::ldexp(two_pi_angle, -G);
+    for (int i = 0; i < (1 << G); i ++){
+        real_t x = i*dx;
         lut[i] = (int_t) std::ldexp(sin(x), S);
     }
 
@@ -455,63 +459,46 @@ int_t generate_sin_lut(int_t *lut,
 
 template <typename int_t>
 int_t sin_fixed_point(int_t x_int,
-                      int_t x0_int,
-                      int_t dx_int,
+                    int_t abs_of_lowest_possible_angle,
+                      int_t reciprocal_lut_index_factor,
                       const int_t *lut,
-                      int_t G,
-                      bool fail_silently){
-    int idx = (x_int - x0_int) / dx_int;
-    if (idx < 0){
-        if (fail_silently){
-            return lut[0];
-        } else {
-            throw range_error("The given value (" + to_string(x_int) 
-                            + ") is less then the lower bound (" + to_string(x0_int)
-                            + ") for the look-up table.");
-        }
-    } else if (idx >= G){
-        if (fail_silently){
-            return lut[G - 1];
-        } else {
-            throw range_error("The given value (" + to_string(x_int)
-                            + ") is greater then the upper bound (approx. " + to_string(x0_int+dx_int*G)
-                            + ") for the look-up table.");
-        }
-    }
+                      int_t G){
+    // instead of dividing by the stepsize between lut entires
+    // -> multiply with the reciprocal (scaled by 2**24, which needs to be undone)
+    // We add the abs of the lowest possible angle beforehand -> Therefore the value is always possitive
+    // and we know 2**G is equal to 2 Pi so we can truncate all the bits above the Gth bit
+    // int64_t needed here, because of the scaling regardless if we use 32 or 64 bit otherwise
+    int64_t idx = ((x_int + abs_of_lowest_possible_angle) * reciprocal_lut_index_factor) >> 24;
+    idx = idx & ((1 << G) - 1);
+    // The mask guarantees, we don't need to check for over or underflow -> No need for checks
     return lut[idx];
 }
 
 template int32_t sin_fixed_point(int32_t x_int,
-                                 int32_t x0_int,
-                                 int32_t dx_int,
+                                 int32_t abs_of_lowest_possible_angle,
+                                 int32_t reciprocal_lut_index_factor,
                                  const int32_t *lut,
-                                 int32_t G,
-                                 bool fail_silently);
+                                 int32_t G);
 template int64_t sin_fixed_point(int64_t x_int,
-                                 int64_t x0_int,
-                                 int64_t dx_int,
+                                 int64_t abs_of_lowest_possible_angle,
+                                 int64_t reciprocal_lut_index_factor,
                                  const int64_t *lut,
-                                 int64_t G,
-                                 bool fail_silently);
+                                 int64_t G);
 
 template int32_t generate_sin_lut(int32_t *lut,
-                                  float x0,
-                                  float x1,
+                                  float two_pi_angle,
                                   int32_t G,
                                   int32_t S);
 template int64_t generate_sin_lut(int64_t *lut,
-                                  float x0,
-                                  float x1,
+                                  float two_pi_angle,
                                   int64_t G,
                                   int64_t S);
 template int32_t generate_sin_lut(int32_t *lut,
-                                  double x0,
-                                  double x1,
+                                  double two_pi_angle,
                                   int32_t G,
                                   int32_t S);
 template int64_t generate_sin_lut(int64_t *lut,
-                                  double x0,
-                                  double x1,
+                                  double two_pi_angle,
                                   int64_t G,
                                   int64_t S);
 
@@ -534,8 +521,7 @@ template void kick_and_drift_int(int32_t **xp,
                              const bool ftn_out,
                              const int32_t S,
                              const int32_t G,
-                             const float x0,
-                             const float x1,
+                             const float abs_of_lowest_possible_angle,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift_int(int32_t **xp,
@@ -557,8 +543,7 @@ template void kick_and_drift_int(int32_t **xp,
                              const bool ftn_out,
                              const int32_t S,
                              const int32_t G,
-                             const double x0,
-                             const double x1,
+                             const double abs_of_lowest_possible_angle,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift_int(int64_t **xp,
@@ -580,8 +565,7 @@ template void kick_and_drift_int(int64_t **xp,
                              const bool ftn_out,
                              const int64_t S,
                              const int64_t G,
-                             const float x0,
-                             const float x1,
+                             const float abs_of_lowest_possible_angle,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift_int(int64_t **xp,
@@ -603,8 +587,7 @@ template void kick_and_drift_int(int64_t **xp,
                              const bool ftn_out,
                              const int64_t S,
                              const int64_t G,
-                             const double x0,
-                             const double x1,
+                             const double abs_of_lowest_possible_angle,
                              const std::function<void(int, int)> callback);
 
 template void kick_and_drift(double **xp,
@@ -676,8 +659,8 @@ template void kick_up_int(const int32_t *dphi,
                       const int32_t acc_kick,
                       const int32_t S,
                       const int32_t G,
-                      const int32_t x0_int,
-                      const int32_t dx_int,
+                      const int32_t abs_of_lowest_possible_angle_int,
+                      const int32_t reciprocal_lut_index_factor,
                       const int32_t *lut);
 
 template void kick_up_int(const int64_t *dphi,
@@ -691,8 +674,8 @@ template void kick_up_int(const int64_t *dphi,
                       const int64_t acc_kick,
                       const int64_t S,
                       const int64_t G,
-                      const int64_t x0_int,
-                      const int64_t dx_int,
+                      const int64_t abs_of_lowest_possible_angle_int,
+                      const int64_t reciprocal_lut_index_factor,
                       const int64_t *lut);
 
 template void kick_down(const double *dphi,
@@ -726,8 +709,8 @@ template void kick_down_int(const int32_t *dphi,
                       const int32_t acc_kick,
                       const int32_t S,
                       const int32_t G,
-                      const int32_t x0_int,
-                      const int32_t dx_int,
+                      const int32_t abs_of_lowest_possible_angle_int,
+                      const int32_t reciprocal_lut_index_factor,
                       const int32_t *lut);
 
 template void kick_down_int(const int64_t *dphi,
@@ -741,8 +724,8 @@ template void kick_down_int(const int64_t *dphi,
                       const int64_t acc_kick,
                       const int64_t S,
                       const int64_t G,
-                      const int64_t x0_int,
-                      const int64_t dx_int,
+                      const int64_t abs_of_lowest_possible_angle_int,
+                      const int64_t reciprocal_lut_index_factor,
                       const int64_t *lut);
 
 template void drift_up(double *dphi,

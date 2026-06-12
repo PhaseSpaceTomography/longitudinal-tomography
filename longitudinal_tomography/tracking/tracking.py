@@ -9,7 +9,7 @@ import numpy as np
 import logging
 import warnings
 import time
-
+import math
 
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
@@ -59,7 +59,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None, deltaturn: int = 0, S: int = 20, G: int = 2**10) \
+              callback: Callable = None, deltaturn: int = 0, S: int = 20, G: int = 10) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -220,14 +220,24 @@ class Tracking(ParticleTracker):
                 x1 = np.max([machine.h_ratio*(phi_max+machine.phi0.max()-machine.phi12),
                              phi_max+machine.phi0.max()])
                 # Adding 10% margin
-                x0 *= 1.1 if x0 < 0 else 0.9
-                x1 *= 1.1
+                #x0 *= 1.1 if x0 < 0 else 0.9
+                #x1 *= 1.1
+                # Replacing the sine look up table with a table that spans [0, 2*Pi]
+                # We need to map all input values to [0, 2**G-1] which is the tables valid region
+                # This is basically a module calcuation. Since we know the lowest possible
+                # value, we can add a multiple of 2 PI to all values we look up in the table
+                # Thus, all values are positive. So we just need to truncate everything above
+                # the Gth bit to get the input value modulo 2 PI.
+                # Therefore, we calculate the lower bound here.
+                lowerbound_x0 = 2*math.pi
+                while x0 + lowerbound_x0 < 0:
+                    lowerbound_x0 += 2*math.pi
                 kernel_start_time = time.time() 
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12*2**S),
                                 int(machine.h_ratio), machine.dturns, recprof,
-                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, G=G, x0=x0, x1=x1,
-                                callback=callback)
+                                deltaturn, nturns+1, nparts, self.fortran_flag, S=S, G=G,
+                                abs_of_lowest_possible_angle=lowerbound_x0, callback=callback)
                 end_time = time.time()
                 print("Kernel execution time: ", (end_time - kernel_start_time) * 1e3)
                 print("Entire tracking time (inclusive memory transfer): ", (end_time - start_time) * 1e3)

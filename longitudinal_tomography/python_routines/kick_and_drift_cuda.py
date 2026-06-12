@@ -5,6 +5,7 @@
 
 import numpy as np
 import cupy as cp
+import math
 import logging
 import os
 from typing import Tuple
@@ -46,11 +47,12 @@ def kick_drift_down_whole(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray,
 def kick_drift_up_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, nturns: int, dturns: int, profile: int,
-                        S: int, G: int, x0: float, x1: float, lut: cp.ndarray) -> None:
+                        S: int, G: int, abs_of_lowest_possible_angle: float, reciprocal_lut_index_factor: float, lut: cp.ndarray) -> None:
     try:
         kick_drift_up_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
-                            turn, nturns, dturns, profile, S, G, x0, x1, lut),
+                            turn, nturns, dturns, profile, S, G,
+                            abs_of_lowest_possible_angle, reciprocal_lut_index_factor, lut),
                         block=block_size, grid=grid_size
                         )
         cp.cuda.Stream.null.synchronize()
@@ -61,11 +63,12 @@ def kick_drift_up_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarra
 def kick_drift_down_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndarray, yp: cp.ndarray, drift_coef: cp.ndarray,
                         rfv1: cp.ndarray, rfv2: cp.ndarray, phi0: cp.ndarray, phi12: cp.ndarray, h_ratio: float,
                         n_particles: int, acc_kick: cp.ndarray, turn: int, dturns: int, profile: int,
-                        S: int, G: int, x0: float, x1: float, lut: cp.ndarray) -> None:
+                        S: int, G: int, abs_of_lowest_possible_angle: float, reciprocal_lut_index_factor: float, lut: cp.ndarray) -> None:
     try:
         kick_drift_down_turns_int(args=(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                             phi0, phi12, h_ratio, n_particles, acc_kick,
-                            turn, dturns, profile, S, G, x0, x1, lut),
+                            turn, dturns, profile, S, G,
+                            abs_of_lowest_possible_angle, reciprocal_lut_index_factor, lut),
                         block=block_size, grid=grid_size
                         )
         cp.cuda.Stream.null.synchronize()
@@ -73,8 +76,8 @@ def kick_drift_down_whole_int(dphi: cp.ndarray, denergy: cp.ndarray, xp: cp.ndar
         print(e)
         os._exit(1)
 
-def generate_sin_lut_wrapper(lut: cp.ndarray, x0: float, x1: float, G: int, S: int) -> None:
-    generate_sin_lut(args=(lut, x0, x1, G, S),
+def generate_sin_lut_wrapper(lut: cp.ndarray, two_pi_angle: float, G: int, S: int) -> None:
+    generate_sin_lut(args=(lut, two_pi_angle, G, S),
                         block=block_size, grid=(int(lut.shape[0] / block_size[0] + 1), 1, 1))
 
 def kick_and_drift_cuda(xp: cp.ndarray, yp: cp.ndarray,
@@ -139,20 +142,21 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
                    ftn_out: bool,
                    S: int,
                    G: int,
-                   x0: float,
-                   x1: float,
+                   abs_of_lowest_possible_angle: float,
                    callback
                    ) -> Tuple[cp.ndarray, cp.ndarray]:
     phi12_arr = cp.full(nturns+1, phi12)
     # Preparation end
 
     # Calulating look-up table
-    dx_int = int(round(((x1 - x0) / (G - 1)) * (1 << S)))
-    if dx_int <= 0:
-        raise ValueError("Error in generating the look-up table, `dx_int` <= 0.")
+    # Instead of dividing by the step size of the LUT, we multiply by the reciprocal
+    # We scale it a little so that we don't get an underflow (2**24) -> This gets reversed later on
+    reciprocal_lut_index_factor = (1 << (G + 24)) / ( 2 * math.pi * (2**S))
+    if reciprocal_lut_index_factor <= 0:
+        raise ValueError("Error in generating the look-up table, `reciprocal_lut_index_factor` <= 0.")
 
     lut = cp.zeros(G, dtype=xp.dtype)
-    generate_sin_lut_wrapper(lut, x0, x1, G, S)
+    generate_sin_lut_wrapper(lut, 2 * math.pi, G, S)
 
     profile = rec_prof
     turn = rec_prof * dturns + deltaturn
@@ -166,7 +170,8 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
 
     kick_drift_up_whole_int(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                         phi0, phi12_arr, h_ratio, nparts, deltaE0,
-                        turn, nturns, dturns, profile, S, G, x0, x1, lut)
+                        turn, nturns, dturns, profile, S, G,
+                        abs_of_lowest_possible_angle, reciprocal_lut_index_factor, lut)
 
     profile = rec_prof
     turn = rec_prof * dturns
@@ -179,6 +184,7 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
 
         kick_drift_down_whole_int(dphi, denergy, xp, yp, drift_coef, rfv1, rfv2,
                         phi0, phi12_arr, h_ratio, nparts, deltaE0,
-                        turn, dturns, profile, S, G, x0, x1, lut)
+                        turn, dturns, profile, S, G,
+                        abs_of_lowest_possible_angle, reciprocal_lut_index_factor, lut)
 
 refresh_kernels()

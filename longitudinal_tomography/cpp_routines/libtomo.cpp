@@ -248,8 +248,7 @@ py::tuple wrapper_kick_and_drift_int_scalar(
         const bool ftn_out,
         const int_t S,
         const int_t G,
-        const real_t x0,
-        const real_t x1,
+        const real_t abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 ) {
     int_t *ptr_phi12 = new int_t[nturns];
@@ -260,8 +259,8 @@ py::tuple wrapper_kick_and_drift_int_scalar(
 
     wrapper_kick_and_drift_int_array(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v, input_phi0,
                                  input_deltaE0,
-                                 input_drift_coef, arr_phi12, hratio, dturns, rec_prof, deltaturn, nturns, nparts, ftn_out, S, G, x0, x1,
-                                 callback);
+                                 input_drift_coef, arr_phi12, hratio, dturns, rec_prof, deltaturn, nturns, nparts, ftn_out, S, G, 
+                                 abs_of_lowest_possible_angle, callback);
 
     return py::make_tuple(input_xp, input_yp);
 }
@@ -367,8 +366,7 @@ py::tuple wrapper_kick_and_drift_int_array(
         const bool ftn_out,
         const int_t S,
         const int_t G,
-        const real_t x0,
-        const real_t x1,
+        const real_t abs_of_lowest_possible_angle,
         const std::optional<const py::object> callback
 ) {
     py::buffer_info xp_buffer = input_xp.request();
@@ -419,7 +417,7 @@ py::tuple wrapper_kick_and_drift_int_array(
 
     try {
         kick_and_drift_int<int_t>(xp_d, yp_d, denergy, dphi, rf1v, rf2v, phi0, deltaE0, drift_coef,
-                       phi12, hratio, dturns, rec_prof, deltaturn, nturns, nparts, ftn_out, S, G, x0, x1, cb);
+                       phi12, hratio, dturns, rec_prof, deltaturn, nturns, nparts, ftn_out, S, G, abs_of_lowest_possible_angle, cb);
     } catch (const std::exception &e) {
         cleanup();
         throw;
@@ -726,49 +724,49 @@ m.def("kick_and_drift", wrapper_kick_and_drift_array<f_array, float>, kick_and_d
 m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i32_array, int32_t, float>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i32_array, int32_t, double>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i64_array, int64_t, float>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", &wrapper_kick_and_drift_int_scalar<i64_array, int64_t, double>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i32_array, int32_t, float>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i32_array, int32_t, double>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i64_array, int64_t, float>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("kick_and_drift_int", wrapper_kick_and_drift_int_array<i64_array, int64_t, double>, kick_and_drift_docs,
 "xp"_a, "yp"_a, "denergy"_a, "dphi"_a, "rfv1"_a, "rfv2"_a, "phi0"_a,
 "deltaE0"_a, "drift_coef"_a, "phi12"_a, "h_ratio"_a, "dturns"_a,
-"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "x0"_a = 0, "x1"_a = 1, "callback"_a = py::none()
+"rec_prof"_a, "deltaturn"_a, "nturns"_a, "nparts"_a, "ftn_out"_a = false, "S"_a = 1, "G"_a = 1, "abs_of_lowest_possible_angle"_a = 0, "callback"_a = py::none()
 );
 
 m.def("project", &wrapper_project<f_array, i32_array, float, int32_t>, project_docs,

@@ -90,7 +90,7 @@ phi_offset = np.pi
 
 # Adding constants for fixed points
 S = 20
-G = 2**10
+G = 10
 
 #timing.stop_timing()
 # DEFINE BLonD OBJECTS --------------------------------------------------------
