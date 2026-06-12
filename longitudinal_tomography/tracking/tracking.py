@@ -8,6 +8,8 @@ from typing import Tuple, TYPE_CHECKING, Callable
 import numpy as np
 import logging
 import warnings
+import time
+
 
 from .. import assertions as asrt
 from .__tracking import ParticleTracker
@@ -132,6 +134,8 @@ class Tracking(ParticleTracker):
             * If self-fields are disabled, the returned y-coordinates will be
               given as energy [eV] relative to the synchronous particle.
         """
+        start_time = time.time() 
+
         if conf.AppConfig.get_precision() not in [np.int32, np.int64]:
             S = 1
         
@@ -217,11 +221,16 @@ class Tracking(ParticleTracker):
                 # Adding 10% margin
                 x0 *= 1.1 if x0 < 0 else 0.9
                 x1 *= 1.1
+                kernel_start_time = time.time() 
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12*S),
                                 int(machine.h_ratio), machine.dturns, recprof,
                                 deltaturn, nturns+1, nparts, self.fortran_flag, S=S, G=G, x0=x0, x1=x1,
                                 callback=callback)
+                end_time = time.time()
+                print("Kernel execution time: ", (end_time - kernel_start_time) * 1e3)
+                print("Entire tracking time (inclusive memory transfer): ", (end_time - start_time) * 1e3)
+
             else:
                 conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, machine.phi12,
