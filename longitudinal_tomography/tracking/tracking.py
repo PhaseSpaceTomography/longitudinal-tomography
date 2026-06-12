@@ -189,7 +189,7 @@ class Tracking(ParticleTracker):
         rfv2 = conf.cast(machine.vrf2_at_turn * machine.q)
         phi0 = conf.cast(machine.phi0 * S)
         deltaE0 = conf.cast(machine.deltaE0 * S)
-        drift_coef = conf.cast(machine.drift_coef * S * S)
+        drift_coef = conf.cast(machine.drift_coef * S) # Why was this multiplied by S^2
 
         # Tracking particles
         if self.self_field_flag:
