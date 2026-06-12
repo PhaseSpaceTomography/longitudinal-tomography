@@ -89,7 +89,7 @@ voltage_program = 24e3 # for PSB
 phi_offset = np.pi
 
 # Adding constants for fixed points
-S = 10**6
+S = 20
 G = 2**10
 
 #timing.stop_timing()
@@ -217,7 +217,7 @@ machine = mch.Machine(**machine_args)
 # bunch_profiles = waterfall?
 #timing.start_timing('create_profile')
 waterfall = conf.array(bunch_profiles)
-waterfall = (waterfall*S).astype(conf.AppConfig.get_precision())
+waterfall = (waterfall*2**S).astype(conf.AppConfig.get_precision())
 #timing.stop_timing()
 
 #timing.start_timing('values_at_turns')
@@ -233,7 +233,7 @@ xp, yp = tracker.track(reconstruct_idx, S=S, G=G)
 
 #timing.start_timing("physical_to_coords")
 xp, yp = parts.physical_to_coords(
-    xp/S, yp/S, machine, tracker.particles.xorigin,
+    xp/(2**S), yp/(2**S), machine, tracker.particles.xorigin,
     tracker.particles.dEbin)
 #timing.stop_timing()
 
@@ -279,7 +279,8 @@ for prec in precisions:
         #timing.stop_timing()
 
         #timing.start_timing("create_tomo_object")
-        tomo = tomography.Tomography(waterfall, xp1, yp1, S=S)
+        # TODO: For now just ignoring the tomography -> Hand over the 2**20 
+        tomo = tomography.Tomography(waterfall, xp1, yp1, S=2**S)
         #timing.stop_timing()
         weight = tomo.run(niter=machine.niter)
 

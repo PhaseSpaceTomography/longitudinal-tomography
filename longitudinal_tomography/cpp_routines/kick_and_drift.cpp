@@ -138,8 +138,8 @@ void kick_down_int(const int_t *dphi,
             continue;
         }
         try{
-            denergy[i] -= rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
+            denergy[i] -= ((rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)) >> S)
+                        + ((rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)) >> S) - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -188,7 +188,7 @@ void drift_up_int(int_t *dphi,
               const int_t S) {
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
-        dphi[i] -= drift_coef * denergy[i] / S;
+        dphi[i] -= drift_coef * denergy[i] >> S;
 }
 
 template <typename int_t>
@@ -200,7 +200,7 @@ void drift_down_int(int_t *dphi,
 
 #pragma omp parallel for
     for (int i = 0; i < nr_particles; i++)
-        dphi[i] += drift_coef * denergy[i] / S;
+        dphi[i] += drift_coef * denergy[i] >> S;
 }
 
 // Calculates X and Y coordinates for particles based on a given
@@ -349,7 +349,7 @@ void kick_and_drift_int(int_t **xp,             // inn/out
     int profile = rec_prof;
     int turn = rec_prof * dturns + deltaturn;
 
-    int_t x0_int = x0 * S;
+    int_t x0_int = (int_t) std::ldexp(x0, S);
     int_t lut[G];
     int_t dx_int = generate_sin_lut(lut, x0, x1, G, S);
 
@@ -441,10 +441,10 @@ int_t generate_sin_lut(int_t *lut,
     real_t dx = (x1 - x0) / (G - 1);
     for (int i = 0; i < G; i++){
         real_t x = x0 + i*dx;
-        lut[i] = sin(x) * S;
+        lut[i] = (int_t) std::ldexp(sin(x), S);
     }
 
-    int_t dx_int = dx * S;
+    int_t dx_int = (int_t) std::ldexp(dx, S);
 
     if (dx_int <= 0){
         throw range_error("Error in generating the look-up table, `dx_int` <= 0.");

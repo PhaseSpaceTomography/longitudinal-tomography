@@ -59,7 +59,7 @@ class Tracking(ParticleTracker):
         super().__init__(machine)
 
     def track(self, recprof: int, init_distr: Tuple[float, float] = None,
-              callback: Callable = None, deltaturn: int = 0, S: int = 10**6, G: int = 2**10) \
+              callback: Callable = None, deltaturn: int = 0, S: int = 20, G: int = 2**10) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Primary function for tracking particles.
 
@@ -137,7 +137,7 @@ class Tracking(ParticleTracker):
         start_time = time.time() 
 
         if conf.AppConfig.get_precision() not in [np.int32, np.int64]:
-            S = 1
+            S = 0 # With shifts, 1 is the neutral element
         
         if deltaturn != 0:
             warnings.warn("deltaturn is still an experimental "
@@ -169,8 +169,9 @@ class Tracking(ParticleTracker):
             # Homogeneous distribution is created based on the
             # original Fortran algorithm.
             log.info('Creating homogeneous distribution of particles.')
+            # TODO: check if this also needs updates, for now just using the shifted value
             self.particles.homogeneous_distribution(machine, recprof,
-                                                    deltaturn, S)
+                                                    deltaturn, 2**S) 
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
@@ -191,9 +192,9 @@ class Tracking(ParticleTracker):
 
         rfv1 = conf.cast(machine.vrf1_at_turn * machine.q)
         rfv2 = conf.cast(machine.vrf2_at_turn * machine.q)
-        phi0 = conf.cast(machine.phi0 * S)
-        deltaE0 = conf.cast(machine.deltaE0 * S)
-        drift_coef = conf.cast(machine.drift_coef * S) # Why was this multiplied by S^2
+        phi0 = conf.cast(machine.phi0 * 2**S)
+        deltaE0 = conf.cast(machine.deltaE0 * 2**S)
+        drift_coef = conf.cast(machine.drift_coef * 2**S) # Why was this multiplied by S^2
 
         # Tracking particles
         if self.self_field_flag:
@@ -223,7 +224,7 @@ class Tracking(ParticleTracker):
                 x1 *= 1.1
                 kernel_start_time = time.time() 
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
-                                deltaE0, drift_coef, int(machine.phi12*S),
+                                deltaE0, drift_coef, int(machine.phi12*2**S),
                                 int(machine.h_ratio), machine.dturns, recprof,
                                 deltaturn, nturns+1, nparts, self.fortran_flag, S=S, G=G, x0=x0, x1=x1,
                                 callback=callback)

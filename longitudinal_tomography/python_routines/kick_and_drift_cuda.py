@@ -147,7 +147,7 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
     # Preparation end
 
     # Calulating look-up table
-    dx_int = int(round((x1 - x0) / (G - 1) * S))
+    dx_int = int(round(((x1 - x0) / (G - 1)) * (1 << S)))
     if dx_int <= 0:
         raise ValueError("Error in generating the look-up table, `dx_int` <= 0.")
 

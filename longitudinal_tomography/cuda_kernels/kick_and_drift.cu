@@ -230,7 +230,7 @@ __global__ void generate_sin_lut(int_t *lut,
     real_t dx = (x1 - x0) / (G - 1);
     for (std::size_t i = tid; i < G; i += stride){
         real_t x = x0 + i*dx;
-        lut[i] = sin(x) * S;
+        lut[i] = (int_t) std::ldexp(sin(x) , S);
     }
 }
 
@@ -286,9 +286,9 @@ __global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
     std::size_t tid = threadIdx.x + blockIdx.x * blockDim.x;
     std::size_t stride = blockDim.x * gridDim.x;
     
-    int_t x0_int = x0 * S;
+    int_t x0_int = std::ldexp(x0, S);
     real_t dx = (x1 - x0) / (G - 1);
-    int_t dx_int = dx * S;
+    int_t dx_int = std::ldexp(dx, S);
     int_t curr_turn = turn;
     int_t curr_profile = profile;
     
@@ -302,13 +302,13 @@ __global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
         while (curr_turn < nturns)
         {
 
-            current_dphi -= drift_coef[curr_turn] * current_denergy / S;
+            current_dphi -= drift_coef[curr_turn] * current_denergy >> S;
             curr_turn++;
 
             current_denergy += (rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1], 
-                                                                x0_int, dx_int, lut, G) / S
+                                                                x0_int, dx_int, lut, G) >> S
                               + rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
-                                                                x0_int, dx_int, lut, G) / S
+                                                                x0_int, dx_int, lut, G) >> S
                               - acc_kick[curr_turn-1]);
 
             if (curr_turn % dturns == 0)
@@ -346,9 +346,9 @@ __global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
     std::size_t tid = threadIdx.x + blockIdx.x * blockDim.x;
     std::size_t stride = blockDim.x * gridDim.x;
     
-    int_t x0_int = x0 * S;
+    int_t x0_int = std::ldexp(x0, S);
     real_t dx = (x1 - x0) / (G - 1);
-    int_t dx_int = dx * S;
+    int_t dx_int = std::ldexp(dx, S);
     int_t curr_turn = turn;
     int_t curr_profile = profile;
 
@@ -362,13 +362,13 @@ __global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
         while (curr_turn > 0)
         {
             current_denergy -= (rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1], 
-                                                                x0_int, dx_int, lut, G) / S
+                                                                x0_int, dx_int, lut, G) >> S
                               + rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
-                                                                x0_int, dx_int, lut, G) / S
+                                                                x0_int, dx_int, lut, G) >> S
                               - acc_kick[curr_turn-1]);
             
             curr_turn--;
-            current_dphi += drift_coef[curr_turn] * current_denergy / S;
+            current_dphi += drift_coef[curr_turn] * current_denergy >> S;
 
             if (curr_turn % dturns == 0)
             {
