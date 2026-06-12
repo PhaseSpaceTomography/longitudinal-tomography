@@ -96,7 +96,7 @@ void kick_up_int(const int_t *dphi,
             //    cout << sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G) << " " << sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G) << endl;
             //}
             denergy[i] += rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick/S;
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception
@@ -139,7 +139,7 @@ void kick_down_int(const int_t *dphi,
         }
         try{
             denergy[i] -= rfv1 * sin_fixed_point(dphi[i] + phi0, x0_int, dx_int, lut, G)/S
-                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick/S;
+                        + rfv2 * sin_fixed_point(hratio * (dphi[i] + phi0 - phi12), x0_int, dx_int, lut, G)/S - acc_kick;
         }
         catch (const exception &e) {
             // Only first thread stores the exception

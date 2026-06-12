@@ -309,7 +309,7 @@ __global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
                                                                 x0_int, dx_int, lut, G) / S
                               + rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
                                                                 x0_int, dx_int, lut, G) / S
-                              - acc_kick[curr_turn-1] / S);
+                              - acc_kick[curr_turn-1]);
 
             if (curr_turn % dturns == 0)
             {
@@ -365,7 +365,7 @@ __global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
                                                                 x0_int, dx_int, lut, G) / S
                               + rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
                                                                 x0_int, dx_int, lut, G) / S
-                              - acc_kick[curr_turn-1] / S);
+                              - acc_kick[curr_turn-1]);
             
             curr_turn--;
             current_dphi += drift_coef[curr_turn] * current_denergy / S;
