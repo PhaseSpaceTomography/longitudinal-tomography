@@ -53,7 +53,8 @@ def compile_kernels():
                     "-o",
                     source + "_double.cubin",
                     source + ".cu",
-                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
+                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}",
+                    "-allow-unsupported-compiler"
                 ]
                 subprocess.run(command)
                 command = nvccflags + [
@@ -61,7 +62,8 @@ def compile_kernels():
                     source + "_single.cubin",
                     source + ".cu",
                     "-DUSE32BITS",
-                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
+                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}",
+                    "-allow-unsupported-compiler"
                 ]
                 subprocess.run(command)
             
@@ -72,7 +74,8 @@ def compile_kernels():
                     source + "_int_double.cubin",
                     source + ".cu",
                     "-DUSEINT",
-                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
+                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}",
+                    "-allow-unsupported-compiler"
             ]
             subprocess.run(command)
             command = nvccflags + [
@@ -81,7 +84,8 @@ def compile_kernels():
                     source + ".cu",
                     "-DUSE32BITS",
                     "-DUSEINT",
-                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}"
+                    f"-DBLOCK_SIZE={REDUCTION_BLOCK_SIZE}",
+                    "-allow-unsupported-compiler"
             ]
             subprocess.run(command)
         except FileNotFoundError as e:
