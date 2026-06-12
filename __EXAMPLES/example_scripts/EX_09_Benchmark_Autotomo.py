@@ -88,12 +88,20 @@ h = 1.0 # for PSB
 voltage_program = 24e3 # for PSB
 phi_offset = np.pi
 
+# Adding constants for fixed points
+S = 10**6
+G = 2**10
+
 #timing.stop_timing()
 # DEFINE BLonD OBJECTS --------------------------------------------------------
 
 #timing.start_timing("set_device")
 if os.getenv('SINGLE_PREC') is not None:
     conf.AppConfig.set_single_precision() if os.getenv('SINGLE_PREC') == 'True' else conf.AppConfig.set_double_precision()
+
+# Setting data type and hardware target
+conf.AppConfig.set_double_precision_int()
+conf.AppConfig.use_gpu()
 
 if os.getenv('MODE') is not None:
     if os.getenv('MODE') == "CPP":
@@ -208,6 +216,7 @@ machine = mch.Machine(**machine_args)
 # bunch_profiles = waterfall?
 #timing.start_timing('create_profile')
 waterfall = conf.array(bunch_profiles)
+waterfall = (waterfall*S).astype(conf.AppConfig.get_precision())
 #timing.stop_timing()
 
 #timing.start_timing('values_at_turns')
@@ -219,11 +228,11 @@ tracker = tracking.Tracking(machine)
 reconstruct_idx = machine.filmstart
 #timing.stop_timing()
 
-xp, yp = tracker.track(reconstruct_idx)
+xp, yp = tracker.track(reconstruct_idx, S=S, G=G)
 
 #timing.start_timing("physical_to_coords")
 xp, yp = parts.physical_to_coords(
-    xp, yp, machine, tracker.particles.xorigin,
+    xp/S, yp/S, machine, tracker.particles.xorigin,
     tracker.particles.dEbin)
 #timing.stop_timing()
 
@@ -246,11 +255,11 @@ if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != 
 #    timing.report(total_time = (end_time - start_time) * 1e3)
 #    timing.reset()
 
-precisions = ["single", "double"]
+precisions = ["double"]
 
 for prec in precisions:
     if prec == "double":
-        conf.AppConfig.set_double_precision()
+        conf.AppConfig.set_double_precision_int()
     elif prec == "single":
         conf.AppConfig.set_single_precision()
 
@@ -269,7 +278,7 @@ for prec in precisions:
         #timing.stop_timing()
 
         #timing.start_timing("create_tomo_object")
-        tomo = tomography.Tomography(waterfall, xp1, yp1)
+        tomo = tomography.Tomography(waterfall, xp1, yp1, S=S)
         #timing.stop_timing()
         weight = tomo.run(niter=machine.niter)
 
