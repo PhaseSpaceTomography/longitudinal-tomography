@@ -134,8 +134,6 @@ class Tracking(ParticleTracker):
             * If self-fields are disabled, the returned y-coordinates will be
               given as energy [eV] relative to the synchronous particle.
         """
-        start_time = time.time() 
-
         if conf.AppConfig.get_precision() not in [np.int32, np.int64]:
             S = 0 # With shifts, 1 is the neutral element
         
@@ -229,15 +227,11 @@ class Tracking(ParticleTracker):
                 lowerbound_x0 = 2*math.pi
                 while x0 + lowerbound_x0 < 0:
                     lowerbound_x0 += 2*math.pi
-                kernel_start_time = time.time() 
                 conf.kick_and_drift_int(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
                                 deltaE0, drift_coef, int(machine.phi12*2**S),
                                 int(machine.h_ratio), machine.dturns, recprof,
                                 deltaturn, nturns+1, nparts, self.fortran_flag, S=S, G=G,
                                 abs_of_lowest_possible_angle=lowerbound_x0, callback=callback)
-                end_time = time.time()
-                print("Kernel execution time: ", (end_time - kernel_start_time) * 1e3)
-                print("Entire tracking time (inclusive memory transfer): ", (end_time - start_time) * 1e3)
 
             else:
                 conf.kick_and_drift(xp, yp, denergy, dphi, rfv1, rfv2, phi0,
