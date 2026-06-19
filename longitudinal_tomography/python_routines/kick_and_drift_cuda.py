@@ -155,7 +155,7 @@ def kick_and_drift_cuda_int(xp: cp.ndarray, yp: cp.ndarray,
     if reciprocal_lut_index_factor <= 0:
         raise ValueError("Error in generating the look-up table, `reciprocal_lut_index_factor` <= 0.")
 
-    lut = cp.zeros(G, dtype=xp.dtype)
+    lut = cp.zeros(1 << G, dtype=xp.dtype)
     generate_sin_lut_wrapper(lut, 2 * math.pi, G, S)
 
     profile = rec_prof
