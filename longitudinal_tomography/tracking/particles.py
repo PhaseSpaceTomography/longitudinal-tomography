@@ -111,7 +111,7 @@ class Particles(object):
         self._dphi, self._denergy = _assert_coordinates(coordinates)
 
     def homogeneous_distribution(self, machine: 'Machine', recprof: int,
-                                 deltaturn: int = 0, S: int = 1):
+                                 deltaturn: int = 0, S: int = 0):
         """Function for automatic generation of particle distribution.
 
         The distributions created are identical to the distributions created
@@ -191,7 +191,7 @@ class Particles(object):
                                    ],
                                    machine: 'Machine', recprof: int,
                                    deltaturn: int = 0,
-                                   S: int = 1) \
+                                   S: int = 0) \
             -> Tuple[np.ndarray, np.ndarray]:
         """Function to convert from reconstructed phase space coordinates
         to physical units.
@@ -217,7 +217,7 @@ class Particles(object):
                 * machine.h_num * machine.omega_rev0[turn] * machine.dtbin
                 - machine.phi0[turn])
         denergy = (coordinates[1] - machine.synch_part_y) * self.dEbin
-        return dphi*S, denergy
+        return dphi*(2**S), denergy*(2**S)
 
     # Assertions to assure that all needed fields are provided in the
     # given machine object

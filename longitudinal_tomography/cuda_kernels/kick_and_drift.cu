@@ -291,10 +291,10 @@ __global__ void kick_drift_up_turns_int(const int_t * __restrict__ dphi,
         while (curr_turn < nturns)
         {
 
-            current_dphi -= drift_coef[curr_turn] * current_denergy >> S;
+            current_dphi -= drift_coef[curr_turn] * (current_denergy >> S) >> S; // drift_coef is so small that ti was scaled twice -> Shifting twice
             curr_turn++;
 
-            current_denergy += ((rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1], 
+            current_denergy += ((rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1],
                                                                 abs_of_lowest_possible_angle_int, (int_t) reciprocal_lut_index_factor, lut, G)  >> S)
                               + (rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
                                                                 abs_of_lowest_possible_angle_int, (int_t) reciprocal_lut_index_factor, lut, G)  >> S)
@@ -348,14 +348,14 @@ __global__ void kick_drift_down_turns_int(const int_t * __restrict__ dphi,
 
         while (curr_turn > 0)
         {
-            current_denergy -= ((rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1], 
+            current_denergy -= ((rfv1[curr_turn-1] * sin_fixed_point(current_dphi + phi0[curr_turn-1],
                                                                 abs_of_lowest_possible_angle_int, (int_t) reciprocal_lut_index_factor, lut, G)  >> S)
                               + (rfv2[curr_turn-1] * sin_fixed_point(hratio * (current_dphi + phi0[curr_turn-1] - phi12[curr_turn-1]),
                                                                 abs_of_lowest_possible_angle_int, (int_t) reciprocal_lut_index_factor, lut, G)  >> S)
-                              - (acc_kick[curr_turn-1]) ); 
+                              - (acc_kick[curr_turn-1]) );
             
             curr_turn--;
-            current_dphi += drift_coef[curr_turn] * current_denergy >> S;
+            current_dphi += drift_coef[curr_turn] * (current_denergy >> S) >> S; // drift_coef is so small that ti was scaled twice -> Shifting twice
 
             if (curr_turn % dturns == 0)
             {

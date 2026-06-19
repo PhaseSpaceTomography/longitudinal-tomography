@@ -171,7 +171,7 @@ class Tracking(ParticleTracker):
             log.info('Creating homogeneous distribution of particles.')
             # TODO: check if this also needs updates, for now just using the shifted value
             self.particles.homogeneous_distribution(machine, recprof,
-                                                    deltaturn, 2**S) 
+                                                    deltaturn, S)
             coords = self.particles.coordinates_dphi_denergy
 
             # Print fortran style plot info. Needed for tomograph.
@@ -190,11 +190,11 @@ class Tracking(ParticleTracker):
         self.init_dphi = dphi.copy()
         self.init_denergy = denergy.copy()
 
-        rfv1 = conf.cast(machine.vrf1_at_turn * machine.q)
-        rfv2 = conf.cast(machine.vrf2_at_turn * machine.q)
+        rfv1 = conf.cast(machine.vrf1_at_turn * machine.q * 2**S)
+        rfv2 = conf.cast(machine.vrf2_at_turn * machine.q * 2**S)
         phi0 = conf.cast(machine.phi0 * 2**S)
         deltaE0 = conf.cast(machine.deltaE0 * 2**S)
-        drift_coef = conf.cast(machine.drift_coef * 2**S) # Why was this multiplied by S^2
+        drift_coef = conf.cast(machine.drift_coef * 2**(2*S))
 
         # Tracking particles
         if self.self_field_flag:
