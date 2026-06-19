@@ -217,11 +217,8 @@ class Tracking(ParticleTracker):
                 phi_max = (machine.nbins-machine.synch_part_x)*machine.dtbin*omega_rf
                 x0 = np.min([machine.h_ratio*(phi_min+machine.phi0.min()-machine.phi12), 
                              phi_min+machine.phi0.min()])
-                x1 = np.max([machine.h_ratio*(phi_max+machine.phi0.max()-machine.phi12),
-                             phi_max+machine.phi0.max()])
                 # Adding 10% margin
-                #x0 *= 1.1 if x0 < 0 else 0.9
-                #x1 *= 1.1
+                x0 *= 1.1 if x0 < 0 else 0.9
                 # Replacing the sine look up table with a table that spans [0, 2*Pi]
                 # We need to map all input values to [0, 2**G-1] which is the tables valid region
                 # This is basically a module calcuation. Since we know the lowest possible
