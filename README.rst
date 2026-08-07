@@ -4,9 +4,9 @@ Longitudinal Phase Space Tomography
 
 .. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/pipeline.svg
 .. image:: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/badges/master/coverage.svg
-    :target: https://gitlab.cern.ch/anlu/longitudinaltomography/-/jobs/artifacts/master/download?job=pages
+    :target: https://gitlab.cern.ch/longitudinaltomography/tomographyv3/-/jobs
 
-Copyright 2023 CERN. This software is distributed under the terms of the
+Copyright 2025 CERN. This software is distributed under the terms of the
 GNU General Public Licence version 3 (GPL Version 3), copied verbatim in
 the file LICENCE.txt. In applying this licence, CERN does not waive the
 privileges and immunities granted to it by virtue of its status as an
@@ -24,7 +24,7 @@ different dependencies are needed for different operating systems.
 Installing using package manager
 """"""""""""""""""""""""""""""""
 
-The Longitudinal Tomography package is available in prebuilt wheels for Python 3.6-3.9
+The Longitudinal Tomography package is available in prebuilt wheels for Python 3.11
 on CERN Acc-Py and pypy.org as `longitudinal-tomography`. The package can thus easily be installed on
 a Linux machine using
 
@@ -86,7 +86,8 @@ compiler and libraries. This can be done by setting the `CC`, `LDFLAGS` and `CPP
 You also need to install the `libomp` package with Homebrew.
 
 On arm64 (M1/M2) MacBooks, use the following:
-::
+..
+
     export LDFLAGS="-L/opt/homebrew/lib -L/opt/homebrew/opt/llvm/lib"
     export CPPFLAGS="-I/opt/homebrew/include -I/opt/homebrew/opt/llvm/include"
     CC=/opt/homebrew/opt/llvm/bin/clang++
@@ -97,6 +98,7 @@ For Intel MacBooks, Homebrew packages are installed in a different location.
 
 Hence, for Intel MacBooks, use the following:
 ::
+
     export LDFLAGS="-L/usr/local/opt/homebrew/lib -L/usr/local/opt/homebrew/opt/llvm/lib"
     export CPPFLAGS="-I/usr/local/opt/homebrew/include -I/usr/local/opt/homebrew/opt/llvm/include"
     CC=/usr/local/opt/llvm/bin/clang++ pip install .

@@ -19,7 +19,45 @@ build_sdist:
 
 
 # ================ Test ==================
-  
+test_dev_gpu:
+  image: registry.cern.ch/docker.io/cupy/cupy:v14.0.1
+
+  script:
+    - cd ${project_root}
+
+    - apt-get update
+    - apt-get install -y git
+
+    - nvidia-smi
+    - pip3 install --break-system-packages -e .[test]
+    - pip3 install --break-system-packages "numpy>=2.0,<2.4"
+    - pip3 list
+
+    - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
+
+    - |
+      python3 -m pytest ./unit_tests \
+        --cov=${project_name} \
+        --cov-report term \
+        --cov-report html:coverage-html \
+        --cov-report xml:coverage-report.xml \
+        --junitxml=junit-report.xml
+
+  coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
+  artifacts:
+    expire_in: 30 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: ${project_root}/coverage-report.xml
+      junit: ${project_root}/junit-report.xml
+    paths:
+      - ${project_root}/coverage-html/*
+      - ${project_root}/coverage-report.xml
+      - ${project_root}/junit-report.xml
+
+  tags:
+    - k8s-gpu 
 
 test_dev:
   extends: .acc_py_dev_test
