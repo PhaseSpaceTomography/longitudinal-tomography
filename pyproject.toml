@@ -8,11 +8,10 @@ authors = [
     {name = "Christoffer Hjertø Grindheim"},
 ]
 description = "A python library for longitudinal particle beam tomography"
-license = { text = "GNU General Public License version 3" }
+license = "GPL-3.0-or-later"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
 requires-python = ">= 3.11"
@@ -45,7 +44,7 @@ gpu = [
 doc = ["acc-py-sphinx", "myst-parser", "sphinx-copybutton"]
 
 [build-system]
-requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
+requires = ["setuptools >= 77", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
 build-backend = "setuptools.build_meta"
 
 # For dynamic versioning
@@ -67,26 +66,14 @@ packages = [
     "longitudinal_tomography.utils",
     "tomo",
 ]
-platforms = [
-    "Windows",
-    "Linux",
-]
 
 [tool.setuptools.dynamic]
 readme = { file = ["README.rst"], content-type = "text/x-rst" }
 
-[tool.setuptools.dynamic.version]
-attr = "longitudinal_tomography.__version__"
-
-[tool.flake8]
-extend-ignore = "\nF"
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
+junit_duration_report = "call"
 testpaths = [
     "unit_tests",
 ]
-
-[pytest]
-junit_duration_report = "call"
