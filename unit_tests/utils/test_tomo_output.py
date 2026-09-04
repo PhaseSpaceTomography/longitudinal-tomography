@@ -63,13 +63,24 @@ class TestTomoOut(unittest.TestCase):
         rec_prof = 0
 
         phase_space = dtreat.phase_space(tomo, machine, rec_prof)[-1]
-        measured_profile = waterfall[:, 0] / waterfall[:, 0].sum()
+        measured_profile = (waterfall[rec_prof]
+                            / waterfall[rec_prof].sum())
 
         self.addCleanup(plt.close, 'all')
 
-        tout.show(phase_space, measured_profile, tomo.diff)
+        tout.show(phase_space, tomo.diff, measured_profile)
 
         mock_show.assert_called_once()
+
+        axes = plt.gcf().axes
         self.assertEqual(
-            len(plt.gcf().axes), 4,
+            len(axes), 4,
             msg='Reconstruction should be presented in four subplots')
+
+        nptest.assert_array_equal(
+            axes[3].get_lines()[0].get_ydata(), tomo.diff,
+            err_msg='Discrepancy was not plotted in the convergence subplot')
+        nptest.assert_array_equal(
+            axes[1].get_lines()[1].get_ydata(), measured_profile,
+            err_msg='Measured profile was not plotted alongside the '
+                    'reconstructed profile')
