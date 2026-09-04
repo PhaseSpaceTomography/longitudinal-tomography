@@ -244,6 +244,9 @@ class TestTrackerCPU(unittest.TestCase):
         tracker.particles.dEbin = 3698.1544291396035
         xp, yp = tracker.track(50, (phase_0, energy_0))
 
+        xp = xp.flatten()
+        yp = yp.flatten()
+
         xp_0 = 73.58628603566842
         xp_50 = 135.37116548104402
         xp_149 = 73.43430438854142
@@ -307,11 +310,11 @@ class TestTrackerCPU(unittest.TestCase):
                      -111780.71031054154, -107813.57867853255,
                      -103675.38995760499, -99375.58935765548]
 
-        for x, cx in zip(xp, correct_x):
+        for x, cx in zip(xp[:, 0], correct_x):
             self.assertAlmostEqual(
                 float(x), cx, msg='An error was found in the x-coordinates '
                                   'tracked using self-fields.')
-        for y, cy in zip(yp, correct_y):
+        for y, cy in zip(yp[:, 0], correct_y):
             self.assertAlmostEqual(
                 float(y), cy, msg='An error was found in the y-coordinates '
                                   'tracked using self-fields.')
