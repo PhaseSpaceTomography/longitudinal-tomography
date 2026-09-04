@@ -7,6 +7,7 @@ import os
 import unittest
 
 import numpy as np
+import numpy.testing as nptest
 
 from .. import commons
 import longitudinal_tomography.data.profiles as prof
@@ -72,16 +73,12 @@ class TestTrackerCPU(unittest.TestCase):
                      -280324.1098370269, -278360.53793064784,
                      -275886.24600012705, -272922.19544914237]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x, cx, delta=abs(MAX_DEV_FACTOR_DOUBLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y, cy, delta=abs(MAX_DEV_FACTOR_DOUBLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            xp[:, 0], correct_x, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
+        nptest.assert_allclose(
+            yp[:, 0], correct_y, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tracking_aut_distr_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -123,16 +120,12 @@ class TestTrackerCPU(unittest.TestCase):
                      -280324.1098370269, -278360.53793064784,
                      -275886.24600012705, -272922.19544914237]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x, cx, delta=abs(MAX_DEV_FACTOR_SINGLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y, cy, delta=abs(MAX_DEV_FACTOR_SINGLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            xp[:, 0], correct_x, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
+        nptest.assert_allclose(
+            yp[:, 0], correct_y, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tracking_man_distr(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -152,11 +145,9 @@ class TestTrackerCPU(unittest.TestCase):
                      0.36943629, 0.38725915, 0.40437511, 0.4207578,
                      0.4363824, 0.45122569, 0.46526597, 0.47848306]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x, cx, delta=abs(MAX_DEV_FACTOR_DOUBLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
+        nptest.assert_allclose(
+            xp[:, 0], correct_x, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
 
         correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
                      -136242.257239, -133976.14426166, -131466.51658527,
@@ -165,11 +156,9 @@ class TestTrackerCPU(unittest.TestCase):
                      -107813.72887332, -103675.70990658, -99376.1357149,
                      -94924.39999134, -90329.82073156, -85601.61526492,
                      -80748.87937168,  -75780.57047406]
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y, cy, delta=abs(MAX_DEV_FACTOR_DOUBLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            yp[:, 0], correct_y, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tracking_man_distr_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -190,11 +179,9 @@ class TestTrackerCPU(unittest.TestCase):
                      0.36943629, 0.38725915, 0.40437511, 0.4207578,
                      0.4363824, 0.45122569, 0.46526597, 0.47848306]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x, cx, delta=abs(MAX_DEV_FACTOR_SINGLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
+        nptest.assert_allclose(
+            xp[:, 0], correct_x, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
 
         correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
                      -136242.257239, -133976.14426166, -131466.51658527,
@@ -203,11 +190,9 @@ class TestTrackerCPU(unittest.TestCase):
                      -107813.72887332, -103675.70990658, -99376.1357149,
                      -94924.39999134, -90329.82073156, -85601.61526492,
                      -80748.87937168,  -75780.57047406]
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y, cy, delta=abs(MAX_DEV_FACTOR_SINGLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            yp[:, 0], correct_y, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_self_field_tracking(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -257,17 +242,17 @@ class TestTrackerCPU(unittest.TestCase):
 
         correct_y = [yp_0, yp_50, yp_149]
         test_y = [float(yp[0]), float(yp[50]), float(yp[149])]
-        for y, cy in zip(test_y, correct_y):
-            self.assertAlmostEqual(
-                y, cy, msg='An error was found in the y-coordinates '
-                           'tracked using self-fields.')
+        nptest.assert_almost_equal(
+            test_y, correct_y,
+            err_msg='An error was found in the y-coordinates tracked using '
+                    'self-fields.')
 
         correct_x = [xp_0, xp_50, xp_149]
         test_x = [float(xp[0]), float(xp[50]), float(xp[149])]
-        for x, cx in zip(test_x, correct_x):
-            self.assertAlmostEqual(
-                x, cx, msg='An error was found in the x-coordinates '
-                           'tracked using self-fields.')
+        nptest.assert_almost_equal(
+            test_x, correct_x,
+            err_msg='An error was found in the x-coordinates tracked using '
+                    'self-fields.')
 
     def test_self_field_flag_fails(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -310,14 +295,14 @@ class TestTrackerCPU(unittest.TestCase):
                      -111780.71031054154, -107813.57867853255,
                      -103675.38995760499, -99375.58935765548]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                float(x), cx, msg='An error was found in the x-coordinates '
-                                  'tracked using self-fields.')
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                float(y), cy, msg='An error was found in the y-coordinates '
-                                  'tracked using self-fields.')
+        nptest.assert_almost_equal(
+            xp[:, 0], correct_x,
+            err_msg='An error was found in the x-coordinates tracked using '
+                    'self-fields.')
+        nptest.assert_almost_equal(
+            yp[:, 0], correct_y,
+            err_msg='An error was found in the y-coordinates tracked using '
+                    'self-fields.')
 
 class TestTrackerGPU(unittest.TestCase):
 
@@ -327,6 +312,7 @@ class TestTrackerGPU(unittest.TestCase):
         except ImportError:
             self.skipTest('CuPy not found - skipped tests')
         else:
+            self.cp = cp
             conf.AppConfig.use_gpu()
             conf.AppConfig.set_double_precision()
 
@@ -376,16 +362,14 @@ class TestTrackerGPU(unittest.TestCase):
                      -280324.1098370269, -278360.53793064784,
                      -275886.24600012705, -272922.19544914237]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x.item(), cx, delta=abs(MAX_DEV_FACTOR_DOUBLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y.item(), cy, delta=abs(MAX_DEV_FACTOR_DOUBLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(xp[:, 0]), correct_x,
+            rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(yp[:, 0]), correct_y,
+            rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tracking_aut_distr_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -427,16 +411,14 @@ class TestTrackerGPU(unittest.TestCase):
                      -280324.1098370269, -278360.53793064784,
                      -275886.24600012705, -272922.19544914237]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x.item(), cx, delta=abs(MAX_DEV_FACTOR_SINGLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y.item(), cy, delta=abs(MAX_DEV_FACTOR_SINGLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(xp[:, 0]), correct_x,
+            rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(yp[:, 0]), correct_y,
+            rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tracking_man_distr(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -456,11 +438,10 @@ class TestTrackerGPU(unittest.TestCase):
                      0.36943629, 0.38725915, 0.40437511, 0.4207578,
                      0.4363824, 0.45122569, 0.46526597, 0.47848306]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x.item(), cx, delta=abs(MAX_DEV_FACTOR_DOUBLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(xp[:, 0]), correct_x,
+            rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
 
         correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
                      -136242.257239, -133976.14426166, -131466.51658527,
@@ -469,11 +450,10 @@ class TestTrackerGPU(unittest.TestCase):
                      -107813.72887332, -103675.70990658, -99376.1357149,
                      -94924.39999134, -90329.82073156, -85601.61526492,
                      -80748.87937168,  -75780.57047406]
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y.item(), cy, delta=abs(MAX_DEV_FACTOR_DOUBLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(yp[:, 0]), correct_y,
+            rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tracking_man_distr_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -494,11 +474,10 @@ class TestTrackerGPU(unittest.TestCase):
                      0.36943629, 0.38725915, 0.40437511, 0.4207578,
                      0.4363824, 0.45122569, 0.46526597, 0.47848306]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x.item(), cx, delta=abs(MAX_DEV_FACTOR_SINGLE * cx),
-                msg='Error in tracking of particle '
-                    'found in x-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(xp[:, 0]), correct_x,
+            rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in x-coordinate')
 
         correct_y = [-141501.80292005, -140012.42084442, -138256.87228931,
                      -136242.257239, -133976.14426166, -131466.51658527,
@@ -507,8 +486,7 @@ class TestTrackerGPU(unittest.TestCase):
                      -107813.72887332, -103675.70990658, -99376.1357149,
                      -94924.39999134, -90329.82073156, -85601.61526492,
                      -80748.87937168,  -75780.57047406]
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y.item(), cy, delta=abs(MAX_DEV_FACTOR_SINGLE * cy),
-                msg='Error in tracking of particle '
-                    'found in y-coordinate')
+        nptest.assert_allclose(
+            self.cp.asnumpy(yp[:, 0]), correct_y,
+            rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Error in tracking of particle found in y-coordinate')

@@ -5,6 +5,8 @@ Run as python test_phase_space_info.py in console or via coverage
 from __future__ import annotations
 import unittest
 
+import numpy.testing as nptest
+
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 import longitudinal_tomography.tracking.phase_space_info as psi
@@ -128,10 +130,9 @@ class TestMachine(unittest.TestCase):
                    59, 58, 58, 57, 56, 56, 55, 54, 53, 52, 51, 50, 49, 48,
                    47, 46, 45, 43, 41, 38]
 
-        for j, corr in zip(psinfo.jmax, correct):
-            self.assertEqual(j, corr,
-                             msg='jmax calculated incorrectly'
-                                 '(full_pp_flag not enabled)')
+        nptest.assert_array_equal(
+            psinfo.jmax, correct,
+            err_msg='jmax calculated incorrectly(full_pp_flag not enabled)')
 
     def test_find_binned_phase_energy_limits_correct_jmin(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -152,10 +153,9 @@ class TestMachine(unittest.TestCase):
                    19, 20, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
                    33, 35, 38]
 
-        for j, corr in zip(psinfo.jmin, correct):
-            self.assertEqual(j, corr,
-                             msg='jmin calculated incorrectly'
-                                 '(full_pp_flag not enabled)')
+        nptest.assert_array_equal(
+            psinfo.jmin, correct,
+            err_msg='jmin calculated incorrectly(full_pp_flag not enabled)')
 
     def test_find_binned_phase_energy_limits_full_pp_correct_ilims(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -192,10 +192,9 @@ class TestMachine(unittest.TestCase):
 
         correct = [76] * machine.nbins
 
-        for j, corr in zip(psinfo.jmax, correct):
-            self.assertEqual(j, corr,
-                             msg='jmax calculated incorrectly'
-                                 '(full_pp_flag enabled)')
+        nptest.assert_array_equal(
+            psinfo.jmax, correct,
+            err_msg='jmax calculated incorrectly(full_pp_flag enabled)')
 
     def test_find_binned_phase_energy_limits_full_pp_correct_jmin(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -213,7 +212,6 @@ class TestMachine(unittest.TestCase):
 
         correct = [1] * machine.nbins
 
-        for j, corr in zip(psinfo.jmin, correct):
-            self.assertEqual(j, corr,
-                             msg='jmin calculated incorrectly'
-                                 '(full_pp_flag enabled)')
+        nptest.assert_array_equal(
+            psinfo.jmin, correct,
+            err_msg='jmin calculated incorrectly(full_pp_flag enabled)')

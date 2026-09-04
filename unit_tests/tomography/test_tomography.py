@@ -15,7 +15,11 @@ from longitudinal_tomography.utils import tomo_config as conf
 
 from .. import commons
 
-SINGLE_PREC_ACCURACY_PLACES = 5
+# Maximum relative deviation between calculated and reference values.
+# The double-precision bound is set by the precision of the hard-coded
+# reference values, the single-precision bound by float32 round-off.
+MAX_DEV_FACTOR_DOUBLE = 1e-6
+MAX_DEV_FACTOR_SINGLE = 1e-5
 
 
 class TestTomographyCpp(unittest.TestCase):
@@ -147,8 +151,9 @@ class TestTomographyCpp(unittest.TestCase):
                              0.00977646, 0.0097126,  0.00971697, 0.00967434,
                              0.00961899, 0.00961908])
 
-        nptest.assert_almost_equal(
-            weights, cweights, err_msg='Weights were calculated incorrectly')
+        nptest.assert_allclose(
+            weights, cweights, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Weights were calculated incorrectly')
 
     def test_run_correct_weights_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -178,8 +183,9 @@ class TestTomographyCpp(unittest.TestCase):
                              0.00977646, 0.0097126,  0.00971697, 0.00967434,
                              0.00961899, 0.00961908])
 
-        nptest.assert_almost_equal(
-            weights, cweights, decimal=SINGLE_PREC_ACCURACY_PLACES, err_msg='Weights were calculated incorrectly')
+        nptest.assert_allclose(
+            weights, cweights, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Weights were calculated incorrectly')
 
     def test_run_correct_diff(self):
         waterfall = commons.load_waterfall()
@@ -195,8 +201,9 @@ class TestTomographyCpp(unittest.TestCase):
         weights = tomo.run(1)
 
         correct = 0.009561478717303546
-        self.assertAlmostEqual(tomo.diff[0], correct,
-                               msg='Discrepancy calculated incorrectly')
+        nptest.assert_allclose(
+            tomo.diff[0], correct, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Discrepancy calculated incorrectly')
 
     def test_run_correct_diff_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -213,8 +220,9 @@ class TestTomographyCpp(unittest.TestCase):
         weights = tomo.run(1)
 
         correct = 0.009561478717303546
-        self.assertAlmostEqual(tomo.diff[0], correct, places=SINGLE_PREC_ACCURACY_PLACES,
-                               msg='Discrepancy calculated incorrectly')
+        nptest.assert_allclose(
+            tomo.diff[0], correct, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Discrepancy calculated incorrectly')
 
     def test_run_hybrid_reduced_to_zeros_fails(self):
         waterfall = commons.load_waterfall()
@@ -269,8 +277,9 @@ class TestTomographyCpp(unittest.TestCase):
                              0.00977646, 0.0097126,  0.00971697, 0.00967434,
                              0.00961899, 0.00961908])
 
-        nptest.assert_almost_equal(
-            weights, cweights, err_msg='Weights were calculated incorrectly')
+        nptest.assert_allclose(
+            weights, cweights, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Weights were calculated incorrectly')
 
     def test_run_hybrid_correct_diff(self):
         waterfall = commons.load_waterfall()
@@ -286,8 +295,9 @@ class TestTomographyCpp(unittest.TestCase):
         weights = tomo.run_hybrid(1)
 
         correct = 0.009561478717303548
-        self.assertAlmostEqual(tomo.diff[0], correct,
-                               msg='Discrepancy calculated incorrectly')
+        nptest.assert_allclose(
+            tomo.diff[0], correct, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Discrepancy calculated incorrectly')
 
 class TestTomographyGPU(unittest.TestCase):
 
@@ -429,8 +439,9 @@ class TestTomographyGPU(unittest.TestCase):
                              0.00977646, 0.0097126,  0.00971697, 0.00967434,
                              0.00961899, 0.00961908])
 
-        self.cp.testing.assert_array_almost_equal(
-            weights, cweights, err_msg='Weights were calculated incorrectly on GPU')
+        self.cp.testing.assert_allclose(
+            weights, cweights, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Weights were calculated incorrectly on GPU')
 
     def test_run_correct_weights_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -460,8 +471,9 @@ class TestTomographyGPU(unittest.TestCase):
                              0.00977646, 0.0097126,  0.00971697, 0.00967434,
                              0.00961899, 0.00961908])
 
-        self.cp.testing.assert_array_almost_equal(
-            weights, cweights, decimal=SINGLE_PREC_ACCURACY_PLACES, err_msg='Weights were calculated incorrectly on GPU')
+        self.cp.testing.assert_allclose(
+            weights, cweights, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Weights were calculated incorrectly on GPU')
         
     def test_run_gpu_cpu_equal(self):
         conf.AppConfig.use_cpu()
@@ -508,8 +520,9 @@ class TestTomographyGPU(unittest.TestCase):
         tomo.run(1)
 
         correct = 0.009561478717303546
-        self.cp.testing.assert_array_almost_equal(tomo.diff[0], correct,
-                               err_msg='Discrepancy calculated incorrectly on GPU')
+        self.cp.testing.assert_allclose(
+            tomo.diff[0], correct, rtol=MAX_DEV_FACTOR_DOUBLE,
+            err_msg='Discrepancy calculated incorrectly on GPU')
 
     def test_run_correct_diff_singleprec(self):
         conf.AppConfig.set_single_precision()
@@ -526,5 +539,6 @@ class TestTomographyGPU(unittest.TestCase):
         tomo.run(1)
 
         correct = 0.009561478717303546
-        self.cp.testing.assert_array_almost_equal(tomo.diff[0], correct, decimal=SINGLE_PREC_ACCURACY_PLACES,
-                               err_msg='Discrepancy calculated incorrectly on GPU')
+        self.cp.testing.assert_allclose(
+            tomo.diff[0], correct, rtol=MAX_DEV_FACTOR_SINGLE,
+            err_msg='Discrepancy calculated incorrectly on GPU')
