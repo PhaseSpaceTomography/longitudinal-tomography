@@ -16,10 +16,10 @@ classifiers = [
 ]
 requires-python = ">= 3.11"
 dependencies = [
-    "matplotlib ~= 3.8",
-    "multipledispatch ~= 1.0",
-    "numpy ~= 1.25",
-    "scipy ~= 1.11",
+    "matplotlib >= 3.9",
+    "multipledispatch >= 1.0",
+    "numpy >= 2.1",
+    "scipy >= 1.14",
 ]
 dynamic = ["version", "readme"]
 
@@ -39,7 +39,7 @@ test = [
     "pyyaml",
 ]
 gpu = [
-    "cupy"
+    "cupy >= 13.0"
 ]
 doc = ["acc-py-sphinx", "myst-parser", "sphinx-copybutton"]
 

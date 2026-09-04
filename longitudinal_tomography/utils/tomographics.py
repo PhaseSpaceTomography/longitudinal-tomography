@@ -245,8 +245,9 @@ def matched_area_calc(tomomachine: MachineABC, bunch_length: float,
     dE_height_array[np.isnan(dE_height_array)] = 0
 
     matched_area = (2 / (tomomachine.h_num*omega_rev0)
-                    * np.trapz(dE_height_array,
-                               dx=phi_array_matched[1] - phi_array_matched[0]))
+                    * np.trapezoid(dE_height_array,
+                                   dx=phi_array_matched[1]
+                                   - phi_array_matched[0]))
 
     return matched_area
 
@@ -432,29 +433,29 @@ def density_vs_emittance(tomomachine: MachineABC, tomo_image: Iterable[float],
             good_idx = np.where((dE_array > -dE_height_array[idx_time])
                                 *(dE_array < dE_height_array[idx_time]))[0]
 
-            summed_density += np.trapz(tomo_image[idx_time, good_idx])
+            summed_density += np.trapezoid(tomo_image[idx_time, good_idx])
 
             cross_dE_top = np.interp(dE_height_array[idx_time],
                                      dE_array[good_idx[-1] : good_idx[-1]+2],
                                      tomo_image[idx_time,
                                                 good_idx[-1] : good_idx[-1]+2])
 
-            summed_density += np.trapz([tomo_image[idx_time, good_idx[-1]],
-                                        cross_dE_top],
-                                       dx=((dE_height_array[idx_time]
-                                            -dE_array[good_idx[-1]])
-                                           /dE_resolution))
+            summed_density += np.trapezoid([tomo_image[idx_time, good_idx[-1]],
+                                            cross_dE_top],
+                                           dx=((dE_height_array[idx_time]
+                                                -dE_array[good_idx[-1]])
+                                               /dE_resolution))
 
             cross_dE_bottom = np.interp(-dE_height_array[idx_time],
                                         dE_array[good_idx[0]-1 : good_idx[0]+1],
                                         tomo_image[idx_time, good_idx[0]-1
                                                              : good_idx[0]+1])
 
-            summed_density += np.trapz([cross_dE_bottom,
-                                        tomo_image[idx_time, good_idx[0]]],
-                                       dx=((dE_array[good_idx[0]]
-                                            -(-dE_height_array[idx_time]))
-                                            /dE_resolution))
+            summed_density += np.trapezoid([cross_dE_bottom,
+                                            tomo_image[idx_time, good_idx[0]]],
+                                           dx=((dE_array[good_idx[0]]
+                                                -(-dE_height_array[idx_time]))
+                                                /dE_resolution))
 
             local_density += (cross_dE_top + cross_dE_bottom) / 2
             local_density_min = np.min([local_density_min, cross_dE_top,
@@ -472,7 +473,7 @@ def density_vs_emittance(tomomachine: MachineABC, tomo_image: Iterable[float],
             local_density_max_final[idx_amplitude] = local_density_max
             emittance_density[idx_amplitude] = (2 / (tomomachine.h_num
                                                      *omega_rev0)
-                                                *np.trapz(dE_height_array,
+                                                *np.trapezoid(dE_height_array,
                                                       dx=phi_array_matched[1]
                                                         -phi_array_matched[0]))
 
@@ -571,9 +572,9 @@ def tomo_weight_clipping(tomomachine: MachineABC, time_array: Iterable[float],
         dE_height_array[np.isnan(dE_height_array)] = 0
 
         emittance_density = (2 / (tomomachine.h_num*omega_rev0)
-                             * np.trapz(dE_height_array,
-                                        dx=phi_array_matched[1]
-                                           - phi_array_matched[0]))
+                             * np.trapezoid(dE_height_array,
+                                            dx=phi_array_matched[1]
+                                               - phi_array_matched[0]))
 
         if emittance_density >= emittance_target:
             break
