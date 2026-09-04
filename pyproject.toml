@@ -3,6 +3,7 @@ name = "longitudinal_tomography"
 authors = [
     {name = "Simon Albright", email = "simon.albright@cern.ch"},
     {name = "Bernardo Abreu Figueiredo", email = "bernardo.abreu.figueiredo@cern.ch"},
+    {name = "Balazs Paszkal Halmos", email = "balazs.paszkal.halmos@cern.ch"},
     {name = "Anton Lu", email = "anton.lu@cern.ch"},
     {name = "Christoffer Hjertø Grindheim"},
 ]
@@ -86,3 +87,6 @@ addopts = "-ra -q"
 testpaths = [
     "unit_tests",
 ]
+
+[pytest]
+junit_duration_report = "call"
