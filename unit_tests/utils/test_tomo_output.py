@@ -8,6 +8,7 @@ import shutil
 import unittest
 from unittest.mock import patch
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as nptest
 
@@ -64,4 +65,11 @@ class TestTomoOut(unittest.TestCase):
         phase_space = dtreat.phase_space(tomo, machine, rec_prof)[-1]
         measured_profile = waterfall[:, 0] / waterfall[:, 0].sum()
 
+        self.addCleanup(plt.close, 'all')
+
         tout.show(phase_space, measured_profile, tomo.diff)
+
+        mock_show.assert_called_once()
+        self.assertEqual(
+            len(plt.gcf().axes), 4,
+            msg='Reconstruction should be presented in four subplots')

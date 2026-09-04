@@ -47,10 +47,15 @@ class TestPostProcess(unittest.TestCase):
 
         t_bins, e_bins, phase_space = treat.phase_space(tomo, machine)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError,
+                               msg='A fraction below 0 should raise an '
+                                   'exception'):
             post_process.emittance_fractional(phase_space, t_bins,
                                               e_bins, fraction=-1)
 
+        with self.assertRaises(ValueError,
+                               msg='A fraction above 100 should raise an '
+                                   'exception'):
             post_process.emittance_fractional(phase_space, t_bins,
                                               e_bins, fraction=101)
 

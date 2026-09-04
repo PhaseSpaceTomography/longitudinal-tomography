@@ -159,11 +159,16 @@ class TestPreProcess(unittest.TestCase):
 
         cut_waterfall = pre_process.cut_waterfall(waterfall, 3, 6)
 
-        np.equal(correct, cut_waterfall)
+        nptest.assert_array_equal(
+            cut_waterfall, correct,
+            err_msg='Waterfall was cut incorrectly')
 
         cut_waterfall = pre_process.cut_waterfall(waterfall, 3, -3)
 
-        np.equal(correct, cut_waterfall)
+        nptest.assert_array_equal(
+            cut_waterfall, correct,
+            err_msg='Waterfall was cut incorrectly when the right hand '
+                    'cut was given as a negative index')
 
     def test_cut_waterfall_bounds(self):
         waterfall = np.arange(0, 72).reshape(8, 9)
