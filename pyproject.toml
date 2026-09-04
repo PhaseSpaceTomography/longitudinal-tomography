@@ -44,12 +44,12 @@ gpu = [
 doc = ["acc-py-sphinx", "myst-parser", "sphinx-copybutton"]
 
 [build-system]
-requires = ["setuptools >= 77", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
+requires = ["setuptools >= 77", "setuptools_scm ~= 8.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
 build-backend = "setuptools.build_meta"
 
 # For dynamic versioning
 [tool.setuptools_scm]
-write_to = "longitudinal_tomography/_version.py"
+version_file = "longitudinal_tomography/_version.py"
 local_scheme = "no-local-version"
 
 [tool.setuptools]
