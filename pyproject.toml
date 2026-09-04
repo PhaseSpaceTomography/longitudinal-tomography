@@ -31,20 +31,21 @@ changelog = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3/-/releas
 
 [project.optional-dependencies]
 test = [
-    "coverage",
-    "coverage-badge",
-    "flake8",
-    "pylint",
-    "pytest-cov",
-    "pyyaml",
+    "coverage >= 7.0",
+    "coverage-badge >= 1.1",
+    "flake8 >= 7.0",
+    "pylint >= 3.0",
+    "pytest >= 8.0",
+    "pytest-cov >= 5.0",
+    "pyyaml >= 6.0",
 ]
 gpu = [
     "cupy >= 13.0"
 ]
-doc = ["acc-py-sphinx", "myst-parser", "sphinx-copybutton"]
+doc = ["acc-py-sphinx", "myst-parser >= 3.0", "sphinx-copybutton >= 0.5"]
 
 [build-system]
-requires = ["setuptools >= 77", "setuptools_scm ~= 8.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
+requires = ["setuptools >= 77", "setuptools_scm ~= 8.0", "pybind11 >= 2.13"]
 build-backend = "setuptools.build_meta"
 
 # For dynamic versioning
@@ -71,7 +72,7 @@ packages = [
 readme = { file = ["README.rst"], content-type = "text/x-rst" }
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "8.0"
 addopts = "-ra -q"
 junit_duration_report = "call"
 testpaths = [
