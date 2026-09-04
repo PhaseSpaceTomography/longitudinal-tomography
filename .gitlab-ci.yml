@@ -30,7 +30,6 @@ test_dev_gpu:
 
     - nvidia-smi
     - pip3 install --break-system-packages -e .[test]
-    - pip3 install --break-system-packages "numpy>=2.0,<2.4"
     - pip3 list
 
     - python3 -c "import cupy as cp; print(cp.cuda.runtime.getDeviceCount())"
@@ -57,7 +56,7 @@ test_dev_gpu:
       - ${project_root}/junit-report.xml
 
   tags:
-    - k8s-gpu 
+    - k8s-gpu
 
 test_dev:
   extends: .acc_py_dev_test
@@ -70,6 +69,21 @@ test_dev:
       --cov-report html:coverage-html
       --cov-report xml:coverage-report.xml
       --junitxml=junit-report.xml
+
+
+test_minimum:
+  # Check dependency lower bounds
+  extends: .acc_py_dev_test
+  before_script:
+    - cd ${project_root}
+    - python -m venv .venv-minimum
+    - . .venv-minimum/bin/activate
+    - python -m pip install uv
+    - python -m uv pip install --resolution lowest-direct .[test]
+    - python -m pip list
+
+  script:
+    - python -m pytest ./unit_tests
 
 
 test_wheel:
