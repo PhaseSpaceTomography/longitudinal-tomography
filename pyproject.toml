@@ -8,19 +8,18 @@ authors = [
     {name = "Christoffer Hjertø Grindheim"},
 ]
 description = "A python library for longitudinal particle beam tomography"
-license = { text = "GNU General Public License version 3" }
+license = "GPL-3.0-or-later"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
 requires-python = ">= 3.11"
 dependencies = [
-    "matplotlib ~= 3.8",
-    "multipledispatch ~= 1.0",
-    "numpy ~= 1.25",
-    "scipy ~= 1.11",
+    "matplotlib >= 3.9",
+    "multipledispatch >= 1.0",
+    "numpy >= 2.1",
+    "scipy >= 1.14",
 ]
 dynamic = ["version", "readme"]
 
@@ -32,25 +31,26 @@ changelog = "https://gitlab.cern.ch/longitudinaltomography/tomographyv3/-/releas
 
 [project.optional-dependencies]
 test = [
-    "coverage",
-    "coverage-badge",
-    "flake8",
-    "pylint",
-    "pytest-cov",
-    "pyyaml",
+    "coverage >= 7.0",
+    "coverage-badge >= 1.1",
+    "flake8 >= 7.0",
+    "pylint >= 3.0",
+    "pytest >= 8.0",
+    "pytest-cov >= 5.0",
+    "pyyaml >= 6.0",
 ]
 gpu = [
-    "cupy"
+    "cupy >= 13.0"
 ]
-doc = ["acc-py-sphinx", "myst-parser", "sphinx-copybutton"]
+doc = ["acc-py-sphinx", "myst-parser >= 3.0", "sphinx-copybutton >= 0.5"]
 
 [build-system]
-requires = ["setuptools >= 61", "setuptools_scm[toml] ~= 6.0", "wheel ~= 0.42", "pybind11 ~= 2.11"]
+requires = ["setuptools >= 77", "setuptools_scm ~= 8.0", "pybind11 >= 2.13"]
 build-backend = "setuptools.build_meta"
 
 # For dynamic versioning
 [tool.setuptools_scm]
-write_to = "longitudinal_tomography/_version.py"
+version_file = "longitudinal_tomography/_version.py"
 local_scheme = "no-local-version"
 
 [tool.setuptools]
@@ -67,26 +67,14 @@ packages = [
     "longitudinal_tomography.utils",
     "tomo",
 ]
-platforms = [
-    "Windows",
-    "Linux",
-]
 
 [tool.setuptools.dynamic]
 readme = { file = ["README.rst"], content-type = "text/x-rst" }
 
-[tool.setuptools.dynamic.version]
-attr = "longitudinal_tomography.__version__"
-
-[tool.flake8]
-extend-ignore = "\nF"
-
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "8.0"
 addopts = "-ra -q"
+junit_duration_report = "call"
 testpaths = [
     "unit_tests",
 ]
-
-[pytest]
-junit_duration_report = "call"
