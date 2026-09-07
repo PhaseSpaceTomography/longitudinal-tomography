@@ -34,7 +34,6 @@ import longitudinal_tomography.tomography.tomography as tomography
 from longitudinal_tomography.utils import tomo_config as conf
 
 
-
 # Constant imports
 from scipy.constants import c, e, m_p
 
@@ -44,14 +43,15 @@ timing.stop_timing()
 timing.start_timing('blond::set_params')
 
 # Beam parameters
-n_particles = int(1e11) # ?
-n_macroparticles = int(1e5) # only in BLonD
+n_particles = int(1e11)  # ?
+n_macroparticles = int(1e5)  # only in BLonD
 
 distribution_exponent = None
 bunch_length_fit = 'full'
 distribution_type = 'parabolic_line'
 max_bunch_length = 0.5476677e-6
-bunch_length = max_bunch_length * 0.6   # [s] between 10% and 90% of RF period (0.5476677e-6)
+# [s] between 10% and 90% of RF period (0.5476677e-6)
+bunch_length = max_bunch_length * 0.6
 
 n_bins = 100                            # Between 50 and 2000
 
@@ -62,7 +62,7 @@ gamma_transition = 4.1          # for PSB
 C = 2 * np.pi * radius          # [m]
 
 # Tracking details
-n_turns = 100 # n_profiles!!!
+n_turns = 100  # n_profiles!!!
 dturns = 9
 
 # Derived parameters
@@ -71,13 +71,13 @@ E_kin = 2e9                     # [eV] FT: 2e9 (or 1.4e9), FB: 160e6
 tot_beam_energy = E_0 + E_kin   # [eV]
 sync_momentum = np.sqrt(tot_beam_energy**2 - E_0**2)    # [eV]
 momentum_compaction = 1 / gamma_transition**2
-charge = 1 # -1 if electron
+charge = 1  # -1 if electron
 b0 = sync_momentum / bending_radius / c                 # [T]
 
 # Cavity parameters
 n_rf_systems = 1
-h = 1.0 # for PSB
-voltage_program = 24e3 # for PSB
+h = 1.0  # for PSB
+voltage_program = 24e3  # for PSB
 phi_offset = np.pi
 
 timing.stop_timing()
@@ -85,7 +85,8 @@ timing.stop_timing()
 
 timing.start_timing("set_device")
 if os.getenv('SINGLE_PREC') is not None:
-    conf.AppConfig.set_single_precision() if os.getenv('SINGLE_PREC') == 'True' else conf.AppConfig.set_double_precision()
+    conf.AppConfig.set_single_precision() if os.getenv(
+        'SINGLE_PREC') == 'True' else conf.AppConfig.set_double_precision()
 
 mode = os.getenv('MODE', 'CPP')
 if mode == "CUDA":
@@ -98,17 +99,20 @@ else:
 timing.stop_timing()
 
 timing.start_timing('blond:create_objects')
-general_params = Ring(C, momentum_compaction, sync_momentum, Proton(),
-                    n_turns * dturns, bending_radius=bending_radius)
-RF_st_par = RFStation(general_params, [h], [voltage_program], [phi_offset],
-                    n_rf_systems)
+general_params = Ring(
+    C, momentum_compaction, sync_momentum, Proton(),
+    n_turns * dturns, bending_radius=bending_radius)
+RF_st_par = RFStation(
+    general_params, [h], [voltage_program], [phi_offset],
+    n_rf_systems)
 beam = Beam(general_params, n_macroparticles, n_particles)
 ring_RF_section = RingAndRFTracker(RF_st_par, beam)
 full_tracker = FullRingAndRF([ring_RF_section])
 
-bucket_length = 2.0 * np.pi / RF_st_par.omega_rf[0,0]
+bucket_length = 2.0 * np.pi / RF_st_par.omega_rf[0, 0]
 
-slice_beam = Profile(beam, CutOptions(cut_left=0, cut_right=bucket_length, n_slices=n_bins))
+slice_beam = Profile(beam, CutOptions(
+    cut_left=0, cut_right=bucket_length, n_slices=n_bins))
 monitor = SlicesMonitor('./blonddata', n_turns, slice_beam)
 
 timing.stop_timing()
@@ -117,12 +121,13 @@ timing.stop_timing()
 
 timing.start_timing('blond::match_and_track')
 
-matched_from_distribution_function(beam, full_tracker,
-                                distribution_type=distribution_type,
-                                distribution_exponent=distribution_exponent,
-                                bunch_length=bunch_length,
-                                bunch_length_fit=bunch_length_fit,
-                                distribution_variable='Action', seed=18)
+matched_from_distribution_function(
+    beam, full_tracker,
+    distribution_type=distribution_type,
+    distribution_exponent=distribution_exponent,
+    bunch_length=bunch_length,
+    bunch_length_fit=bunch_length_fit,
+    distribution_variable='Action', seed=18)
 
 beam.dE *= 0.3
 
@@ -141,13 +146,16 @@ for i in range(n_turns):
 monitor.close()
 timing.stop_timing()
 
-#import blond.plots.plot_beams as bpb
+# import blond.plots.plot_beams as bpb
 
-#bpb.plot_long_phase_space(general_params, RF_st_par, beam, 0, 547.8e-9, -65e6, 65e6, show_plot = True, separatrix_plot = True, histograms_plot = False)
+# bpb.plot_long_phase_space(general_params, RF_st_par, beam, 0,
+#                           547.8e-9, -65e6, 65e6,
+#                           show_plot=True, separatrix_plot=True,
+#                           histograms_plot=False)
 
 # TOMOGRAPHY PROCESS ----------------------------------------------------------
 
-# DEFINE MACHINE 
+# DEFINE MACHINE
 
 timing.start_timing('define_machine_object')
 
@@ -158,13 +166,13 @@ machine_args = {
     'output_dir':           '/tmp/',
     'dtbin':                dtbin,
     'dturns':               dturns,
-    'synch_part_x':         n_bins // 2, #np.argmax(bunch_profiles[0]),
-    'demax':                -1.E6,              # noqa
+    'synch_part_x':         n_bins // 2,  # np.argmax(bunch_profiles[0]),
+    'demax':                -1.E6,
     'filmstart':            0,
     'filmstop':             1,
     'filmstep':             1,
     'niter':                20,
-    'snpt':                 4, # Square root of particles pr. cell of phase space.
+    'snpt':                 4,  # sqrt of particles per phase space cell
     'full_pp_flag':         False,
     'beam_ref_frame':       0,
     'machine_ref_frame':    0,
@@ -174,7 +182,7 @@ machine_args = {
     'vrf2dot':              0.0,
     'h_num':                h,
     'h_ratio':              2.0,
-    'phi12':                phi_offset, #0.4007821253666541,
+    'phi12':                phi_offset,  # 0.4007821253666541,
     'b0':                   b0,
     'bdot':                 0.0,
     'mean_orbit_rad':       radius,
@@ -208,12 +216,16 @@ rfv_inputs = np.linspace(rfv_start, rfv_end, ntest_points)
 precisions = ["single", "double"]
 
 end_time = time.time()
-if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
-        report_filename = os.getenv("REPORT_FILENAME")
-        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + "-baseprog-Voltagecalib")
-        timing.reset()
+if (os.getenv("REPORT_FILENAME") is not None
+        and os.getenv("REPORT_FILENAME") != ""):
+    report_filename = os.getenv("REPORT_FILENAME")
+    timing.report(
+        total_time=(end_time - start_time) * 1e3,
+        out_file=report_filename
+        + "-baseprog-Voltagecalib")
+    timing.reset()
 else:
-    timing.report(total_time = (end_time - start_time) * 1e3)
+    timing.report(total_time=(end_time - start_time) * 1e3)
     timing.reset()
 
 for prec in precisions:
@@ -262,23 +274,32 @@ for prec in precisions:
 
         if firstit:
             end_time = time.time()
-            if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
+            if (os.getenv("REPORT_FILENAME") is not None
+                    and os.getenv("REPORT_FILENAME") != ""):
                 report_filename = os.getenv("REPORT_FILENAME")
-                timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Voltagecalib-it1")
+                suffix = (f"-{prec}-{n_bins}-bins-{n_turns}"
+                          f"-profs-Voltagecalib-it1")
+                timing.report(
+                    total_time=(end_time - start_time) * 1e3,
+                    out_file=report_filename + suffix)
                 timing.reset()
             else:
-                timing.report(total_time = (end_time - start_time) * 1e3)
+                timing.report(total_time=(end_time - start_time) * 1e3)
                 timing.reset()
             firstit = False
             start_time = time.time()
 
     end_time = time.time()
-    if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
+    if (os.getenv("REPORT_FILENAME") is not None
+            and os.getenv("REPORT_FILENAME") != ""):
         report_filename = os.getenv("REPORT_FILENAME")
-        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Voltagecalib-itrest")
+        timing.report(
+            total_time=(end_time - start_time) * 1e3,
+            out_file=report_filename
+            + f"-{prec}-{n_bins}-bins-{n_turns}-profs-Voltagecalib-itrest")
         timing.reset()
     else:
-        timing.report(total_time = (end_time - start_time) * 1e3)
+        timing.report(total_time=(end_time - start_time) * 1e3)
         timing.reset()
 
 # while reconstruct_idx < n_turns:

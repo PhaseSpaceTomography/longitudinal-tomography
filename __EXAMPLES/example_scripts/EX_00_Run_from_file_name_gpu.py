@@ -21,7 +21,7 @@ vmin = np.min(density[density > 0])
 vmax = np.max(density)
 
 plt.contourf(tRange * 1E9, ERange / 1E6, density.T,
-              levels=np.linspace(vmin, vmax, 50), cmap='Oranges')
+             levels=np.linspace(vmin, vmax, 50), cmap='Oranges')
 plt.xlabel('dt (ns)')
 plt.ylabel('dE (MeV)')
 plt.show()

@@ -40,7 +40,7 @@ machine_args = {
     'dtbin':                dtbin,
     'dturns':               5,
     'synch_part_x':         334.00000000000006,
-    'demax':                -1.E6,              # noqa
+    'demax':                -1.E6,
     'filmstart':            0,
     'filmstop':             1,
     'filmstep':             1,
