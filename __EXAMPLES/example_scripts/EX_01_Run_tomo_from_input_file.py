@@ -22,7 +22,6 @@ raw_data = np.genfromtxt(in_file_pth, skip_header=98, dtype=np.float32)
 
 # Generating machine object
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
-machine.values_at_turns()
 measured_waterfall = frames.to_waterfall(raw_data)
 
 # Creating profiles object
@@ -45,7 +44,7 @@ if machine.self_field_flag:
     profiles.calc_self_fields()
     tracker.enable_self_fields(profiles)
 
-for film in range(machine.filmstart, machine.filmstop, machine.filmstep):
+for film in range(machine.filmstart, machine.filmstop + 1, machine.filmstep):
 
     xp, yp = tracker.track(film)
 

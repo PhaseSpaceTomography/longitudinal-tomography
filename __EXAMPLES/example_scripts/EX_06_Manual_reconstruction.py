@@ -6,11 +6,7 @@ import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.utils.tomo_input as tomoin
 import longitudinal_tomography.utils.tomo_output as tomoout
 import longitudinal_tomography.data.data_treatment as dtreat
-
-
-def discrepancy(nbins, nprofs, dwaterfall):
-    return np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs))
-
+from longitudinal_tomography.cpp_routines import libtomo
 
 # -----------------------------------------------------------------------------
 # Data loading or generation, not part of the example. Skip ahead.
@@ -22,7 +18,7 @@ xp_file = os.path.join(resource_dir, 'INDIVShavingC325_xcoords.npy')
 yp_file = os.path.join(resource_dir, 'INDIVShavingC325_ycoords.npy')
 waterfall_file = os.path.join(resource_dir, 'INDIVShavingC325_waterfall.npy')
 
-if os.path.exists(xp_file) and os.path.isfile(xp_file):
+if all(os.path.isfile(f) for f in (xp_file, yp_file, waterfall_file)):
     xp = np.load(xp_file)
     yp = np.load(yp_file)
     waterfall = np.load(waterfall_file)
@@ -37,7 +33,6 @@ else:
         raw_params, raw_data = tomoin._split_input(file.readlines())
 
     machine, frames = tomoin.txt_input_to_machine(raw_params)
-    machine.values_at_turns()
     measured_waterfall = frames.to_waterfall(raw_data)
 
     profiles = tomoin.raw_data_to_profiles(
@@ -85,13 +80,13 @@ rec_tframe = 0
 
 # Remove comment to track using longitudinal_tomography routine:
 # ------------------------------------------------------
-# import longitudinal_tomography.tomography.tomography_cpp as tomography
 # import sys
-# longitudinal_tomography = tomography.TomographyCpp(waterfall, xp)
-# weight = longitudinal_tomography.run(niter=niterations)
+# import longitudinal_tomography.tomography.tomography as tomography
+# tomo = tomography.Tomography(waterfall, xp)
+# weight = tomo.run(niter=niterations)
 # image = tomoout.create_phase_space_image(
 #             xp, yp, weight, nbins, rec_tframe)
-# tomoout.show(image, longitudinal_tomography.diff, waterfall[rec_tframe])
+# tomoout.show(image, tomo.diff, waterfall[rec_tframe])
 # sys.exit()
 # ------------------------------------------------------
 
@@ -104,13 +99,22 @@ flat_profs /= np.sum(flat_profs, axis=1)[:, None]
 flat_profs = np.ascontiguousarray(flat_profs.flatten()).astype(np.float64)
 
 # Normalizing waterfall in profiles used for comparing
-waterfall /= np.sum(waterfall, axis=1)[:, None]
+waterfall = waterfall / np.sum(waterfall, axis=1)[:, None]
 
 # In order to use the cpp reconstruction routines, the profile
 # arrays must be flattened. x-coordinates must be adjusted for this.
 flat_points = xp.copy()
 for i in range(nprofs):
     flat_points[:, i] += nbins * i
+
+# Reciprocal of the number of particles per bin. Bins holding few particles
+# are amplified relative to well populated bins, counterbalancing the
+# uneven particle density across the profiles.
+ppb = np.zeros((nbins, nprofs))
+for i in range(nprofs):
+    ppb[:, i] = np.bincount(xp[:, i], minlength=nbins)
+ppb[ppb == 0] = 1
+reciprocal_pts = np.max(ppb) / ppb
 
 # Reconstructing phase space
 weight = np.zeros(nparts)
@@ -138,6 +142,9 @@ for i in range(niterations):
 
     # Calculating discrepancy
     diff.append(np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs)))
+
+    # Weighting difference waterfall relative to number of particles
+    dwaterfall *= reciprocal_pts.T
 
     # Back projecting using the difference between measured and rec. waterfall
     weight = libtomo.back_project(weight, flat_points, dwaterfall.flatten(),
