@@ -136,7 +136,7 @@ def show(image: NPArray, diff: NPArray, rec_prof: NPArray,
     """
 
     # Normalizing recprof:
-    rec_prof[:] /= np.sum(rec_prof)
+    rec_prof = rec_prof / np.sum(rec_prof)
 
     # Creating plot
     gs = gridspec.GridSpec(4, 4)
