@@ -197,8 +197,6 @@ class TestCompat(unittest.TestCase):
                    'phase space of map elements:',
                    ' imin( 1) =   0 and imax( 1) =  759']
 
-        print(plotinfo_list)
-
         nptest.assert_equal(plotinfo_list, correct,
                             err_msg='Error in creation of plotinfo string. '
                                     'fitted value for synch. part. x '
