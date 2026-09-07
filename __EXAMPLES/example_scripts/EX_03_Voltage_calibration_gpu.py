@@ -65,9 +65,9 @@ for rfv in rfv_inputs:
 
     diffs.append(tomo.diff[-1])
 
-# plt.plot(rfv_inputs, diffs)
-# ax = plt.gca()
-# ax.set_xlabel("Input voltage")
-# ax.set_ylabel("Discrepancy")
-# ax.ticklabel_format(axis="y", scilimits=(0, 0), style="sci")
-# plt.show()
+plt.plot(rfv_inputs, diffs)
+ax = plt.gca()
+ax.set_xlabel("Input voltage")
+ax.set_ylabel("Discrepancy")
+ax.ticklabel_format(axis="y", scilimits=(0, 0), style="sci")
+plt.show()
