@@ -6,7 +6,6 @@ without notice.
 """
 
 from ..data.data_treatment import *
-from warnings import warn
 
 # warn('longitudinal_tomography.utils.data_treatment has been moved to '
 #      'longitudinal_tomography.data.data_treatment')

@@ -5,8 +5,7 @@ style tomographic reconstruction.
 """
 from __future__ import annotations
 import logging
-import typing as t
-import numpy as np
+from typing import TYPE_CHECKING
 
 from ..data import data_treatment as dtreat
 from ..tomography import tomography as tomography
@@ -18,13 +17,16 @@ from ..utils import tomo_config as conf
 
 from ..compat import tomoscope as tscp
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
+
 log = logging.getLogger(__name__)
 
 
 def run(input: str, reconstruct_profile: bool = None,
         output_dir: str = None, tomoscope: bool = False,
         plot: bool = False) \
-        -> t.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        -> tuple[NPArray, NPArray, NPArray]:
     """Function to perform full reconstruction based on the original
     algorithm.
 

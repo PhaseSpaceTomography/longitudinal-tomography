@@ -9,6 +9,8 @@ tomoscope until it is deprecated.
 :Author(s): **Anton Lu**
 """
 
+from __future__ import annotations
+
 import logging
 import os
 from typing import TYPE_CHECKING
@@ -18,6 +20,8 @@ import numpy as np
 from .. import assertions as asrt, exceptions as expt
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
+
     from ..tracking.machine import Machine
     from ..tracking.particles import Particles
 
@@ -29,7 +33,7 @@ log = logging.getLogger(__name__)
 #                           PROFILES                              #
 # --------------------------------------------------------------- #
 
-def save_profile(profiles: np.ndarray, recprof: int, output_dir: str):
+def save_profile(profiles: NPArray, recprof: int, output_dir: str):
     """Write phase-space image to text-file in the original format.
     The name of the file will be profileXXX.data, where XXX is the index
     of the time frame to be reconstructed counting from one.
@@ -50,7 +54,7 @@ def save_profile(profiles: np.ndarray, recprof: int, output_dir: str):
             f.write(f' {element:0.7E}\n')
 
 
-def save_self_volt_profile(self_fields: np.ndarray, output_dir: str):
+def save_self_volt_profile(self_fields: NPArray, output_dir: str):
     """Write self volts to text file in tomoscope format.
 
     Parameters
@@ -71,7 +75,7 @@ def save_self_volt_profile(self_fields: np.ndarray, output_dir: str):
 #                         PHASE-SPACE                             #
 # --------------------------------------------------------------- #
 
-def save_phase_space(image: np.ndarray, recprof: int, output_path: str):
+def save_phase_space(image: NPArray, recprof: int, output_path: str):
     """Save phase-space image in a tomoscope format.
 
     Parameters
@@ -100,7 +104,7 @@ def save_phase_space(image: np.ndarray, recprof: int, output_path: str):
 #                          PLOT INFO                              #
 # --------------------------------------------------------------- #
 
-def write_plotinfo(machine: 'Machine', particles: 'Particles',
+def write_plotinfo(machine: Machine, particles: Particles,
                    profile_charge: float) -> str:
     """Creates string of plot info needed for the original output
     for the tomography program.
@@ -187,7 +191,7 @@ def write_plotinfo(machine: 'Machine', particles: 'Particles',
 #                         DISCREPANCY                             #
 # --------------------------------------------------------------- #
 
-def save_difference(diff: np.ndarray, output_path: str, recprof: int):
+def save_difference(diff: NPArray, output_path: str, recprof: int):
     """Write reconstruction discrepancy to text file with original format.
 
     Parameters
@@ -234,7 +238,7 @@ def print_tracking_status(ref_prof: int, to_profile: int):
 
 # Data treatment
 
-def calc_baseline(waterfall: np.ndarray, ref_prof: int,
+def calc_baseline(waterfall: NPArray, ref_prof: int,
                   percent: float = 0.05) -> float:
     """Function for finding baseline of raw data.
 

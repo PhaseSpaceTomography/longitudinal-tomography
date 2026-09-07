@@ -5,7 +5,7 @@ machine and reconstruction parameters
 """
 from __future__ import annotations
 import logging
-from typing import Tuple
+from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy import optimize, constants
@@ -13,6 +13,9 @@ from scipy import optimize, constants
 from .. import assertions as asrt
 from ..utils import physics
 from .machine_base import MachineABC
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -195,7 +198,7 @@ class Machine(MachineABC):
         self.vrf1_at_turn, self.vrf2_at_turn = self._rfv_at_turns()
 
     def load_fitted_synch_part_x_ftn(self,
-                                     fit_info: Tuple[float, float, float]):
+                                     fit_info: tuple[float, float, float]):
         """Function for setting the synch_part_x if a fit has been performed.
         Saves parameters retrieved from the fitting routine
         needed by the
@@ -265,7 +268,7 @@ class Machine(MachineABC):
         return i0
 
     # Using a linear approximation to calculate the RF voltage for each turn.
-    def _rfv_at_turns(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _rfv_at_turns(self) -> tuple[NPArray, NPArray]:
         rf1v = self.vrf1 + self.vrf1dot * self.time_at_turn
         rf2v = self.vrf2 + self.vrf2dot * self.time_at_turn
         return rf1v, rf2v

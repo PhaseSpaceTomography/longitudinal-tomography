@@ -4,29 +4,28 @@
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 import itertools as itl
 
 from .. import exceptions as expt
-from ..utils import physics
 from ..utils import tomo_config as conf
 from ..cpp_routines import libtomo
-from ..python_routines import data_treatment
 from . import pre_process
 
 import logging
 
 if TYPE_CHECKING:
     from .profiles import Profiles
-    from ..tracking.machine import Machine
     from ..tracking.machine_base import MachineABC
     from ..tomography.__tomography import TomographyABC
 
-    from typing import Iterable, Union, Tuple
+    from typing import Iterable
 
-    FloatArr = np.ndarray[float]
+    from numpy import float64
+    from numpy.typing import NDArray as NPArray
+
+    FloatArr = NPArray[float64]
 
 __all__ = ['rebin', 'fit_synch_part_x', 'phase_space']
 
@@ -35,7 +34,7 @@ log = logging.getLogger(__name__)
 
 def rebin(waterfall: Iterable[float], rbn: int, dtbin: float = None,
           synch_part_x: float = None) \
-        -> Union[Tuple[FloatArr, float, float], Tuple[FloatArr, float]]:
+        -> tuple[FloatArr, float, float] | tuple[FloatArr, float]:
     """
     Rebin waterfall from shape (P, X) to (P, Y).
     P is the number of profiles, X is the original number of bins,
@@ -81,7 +80,7 @@ def rebin(waterfall: Iterable[float], rbn: int, dtbin: float = None,
 
 # Original function for finding synch_part_x
 # Finds synch_part_x based on a linear fit on a reference profile.
-def fit_synch_part_x(profiles: Profiles) -> Tuple[FloatArr, float, float]:
+def fit_synch_part_x(profiles: Profiles) -> tuple[FloatArr, float, float]:
     """
     Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
@@ -118,7 +117,7 @@ def fit_synch_part_x(profiles: Profiles) -> Tuple[FloatArr, float, float]:
 
 def phase_space(tomo: TomographyABC, machine: MachineABC,
                 reconstr_idx: int = 0) \
-        -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        -> tuple[NPArray, NPArray, NPArray]:
     """
     Returns time, energy and phase space density arrays from a
     reconstruction, requires the homogenous distribution to have been
@@ -164,7 +163,7 @@ def phase_space_from_coordinates(xp: Iterable[int], yp: Iterable[int],
                                  weight: Iterable[int], nbins: int,
                                  synch_x: float, synch_y: float,
                                  dtbin: float, dEbin: float) \
-                                        -> Tuple[FloatArr, FloatArr, FloatArr]:
+                                        -> tuple[FloatArr, FloatArr, FloatArr]:
     """
     Returns time, energy and phase space density arrays from a
     reconstruction.
@@ -229,7 +228,7 @@ def calc_baseline_ftn(*args):
 
 def density_to_macro(tRange: Iterable[float], ERange: Iterable[float],
                      density: Iterable[float], n_macro: int,
-                     threshold: float = 1E-5) -> Tuple[FloatArr, FloatArr]:
+                     threshold: float = 1E-5) -> tuple[FloatArr, FloatArr]:
     """
     Takes a time range, energy range and density function and converts it to
     n_macro number macroparticles to reproduce the distribution via randomly

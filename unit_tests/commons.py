@@ -1,17 +1,19 @@
 from __future__ import annotations
 import re
-import typing as t
 from os import path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import yaml
 
 import longitudinal_tomography.utils.tomo_input as tomoin
-from longitudinal_tomography.data.profiles import Profiles
-from longitudinal_tomography.tracking import Machine
-from longitudinal_tomography.utils.tomo_input import Frames
 
-def load_data() -> t.Tuple[Machine, Frames, Profiles]:
+if TYPE_CHECKING:
+    from longitudinal_tomography.data.profiles import Profiles
+    from longitudinal_tomography.tracking import Machine
+    from longitudinal_tomography.utils.tomo_input import Frames
+
+def load_data() -> tuple[Machine, Frames, Profiles]:
     base_dir = path.split(path.realpath(__file__))[0]
     data_path = path.join(base_dir, 'resources')
     dat_path = path.join(data_path, 'INDIVShavingC325.dat')

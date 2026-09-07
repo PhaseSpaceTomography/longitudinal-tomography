@@ -4,20 +4,17 @@ Should only be used by advanced users.
 
 :Author(s): **Christoffer Hjertø Grindheim**
 """
+from __future__ import annotations
 
-import ctypes as ct
 import logging
-import os
-import sys
-from glob import glob
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import tomo.cpp_routines.libtomo as libtomo
-
-import numpy as np
 
 from .. import exceptions as expt
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
+
     from ..tracking.machine import Machine
 
 log = logging.getLogger(__name__)
@@ -28,9 +25,9 @@ log = logging.getLogger(__name__)
 # =============================================================
 
 
-def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
-         rfv1: np.ndarray, rfv2: np.ndarray, npart: int, turn: int,
-         up: bool = True) -> np.ndarray:
+def kick(machine: Machine, denergy: NPArray, dphi: NPArray,
+         rfv1: NPArray, rfv2: NPArray, npart: int, turn: int,
+         up: bool = True) -> NPArray:
     """Wrapper for C++ kick function.
 
     Particle kick for **one** machine turn.
@@ -75,8 +72,8 @@ def kick(machine: 'Machine', denergy: np.ndarray, dphi: np.ndarray,
                         npart, turn, up)
 
 
-def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
-          npart: int, turn: int, up: bool = True) -> np.ndarray:
+def drift(denergy: NPArray, dphi: NPArray, drift_coef: NPArray,
+          npart: int, turn: int, up: bool = True) -> NPArray:
     """Wrapper for C++ drift function.
 
     Particle drift for **one** machine turn
@@ -115,19 +112,19 @@ def drift(denergy: np.ndarray, dphi: np.ndarray, drift_coef: np.ndarray,
     return libtomo.drift(denergy, dphi, drift_coef, npart, turn, up)
 
 
-def kick_and_drift(xp: np.ndarray, yp: np.ndarray,
-                   denergy: np.ndarray, dphi: np.ndarray,
-                   rfv1: np.ndarray, rfv2: np.ndarray, rec_prof: int,
+def kick_and_drift(xp: NPArray, yp: NPArray,
+                   denergy: NPArray, dphi: NPArray,
+                   rfv1: NPArray, rfv2: NPArray, rec_prof: int,
                    nturns: int, nparts: int,
-                   phi0: np.ndarray = None,
-                   deltaE0: np.ndarray = None,
-                   omega_rev0: np.ndarray = None,
-                   drift_coef: np.ndarray = None,
+                   phi0: NPArray = None,
+                   deltaE0: NPArray = None,
+                   omega_rev0: NPArray = None,
+                   drift_coef: NPArray = None,
                    phi12: float = None,
                    h_ratio: float = None,
                    dturns: int = None,
-                   machine: 'Machine' = None,
-                   ftn_out: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+                   machine: Machine = None,
+                   ftn_out: bool = False) -> tuple[NPArray, NPArray]:
     """Wrapper for full kick and drift algorithm written in C++.
 
     Tracks all particles from the time frame to be recreated,
@@ -223,9 +220,9 @@ ftn_out: boolean, optional, default=False
 # =============================================================
 
 
-def back_project(weights: np.ndarray, flat_points: np.ndarray,
-                 flat_profiles: np.ndarray, nparts: int, nprofs: int) \
-        -> np.ndarray:
+def back_project(weights: NPArray, flat_points: NPArray,
+                 flat_profiles: NPArray, nparts: int, nprofs: int) \
+        -> NPArray:
     """Wrapper for back projection routine written in C++.
     Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
 
@@ -257,9 +254,9 @@ def back_project(weights: np.ndarray, flat_points: np.ndarray,
                                 nprofs)
 
 
-def project(recreated: np.ndarray, flat_points: np.ndarray,
-            weights: np.ndarray,
-            nparts: int, nprofs: int, nbins: int) -> np.ndarray:
+def project(recreated: NPArray, flat_points: NPArray,
+            weights: NPArray,
+            nparts: int, nprofs: int, nbins: int) -> NPArray:
     """Wrapper projection routine written in C++.
     Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
 
@@ -295,7 +292,7 @@ def project(recreated: np.ndarray, flat_points: np.ndarray,
                            nbins)
 
 
-def reconstruct(xp: np.ndarray, waterfall: np.ndarray, niter: int, nbins: int,
+def reconstruct(xp: NPArray, waterfall: NPArray, niter: int, nbins: int,
                 npart: int, nprof: int, verbose: bool):
     """Wrapper for full reconstruction in C++.
     Used in the :mod:`~longitudinal_tomography.tomography.tomography` module.
