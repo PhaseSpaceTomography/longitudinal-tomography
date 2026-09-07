@@ -5,6 +5,7 @@ Run as python test.py in console or via coverage
 from __future__ import annotations
 import os
 import shutil
+import tempfile
 import unittest
 
 import numpy as np
@@ -16,10 +17,6 @@ import longitudinal_tomography.tracking.particles as pts
 from longitudinal_tomography import exceptions as expt
 import longitudinal_tomography.compat.fortran as ftn
 
-base_dir = os.path.split(os.path.realpath(__file__))[0]
-base_dir = os.path.split(base_dir)[0]
-tmp_dir = os.path.join(base_dir, 'tmp')
-
 # All values retrieved from INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
 
@@ -28,13 +25,11 @@ class TestCompat(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
+        cls.tmp_dir = tempfile.mkdtemp()
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isdir(tmp_dir):
-            shutil.rmtree(tmp_dir)
+        shutil.rmtree(cls.tmp_dir)
 
     def test_calc_baseline_ftn_correct(self):
         waterfall = self._load_waterfall()
@@ -47,9 +42,10 @@ class TestCompat(unittest.TestCase):
         waterfall = np.arange(25).reshape((5, 5))
 
         recprof = 2
-        ftn.save_profile(waterfall, 2, tmp_dir)
+        ftn.save_profile(waterfall, 2, self.tmp_dir)
 
-        profile_pth = os.path.join(tmp_dir, f'profile{recprof + 1:03d}.data')
+        profile_pth = os.path.join(
+            self.tmp_dir, f'profile{recprof + 1:03d}.data')
         with open(profile_pth, 'r') as f:
             read = f.readlines()
 
@@ -63,9 +59,9 @@ class TestCompat(unittest.TestCase):
     def test_save_vself(self):
         self_volts = np.arange(9).reshape((3, 3))
 
-        ftn.save_self_volt_profile(self_volts, tmp_dir)
+        ftn.save_self_volt_profile(self_volts, self.tmp_dir)
 
-        profile_pth = os.path.join(tmp_dir, 'vself.data')
+        profile_pth = os.path.join(self.tmp_dir, 'vself.data')
         with open(profile_pth, 'r') as f:
             read = f.readlines()
 
@@ -81,9 +77,10 @@ class TestCompat(unittest.TestCase):
         image = np.arange(9).reshape((3, 3))
         recprof = 2
 
-        ftn.save_phase_space(image, recprof, tmp_dir)
+        ftn.save_phase_space(image, recprof, self.tmp_dir)
 
-        image_pth = os.path.join(tmp_dir, f'image{recprof + 1:03d}.data')
+        image_pth = os.path.join(
+            self.tmp_dir, f'image{recprof + 1:03d}.data')
         with open(image_pth, 'r') as f:
             read = f.readlines()
 
@@ -100,9 +97,9 @@ class TestCompat(unittest.TestCase):
     def test_save_difference(self):
         diff = np.arange(11) * np.pi / 100
         recprof = 2
-        ftn.save_difference(diff, tmp_dir, recprof)
+        ftn.save_difference(diff, self.tmp_dir, recprof)
 
-        diff_pth = os.path.join(tmp_dir, f'd{recprof + 1:03d}.data')
+        diff_pth = os.path.join(self.tmp_dir, f'd{recprof + 1:03d}.data')
         with open(diff_pth, 'r') as f:
             read = f.readlines()
 

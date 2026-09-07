@@ -5,8 +5,8 @@ Run as python test_tomo_output.py in console or via coverage
 
 from __future__ import annotations
 
-import os
 import shutil
+import tempfile
 import typing as t
 import unittest
 from unittest.mock import patch
@@ -25,10 +25,6 @@ if t.TYPE_CHECKING:
     from longitudinal_tomography.tomography import Tomography
     from longitudinal_tomography.tracking import Machine
     from longitudinal_tomography.utils.tomo_input import Frames
-
-base_dir = os.path.split(os.path.realpath(__file__))[0]
-base_dir = os.path.split(base_dir)[0]
-tmp_dir = os.path.join(base_dir, 'tmp')
 
 
 @pytest.fixture(scope='module')
@@ -52,13 +48,11 @@ class TestTomoOut(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
+        cls.tmp_dir = tempfile.mkdtemp()
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isdir(tmp_dir):
-            shutil.rmtree(tmp_dir)
+        shutil.rmtree(cls.tmp_dir)
 
     def test_create_phase_space_image(self):
 
