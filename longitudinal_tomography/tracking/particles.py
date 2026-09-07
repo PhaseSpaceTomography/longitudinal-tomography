@@ -9,7 +9,7 @@ like assertions, conversions and filtering of lost particles.
 """
 from __future__ import annotations
 import logging
-from typing import Tuple, Sequence, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 import numpy as np
 
 from . import phase_space_info as psi
@@ -17,6 +17,8 @@ from .. import assertions as asrt, exceptions as expt
 from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
+    from typing import Sequence
+    from numpy.typing import NDArray as NPArray
     from .machine import Machine
     from .machine_base import MachineABC
 
@@ -66,7 +68,7 @@ class Particles(object):
         self._denergy = None
 
     @property
-    def coordinates_dphi_denergy(self) -> Tuple[np.ndarray, np.ndarray]:
+    def coordinates_dphi_denergy(self) -> tuple[NPArray, NPArray]:
         """Particle coordinates defined as @property.
         Use this property to provide and retrieve coordinates
         of the initial particle distribution in units of phase [rad]
@@ -90,7 +92,7 @@ class Particles(object):
 
     @coordinates_dphi_denergy.setter
     def coordinates_dphi_denergy(self,
-                                 coordinates: Tuple[np.ndarray, np.ndarray]):
+                                 coordinates: tuple[NPArray, NPArray]):
         """
         See the definition of the property
         :py:func`longitudinal_tomography.tracking.particles.
@@ -110,7 +112,7 @@ class Particles(object):
         """
         self._dphi, self._denergy = _assert_coordinates(coordinates)
 
-    def homogeneous_distribution(self, machine: 'Machine', recprof: int,
+    def homogeneous_distribution(self, machine: Machine, recprof: int,
                                  deltaturn: int = 0):
         """Function for automatic generation of particle distribution.
 
@@ -185,13 +187,10 @@ class Particles(object):
         self.coordinates_dphi_denergy = coords
 
     def _bin_nr_to_physical_coords(self,
-                                   coordinates: Union[
-                                       Sequence[np.ndarray],
-                                       np.ndarray
-                                   ],
-                                   machine: 'Machine', recprof: int,
+                                   coordinates: Sequence[NPArray] | NPArray,
+                                   machine: Machine, recprof: int,
                                    deltaturn: int = 0) \
-            -> Tuple[np.ndarray, np.ndarray]:
+            -> tuple[NPArray, NPArray]:
         """Function to convert from reconstructed phase space coordinates
         to physical units.
 
@@ -220,7 +219,7 @@ class Particles(object):
 
     # Assertions to assure that all needed fields are provided in the
     # given machine object
-    def _assert_machine(self, machine: 'Machine'):
+    def _assert_machine(self, machine: Machine):
         needed_fieds = ['snpt', 'h_num', 'omega_rev0', 'eta0',
                         'dtbin', 'phi0', 'synch_part_y', 'dturns', 'phi12',
                         'nbins', 'beam_ref_frame', 'full_pp_flag',
@@ -230,8 +229,8 @@ class Particles(object):
             'Did you remember to use machine.values_at_turns()?')
 
 
-def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
-        -> Tuple[np.ndarray, np.ndarray, int]:
+def filter_lost(xp: NPArray, yp: NPArray, img_width: int) \
+        -> tuple[NPArray, NPArray, int]:
     """Remove lost particles (particles that leaves the image width).
 
     Parameters
@@ -284,9 +283,9 @@ def filter_lost(xp: np.ndarray, yp: np.ndarray, img_width: int) \
     return xp, yp, nr_lost_pts
 
 
-def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
-                       machine: 'MachineABC', xorigin: float, dEbin: float) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def physical_to_coords(tracked_dphi: NPArray, tracked_denergy: NPArray,
+                       machine: MachineABC, xorigin: float, dEbin: float) \
+        -> tuple[NPArray, NPArray]:
     """Function to convert from physical units ([rad], [eV]) to reconstructed
     phase space coordinates (bin numbers).
 
@@ -349,8 +348,8 @@ def physical_to_coords(tracked_dphi: np.ndarray, tracked_denergy: np.ndarray,
     return xp, yp
 
 
-def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def ready_for_tomography(xp: NPArray, yp: NPArray, nbins: int) \
+        -> tuple[NPArray, NPArray]:
     """Function to prepare tracked particles tomography routine.
 
     Handy if particles are tracked using the functions of the
@@ -404,8 +403,8 @@ def ready_for_tomography(xp: np.ndarray, yp: np.ndarray, nbins: int) \
 
 
 # Function to check that coordinates are valid
-def _assert_coordinates(coordinates: Sequence[np.ndarray]) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def _assert_coordinates(coordinates: Sequence[NPArray]) \
+        -> tuple[NPArray, NPArray]:
     if not hasattr(coordinates, '__getitem__'):
         raise expt.InvalidParticleError('coordinates should be a sequence')
     if not len(coordinates) == 2:

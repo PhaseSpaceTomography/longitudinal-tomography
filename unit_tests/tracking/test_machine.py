@@ -5,6 +5,8 @@ Run as python test_machine.py in console or via coverage
 from __future__ import annotations
 import unittest
 
+import numpy.testing as nptest
+
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 
@@ -71,9 +73,9 @@ class TestMachine(unittest.TestCase):
                    6.85051693e-06, 8.22059601e-06, 9.59066698e-06,
                    1.09607299e-05, 1.23307846e-05, 1.37008313e-05]
 
-        for tat, corr in zip(machine.time_at_turn, correct):
-            self.assertAlmostEqual(tat, corr,
-                                   msg='Error in calculation of time at turn')
+        nptest.assert_almost_equal(
+            machine.time_at_turn, correct,
+            err_msg='Error in calculation of time at turn')
 
     def test_values_at_turns_correct_omega_rev0(self):
         nprofs = 5
@@ -92,10 +94,10 @@ class TestMachine(unittest.TestCase):
                    4586001.94494169, 4586029.0687717,  4586056.19235885,
                    4586083.31570313, 4586110.43880456, 4586137.56166313]
 
-        for omega, corr in zip(machine.omega_rev0, correct):
-            self.assertAlmostEqual(omega, corr,
-                                   msg='Error in calculation of revolution '
-                                       'frequency (omega_rev0)')
+        nptest.assert_almost_equal(
+            machine.omega_rev0, correct,
+            err_msg='Error in calculation of revolution frequency '
+                    '(omega_rev0)')
 
     def test_values_at_turns_correct_phi0(self):
         nprofs = 5
@@ -113,10 +115,10 @@ class TestMachine(unittest.TestCase):
                    0.40078213, 0.40078213, 0.40078213, 0.40078213,
                    0.40078213]
 
-        for phi, corr in zip(machine.phi0, correct):
-            self.assertAlmostEqual(phi, corr,
-                                   msg='Error in calculation of synchronous '
-                                       'phase at each turn (phi0)')
+        nptest.assert_almost_equal(
+            machine.phi0, correct,
+            err_msg='Error in calculation of synchronous phase at each turn '
+                    '(phi0)')
 
     def test_values_at_turns_correct_drift_coef(self):
         nprofs = 5
@@ -135,10 +137,9 @@ class TestMachine(unittest.TestCase):
                    3.36023607e-08, 3.36018560e-08, 3.36013513e-08,
                    3.36008466e-08, 3.36003419e-08, 3.35998373e-08]
 
-        for drift, corr in zip(machine.drift_coef, correct):
-            self.assertAlmostEqual(drift, corr,
-                                   msg='Error in calculation of drift '
-                                       'coefficient (drift_coef)')
+        nptest.assert_almost_equal(
+            machine.drift_coef, correct,
+            err_msg='Error in calculation of drift coefficient (drift_coef)')
 
     def test_values_at_turns_correct_deltaE0(self):
         nprofs = 5
@@ -156,11 +157,10 @@ class TestMachine(unittest.TestCase):
                    1028.87237942, 1028.87237942, 1028.87237942, 1028.87237942,
                    1028.87237942]
 
-        for dE0, corr in zip(machine.deltaE0, correct):
-            self.assertAlmostEqual(dE0, corr,
-                                   msg='Error in calculation of energy '
-                                       'difference of synch part pr turn '
-                                       '(deltaE0)')
+        nptest.assert_almost_equal(
+            machine.deltaE0, correct,
+            err_msg='Error in calculation of energy difference of synch part '
+                    'pr turn (deltaE0)')
 
     def test_values_at_turns_correct_beta0(self):
         nprofs = 5
@@ -177,10 +177,9 @@ class TestMachine(unittest.TestCase):
                    0.3824314,  0.38243366, 0.38243592, 0.38243818, 0.38244044,
                    0.38244271]
 
-        for beta, corr in zip(machine.beta0, correct):
-            self.assertAlmostEqual(beta, corr,
-                                   msg='Error in calculation of relativistic '
-                                       'beta (beta0)')
+        nptest.assert_almost_equal(
+            machine.beta0, correct,
+            err_msg='Error in calculation of relativistic beta (beta0)')
 
     def test_values_at_turns_correct_eta0(self):
         nprofs = 5
@@ -197,10 +196,9 @@ class TestMachine(unittest.TestCase):
                    0.79425783, 0.7942561,  0.79425437, 0.79425264, 0.79425091,
                    0.79424918]
 
-        for eta, corr in zip(machine.eta0, correct):
-            self.assertAlmostEqual(eta, corr,
-                                   msg='Error in calculation of phase slip '
-                                       'factor (eta0)')
+        nptest.assert_almost_equal(
+            machine.eta0, correct,
+            err_msg='Error in calculation of phase slip factor (eta0)')
 
     # This array is tested as integers due to its high values.
     def test_values_at_turns_correct_e0(self):
@@ -218,10 +216,9 @@ class TestMachine(unittest.TestCase):
                    1015463929, 1015464958, 1015465986, 1015467015, 1015468044,
                    1015469073]
 
-        for e0, corr in zip(machine.e0, correct):
-            self.assertEqual(int(e0), corr,
-                             msg='Error in calculation of energy '
-                                 'of synch. particle (e0)')
+        nptest.assert_array_equal(
+            machine.e0.astype(int), correct,
+            err_msg='Error in calculation of energy of synch. particle (e0)')
 
     def test_values_at_turns_correct_vrf_with_derivative(self):
         nprofs = 5
@@ -240,7 +237,7 @@ class TestMachine(unittest.TestCase):
                    2637.19711314, 2637.19712684, 2637.19714054, 2637.19715424,
                    2637.19716794]
 
-        for vrf, corr in zip(machine.vrf1_at_turn, correct):
-            self.assertAlmostEqual(vrf, corr,
-                                   msg='Error in calculation of RF voltage '
-                                       'with vrf1dot (vrf1_at_turn)')
+        nptest.assert_almost_equal(
+            machine.vrf1_at_turn, correct,
+            err_msg='Error in calculation of RF voltage with vrf1dot '
+                    '(vrf1_at_turn)')

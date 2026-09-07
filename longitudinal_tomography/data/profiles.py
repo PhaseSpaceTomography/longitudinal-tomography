@@ -3,15 +3,20 @@
 :Author(s): **Christoffer Hjertø Grindheim**"""
 from __future__ import annotations
 import logging
+from typing import TYPE_CHECKING
 
-import typing as t
-import collections.abc as col
 import numpy as np
 import scipy.signal as sig
 from scipy import constants
 
 from .. import exceptions as expt
 from ..utils import physics
+
+if TYPE_CHECKING:
+    from typing import Callable
+    from collections.abc import Sequence
+
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -90,7 +95,7 @@ class Profiles:
         self.vself = None
 
     @property
-    def waterfall(self) -> np.ndarray:
+    def waterfall(self) -> NPArray:
         """Waterfall defined as @property. The property does the
         following when accessed:
 
@@ -156,8 +161,8 @@ class Profiles:
                                / (constants.e
                                   * self.machine.pickup_sensitivity))
 
-    def calc_self_fields(self, filtered_profiles: np.ndarray = None,
-                         in_filter: t.Callable = None):
+    def calc_self_fields(self, filtered_profiles: NPArray = None,
+                         in_filter: Callable = None):
         """Calculate self-fields based on filtered profiles.
         If filtered profiles are not provided by the user,
         standard filter (savitzky-golay smoothing filter) is used.
@@ -219,7 +224,7 @@ class Profiles:
         log.info('Self fields were calculated.')
 
     # Checks the filtered profiles
-    def _check_manual_filtered_profs(self, fprofs: col.Sequence) -> np.ndarray:
+    def _check_manual_filtered_profs(self, fprofs: Sequence) -> NPArray:
         if not hasattr(fprofs, '__iter__'):
             err_msg = 'Filtered profiles should be iterable.'
             raise expt.FilteredProfilesError(err_msg)
@@ -235,7 +240,7 @@ class Profiles:
 
     # Calculate the number of bins in the first
     # integer number of rf periods, larger than the image width.
-    def _find_wrap_length(self) -> t.Tuple[float, int]:
+    def _find_wrap_length(self) -> tuple[float, int]:
         if self.machine.bdot > 0.0:
             last_turn_index = ((self.machine.nprofiles - 1)
                                * self.machine.dturns - 1)
@@ -257,7 +262,7 @@ class Profiles:
         return phiwrap, wrap_length
 
     # Calculate self-field voltages
-    def _calculate_self(self) -> np.ndarray:
+    def _calculate_self(self) -> NPArray:
         sfc = physics.calc_self_field_coeffs(self.machine)
         vself = np.zeros((self.machine.nprofiles - 1,
                           self.wrap_length + 1),

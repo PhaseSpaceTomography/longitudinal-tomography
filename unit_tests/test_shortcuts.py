@@ -33,21 +33,22 @@ class TestShortcuts(unittest.TestCase):
 
         xp, yp = shortcuts.track(machine, 10)
 
-        # Comparing the coordinates of particle #0 only.
+        # shortcuts.track returns coordinates ready for tomography, of
+        # shape (nparts, nprofiles). Only the first 20 of the 1036 tracked
+        # particles are compared, at the reconstructed profile.
+        nparts = 20
         correct_x = [8, 8, 9, 10, 11, 5, 6, 7, 8, 9, 10,
                      11, 12, 12, 13, 14, 15, 4, 5, 6]
 
         correct_y = [14, 13, 13, 13, 12, 16, 16, 15, 15, 14,
                      14, 13, 13, 13, 12, 12, 11, 18, 18, 17]
 
-        for x, cx in zip(xp[:, 0], correct_x):
-            self.assertAlmostEqual(
-                x, cx, msg='Error in tracking of particle '
-                           'found in x-coordinate')
-        for y, cy in zip(yp[:, 0], correct_y):
-            self.assertAlmostEqual(
-                y, cy, msg='Error in tracking of particle '
-                           'found in y-coordinate')
+        nptest.assert_almost_equal(
+            xp[:nparts, 0], correct_x,
+            err_msg='Error in tracking of particle found in x-coordinate')
+        nptest.assert_almost_equal(
+            yp[:nparts, 0], correct_y,
+            err_msg='Error in tracking of particle found in y-coordinate')
 
     def test_tomogram(self):
 

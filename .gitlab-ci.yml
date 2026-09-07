@@ -63,6 +63,7 @@ test_dev:
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
+    - python -m pip list
     - python -m pytest ./unit_tests
       --cov=${project_name}
       --cov-report term
@@ -92,6 +93,7 @@ test_wheel:
     - build_wheel
   script:
     - mkdir -p ~/not-the-source-dir && cp -r ${project_root}/unit_tests ~/not-the-source-dir && cd ~/not-the-source-dir
+    - pip list
     - python -m pytest ./unit_tests
 
 pep8:

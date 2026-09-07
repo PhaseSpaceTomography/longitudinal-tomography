@@ -5,13 +5,17 @@ tomography
 """
 from __future__ import annotations
 from numbers import Number
-from typing import Union, Type, Tuple, Any, Collection, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from longitudinal_tomography import exceptions as expt
 
 if TYPE_CHECKING:
+    from typing import Any, Collection
+
+    from numpy.typing import NDArray as NPArray
+
     from longitudinal_tomography.tracking.machine import Machine
     from longitudinal_tomography.utils.tomo_input import Frames
 
@@ -19,8 +23,8 @@ if TYPE_CHECKING:
 # =========================================================
 #                      SCALAR ASSERTIONS
 # =========================================================
-def assert_greater(var: Union[int, float], var_name: str,
-                   limit: Union[int, float], error_class: Type[Exception],
+def assert_greater(var: int | float, var_name: str,
+                   limit: int | float, error_class: type[Exception],
                    extra_text: str = ''):
     """Assert scalar greater than X.
 
@@ -43,9 +47,9 @@ def assert_greater(var: Union[int, float], var_name: str,
 
 
 def assert_less(
-        var: Union[int, float],
-        var_name: str, limit: Union[int, float],
-        error_class: Type[Exception],
+        var: int | float,
+        var_name: str, limit: int | float,
+        error_class: type[Exception],
         extra_text: str = ''):
     """Assert scalar less than X.
 
@@ -67,8 +71,8 @@ def assert_less(
         raise error_class(msg)
 
 
-def assert_equal(var: Union[int, float], var_name: str,
-                 limit: Union[int, float], error_class: Type[Exception],
+def assert_equal(var: int | float, var_name: str,
+                 limit: int | float, error_class: type[Exception],
                  extra_text: str = ''):
     """Assert scalar equal to X.
 
@@ -90,8 +94,8 @@ def assert_equal(var: Union[int, float], var_name: str,
         raise error_class(msg)
 
 
-def assert_not_equal(var: Union[int, float], var_name: str,
-                     limit: Union[int, float], error_class: Type[Exception],
+def assert_not_equal(var: int | float, var_name: str,
+                     limit: int | float, error_class: type[Exception],
                      extra_text: str = ''):
     """Assert scalar unequal to X.
 
@@ -113,9 +117,9 @@ def assert_not_equal(var: Union[int, float], var_name: str,
         raise error_class(msg)
 
 
-def assert_less_or_equal(var: Union[int, float], var_name: str,
-                         limit: Union[int, float],
-                         error_class: Type[Exception], extra_text: str = ''):
+def assert_less_or_equal(var: int | float, var_name: str,
+                         limit: int | float,
+                         error_class: type[Exception], extra_text: str = ''):
     """Assert scalar less than or equal to X.
 
     Parameters
@@ -137,9 +141,9 @@ def assert_less_or_equal(var: Union[int, float], var_name: str,
 
 
 def assert_greater_or_equal(
-        var: Union[int, float],
-        var_name: str, limit: Union[int, float],
-        error_class: Type[Exception],
+        var: int | float,
+        var_name: str, limit: int | float,
+        error_class: type[Exception],
         extra_text: str = ''):
     """Assert scalar greater than or equal to X.
 
@@ -161,9 +165,9 @@ def assert_greater_or_equal(
         raise error_class(msg)
 
 
-def assert_inrange(var: Union[int, float], var_name: str,
-                   low_lim: Union[int, float], up_lim: Union[int, float],
-                   error_class: Type[Exception], extra_text: str = ''):
+def assert_inrange(var: int | float, var_name: str,
+                   low_lim: int | float, up_lim: int | float,
+                   error_class: type[Exception], extra_text: str = ''):
     """Assert scalar is in range of [x, y].
 
     Parameters
@@ -195,9 +199,9 @@ def assert_inrange(var: Union[int, float], var_name: str,
 # =========================================================
 
 
-def assert_array_not_equal(array: np.ndarray, array_name: str,
-                           limit: Union[int, float],
-                           error_class: Type[Exception], extra_text: str = ''):
+def assert_array_not_equal(array: NPArray, array_name: str,
+                           limit: int | float,
+                           error_class: type[Exception], extra_text: str = ''):
     """Assert array not equal to X.
 
     This function asserts that not all
@@ -224,9 +228,9 @@ def assert_array_not_equal(array: np.ndarray, array_name: str,
         raise error_class(error_message)
 
 
-def assert_array_shape_equal(arrays: Tuple[np.ndarray, np.ndarray],
-                             array_names: Tuple[str, str],
-                             demanded_shape: Tuple[int, int],
+def assert_array_shape_equal(arrays: tuple[NPArray, NPArray],
+                             array_names: tuple[str, str],
+                             demanded_shape: tuple[int, int],
                              extra_text: str = ''):
     """Assert that two arrays have a given shape.
 
@@ -264,9 +268,9 @@ def assert_array_shape_equal(arrays: Tuple[np.ndarray, np.ndarray],
         raise expt.UnequalArrayShapes(error_message)
 
 
-def assert_array_numel_equal(arrays: Tuple[np.ndarray, np.ndarray],
-                             array_names: Tuple[str, str],
-                             demanded_numel: Tuple[int, int],
+def assert_array_numel_equal(arrays: tuple[NPArray, NPArray],
+                             array_names: tuple[str, str],
+                             demanded_numel: tuple[int, int],
                              extra_text: str = ''):
     """Assert that two arrays have the given number of items
 
@@ -307,9 +311,9 @@ def assert_array_numel_equal(arrays: Tuple[np.ndarray, np.ndarray],
         raise expt.UnequalArrayShapes(error_message)
 
 
-def assert_array_in_range(array: np.ndarray, low_lim: Union[int, float],
-                          up_lim: Union[int, float],
-                          error_class: Type[Exception],
+def assert_array_in_range(array: NPArray, low_lim: int | float,
+                          up_lim: int | float,
+                          error_class: type[Exception],
                           msg: str = '', index_offset: int = 0):
     """Assert all array elements are within a range [x, y].
 
@@ -334,8 +338,8 @@ def assert_array_in_range(array: np.ndarray, low_lim: Union[int, float],
     _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
-def assert_array_greater(array: np.ndarray, limit: Union[int, float],
-                         error_class: Type[Exception],
+def assert_array_greater(array: NPArray, limit: int | float,
+                         error_class: type[Exception],
                          msg: str = '', index_offset: int = 0):
     """Assert all array elements are greater than x.
 
@@ -357,8 +361,8 @@ def assert_array_greater(array: np.ndarray, limit: Union[int, float],
     _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
-def assert_array_greater_eq(array: np.ndarray, limit: Union[int, float],
-                            error_class: Type[Exception],
+def assert_array_greater_eq(array: NPArray, limit: int | float,
+                            error_class: type[Exception],
                             msg: str = '', index_offset: int = 0):
     """Assert all array elements are greater than or equal to x.
 
@@ -380,8 +384,8 @@ def assert_array_greater_eq(array: np.ndarray, limit: Union[int, float],
     _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
-def assert_array_less(array: np.ndarray, limit: Union[int, float],
-                      error_class: Type[Exception],
+def assert_array_less(array: NPArray, limit: int | float,
+                      error_class: type[Exception],
                       msg: str = '', index_offset: int = 0):
     """Assert all array elements are less than x.
 
@@ -403,8 +407,8 @@ def assert_array_less(array: np.ndarray, limit: Union[int, float],
     _assert_log_arr(log_arr, error_class, index_offset, msg)
 
 
-def assert_array_less_eq(array: np.ndarray, limit: Union[int, float],
-                         error_class: Type[Exception],
+def assert_array_less_eq(array: NPArray, limit: int | float,
+                         error_class: type[Exception],
                          msg: str = '', index_offset: int = 0):
     """Assert all array elements are less than or equal to x.
 
@@ -429,7 +433,7 @@ def assert_array_less_eq(array: np.ndarray, limit: Union[int, float],
 # Checks that all elements of a logical array is true.
 # If not, an error is raised.
 # Used by the array assertion functions.
-def _assert_log_arr(log_array_ok: np.ndarray, error_class: Type[Exception],
+def _assert_log_arr(log_array_ok: NPArray, error_class: type[Exception],
                     index_offset: int, msg: str):
     if not log_array_ok.all():
         error_msg = '\nError found at index: ' \
@@ -444,7 +448,7 @@ def _assert_log_arr(log_array_ok: np.ndarray, error_class: Type[Exception],
 #                 TRACKING/PARTICLE ASSERTIONS
 # =========================================================
 
-def assert_only_valid_particles(xp: np.ndarray, n_bins: int, msg: str = ''):
+def assert_only_valid_particles(xp: NPArray, n_bins: int, msg: str = ''):
     """Assert all particles are within the image width.
 
     An InvalidParticleError is raised if the trajectory
@@ -475,7 +479,7 @@ def assert_only_valid_particles(xp: np.ndarray, n_bins: int, msg: str = ''):
 
 
 def assert_fields(obj: Any, obj_name: str, needed_fields: Collection,
-                  error_class: Type[Exception], msg: str = ''):
+                  error_class: type[Exception], msg: str = ''):
     """Assert that object contains all necessary fields.
 
     Parameters
@@ -499,7 +503,7 @@ def assert_fields(obj: Any, obj_name: str, needed_fields: Collection,
             raise error_class(err_msg)
 
 
-def assert_machine_input(machine: 'Machine'):
+def assert_machine_input(machine: Machine):
     """Assert that input parameters for a machine object is valid.
 
     Parameters
@@ -603,7 +607,7 @@ def assert_machine_input(machine: 'Machine'):
                                 'geometrical coupling coefficient')
 
 
-def assert_frame_inputs(frame: 'Frames'):
+def assert_frame_inputs(frame: Frames):
     """Assert that frame parameters are valid, and that raw data will be
     correctly shaped to waterfall.
 
@@ -689,8 +693,8 @@ def assert_index_ok(index: int, index_limit: int, wrap_around: bool = False) \
 # =========================================================
 
 # Generate standard error message for asserting scalars.
-def _write_std_err_msg(var_name: str, var: Union[int, float],
-                       limit: Union[int, float],
+def _write_std_err_msg(var_name: str, var: int | float,
+                       limit: int | float,
                        operator: str, extra: str) -> str:
     error_message = (f'\nInput parameter "{var_name}" has the '
                      f'unexpected value: {var}.\n'
@@ -699,6 +703,6 @@ def _write_std_err_msg(var_name: str, var: Union[int, float],
     return error_message
 
 
-def assert_var_not_none(var: Any, var_name: str, error_class: Type[Exception]):
+def assert_var_not_none(var: Any, var_name: str, error_class: type[Exception]):
     if var is None:
         raise error_class(f'{var_name} cannot be of type None')

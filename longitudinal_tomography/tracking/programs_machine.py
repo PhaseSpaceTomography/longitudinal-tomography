@@ -6,7 +6,7 @@ from __future__ import annotations
 import numpy as np
 import scipy.constants as c
 import logging
-import typing as t
+from typing import TYPE_CHECKING
 from scipy import optimize
 from scipy import constants as cont
 
@@ -14,6 +14,9 @@ from ..utils import physics
 from .machine_base import MachineABC
 from .. import assertions as asrt
 from .. import exceptions as ex
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -60,16 +63,16 @@ class ProgramsMachine(MachineABC):
 
     def __init__(self,
                  dturns: int,
-                 voltage_function: np.ndarray,
-                 momentum_function: np.ndarray,
-                 harmonics: t.List[int],
+                 voltage_function: NPArray,
+                 momentum_function: NPArray,
+                 harmonics: list[int],
                  mean_orbit_rad: float, bending_rad: float,
                  trans_gamma: float, rest_energy: float,
                  nprofiles: int,
                  nbins: int,
                  dtbin: float,
                  t_ref: float,
-                 phase_function: np.ndarray = None,
+                 phase_function: NPArray = None,
                  vat_now: bool = True,
                  **kwargs):
         asrt.assert_inrange(len(harmonics), 'harmonics', 1, 2,
@@ -100,8 +103,8 @@ class ProgramsMachine(MachineABC):
         self.t_ref = t_ref
 
         # init variables
-        self.momentum_function: np.ndarray = None
-        self.bdot: np.ndarray = None
+        self.momentum_function: NPArray = None
+        self.bdot: NPArray = None
         self.n_turns: int = None
         self.i0: int = None
 
@@ -276,7 +279,7 @@ class ProgramsMachine(MachineABC):
             raise ValueError('Could not find synchronous phase for supplied '
                              'parameters.')
 
-    def _interpolate_momentum(self, time: np.ndarray, momentum: np.ndarray):
+    def _interpolate_momentum(self, time: NPArray, momentum: NPArray):
         """
         Interpolates momentum at each turn. The interpolated time array is
         then used to interpolating voltage and phase programs.

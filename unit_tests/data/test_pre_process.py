@@ -12,8 +12,6 @@ import longitudinal_tomography.data.pre_process as pre_process
 import longitudinal_tomography.data.profiles as prf
 import longitudinal_tomography.tracking.machine as mch
 from .. import commons
-import longitudinal_tomography.assertions as asrt
-import longitudinal_tomography.exceptions as exceptions
 
 # Machine arguments based on the input file INDIVShavingC325.dat
 MACHINE_ARGS = commons.get_machine_args()
@@ -159,11 +157,16 @@ class TestPreProcess(unittest.TestCase):
 
         cut_waterfall = pre_process.cut_waterfall(waterfall, 3, 6)
 
-        np.equal(correct, cut_waterfall)
+        nptest.assert_array_equal(
+            cut_waterfall, correct,
+            err_msg='Waterfall was cut incorrectly')
 
         cut_waterfall = pre_process.cut_waterfall(waterfall, 3, -3)
 
-        np.equal(correct, cut_waterfall)
+        nptest.assert_array_equal(
+            cut_waterfall, correct,
+            err_msg='Waterfall was cut incorrectly when the right hand '
+                    'cut was given as a negative index')
 
     def test_cut_waterfall_bounds(self):
         waterfall = np.arange(0, 72).reshape(8, 9)

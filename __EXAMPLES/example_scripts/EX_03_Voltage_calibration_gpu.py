@@ -7,7 +7,6 @@ import longitudinal_tomography.tomography.tomography as tomography
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.utils.tomo_input as tomoin
-import longitudinal_tomography.utils.tomo_config
 
 import longitudinal_tomography
 longitudinal_tomography.use_gpu()
@@ -65,9 +64,9 @@ for rfv in rfv_inputs:
 
     diffs.append(tomo.diff[-1])
 
-# plt.plot(rfv_inputs, diffs)
-# ax = plt.gca()
-# ax.set_xlabel("Input voltage")
-# ax.set_ylabel("Discrepancy")
-# ax.ticklabel_format(axis="y", scilimits=(0, 0), style="sci")
-# plt.show()
+plt.plot(rfv_inputs, diffs)
+ax = plt.gca()
+ax.set_xlabel("Input voltage")
+ax.set_ylabel("Discrepancy")
+ax.ticklabel_format(axis="y", scilimits=(0, 0), style="sci")
+plt.show()
