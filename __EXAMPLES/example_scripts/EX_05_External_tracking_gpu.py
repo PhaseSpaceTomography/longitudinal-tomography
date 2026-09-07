@@ -86,8 +86,9 @@ dphi = dphi * np.pi / (machine.nbins * machine.dtbin)
 
 nturns = machine.dturns * (machine.nprofiles - 1)
 
-all_dphi = []
-all_denergy = []
+# One frame is stored per measured profile, dturns machine turns apart
+all_dphi = [dphi.tolist()]
+all_denergy = [denergy.tolist()]
 for turn in range(1, nturns + 1):
     dphi = drift(dphi, denergy, machine.h_num, machine.beta0[turn - 1],
                  machine.e0[turn - 1], machine.eta0[turn - 1])
@@ -95,21 +96,37 @@ for turn in range(1, nturns + 1):
     denergy = kick(dphi, denergy, machine.q, machine.vrf1_at_turn[turn],
                    machine.vrf2_at_turn[turn], machine.phi0[turn],
                    machine.phi12, machine.h_ratio, machine.deltaE0[turn])
-    if turn % 10 == 0:
+    if turn % machine.dturns == 0:
         all_dphi.append(dphi.tolist())
         all_denergy.append(denergy.tolist())
 all_dphi = np.array(all_dphi)
 all_denergy = np.array(all_denergy)
 
-xorigin = bunch_position - np.min(all_dphi[0])
-xp = all_dphi / np.pi * machine.nbins - xorigin
+# Origin and energy bin size of the reconstructed phase space
+ref_turn = machine.beam_ref_frame * machine.dturns
+xorigin = (machine.phi0[ref_turn]
+           / (machine.h_num * machine.omega_rev0[ref_turn] * machine.dtbin)
+           - machine.synch_part_x)
+dEbin = (machine.beta0[ref_turn]
+         * np.sqrt(machine.e0[ref_turn] * machine.q
+                   * machine.vrf1_at_turn[ref_turn]
+                   * np.cos(machine.phi0[ref_turn])
+                   / (2 * np.pi * machine.h_num * machine.eta0[ref_turn]))
+         * machine.dtbin * machine.h_num * machine.omega_rev0[ref_turn])
 
-dEmax = np.max(all_denergy)
-yp = all_denergy / dEmax * machine.nbins + machine.nbins / 2
+# Converting from phase [rad] and energy [eV] to bins of the phase space
+# coordinate system, one profile per row.
+turns = np.arange(machine.nprofiles) * machine.dturns
+phi0 = machine.phi0[turns].reshape(-1, 1)
+omega_rev0 = machine.omega_rev0[turns].reshape(-1, 1)
+
+xp = ((all_dphi + phi0)
+      / (machine.h_num * omega_rev0 * machine.dtbin) - xorigin)
+yp = all_denergy / dEbin + machine.synch_part_y
 
 for x, y in zip(xp[::10], yp[::10]):
     plt.scatter(x, y, s=0.5)
-    plt.show()
+plt.show()
 
 # Filter particles
 # transpose particles
