@@ -107,7 +107,7 @@ timing.stop_timing()
 
 timing.start_timing('blond:create_objects')
 general_params = Ring(C, momentum_compaction, sync_momentum, Proton(),
-                    n_turns, bending_radius=bending_radius)
+                    n_turns * dturns, bending_radius=bending_radius)
 RF_st_par = RFStation(general_params, [h], [voltage_program], [phi_offset],
                     n_rf_systems)
 beam = Beam(general_params, n_macroparticles, n_particles)
@@ -139,8 +139,10 @@ beam.dE *= 0.3
 
 bunch_profiles = np.zeros((n_turns, n_bins))
 
+# dturns machine turns elapse between each recorded profile
 for i in range(n_turns):
-    full_tracker.track()
+    for _ in range(dturns):
+        full_tracker.track()
     slice_beam.track()
     bunch_profiles[i] = slice_beam.n_macroparticles
     # BUNCH parameter?
