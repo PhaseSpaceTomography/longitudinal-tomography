@@ -49,7 +49,7 @@ if machine.self_field_flag:
     profiles.calc_self_fields()
     tracker.enable_self_fields(profiles)
 
-for film in range(machine.filmstart, machine.filmstop, machine.filmstep):
+for film in range(machine.filmstart, machine.filmstop + 1, machine.filmstep):
 
     xp, yp = tracker.track(film)
 
