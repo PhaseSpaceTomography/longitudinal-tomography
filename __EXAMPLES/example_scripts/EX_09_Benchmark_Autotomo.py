@@ -229,9 +229,10 @@ timing.start_timing("ready_for_tomo")
 xp, yp = parts.ready_for_tomography(xp, yp, machine.nbins)
 timing.stop_timing()
 
+# cast_to_cpu returns floats, so the bin indices are restored to int32
 timing.start_timing("cast_coords_to_cpu")
-xp = conf.cast_to_cpu(xp)
-yp = conf.cast_to_cpu(yp)
+xp = conf.cast_to_cpu(xp).astype(np.int32)
+yp = conf.cast_to_cpu(yp).astype(np.int32)
 timing.stop_timing()
 
 end_time = time.time()
@@ -262,8 +263,8 @@ for prec in precisions:
             start_time = time.time()
 
         timing.start_timing("cast_coords")
-        xp1 = conf.cast(xp)
-        yp1 = conf.cast(yp)
+        xp1 = conf.array(xp)
+        yp1 = conf.array(yp)
         timing.stop_timing()
 
         timing.start_timing("create_tomo_object")
