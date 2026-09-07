@@ -80,7 +80,6 @@ machine = mch.Machine(**machine_args)
 
 raw_data = np.genfromtxt(frames.raw_data_path, skip_header=98,
                          dtype=np.float32)
-machine.values_at_turns()
 measured_waterfall = frames.to_waterfall(raw_data)
 
 if machine.synch_part_x < 0 or machine.self_field_flag:

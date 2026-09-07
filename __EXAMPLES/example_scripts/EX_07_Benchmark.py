@@ -15,7 +15,6 @@ timing.start_timing('import_packages')
 
 # General imports
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 
 # BLonD imports
@@ -33,7 +32,6 @@ import longitudinal_tomography.tracking.machine as mch
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.tomography.tomography as tomography
-import longitudinal_tomography.utils.tomo_output as tomoout
 from longitudinal_tomography.utils import tomo_config as conf
 
 
@@ -76,9 +74,6 @@ momentum_compaction = 1 / gamma_transition**2
 charge = 1 # -1 if electron
 b0 = sync_momentum / bending_radius / c                 # [T]
 
-gamma = tot_beam_energy / E_0
-beta = np.sqrt(1.0-1.0/gamma**2.0)
-
 # Cavity parameters
 n_rf_systems = 1
 h = 1.0 # for PSB
@@ -88,7 +83,7 @@ phi_offset = np.pi
 timing.stop_timing()
 # DEFINE BLonD OBJECTS --------------------------------------------------------
 
-iter = 10
+n_iterations = 10
 
 
 timing.start_timing("set_device")
@@ -108,7 +103,7 @@ timing.stop_timing()
 end_time = time.time()
 if os.getenv("REPORT_FILENAME") is not None and os.getenv("REPORT_FILENAME") != "":
         report_filename = os.getenv("REPORT_FILENAME")
-        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + f"-baseprog")
+        timing.report(total_time = (end_time - start_time) * 1e3, out_file=report_filename + "-baseprog")
         timing.reset()
 else:
     timing.report(total_time = (end_time - start_time) * 1e3)
@@ -123,11 +118,9 @@ for prec in precisions:
     elif prec == "single":
         conf.AppConfig.set_single_precision()
 
-#for n_bins in n_bins_arr:
-#    for n_turns, dturns in zip(n_turns_arr, d_turns_arr):
     for n_bins, n_turns, dturns in zip(n_bins_arr, n_turns_arr, d_turns_arr):
         start_time = time.time()
-        for it in range(iter):
+        for it in range(n_iterations):
             if it == 1:
                 start_time = time.time()
             timing.start_timing('blond:create_objects')
@@ -139,7 +132,6 @@ for prec in precisions:
             ring_RF_section = RingAndRFTracker(RF_st_par, beam)
             full_tracker = FullRingAndRF([ring_RF_section])
 
-            fs = RF_st_par.omega_s0[0]/2/np.pi
             bucket_length = 2.0 * np.pi / RF_st_par.omega_rf[0,0]
 
             slice_beam = Profile(beam, CutOptions(cut_left=0, cut_right=bucket_length, n_slices=n_bins))
@@ -151,7 +143,7 @@ for prec in precisions:
 
             timing.start_timing('blond::match_and_track')
 
-            distr = matched_from_distribution_function(beam, full_tracker,
+            matched_from_distribution_function(beam, full_tracker,
                                             distribution_type=distribution_type,
                                             distribution_exponent=distribution_exponent,
                                             bunch_length=bunch_length,

@@ -24,7 +24,6 @@ with open(in_file_pth, 'r') as line:
 raw_data = np.genfromtxt(in_file_pth, skip_header=98)
 
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
-machine.values_at_turns()
 
 measured_waterfall = frames.to_waterfall(raw_data)
 

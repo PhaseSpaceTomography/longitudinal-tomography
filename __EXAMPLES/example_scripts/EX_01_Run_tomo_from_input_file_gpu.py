@@ -26,7 +26,6 @@ raw_data = np.genfromtxt(in_file_pth, skip_header=98, dtype=np.float32)
 
 # Generating machine object
 machine, frames = tomoin.txt_input_to_machine(input_parameters)
-machine.values_at_turns()
 measured_waterfall = frames.to_waterfall(raw_data)
 
 # Creating profiles object

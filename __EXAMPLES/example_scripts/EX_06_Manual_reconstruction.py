@@ -8,11 +8,6 @@ import longitudinal_tomography.utils.tomo_output as tomoout
 import longitudinal_tomography.data.data_treatment as dtreat
 from longitudinal_tomography.cpp_routines import libtomo
 
-
-def discrepancy(nbins, nprofs, dwaterfall):
-    return np.sqrt(np.sum(dwaterfall ** 2) / (nbins * nprofs))
-
-
 # -----------------------------------------------------------------------------
 # Data loading or generation, not part of the example. Skip ahead.
 # -----------------------------------------------------------------------------
@@ -38,7 +33,6 @@ else:
         raw_params, raw_data = tomoin._split_input(file.readlines())
 
     machine, frames = tomoin.txt_input_to_machine(raw_params)
-    machine.values_at_turns()
     measured_waterfall = frames.to_waterfall(raw_data)
 
     profiles = tomoin.raw_data_to_profiles(
@@ -86,13 +80,13 @@ rec_tframe = 0
 
 # Remove comment to track using longitudinal_tomography routine:
 # ------------------------------------------------------
-# import longitudinal_tomography.tomography.tomography_cpp as tomography
 # import sys
-# longitudinal_tomography = tomography.TomographyCpp(waterfall, xp)
-# weight = longitudinal_tomography.run(niter=niterations)
+# import longitudinal_tomography.tomography.tomography as tomography
+# tomo = tomography.Tomography(waterfall, xp)
+# weight = tomo.run(niter=niterations)
 # image = tomoout.create_phase_space_image(
 #             xp, yp, weight, nbins, rec_tframe)
-# tomoout.show(image, longitudinal_tomography.diff, waterfall[rec_tframe])
+# tomoout.show(image, tomo.diff, waterfall[rec_tframe])
 # sys.exit()
 # ------------------------------------------------------
 

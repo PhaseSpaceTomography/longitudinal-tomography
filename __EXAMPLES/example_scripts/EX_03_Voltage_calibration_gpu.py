@@ -7,7 +7,6 @@ import longitudinal_tomography.tomography.tomography as tomography
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
 import longitudinal_tomography.utils.tomo_input as tomoin
-import longitudinal_tomography.utils.tomo_config
 
 import longitudinal_tomography
 longitudinal_tomography.use_gpu()

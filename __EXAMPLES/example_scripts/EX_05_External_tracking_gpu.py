@@ -69,8 +69,7 @@ with open(in_file_pth, 'r') as f:
     for i in range(98):
         file.append(f.readline().strip())
 
-machine, frame = tin.txt_input_to_machine(file)
-machine.values_at_turns()
+machine, _ = tin.txt_input_to_machine(file)
 
 bunch_position = machine.synch_part_x * machine.dtbin * 0.0
 bunch_length = machine.nbins * machine.dtbin
