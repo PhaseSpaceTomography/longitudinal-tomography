@@ -95,20 +95,14 @@ timing.start_timing("set_device")
 if os.getenv('SINGLE_PREC') is not None:
     conf.AppConfig.set_single_precision() if os.getenv('SINGLE_PREC') == 'True' else conf.AppConfig.set_double_precision()
 
-if os.getenv('MODE') is not None:
-    if os.getenv('MODE') == "Numba":
-        conf.AppConfig.use_numba()
-    elif os.getenv('MODE') == "CPP":
-        conf.AppConfig.use_cpu()
-    elif os.getenv('MODE') == "CuPy":
-        conf.AppConfig.use_cupy()
-        timing.mode = timing.Mode.CUPY
-    elif os.getenv('MODE') == "CUDA":
-        conf.AppConfig.use_gpu()
-        timing.mode = timing.Mode.CUPY
-    else:
-        print("No mode given, using CPP")
-        conf.AppConfig.use_cpu()
+mode = os.getenv('MODE', 'CPP')
+if mode == "CUDA":
+    conf.AppConfig.use_gpu()
+    timing.mode = timing.Mode.CUPY
+else:
+    if mode != "CPP":
+        print(f"Unknown mode {mode}, using CPP")
+    conf.AppConfig.use_cpu()
 timing.stop_timing()
 
 end_time = time.time()
