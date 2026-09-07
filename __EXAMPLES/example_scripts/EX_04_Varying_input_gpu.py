@@ -5,6 +5,7 @@ import time as tm
 import matplotlib.pyplot as plt
 import numpy as np
 
+import longitudinal_tomography.exceptions as expt
 import longitudinal_tomography.tomography.tomography as tomography
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
@@ -64,7 +65,7 @@ for snpt in snpts:
         tomo.xp = None
 
         t1 = tm.perf_counter()
-    except Exception as e:
+    except expt.TomoException as e:
         log.warning(f' {file_name} could not be run with '
                     f'input parameter snpt = {snpt}.\n'
                     f'Error message: {e}')
