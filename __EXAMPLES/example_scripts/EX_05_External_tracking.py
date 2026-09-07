@@ -52,8 +52,10 @@ def drift(dphi, dE, hnum, beta, E0, eta):
     return dphi - 2 * np.pi * hnum * eta * dE / (beta ** 2 * E0)
 
 
-def kick(dphi, dE, charge, voltage, E0):
-    return dE + charge * voltage * np.sin(dphi) - E0
+def kick(dphi, dE, charge, vrf1, vrf2, phi0, phi12, h_ratio, acc_kick):
+    return dE + charge * (vrf1 * np.sin(dphi + phi0)
+                          + vrf2 * np.sin(h_ratio * (dphi + phi0 - phi12))) \
+           - acc_kick
 
 
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
@@ -79,14 +81,18 @@ dphi, denergy = generate_bunch(
 
 dphi = dphi * np.pi / (machine.nbins * machine.dtbin)
 
+nturns = machine.dturns * (machine.nprofiles - 1)
+
 all_dphi = []
 all_denergy = []
-for i in range(1000):
-    dphi = drift(dphi, denergy, machine.h_num, machine.beta0[0],
-                 machine.e_rest, machine.eta0[0])
+for turn in range(1, nturns + 1):
+    dphi = drift(dphi, denergy, machine.h_num, machine.beta0[turn - 1],
+                 machine.e0[turn - 1], machine.eta0[turn - 1])
 
-    denergy = kick(dphi, denergy, machine.q, 1000, 0)
-    if i % 10 == 0:
+    denergy = kick(dphi, denergy, machine.q, machine.vrf1_at_turn[turn],
+                   machine.vrf2_at_turn[turn], machine.phi0[turn],
+                   machine.phi12, machine.h_ratio, machine.deltaE0[turn])
+    if turn % 10 == 0:
         all_dphi.append(dphi.tolist())
         all_denergy.append(denergy.tolist())
 all_dphi = np.array(all_dphi)
