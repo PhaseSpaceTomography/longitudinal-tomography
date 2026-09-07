@@ -16,7 +16,7 @@ from longitudinal_tomography import exceptions as expt
 MACHINE_ARGS = commons.get_machine_args()
 
 
-class TestMachine(unittest.TestCase):
+class TestPSInfo(unittest.TestCase):
 
     def test_find_dEbin_demax_lt_zero_vrf2_zero_output_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -33,7 +33,6 @@ class TestMachine(unittest.TestCase):
     def test_find_dEbin_demax_lt_zero_vrf2_not_zero_output_correct(self):
         machine = mch.Machine(**MACHINE_ARGS)
         machine.vrf2 = 1500
-        machine.h_num = machine.vrf2 = 1500
         machine.h_num = 2
         machine.values_at_turns()
 
