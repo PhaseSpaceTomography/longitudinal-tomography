@@ -12,7 +12,6 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..cpp_routines import libtomo
 from ..compat import fortran
 from ..utils import tomo_config as conf
 

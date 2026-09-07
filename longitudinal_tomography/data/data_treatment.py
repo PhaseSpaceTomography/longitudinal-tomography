@@ -4,23 +4,19 @@
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 import itertools as itl
 
 from .. import exceptions as expt
-from ..utils import physics
 from ..utils import tomo_config as conf
 from ..cpp_routines import libtomo
-from ..python_routines import data_treatment
 from . import pre_process
 
 import logging
 
 if TYPE_CHECKING:
     from .profiles import Profiles
-    from ..tracking.machine import Machine
     from ..tracking.machine_base import MachineABC
     from ..tomography.__tomography import TomographyABC
 

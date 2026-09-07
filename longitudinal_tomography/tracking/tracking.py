@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from typing import Callable
     from numpy.typing import NDArray as NPArray
     from .machine_base import MachineABC
-    from .machine import Machine
 
 log = logging.getLogger(__name__)
 

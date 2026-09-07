@@ -15,7 +15,6 @@ from __future__ import annotations
 # General imports
 import scipy.signal
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 from typing import TYPE_CHECKING
 

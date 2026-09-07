@@ -6,11 +6,7 @@ Should only be used by advanced users.
 """
 from __future__ import annotations
 
-import ctypes as ct
 import logging
-import os
-import sys
-from glob import glob
 from typing import TYPE_CHECKING
 import tomo.cpp_routines.libtomo as libtomo
 

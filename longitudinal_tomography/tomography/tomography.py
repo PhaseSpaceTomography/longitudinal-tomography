@@ -5,7 +5,6 @@
 from __future__ import annotations
 import logging
 import time as tm
-import sys
 from typing import TYPE_CHECKING
 
 import numpy as np

@@ -17,7 +17,6 @@ from scipy import optimize
 from ..utils import physics
 from .profiles import Profiles
 from .. import assertions as asrt
-from ..tracking import Machine
 from ..tracking.machine_base import MachineABC
 
 if TYPE_CHECKING:

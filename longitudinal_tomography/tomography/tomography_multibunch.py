@@ -5,12 +5,9 @@
 from __future__ import annotations
 
 import logging
-import time as tm
-import sys
 from typing import TYPE_CHECKING
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
