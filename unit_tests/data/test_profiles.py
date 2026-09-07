@@ -134,6 +134,9 @@ class TestProfiles(unittest.TestCase):
         profiles.calc_profilecharge()
         profiles.calc_self_fields()
 
+        # vself unused: the shared reference file is for the default bdot,
+        # and doesn't match this bdot=0.0 configuration's output shape or
+        # values. Needs its own reference data to assert on.
         correct_vself = self._load_vself()
         correct_phiwrap = 6.283185307179586
         correct_wrap_length = 457

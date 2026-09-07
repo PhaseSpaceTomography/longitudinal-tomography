@@ -6,6 +6,7 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
+import numpy.testing as nptest
 
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
@@ -35,15 +36,13 @@ class TestParticlesMethods(unittest.TestCase):
                                [1, 2, 3], [1, 2, 3], [1, 2, 3]])
         correct_yp = np.ones((6, 3))
 
-        for xvec, cxvec in zip(xp, correct_xp):
-            for x, cx in zip(xvec, cxvec):
-                self.assertEqual(x, cx, msg='Error in xp coordinates '
-                                            'after filtering')
+        nptest.assert_array_equal(
+            xp, correct_xp,
+            err_msg='Error in xp coordinates after filtering')
 
-        for yvec, cyvec in zip(yp, correct_yp):
-            for y, cy in zip(yvec, cyvec):
-                self.assertEqual(y, cy, msg='Error in yp coordinates '
-                                            'after filtering')
+        nptest.assert_array_equal(
+            yp, correct_yp,
+            err_msg='Error in yp coordinates after filtering')
 
         self.assertEqual(nr_lost, 4, msg='Error in reported number of '
                                          'lost particles')
@@ -94,15 +93,13 @@ class TestParticlesMethods(unittest.TestCase):
         correct_yp = [[286.25, 286.25, 286.25, 286.25],
                       [348.75, 348.75, 348.75, 348.75]]
 
-        for xvec, cxvec in zip(xp, correct_xp):
-            for x, cx in zip(xvec, cxvec):
-                self.assertAlmostEqual(
-                    x, cx, msg='Error in calculated xp coordinates ')
+        nptest.assert_almost_equal(
+            xp, correct_xp,
+            err_msg='Error in calculated xp coordinates')
 
-        for yvec, cyvec in zip(yp, correct_yp):
-            for y, cy in zip(yvec, cyvec):
-                self.assertAlmostEqual(
-                    y, cy, msg='Error in calculated yp coordinates ')
+        nptest.assert_almost_equal(
+            yp, correct_yp,
+            err_msg='Error in calculated yp coordinates')
 
     def test_physical_to_coords_error(self):
         phases = [[-0.24180582, 0.04498875, 0.33178332, 0.61857789],
@@ -162,19 +159,17 @@ class TestParticlesMethodsGPU(unittest.TestCase):
         img_width = 5
         xp, yp, nr_lost = pts.filter_lost(xp, yp, img_width)
 
-        correct_xp = self.cp.array([[1, 2, 4], [1, 2, 4], [1, 2, 3],
+        correct_xp = np.array([[1, 2, 4], [1, 2, 4], [1, 2, 3],
                                     [1, 2, 3], [1, 2, 3], [1, 2, 3]])
-        correct_yp = self.cp.ones((6, 3))
+        correct_yp = np.ones((6, 3))
 
-        for xvec, cxvec in zip(xp, correct_xp):
-            for x, cx in zip(xvec, cxvec):
-                self.assertEqual(x, cx, msg='Error in xp coordinates '
-                                            'after filtering')
+        nptest.assert_array_equal(
+            xp.get(), correct_xp,
+            err_msg='Error in xp coordinates after filtering')
 
-        for yvec, cyvec in zip(yp, correct_yp):
-            for y, cy in zip(yvec, cyvec):
-                self.assertEqual(y, cy, msg='Error in yp coordinates '
-                                            'after filtering')
+        nptest.assert_array_equal(
+            yp.get(), correct_yp,
+            err_msg='Error in yp coordinates after filtering')
 
         self.assertEqual(nr_lost, 4, msg='Error in reported number of '
                                          'lost particles')
@@ -225,15 +220,13 @@ class TestParticlesMethodsGPU(unittest.TestCase):
         correct_yp = [[286.25, 286.25, 286.25, 286.25],
                       [348.75, 348.75, 348.75, 348.75]]
 
-        for xvec, cxvec in zip(xp, correct_xp):
-            for x, cx in zip(xvec, cxvec):
-                self.assertAlmostEqual(
-                    x.item(), cx, msg='Error in calculated xp coordinates ')
+        nptest.assert_almost_equal(
+            self.cp.asnumpy(xp), correct_xp,
+            err_msg='Error in calculated xp coordinates')
 
-        for yvec, cyvec in zip(yp, correct_yp):
-            for y, cy in zip(yvec, cyvec):
-                self.assertAlmostEqual(
-                    y.item(), cy, msg='Error in calculated yp coordinates ')
+        nptest.assert_almost_equal(
+            self.cp.asnumpy(yp), correct_yp,
+            err_msg='Error in calculated yp coordinates')
 
     def test_physical_to_coords_error(self):
         phases = self.cp.array([[-0.24180582, 0.04498875, 0.33178332, 0.61857789],

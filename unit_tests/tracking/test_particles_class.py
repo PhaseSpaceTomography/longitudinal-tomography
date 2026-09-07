@@ -5,6 +5,8 @@ Run as python test_particles_class.py in console or via coverage
 from __future__ import annotations
 import unittest
 
+import numpy.testing as nptest
+
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 import longitudinal_tomography.tracking.particles as pts
@@ -26,12 +28,10 @@ class TestParticles(unittest.TestCase):
         parts.coordinates_dphi_denergy = input_coords
 
         for i in range(ndims):
-            for read, correct in zip(parts.coordinates_dphi_denergy[i],
-                                     input_coords[i]):
-                self.assertEqual(read, correct,
-                                 msg='Something went wrong when setting '
-                                     'coordinates in units of dphi and '
-                                     'denergy')
+            nptest.assert_array_equal(
+                parts.coordinates_dphi_denergy[i], input_coords[i],
+                err_msg='Something went wrong when setting coordinates in '
+                        'units of dphi and denergy')
 
     def test_set_coordinates_dphi_denergy_coord_tuple_no_iter_fails(self):
         input_coords = 1
@@ -119,8 +119,9 @@ class TestParticles(unittest.TestCase):
                    19, 20, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
                    33, 35, 38]
 
-        for j, corr in zip(parts.jmin, correct):
-            self.assertEqual(j, corr, msg='Unexpected value found in jmin')
+        nptest.assert_array_equal(
+            parts.jmin, correct,
+            err_msg='Unexpected value found in jmin')
 
     def test_homogeneous_distribution_correct_jmax(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -141,8 +142,9 @@ class TestParticles(unittest.TestCase):
                    59, 58, 58, 57, 56, 56, 55, 54, 53, 52, 51, 50, 49, 48,
                    47, 46, 45, 43, 41, 38]
 
-        for j, corr in zip(parts.jmax, correct):
-            self.assertEqual(j, corr, msg='Unexpected value found in jmin')
+        nptest.assert_array_equal(
+            parts.jmax, correct,
+            err_msg='Unexpected value found in jmin')
 
     def test_homogeneous_distribution_correct_phase(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -161,10 +163,10 @@ class TestParticles(unittest.TestCase):
                    -0.24180582, 0.04498875, 0.33178332, 0.61857789,
                    -0.24180582, 0.04498875, 0.33178332, 0.61857789]
 
-        for phase, corr in zip(parts.coordinates_dphi_denergy[0], correct):
-            self.assertAlmostEqual(
-                phase, corr, msg='Error in setting of phase coordinate in '
-                                 'cell of phase space at initial distribution')
+        nptest.assert_almost_equal(
+            parts.coordinates_dphi_denergy[0], correct,
+            err_msg='Error in setting of phase coordinate in cell of phase '
+                    'space at initial distribution')
 
     def test_homogeneous_distribution_correct_energy(self):
         machine = mch.Machine(**MACHINE_ARGS)
@@ -185,8 +187,7 @@ class TestParticles(unittest.TestCase):
                    115567.32591061,  115567.32591061,  115567.32591061,
                    115567.32591061]
 
-        for energy, corr in zip(parts.coordinates_dphi_denergy[1], correct):
-            self.assertAlmostEqual(
-                energy, corr, msg='Error in setting of phase coordinate in '
-                                  'cell of phase space at initial distribution'
-            )
+        nptest.assert_almost_equal(
+            parts.coordinates_dphi_denergy[1], correct,
+            err_msg='Error in setting of phase coordinate in cell of phase '
+                    'space at initial distribution')

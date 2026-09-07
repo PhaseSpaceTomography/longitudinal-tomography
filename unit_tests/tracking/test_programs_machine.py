@@ -7,6 +7,7 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
+import numpy.testing as nptest
 
 from longitudinal_tomography.tracking import ProgramsMachine
 from .. import commons
@@ -18,6 +19,9 @@ to_remove = ('vrf1', 'vrf2', 'vrf1dot', 'vrf2dot', 'b0', 'bdot', 'dturns',
 for elem in to_remove:
     P_MACHINE_ARGS.pop(elem)
 P_MACHINE_ARGS['t_ref'] = 0.276
+
+# ProgramsMachine calculates values for nprofiles * dturns turns. The
+# reference values below cover the leading turns of each array only.
 
 
 class TestProgramsMachine(unittest.TestCase):
@@ -76,9 +80,9 @@ class TestProgramsMachine(unittest.TestCase):
                    1.3105259892830171e-05, 1.4113356807663258e-05,
                    1.5121453722496352e-05]
 
-        for tat, corr in zip(machine.time_at_turn, correct):
-            self.assertAlmostEqual(tat, corr,
-                                   msg='Error in calculation of time at turn')
+        nptest.assert_almost_equal(
+            machine.time_at_turn[:len(correct)], correct,
+            err_msg='Error in calculation of time at turn')
 
     def test_values_at_turns_correct_omega_rev0(self):
 
@@ -103,10 +107,10 @@ class TestProgramsMachine(unittest.TestCase):
                    6232990.599204209, 6232992.019915062, 6232993.4406252345,
                    6232994.861334722, 6232996.282043525, 6232997.702751645]
 
-        for omega, corr in zip(machine.omega_rev0, correct):
-            self.assertAlmostEqual(omega, corr,
-                                   msg='Error in calculation of revolution '
-                                       'frequency (omega_rev0)')
+        nptest.assert_almost_equal(
+            machine.omega_rev0[:len(correct)], correct,
+            err_msg='Error in calculation of revolution frequency '
+                    '(omega_rev0)')
 
     def test_values_at_turns_correct_phi0(self):
 
@@ -137,10 +141,10 @@ class TestProgramsMachine(unittest.TestCase):
                    0.011657446194670937, 0.011727835520517012,
                    0.011798224547296144]
 
-        for phi, corr in zip(machine.phi0, correct):
-            self.assertAlmostEqual(phi, corr,
-                                   msg='Error in calculation of synchronous '
-                                       'phase at each turn (phi0)')
+        nptest.assert_almost_equal(
+            machine.phi0[:len(correct)], correct,
+            err_msg='Error in calculation of synchronous phase at each turn '
+                    '(phi0)')
 
     def test_values_at_turns_correct_drift_coef(self):
 
@@ -171,10 +175,9 @@ class TestProgramsMachine(unittest.TestCase):
                    1.4194783464345815e-08, 1.419477318775985e-08,
                    1.4194762911186208e-08]
 
-        for drift, corr in zip(machine.drift_coef, correct):
-            self.assertAlmostEqual(drift, corr,
-                                   msg='Error in calculation of drift '
-                                       'coefficient (drift_coef)')
+        nptest.assert_almost_equal(
+            machine.drift_coef[:len(correct)], correct,
+            err_msg='Error in calculation of drift coefficient (drift_coef)')
 
     def test_values_at_turns_correct_deltaE0(self):
 
@@ -199,11 +202,10 @@ class TestProgramsMachine(unittest.TestCase):
                    92.66892552375793, 92.66892552375793, 92.66892552375793,
                    92.66892552375793, 92.66892552375793]
 
-        for dE0, corr in zip(machine.deltaE0, correct):
-            self.assertAlmostEqual(dE0, corr,
-                                   msg='Error in calculation of energy '
-                                       'difference of synch part pr turn '
-                                       '(deltaE0)')
+        nptest.assert_almost_equal(
+            machine.deltaE0[:len(correct)], correct,
+            err_msg='Error in calculation of energy difference of synch part '
+                    'pr turn (deltaE0)')
 
     def test_values_at_turns_correct_beta0(self):
 
@@ -228,10 +230,9 @@ class TestProgramsMachine(unittest.TestCase):
                    0.5197754674005349, 0.5197755858750674, 0.5197757043495432,
                    0.5197758228239618, 0.5197759412983236, 0.5197760597726283]
 
-        for beta, corr in zip(machine.beta0, correct):
-            self.assertAlmostEqual(beta, corr,
-                                   msg='Error in calculation of relativistic '
-                                       'beta (beta0)')
+        nptest.assert_almost_equal(
+            machine.beta0[:len(correct)], correct,
+            err_msg='Error in calculation of relativistic beta (beta0)')
 
     def test_values_at_turns_correct_eta0(self):
 
@@ -256,10 +257,9 @@ class TestProgramsMachine(unittest.TestCase):
                    0.670345063726509, 0.670344940566184, 0.6703448174058898,
                    0.6703446942456269, 0.6703445710853951, 0.6703444479251947]
 
-        for eta, corr in zip(machine.eta0, correct):
-            self.assertAlmostEqual(eta, corr,
-                                   msg='Error in calculation of phase slip '
-                                       'factor (eta0)')
+        nptest.assert_almost_equal(
+            machine.eta0[:len(correct)], correct,
+            err_msg='Error in calculation of phase slip factor (eta0)')
 
     # This array is tested as integers due to its high values.
     def test_values_at_turns_correct_e0(self):
@@ -285,10 +285,9 @@ class TestProgramsMachine(unittest.TestCase):
                    1098289960.2499473, 1098290052.9188728, 1098290145.5877984,
                    1098290238.2567239, 1098290330.9256494, 1098290423.594575]
 
-        for e0, corr in zip(machine.e0, correct):
-            self.assertEqual(e0, corr,
-                             msg='Error in calculation of energy '
-                                 'of synch. particle (e0)')
+        nptest.assert_array_equal(
+            machine.e0[:len(correct)], correct,
+            err_msg='Error in calculation of energy of synch. particle (e0)')
 
 
 # c275 to c278 for the ISOLDE cycle in the PSB

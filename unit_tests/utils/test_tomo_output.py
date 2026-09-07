@@ -3,34 +3,56 @@
 Run as python test_tomo_output.py in console or via coverage
 """
 
-import os
+from __future__ import annotations
+
 import shutil
+import tempfile
+import typing as t
 import unittest
 from unittest.mock import patch
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as nptest
+import pytest
 
-from .. import commons
+import longitudinal_tomography.shortcuts as shortcuts
 import longitudinal_tomography.utils.tomo_output as tout
 import longitudinal_tomography.data.data_treatment as dtreat
 
-base_dir = os.path.split(os.path.realpath(__file__))[0]
-base_dir = os.path.split(base_dir)[0]
-tmp_dir = os.path.join(base_dir, 'tmp')
+if t.TYPE_CHECKING:
+    from longitudinal_tomography.data.profiles import Profiles
+    from longitudinal_tomography.tomography import Tomography
+    from longitudinal_tomography.tracking import Machine
+    from longitudinal_tomography.utils.tomo_input import Frames
+
+
+@pytest.fixture(scope='module')
+def tomography_params(
+    machine_frames_profiles: t.Tuple[Machine, Frames, Profiles]
+) -> t.Tuple[Tomography, Machine, Profiles]:
+    """Track and reconstruct once per module from the shared session data."""
+    machine, _, profiles = machine_frames_profiles
+    xp, yp = shortcuts.track(machine, 0)
+    tomo = shortcuts.tomogram(profiles.waterfall, xp, yp, 2)
+    return tomo, machine, profiles
 
 
 class TestTomoOut(unittest.TestCase):
 
+    @pytest.fixture(autouse=True)
+    def _inject_fixtures(
+        self, tomography_params: t.Tuple[Tomography, Machine, Profiles]
+    ) -> None:
+        self.tomo, self.machine, self.profiles = tomography_params
+
     @classmethod
     def setUpClass(cls):
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
+        cls.tmp_dir = tempfile.mkdtemp()
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isdir(tmp_dir):
-            shutil.rmtree(tmp_dir)
+        shutil.rmtree(cls.tmp_dir)
 
     def test_create_phase_space_image(self):
 
@@ -56,12 +78,28 @@ class TestTomoOut(unittest.TestCase):
 
     @patch('matplotlib.pyplot.show')
     def test_show(self, mock_show):
-        _, _, profiles = commons.load_data()
-        tomo, machine = commons.get_tomography_params()
-        waterfall = profiles.waterfall
+        waterfall = self.profiles.waterfall
         rec_prof = 0
 
-        phase_space = dtreat.phase_space(tomo, machine, rec_prof)[-1]
-        measured_profile = waterfall[:, 0] / waterfall[:, 0].sum()
+        phase_space = dtreat.phase_space(self.tomo, self.machine, rec_prof)[-1]
+        measured_profile = (waterfall[rec_prof]
+                            / waterfall[rec_prof].sum())
 
-        tout.show(phase_space, measured_profile, tomo.diff)
+        self.addCleanup(plt.close, 'all')
+
+        tout.show(phase_space, self.tomo.diff, measured_profile)
+
+        mock_show.assert_called_once()
+
+        axes = plt.gcf().axes
+        self.assertEqual(
+            len(axes), 4,
+            msg='Reconstruction should be presented in four subplots')
+
+        nptest.assert_array_equal(
+            axes[3].get_lines()[0].get_ydata(), self.tomo.diff,
+            err_msg='Discrepancy was not plotted in the convergence subplot')
+        nptest.assert_array_equal(
+            axes[1].get_lines()[1].get_ydata(), measured_profile,
+            err_msg='Measured profile was not plotted alongside the '
+                    'reconstructed profile')
