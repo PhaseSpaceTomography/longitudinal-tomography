@@ -12,9 +12,12 @@ from .. import assertions as asrt
 from numbers import Number
 
 if TYPE_CHECKING:
-    from typing import Union, Dict, Iterable
+    from typing import Iterable
 
-    FloatArr = np.ndarray[float]
+    from numpy import float64
+    from numpy.typing import NDArray as NPArray
+
+    FloatArr = NPArray[float64]
 
 __all__ = ['post_process', 'rms_dpp', 'emittance_rms',
            'emittance_90', 'emittance_fractional']
@@ -24,7 +27,7 @@ m_p = cont.value('proton mass energy equivalent in MeV') * 1e6
 
 def post_process(phase_space: Iterable[float], t_bins: Iterable[float],
                  e_bins: Iterable[float], energy: float, mass: float = m_p) \
-                                -> Dict[str, Union[float, FloatArr]]:
+                                -> dict[str, float | FloatArr]:
     """
     Convenience function that provides an all-on-one post-processing method.
 
@@ -71,9 +74,9 @@ def post_process(phase_space: Iterable[float], t_bins: Iterable[float],
 
 #TODO: How does static analysis handle @dispatch functions?
 @dispatch(np.ndarray, np.ndarray, np.ndarray)
-def emittance_rms(histogram: np.ndarray,
-                  t_bins: np.ndarray,
-                  e_bins: np.ndarray) -> Union[float, np.ndarray]:
+def emittance_rms(histogram: NPArray,
+                  t_bins: NPArray,
+                  e_bins: NPArray) -> float | NPArray:
     """
     Calculates the RMS emittance for the given phase space
     by first calculating the standard deviation of the time and energy
@@ -101,9 +104,9 @@ def emittance_rms(histogram: np.ndarray,
 
 
 @dispatch(float, float)
-def emittance_rms(sigma_t: Union[float, np.ndarray],
-                  sigma_e: Union[float, np.ndarray]) \
-        -> Union[float, np.ndarray]:
+def emittance_rms(sigma_t: float | NPArray,
+                  sigma_e: float | NPArray) \
+        -> float | NPArray:
     """
     Calculates the RMS emittance from the standard deviation of
     time and energy.
@@ -148,9 +151,9 @@ def emittance_90(phase_space: Iterable[float], t_bins: Iterable[float],
 
 
 @dispatch(np.ndarray, np.ndarray, np.ndarray, fraction=float)
-def emittance_fractional(histogram: np.ndarray,
-                         t_bins: np.ndarray,
-                         e_bins: np.ndarray,
+def emittance_fractional(histogram: NPArray,
+                         t_bins: NPArray,
+                         e_bins: NPArray,
                          fraction: float = 90) -> float:
     """
     Calculates the fractional emittance of a given phase space (histogram),
@@ -227,7 +230,7 @@ def rms_dpp(energy_std: Number, energy: Number, mass: Number) -> float:
 
 
 @dispatch(np.ndarray, np.ndarray, Number, Number)
-def rms_dpp(energy_proj: np.ndarray, energy_bins: np.ndarray,
+def rms_dpp(energy_proj: NPArray, energy_bins: NPArray,
             energy: Number,
             mass: Number) -> float:
     """

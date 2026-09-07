@@ -2,28 +2,33 @@
 
 :Author(s): **Bernardo Abreu Figueiredo**
 """
+from __future__ import annotations
 
 import numpy as np
 import cupy as cp
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cupy.typing import NDArray as CPArray
 
 log = logging.getLogger(__name__)
 
-def back_project(weights: cp.ndarray,
-                 flat_points: cp.ndarray,
-                 flat_profiles: cp.ndarray,
+def back_project(weights: CPArray,
+                 flat_points: CPArray,
+                 flat_profiles: CPArray,
                  n_particles: int,
-                 n_profiles: int) -> cp.ndarray:
+                 n_profiles: int) -> CPArray:
     return cp.sum(cp.take(flat_profiles, flat_points, axis=0), axis=1) + weights
 
-def project(flat_rec: cp.ndarray,
-            flat_points: cp.ndarray,
-            weights: cp.ndarray, n_particles: int,
-            n_profiles: int, n_bins: int) -> cp.ndarray:
+def project(flat_rec: CPArray,
+            flat_points: CPArray,
+            weights: CPArray, n_particles: int,
+            n_profiles: int, n_bins: int) -> CPArray:
     return cp.bincount(flat_points.reshape(-1), weights.repeat(n_profiles), minlength=n_profiles * n_bins) + flat_rec
 
-def normalize(flat_rec: cp.ndarray,
-              n_profiles: int, n_bins: int) -> cp.ndarray:
+def normalize(flat_rec: CPArray,
+              n_profiles: int, n_bins: int) -> CPArray:
 
     flat_rec = flat_rec.reshape((n_profiles, n_bins))
     sum_profile = cp.sum(flat_rec, axis=1)
@@ -35,34 +40,34 @@ def normalize(flat_rec: cp.ndarray,
         raise RuntimeError("Phase space reduced to zeros!")
     return flat_rec
 
-def clip(array: cp.ndarray,
-        clip_val: float) -> cp.ndarray:
+def clip(array: CPArray,
+        clip_val: float) -> CPArray:
     array[array < clip_val] = clip_val
     return array
 
-def find_difference_profile(flat_rec: cp.ndarray,
-                            flat_profiles: cp.ndarray) -> cp.ndarray:
+def find_difference_profile(flat_rec: CPArray,
+                            flat_profiles: CPArray) -> CPArray:
     return flat_profiles - flat_rec
 
-def discrepancy(diff_prof: cp.ndarray,
+def discrepancy(diff_prof: CPArray,
                 n_profiles: int, n_bins: int) -> float:
     all_bins = n_profiles * n_bins
     squared_sum = cp.sum(cp.power(diff_prof, 2))
 
     return cp.sqrt(squared_sum / all_bins)
 
-def compensate_particle_amount(diff_prof: cp.ndarray,
-                               rparts: cp.ndarray,
-                               n_profiles: int, n_bins: int) -> cp.ndarray:
+def compensate_particle_amount(diff_prof: CPArray,
+                               rparts: CPArray,
+                               n_profiles: int, n_bins: int) -> CPArray:
     return diff_prof * rparts.reshape(n_profiles * n_bins)
 
-def max_2d(array: cp.ndarray,
+def max_2d(array: CPArray,
            x_axis: int, y_axis: int) -> float:
     return cp.max(array[:y_axis, :x_axis])
 
-def count_particles_in_bin(xp: cp.ndarray,
+def count_particles_in_bin(xp: CPArray,
                            n_profiles: int, n_particles: int,
-                           n_bins: int) -> cp.ndarray:
+                           n_bins: int) -> CPArray:
 
     bins = cp.arange(n_bins + 1)
     rparts = cp.empty((n_profiles, n_bins), dtype=cp.int32)
@@ -70,9 +75,9 @@ def count_particles_in_bin(xp: cp.ndarray,
         rparts[j], _ = cp.histogram(xp[:, j], bins=bins)
     return rparts
 
-def reciprocal_particles(xp: cp.ndarray,
+def reciprocal_particles(xp: CPArray,
                          n_bins: int, n_profiles: int,
-                         n_particles: int) -> cp.ndarray:
+                         n_particles: int) -> CPArray:
 
     rparts = count_particles_in_bin(xp, n_profiles, n_particles, n_bins)
     max_bin_val = max_2d(rparts, n_particles, n_profiles)
@@ -83,16 +88,16 @@ def reciprocal_particles(xp: cp.ndarray,
 
     return rparts
 
-def create_flat_points(xp: cp.ndarray,
+def create_flat_points(xp: CPArray,
                        n_particles: int, n_profiles: int,
-                       n_bins: int) -> cp.ndarray:
+                       n_bins: int) -> CPArray:
     flat_points = cp.copy(xp)
     flat_points += cp.arange(n_profiles) * n_bins
 
     return flat_points
 
-def reconstruct_cupy(xp: cp.ndarray,
-                waterfall: cp.ndarray, n_iter: int,
+def reconstruct_cupy(xp: CPArray,
+                waterfall: CPArray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = False) -> tuple:
 

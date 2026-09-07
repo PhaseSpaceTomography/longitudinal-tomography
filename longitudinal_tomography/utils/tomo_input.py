@@ -6,7 +6,7 @@ Fortran style text files.
 from __future__ import annotations
 import os
 import sys
-import typing as t
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -16,8 +16,11 @@ from ..data.profiles import Profiles
 from ..tracking.machine import Machine
 from ..compat import fortran
 
-# Some constants for input files containing machine parameters.
-from ..tracking.machine_base import MachineABC
+if TYPE_CHECKING:
+    from typing import Collection, Sequence
+    from numpy.typing import NDArray as NPArray
+
+    from ..tracking.machine_base import MachineABC
 
 PARAMETER_LENGTH = 98
 RAW_DATA_FILE_IDX = 12
@@ -84,10 +87,10 @@ class Frames:
         self.rebin = rebin
         self.sampling_time = dtbin
 
-        self._raw_data: np.ndarray = None
+        self._raw_data: NPArray = None
 
     @property
-    def raw_data(self) -> t.Union[np.ndarray, None]:
+    def raw_data(self) -> NPArray | None:
         """Raw data defined as a @property.
 
         Holds assertions for validity of raw data.
@@ -115,7 +118,7 @@ class Frames:
             return None
 
     @raw_data.setter
-    def raw_data(self, in_raw_data: t.Collection):
+    def raw_data(self, in_raw_data: Collection):
         if not hasattr(in_raw_data, '__iter__'):
             raise expt.RawDataImportError('Raw data should be iterable')
 
@@ -149,7 +152,7 @@ class Frames:
         """
         return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
 
-    def to_waterfall(self, raw_data: np.ndarray) -> np.ndarray:
+    def to_waterfall(self, raw_data: NPArray) -> NPArray:
         """Function to convert from raw data to waterfall for use in
         reconstruction. The waterfall wil be shaped based on the
         settings found in the :class:`Frames` object.
@@ -189,8 +192,8 @@ class Frames:
         return waterfall
 
     # Check that provided raw data is valid.
-    def _assert_raw_data(self, raw_data: t.Union[np.ndarray, t.Collection]) \
-            -> np.ndarray:
+    def _assert_raw_data(self, raw_data: NPArray | Collection) \
+            -> NPArray:
         if not hasattr(raw_data, '__iter__'):
             raise expt.RawDataImportError('Raw data should be iterable')
 
@@ -232,7 +235,7 @@ def get_user_input(input: str = ''):
 
 # Receive path to input file via sys.argv.
 # Can also receive the path to the output directory.
-def _get_input_args(input_file_pth: str) -> np.ndarray:
+def _get_input_args(input_file_pth: str) -> NPArray:
     if not os.path.isfile(input_file_pth):
         raise expt.InputError(f'The input file: "{input_file_pth}" '
                               f'does not exist!')
@@ -246,7 +249,7 @@ def _get_input_args(input_file_pth: str) -> np.ndarray:
 # Read machine parameters via stdin.
 # Here the measured data must be pipelined in the same file as
 # the machine parameters.
-def _get_input_stdin() -> np.ndarray:
+def _get_input_stdin() -> NPArray:
     read = []
     finished = False
     piped_raw_data = False
@@ -275,7 +278,7 @@ def _get_input_stdin() -> np.ndarray:
 # Splits the read input data to machine parameters and raw data.
 # If the raw data is not already read from the input file, the
 #  data will be found in the file given by the parameter file.
-def _split_input(read_input: t.Sequence) -> t.Tuple[t.List, np.ndarray]:
+def _split_input(read_input: Sequence) -> tuple[list, NPArray]:
     nframes_idx = 16
     nbins_idx = 20
     ndata = 0
@@ -319,7 +322,7 @@ def _split_input(read_input: t.Sequence) -> t.Tuple[t.List, np.ndarray]:
     return read_parameters, read_data
 
 
-def txt_input_to_machine(input_array: t.List) -> t.Tuple[Machine, Frames]:
+def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
     """Function converts the content of an input file and uses this to
     generate an machine object. The input file is given as a list
     holding one line of the file in ach element. The list should
@@ -428,7 +431,7 @@ def txt_input_to_machine(input_array: t.List) -> t.Tuple[Machine, Frames]:
 
 # Convert from setting min and max phase of reconstruction area
 # as phase space coordinates to physical units of phase [s].
-def _min_max_dt(nbins: int, input_array: t.Sequence) -> t.Tuple[float, float]:
+def _min_max_dt(nbins: int, input_array: Sequence) -> tuple[float, float]:
     dtbin = float(input_array[22])
     min_dt_bin = int(input_array[31])
     max_dt_bin = int(input_array[34])
@@ -438,7 +441,7 @@ def _min_max_dt(nbins: int, input_array: t.Sequence) -> t.Tuple[float, float]:
     return min_dt, max_dt
 
 
-def raw_data_to_profiles(waterfall: np.ndarray, machine: MachineABC, rbn: int,
+def raw_data_to_profiles(waterfall: NPArray, machine: MachineABC, rbn: int,
                          sampling_time: float,
                          synch_part_x: float = None) -> Profiles:
     """Converts from waterfall of untreated data, to waterfall

@@ -3,18 +3,21 @@ Tomoscope specific codes
 
 :Author(s): **Anton Lu**
 """
+from __future__ import annotations
+
 import logging
 from os import path
-
-import numpy as np
+from typing import TYPE_CHECKING
 
 from ..utils import tomo_output as tomoout
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
 
-def save_difference(diff: np.ndarray, output_path: str, film: int):
+def save_difference(diff: NPArray, output_path: str, film: int):
     # Saving to file with numbers counting from one
     log.info(f'Saving saving difference to {output_path}')
 
@@ -26,7 +29,7 @@ def save_difference(diff: np.ndarray, output_path: str, film: int):
                 f.write(f'          {i}  {d:0.7E}\n')
 
 
-def save_image(xp: np.ndarray, yp: np.ndarray, weight: np.ndarray,
+def save_image(xp: NPArray, yp: NPArray, weight: NPArray,
                n_bins: int, film: int, output_path: str):
     # Creating n_bins * n_bins phase-space image
     log.info(f'Saving picture {film}.')
@@ -41,7 +44,7 @@ def save_image(xp: np.ndarray, yp: np.ndarray, weight: np.ndarray,
             f.write(f'  {element:0.7E}\n')
 
 
-def save_profile(prof: np.ndarray, film: int, output_path: str):
+def save_profile(prof: NPArray, film: int, output_path: str):
 
     log.info(f'Saving profile{film} to {output_path}')
 

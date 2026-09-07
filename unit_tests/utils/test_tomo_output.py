@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import shutil
 import tempfile
-import typing as t
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
@@ -20,7 +20,7 @@ import longitudinal_tomography.shortcuts as shortcuts
 import longitudinal_tomography.utils.tomo_output as tout
 import longitudinal_tomography.data.data_treatment as dtreat
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from longitudinal_tomography.data.profiles import Profiles
     from longitudinal_tomography.tomography import Tomography
     from longitudinal_tomography.tracking import Machine
@@ -29,8 +29,8 @@ if t.TYPE_CHECKING:
 
 @pytest.fixture(scope='module')
 def tomography_params(
-    machine_frames_profiles: t.Tuple[Machine, Frames, Profiles]
-) -> t.Tuple[Tomography, Machine, Profiles]:
+    machine_frames_profiles: tuple[Machine, Frames, Profiles]
+) -> tuple[Tomography, Machine, Profiles]:
     """Track and reconstruct once per module from the shared session data."""
     machine, _, profiles = machine_frames_profiles
     xp, yp = shortcuts.track(machine, 0)
@@ -42,7 +42,7 @@ class TestTomoOut(unittest.TestCase):
 
     @pytest.fixture(autouse=True)
     def _inject_fixtures(
-        self, tomography_params: t.Tuple[Tomography, Machine, Profiles]
+        self, tomography_params: tuple[Tomography, Machine, Profiles]
     ) -> None:
         self.tomo, self.machine, self.profiles = tomography_params
 

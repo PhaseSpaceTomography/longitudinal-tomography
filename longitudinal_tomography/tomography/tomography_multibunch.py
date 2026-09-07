@@ -2,11 +2,12 @@
 
 :Author(s): **Simon Albright**
 """
+from __future__ import annotations
 
 import logging
 import time as tm
-import typing as t
 import sys
+from typing import TYPE_CHECKING
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,6 +15,11 @@ import matplotlib.pyplot as plt
 from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
+
+if TYPE_CHECKING:
+    from typing import Callable, Sequence
+
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -63,8 +69,8 @@ class Tomography(TomographyABC):
         of the reconstruction process.
     """
 
-    def __init__(self, waterfall: np.ndarray, x_coords: np.ndarray = None,
-                 y_coords: np.ndarray = None):
+    def __init__(self, waterfall: NPArray, x_coords: NPArray = None,
+                 y_coords: NPArray = None):
         super().__init__(waterfall, x_coords, y_coords)
 
 
@@ -169,7 +175,7 @@ class Tomography(TomographyABC):
             for j in range(nBunches):
                 start = j*self.nparts
                 stop = (j+1)*self.nparts
-                
+
                 weight[start:stop][masks[start:stop]] = libtomo.back_project(
                                             weight[start:stop][masks[start:stop]],
                                             flat_points[masks[start:stop]] + centers[j],
@@ -179,7 +185,7 @@ class Tomography(TomographyABC):
             weight = weight.clip(0.0)
 
         self.full_recreated = np.zeros_like(self.waterfall)
-        
+
         for j in range(nBunches):
             start = j*self.nparts
             stop = (j+1)*self.nparts
@@ -193,7 +199,7 @@ class Tomography(TomographyABC):
         diff_waterfall = self.waterfall - self.recreated
         self.diff[-1] = self._discrepancy(diff_waterfall)
         self.diff_split[:, -1] = self._discrepancy_multi(diff_waterfall, cuts)
-        
+
         if verbose:
             print(' Done!')
 
@@ -218,8 +224,8 @@ class Tomography(TomographyABC):
         return allDiffs
 
 
-    def _project(self, flat_points: np.ndarray, weight: np.ndarray,
-                       nUseParts: int) -> np.ndarray:
+    def _project(self, flat_points: NPArray, weight: NPArray,
+                       nUseParts: int) -> NPArray:
 
         rec = libtomo.project(np.zeros(self.recreated.shape), flat_points,
                               weight, nUseParts, self.nprofs, self.nbins)
@@ -227,14 +233,15 @@ class Tomography(TomographyABC):
         return rec
 
     # Convert x coordinates pointing at bins of flattened version of waterfall.
-    def _create_flat_points(self) -> np.ndarray:
+    def _create_flat_points(self) -> NPArray:
         return np.ascontiguousarray(
             super()._create_flat_points()).astype(np.int32)
 
 
-    def run(self, centers: [int], cutleft: [int], cutright: [int],
+    def run(self, centers: Sequence[int], cutleft: Sequence[int],
+            cutright: Sequence[int],
             niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+            callback: Callable = None) -> NPArray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -278,15 +285,15 @@ class Tomography(TomographyABC):
         #  self.recreated) = libtomo.reconstruct(
         #     self.xp, self.waterfall, niter, self.nbins,
         #     self.nparts, self.nprofs, verbose, callback)
-        
+
         (weight, self.diff, self.diff_split, self.recreated) = \
             libtomo.reconstruct_multi(self.xp, self.waterfall, cutleft,
                                       cutright, centers, niter, self.nbins,
                                       self.nparts, self.nprofs, len(centers),
                                       verbose, callback)
-        
+
         self.diff_split = self.diff_split.reshape([niter+1, len(centers)]).T
-        
+
         self.weight_combined = weight
         self.weight_split = []
         for i in range(len(centers)):

@@ -21,17 +21,20 @@ from ..tracking import Machine
 from ..tracking.machine_base import MachineABC
 
 if TYPE_CHECKING:
-    from typing import Iterable, Union, Tuple
+    from typing import Iterable
 
-    FloatArr = np.ndarray[float]
+    from numpy import float64
+    from numpy.typing import NDArray as NPArray
+
+    FloatArr = NPArray[float64]
 
 log = logging.getLogger(__name__)
 
 
 def rebin(waterfall: Iterable[float], rbn: int, dtbin: float = None,
           synch_part_x: float = None) \
-                                      -> Union[Tuple[FloatArr, float, float],
-                                               Tuple[FloatArr, float]]:
+                                      -> (tuple[FloatArr, float, float]
+                                          | tuple[FloatArr, float]):
     """
     Rebin waterfall from shape (P, X) to (P, Y).
     P is the number of profiles, X is the original number of bins,
@@ -88,8 +91,8 @@ def rebin(waterfall: Iterable[float], rbn: int, dtbin: float = None,
 
 
 @dispatch(np.ndarray, MachineABC)
-def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
-        -> t.Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(waterfall: NPArray, machine: MachineABC) \
+        -> tuple[NPArray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -154,7 +157,7 @@ def fit_synch_part_x(waterfall: np.ndarray, machine: MachineABC) \
 
 
 @dispatch(Profiles)
-def fit_synch_part_x(profiles: Profiles) -> t.Tuple[np.ndarray, float, float]:
+def fit_synch_part_x(profiles: Profiles) -> tuple[NPArray, float, float]:
     """Linear fit to estimate the phase coordinate of the synchronous
     particle. The found phase is returned as a x-coordinate of the phase space
     coordinate systems in fractions of bins. The estimation is done at
@@ -189,7 +192,7 @@ def fit_synch_part_x(profiles: Profiles) -> t.Tuple[np.ndarray, float, float]:
 
 #TODO: Confirm return types
 def get_cuts(waterfall: Iterable[float], threshold: int = None,
-             margin: int = 20) -> Tuple[int, int]:
+             margin: int = 20) -> tuple[int, int]:
 
     if isinstance(waterfall, tuple) or isinstance(waterfall, list):
         waterfall = np.array(waterfall).real
@@ -268,12 +271,11 @@ def cut_waterfall(waterfall: Iterable[float], cut_left: int,
 #TODO: Confirm return flexibility, make it clearer with @typing.overload?
 def filter_profiles(waterfall: Iterable[float], xp: Iterable[float] = None,
                     yp: Iterable[float] = None, rec_prof: int = None) \
-                                    -> Union[
-                                        FloatArr,
-                                        Tuple[FloatArr, FloatArr],
-                                        Tuple[FloatArr, FloatArr, FloatArr],
-                                        Tuple[FloatArr, FloatArr, int],
-                                        Tuple[FloatArr, int]]:
+                                    -> (FloatArr
+                                        | tuple[FloatArr, FloatArr]
+                                        | tuple[FloatArr, FloatArr, FloatArr]
+                                        | tuple[FloatArr, FloatArr, int]
+                                        | tuple[FloatArr, int]):
     """
     Filters out empty profiles from measured data. Empty profiles are
     considered just noise. Returned arrays are truncated with the noise frames
@@ -309,7 +311,7 @@ def filter_profiles(waterfall: Iterable[float], xp: Iterable[float] = None,
 
     good_waterfall = waterfall[good_frames, :]
 
-    output: t.List[t.Union[np.ndarray, int]] = [good_waterfall]
+    output: list[NPArray | int] = [good_waterfall]
     if xp is not None:
         good_xp = xp[:, good_frames]
 
@@ -334,7 +336,7 @@ def filter_profiles(waterfall: Iterable[float], xp: Iterable[float] = None,
 
 # Finds foot tangents of profile. Needed to estimate bunch duration
 # when performing a fit to find synch_part_x.
-def _calc_tangentfeet(ref_prof: np.ndarray) -> t.Tuple[float, float]:
+def _calc_tangentfeet(ref_prof: NPArray) -> tuple[float, float]:
     nbins = len(ref_prof)
     index_array = np.arange(nbins) + 0.5
 
@@ -354,8 +356,8 @@ def _calc_tangentfeet(ref_prof: np.ndarray) -> t.Tuple[float, float]:
 
 # Returns index of last bins to the left and right of max valued bin,
 # with value over the threshold.
-def _calc_tangentbins(ref_profile: np.ndarray, nbins: int,
-                      threshold_coeff: float = 0.15) -> t.Tuple[float, float]:
+def _calc_tangentbins(ref_profile: NPArray, nbins: int,
+                      threshold_coeff: float = 0.15) -> tuple[float, float]:
     threshold = threshold_coeff * np.max(ref_profile)
     maxbin = np.argmax(ref_profile)
     for ibin in range(maxbin, 0, -1):
@@ -372,7 +374,7 @@ def _calc_tangentbins(ref_profile: np.ndarray, nbins: int,
 
 # Rebins an 2d array given a rebin factor (rbn).
 # The given array MUST have a length equal to an even number.
-def _rebin_dividable(data: np.ndarray, rbn: int) -> np.ndarray:
+def _rebin_dividable(data: NPArray, rbn: int) -> NPArray:
     if data.shape[1] % rbn != 0:
         raise AssertionError('Input array must be '
                              'dividable on the rebin factor.')
@@ -393,7 +395,7 @@ def _rebin_dividable(data: np.ndarray, rbn: int) -> np.ndarray:
 
 # Rebins an 2d array given a rebin factor (rbn).
 # The given array MUST have vector length equal to an odd number.
-def _rebin_individable(data: np.ndarray, rbn: int) -> np.ndarray:
+def _rebin_individable(data: NPArray, rbn: int) -> NPArray:
     nprofs = data.shape[0]
     nbins = data.shape[1]
 
@@ -407,7 +409,7 @@ def _rebin_individable(data: np.ndarray, rbn: int) -> np.ndarray:
 
 # Rebins last indices of an 2d array given a rebin factor (rbn).
 # Needed for the rebinning of odd arrays.
-def _rebin_last(data: np.ndarray, rbn: int) -> np.ndarray:
+def _rebin_last(data: NPArray, rbn: int) -> NPArray:
     nprofs = data.shape[0]
     nbins = data.shape[1]
 

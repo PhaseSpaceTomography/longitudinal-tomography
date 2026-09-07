@@ -3,7 +3,7 @@
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import logging
@@ -16,6 +16,8 @@ from ..compat import fortran
 from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
+    from typing import Callable
+    from numpy.typing import NDArray as NPArray
     from .machine_base import MachineABC
     from .machine import Machine
 
@@ -53,12 +55,12 @@ class Tracking(ParticleTracker):
         stdout during particle tracking.
     """
 
-    def __init__(self, machine: 'MachineABC'):
+    def __init__(self, machine: MachineABC):
         super().__init__(machine)
 
-    def track(self, recprof: int, init_distr: Tuple[float, float] = None,
+    def track(self, recprof: int, init_distr: tuple[float, float] = None,
               callback: Callable = None, deltaturn: int = 0) \
-            -> Tuple[np.ndarray, np.ndarray]:
+            -> tuple[NPArray, NPArray]:
         """Primary function for tracking particles.
 
         The tracking routine starts at a given time frame, with an initial
@@ -213,9 +215,9 @@ class Tracking(ParticleTracker):
         log.info('Tracking completed!')
         return xp, yp
 
-    def kick_and_drift(self, denergy: np.ndarray, dphi: np.ndarray,
-                       rf1v: np.ndarray, rf2v: np.ndarray, rec_prof: int,
-                       deltaturn: int = 0) -> Tuple[np.ndarray, np.ndarray]:
+    def kick_and_drift(self, denergy: NPArray, dphi: NPArray,
+                       rf1v: NPArray, rf2v: NPArray, rec_prof: int,
+                       deltaturn: int = 0) -> tuple[NPArray, NPArray]:
         """Routine for tracking a distribution of particles for N turns.
         N is given by *tracking.nturns*
 
@@ -313,10 +315,10 @@ class Tracking(ParticleTracker):
 
         return out_dphi, out_denergy
 
-    def kick_and_drift_self(self, denergy: np.ndarray, dphi: np.ndarray,
-                            rf1v: np.ndarray, rf2v: np.ndarray,
+    def kick_and_drift_self(self, denergy: NPArray, dphi: NPArray,
+                            rf1v: NPArray, rf2v: NPArray,
                             rec_prof: int, deltaturn: int = 0) \
-            -> Tuple[np.ndarray, np.ndarray]:
+            -> tuple[NPArray, NPArray]:
         """Routine for tracking a given distribution of particles,\
         including self-fields. Implemented as hybrid between Python and C++.
 
@@ -455,9 +457,9 @@ class Tracking(ParticleTracker):
     # Needed for tracking using self-fields.
     # TODO: removed njit, reimplement in C in the future
     @staticmethod
-    def _calc_xp_sf(dphi: np.ndarray, phi0: np.ndarray, xorigin: int, h_num,
-                    omega_rev0: np.ndarray, dtbin: int, phiwrap: float) \
-            -> np.ndarray:
+    def _calc_xp_sf(dphi: NPArray, phi0: NPArray, xorigin: int, h_num,
+                    omega_rev0: NPArray, dtbin: int, phiwrap: float) \
+            -> NPArray:
         temp_xp = (dphi + phi0 - xorigin * h_num * omega_rev0 * dtbin)
         temp_xp = ((temp_xp - phiwrap * np.floor(temp_xp / phiwrap))
                    / (h_num * omega_rev0 * dtbin))

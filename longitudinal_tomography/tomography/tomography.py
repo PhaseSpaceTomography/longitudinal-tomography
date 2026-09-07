@@ -5,8 +5,8 @@
 from __future__ import annotations
 import logging
 import time as tm
-import typing as t
 import sys
+from typing import TYPE_CHECKING
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +15,11 @@ from .__tomography import TomographyABC
 from ..cpp_routines import libtomo
 from .. import exceptions as expt
 from longitudinal_tomography.utils import tomo_config as conf
+
+if TYPE_CHECKING:
+    from typing import Callable
+
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -63,8 +68,8 @@ class Tomography(TomographyABC):
         of the reconstruction process.
     """
 
-    def __init__(self, waterfall: np.ndarray, x_coords: np.ndarray = None,
-                 y_coords: np.ndarray = None):
+    def __init__(self, waterfall: NPArray, x_coords: NPArray = None,
+                 y_coords: NPArray = None):
         super().__init__(waterfall, x_coords, y_coords)
 
     def run_hybrid(self, niter=20, verbose=False):
@@ -288,8 +293,8 @@ class Tomography(TomographyABC):
 
     # Project using C++ routine from tomolib_wrappers.
     # Normalizes recreated profiles before returning them.
-    def _project(self, flat_points: np.ndarray, weight: np.ndarray) \
-            -> np.ndarray:
+    def _project(self, flat_points: NPArray, weight: NPArray) \
+            -> NPArray:
         # rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
         #                   weight, self.nparts, self.nprofs, self.nbins)
         rec = libtomo.project(np.zeros(self.recreated.shape), flat_points,
@@ -297,8 +302,8 @@ class Tomography(TomographyABC):
         rec = self._normalize_profiles(rec)
         return rec
 
-    def _project_multi(self, flat_points: np.ndarray, weight: np.ndarray,
-                       nUseParts: int) -> np.ndarray:
+    def _project_multi(self, flat_points: NPArray, weight: NPArray,
+                       nUseParts: int) -> NPArray:
         # rec = tlw.project(np.zeros(self.recreated.shape), flat_points,
         #                   weight, self.nparts, self.nprofs, self.nbins)
         rec = libtomo.project(np.zeros(self.recreated.shape), flat_points,
@@ -307,11 +312,11 @@ class Tomography(TomographyABC):
         return rec
 
     # Convert x coordinates pointing at bins of flattened version of waterfall.
-    def _create_flat_points(self) -> np.ndarray:
+    def _create_flat_points(self) -> NPArray:
         return np.ascontiguousarray(
             super()._create_flat_points()).astype(np.int32)
 
-    def _run_old(self, niter: int = 20, verbose: bool = False) -> np.ndarray:
+    def _run_old(self, niter: int = 20, verbose: bool = False) -> NPArray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.
@@ -357,7 +362,7 @@ class Tomography(TomographyABC):
         return self.weight
 
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+            callback: Callable = None) -> NPArray:
         """Function to perform tomographic reconstruction.
 
         Performs the full reconstruction using C++.

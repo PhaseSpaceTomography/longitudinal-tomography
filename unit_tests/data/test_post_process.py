@@ -3,7 +3,7 @@
 Run as python test_post_process.py in console or via coverage
 """
 from __future__ import annotations
-import typing as t
+from typing import TYPE_CHECKING
 import unittest
 
 import pytest
@@ -13,7 +13,7 @@ import longitudinal_tomography.data.data_treatment as treat
 import longitudinal_tomography.data.post_process as post_process
 from .. import commons
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from longitudinal_tomography.data.profiles import Profiles
     from longitudinal_tomography.tomography import Tomography
     from longitudinal_tomography.tracking import Machine
@@ -25,8 +25,8 @@ MACHINE_ARGS = commons.get_machine_args()
 
 @pytest.fixture(scope='module')
 def tomography_params(
-    machine_frames_profiles: t.Tuple[Machine, Frames, Profiles]
-) -> t.Tuple[Tomography, Machine]:
+    machine_frames_profiles: tuple[Machine, Frames, Profiles]
+) -> tuple[Tomography, Machine]:
     """Track and reconstruct once per module from the shared session data."""
     machine, _, profiles = machine_frames_profiles
     xp, yp = shortcuts.track(machine, 0)
@@ -38,7 +38,7 @@ class TestPostProcess(unittest.TestCase):
 
     @pytest.fixture(autouse=True)
     def _inject_fixtures(
-        self, tomography_params: t.Tuple[Tomography, Machine]
+        self, tomography_params: tuple[Tomography, Machine]
     ) -> None:
         self.tomo, self.machine = tomography_params
 

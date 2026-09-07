@@ -2,62 +2,66 @@
 
 :Author(s): **Bernardo Abreu Figueiredo**
 """
+from __future__ import annotations
 
-import numpy as np
 import cupy as cp
 import logging
-from typing import Tuple
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cupy.typing import NDArray as CPArray
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
-def drift_down(dphi: cp.ndarray,
-               denergy: cp.ndarray, drift_coef: float,
-               n_particles: int) -> cp.ndarray:
+def drift_down(dphi: CPArray,
+               denergy: CPArray, drift_coef: float,
+               n_particles: int) -> CPArray:
     dphi += drift_coef * denergy
     return dphi
 
-def drift_up(dphi: cp.ndarray,
-             denergy: cp.ndarray, drift_coef: float,
-             n_particles: int) -> cp.ndarray:
+def drift_up(dphi: CPArray,
+             denergy: CPArray, drift_coef: float,
+             n_particles: int) -> CPArray:
     dphi -= drift_coef * denergy
     return dphi
 
-def kick_down(dphi: cp.ndarray,
-              denergy: cp.ndarray, rfv1: float, rfv2: float,
+def kick_down(dphi: CPArray,
+              denergy: CPArray, rfv1: float, rfv2: float,
               phi0: float, phi12: float, h_ratio: float, n_particles: int,
-              acc_kick: float) -> cp.ndarray:
+              acc_kick: float) -> CPArray:
     denergy -= rfv1 * cp.sin(dphi + phi0) \
                       + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
     return denergy
 
-def kick_up(dphi: cp.ndarray,
-            denergy: cp.ndarray, rfv1: float, rfv2: float,
+def kick_up(dphi: CPArray,
+            denergy: CPArray, rfv1: float, rfv2: float,
             phi0: float, phi12: float, h_ratio: float, n_particles: int,
-            acc_kick: float) -> cp.ndarray:
+            acc_kick: float) -> CPArray:
     denergy += rfv1 * cp.sin(dphi + phi0) \
                   + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick
     return denergy
 
-def kick_drift_up_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
-            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
+def kick_drift_up_simultaneously(dphi: CPArray, denergy: CPArray, drift_coef: float, rfv1: float, rfv2: float,
+            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> tuple[CPArray, CPArray]:
     dphi -= drift_coef * denergy
     denergy += (rfv1 * cp.sin(dphi + phi0) \
                   + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick)
     return dphi, denergy
 
-def kick_drift_down_simultaneously(dphi: cp.ndarray, denergy: cp.ndarray, drift_coef: float, rfv1: float, rfv2: float,
-            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> Tuple[cp.ndarray, cp.ndarray]:
+def kick_drift_down_simultaneously(dphi: CPArray, denergy: CPArray, drift_coef: float, rfv1: float, rfv2: float,
+            phi0: float, phi12: float, h_ratio: float, n_particles: int, acc_kick: float) -> tuple[CPArray, CPArray]:
     denergy -= (rfv1 * cp.sin(dphi + phi0) \
                   + rfv2 * cp.sin(h_ratio * (dphi + phi0 - phi12)) - acc_kick)
     dphi += drift_coef * denergy
     return dphi, denergy
 
-def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
-                   denergy: cp.ndarray, dphi: cp.ndarray,
-                   rfv1: np.ndarray, rfv2: np.ndarray,
-                   phi0: np.ndarray,
-                   deltaE0: np.ndarray,
-                   drift_coef: np.ndarray,
+def kick_and_drift_cupy(xp: CPArray, yp: CPArray,
+                   denergy: CPArray, dphi: CPArray,
+                   rfv1: NPArray, rfv2: NPArray,
+                   phi0: NPArray,
+                   deltaE0: NPArray,
+                   drift_coef: NPArray,
                    phi12: float,
                    h_ratio: float,
                    dturns: int,
@@ -66,7 +70,7 @@ def kick_and_drift_cupy(xp: cp.ndarray, yp: cp.ndarray,
                    nturns: int,
                    nparts: int,
                    fortran_flag,
-                   callback) -> Tuple[cp.ndarray, cp.ndarray]:
+                   callback) -> tuple[CPArray, CPArray]:
     
     drift_coef = cp.asarray(drift_coef)
     phi0 = cp.asarray(phi0)

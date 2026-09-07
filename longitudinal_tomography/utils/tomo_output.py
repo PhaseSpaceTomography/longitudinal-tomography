@@ -6,6 +6,8 @@ output equal original Fortran program.
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,6 +15,10 @@ import numpy as np
 from ..cpp_routines import libtomo
 from ..compat import fortran
 from ..utils import tomo_config as conf
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
+    from matplotlib.pyplot import figure as MplFigure
 
 
 def save_profile_ftn(*args, **kwargs):
@@ -64,8 +70,8 @@ def print_tracking_status_ftn(*args, **kwargs):
 
 
 def create_phase_space_image(
-        xp: np.ndarray, yp: np.ndarray, weight: np.ndarray, n_bins: int,
-        recprof: int) -> np.ndarray:
+        xp: NPArray, yp: NPArray, weight: NPArray, n_bins: int,
+        recprof: int) -> NPArray:
     """Convert from weighted particles to phase-space image.
 
     The output is equal to the phase space image created
@@ -115,8 +121,8 @@ def create_phase_space_image(
 #                         END PRODUCT                             #
 # --------------------------------------------------------------- #
 
-def show(image: np.ndarray, diff: np.ndarray, rec_prof: np.ndarray,
-         figure: plt.figure = None):
+def show(image: NPArray, diff: NPArray, rec_prof: NPArray,
+         figure: MplFigure = None):
     """Nice presentation of reconstruction.
 
     Parameters

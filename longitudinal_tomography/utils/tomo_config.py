@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import numpy as np
 from warnings import warn
@@ -76,7 +78,7 @@ class AppConfig:
     def use_gpu(cls, gpu_id=0):
         """
         Use the GPU device to perform the calculations
-        
+
         Args:
             gpu_id (int, optional): Device id, default = 0
         """
@@ -102,7 +104,7 @@ class AppConfig:
                 gpu_func_dict[fname] = getattr(cp, fname)
         cls.__update_active_dict(gpu_func_dict)
         cls._gpu_enabled = True
-    
+
     @classmethod
     def compile_kernels(cls, force=False):
         """

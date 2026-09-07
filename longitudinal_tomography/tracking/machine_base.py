@@ -3,10 +3,13 @@
 :Author(s): **Anton Lu**
 """
 from __future__ import annotations
-import typing as t
 from abc import ABC, abstractmethod
-import numpy as np
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -222,7 +225,7 @@ class MachineABC(ABC):
             self.max_dt = n_bins * dtbin
 
         self.demax: float = processed_kwargs['demax']
-        self.phi12: t.Union[float, np.ndarray] = processed_kwargs['phi12']
+        self.phi12: float | NPArray = processed_kwargs['phi12']
         self.h_ratio: float = processed_kwargs['h_ratio']
         self.h_num: int = processed_kwargs['h_num']
         self.q: float = processed_kwargs['charge']
@@ -247,16 +250,16 @@ class MachineABC(ABC):
 
         # initialise attributes for later use
         # values at turns
-        self.phi0: np.ndarray = None
-        self.eta0: np.ndarray = None
-        self.drift_coef: np.ndarray = None
-        self.deltaE0: np.ndarray = None
-        self.beta0: np.ndarray = None
-        self.e0: np.ndarray = None
-        self.omega_rev0: np.ndarray = None
-        self.time_at_turn: np.ndarray = None
-        self.vrf1_at_turn: np.ndarray = None
-        self.vrf2_at_turn: np.ndarray = None
+        self.phi0: NPArray = None
+        self.eta0: NPArray = None
+        self.drift_coef: NPArray = None
+        self.deltaE0: NPArray = None
+        self.beta0: NPArray = None
+        self.e0: NPArray = None
+        self.omega_rev0: NPArray = None
+        self.time_at_turn: NPArray = None
+        self.vrf1_at_turn: NPArray = None
+        self.vrf2_at_turn: NPArray = None
 
         # Used as flag for checking if particles particle tracking
         # has been done
@@ -290,7 +293,7 @@ class MachineABC(ABC):
 
     # Function for asserting input dictionary for machine creator
     @classmethod
-    def _process_kwargs(cls, defaults: t.Dict[str, t.Any], kwargs) -> t.Dict:
+    def _process_kwargs(cls, defaults: dict[str, Any], kwargs) -> dict:
         use_params = {}
 
         for key in defaults:

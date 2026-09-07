@@ -3,7 +3,7 @@
 :Author(s): **Christoffer Hjertø Grindheim**
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -13,6 +13,7 @@ from .. import assertions as asrt
 from ..utils import physics
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray as NPArray
     from .machine import Machine
 
 
@@ -46,7 +47,7 @@ class PhaseSpaceInfo:
         of the reconstructed phase space coordinate system.
     """
 
-    def __init__(self, machine: 'Machine'):
+    def __init__(self, machine: Machine):
         self.machine = machine
         self.jmin = None
         self.jmax = None
@@ -106,7 +107,7 @@ class PhaseSpaceInfo:
         # Ensuring that the output is valid
         self._assert_correct_ijlimits()
 
-    def find_dEbin(self) -> np.float64:
+    def find_dEbin(self) -> float:
         """Function to calculate the size of a energy bin in the
         reconstructed phase space coordinate system.
 
@@ -162,7 +163,7 @@ class PhaseSpaceInfo:
             return (float(self.machine.demax)
                     / (self.machine.nbins - self.machine.synch_part_y))
 
-    def calc_xorigin(self) -> np.float64:
+    def calc_xorigin(self) -> float:
         """Function for calculating xorigin.
 
         Needed by
@@ -185,7 +186,7 @@ class PhaseSpaceInfo:
     # Finding limits for distributing particle over the full image
     # of the reconstructed phase space.
     def _limits_track_full_image(self) \
-            -> Tuple[np.ndarray, np.ndarray, np.int32, np.int32]:
+            -> tuple[NPArray, NPArray, int, int]:
         jmax = np.zeros(self.machine.nbins)
         jmin = np.copy(jmax)
 
@@ -198,7 +199,7 @@ class PhaseSpaceInfo:
 
     # Finding limits for creating a smaller reconstruction area.
     def _limits_track_rec_area(self, dEbin) \
-            -> Tuple[np.ndarray, np.ndarray, int, int]:
+            -> tuple[NPArray, NPArray, int, int]:
         jmax = np.zeros(self.machine.nbins)
         jmin = np.copy(jmax)
 
@@ -220,8 +221,8 @@ class PhaseSpaceInfo:
 
     # Function for finding maximum energy (j max) for each bin in the profile.
     # The assumption mad in the program is that jmin and jmax are mirrored.
-    def _find_max_binned_energy(self, phases: np.ndarray, turn: int,
-                                dEbin: np.float64):
+    def _find_max_binned_energy(self, phases: NPArray, turn: int,
+                                dEbin: float):
 
         energy = 0.0
         jmax_low = np.zeros(self.machine.nbins + 1)
@@ -255,21 +256,21 @@ class PhaseSpaceInfo:
     # Function for finding minimum energy (j min) for each bin in profile
     # Checking each element if less than threshold,
     # in such cases will threshold be used.
-    def _find_min_binned_energy(self, jmax: np.ndarray, threshold: int = 1) \
-            -> np.ndarray:
+    def _find_min_binned_energy(self, jmax: NPArray, threshold: int = 1) \
+            -> NPArray:
         jmin = np.ceil(2.0 * self.machine.synch_part_y - jmax[:] - 0.5)
         return np.where(jmin[:] >= threshold, jmin[:], threshold)
 
     # Finding index for minimum phase for profile
     def _find_min_binned_phase(
-            self, jmin: np.ndarray, jmax: np.ndarray) -> int:
+            self, jmin: NPArray, jmax: NPArray) -> int:
         for i in range(0, self.machine.nbins):
             if jmax[i] - jmin[i] >= 0:
                 return i
 
     # Finding index for maximum phase for profile
     def _find_max_binned_phase(
-            self, jmin: np.ndarray, jmax: np.ndarray) -> int:
+            self, jmin: NPArray, jmax: NPArray) -> int:
         for i in range(self.machine.nbins - 1, 0, -1):
             if jmax[i] - jmin[i] >= 0:
                 return i
@@ -278,9 +279,9 @@ class PhaseSpaceInfo:
     # 	specified input min/max index and found min/max in profile.
     # 	E.g. if profile_mini is greater than allbin_min, use profile_mini.
     # Calculates final limits of i-axis.
-    def _adjust_limits(self, jmax: np.ndarray, jmin: np.ndarray,
+    def _adjust_limits(self, jmax: NPArray, jmin: NPArray,
                        imin: int, imax: int) \
-            -> Tuple[np.ndarray, np.ndarray, int, int]:
+            -> tuple[NPArray, NPArray, int, int]:
 
         # Maximum and minimum bin, as specified by user.
         max_dtbin = int(np.ceil(self.machine.max_dt / self.machine.dtbin))
@@ -300,7 +301,7 @@ class PhaseSpaceInfo:
         return jmin, jmax, imin, imax
 
     # Returns an array of phases for a given turn
-    def _calculate_phases(self, turn: int) -> np.ndarray:
+    def _calculate_phases(self, turn: int) -> NPArray:
         indarr = np.arange(self.machine.nbins + 1)
         phases = ((self.xorigin + indarr)
                   * self.machine.dtbin
@@ -309,7 +310,7 @@ class PhaseSpaceInfo:
         return phases
 
     # Trajectory height calculator
-    def _trajectoryheight(self, phi: np.ndarray, phi_known: float,
+    def _trajectoryheight(self, phi: NPArray, phi_known: float,
                           delta_e_known: float, turn: int) -> float:
         machine = self.machine
         if isinstance(machine.phi12, np.ndarray):
@@ -368,7 +369,7 @@ class PhaseSpaceInfo:
         self._assert_jlimits_ok(self.jmin, self.jmax)
 
     # Testing that there is a difference between jmin and jmax
-    def _assert_jlimits_ok(self, jmin: np.ndarray, jmax: np.ndarray):
+    def _assert_jlimits_ok(self, jmin: NPArray, jmax: NPArray):
         if all(jmin >= jmax):
             raise EnergyLimitsError(
                 'All of jmin is larger than or equal to jmax; '

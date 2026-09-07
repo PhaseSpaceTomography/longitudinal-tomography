@@ -23,16 +23,18 @@ from typing import TYPE_CHECKING
 from .. import exceptions as exc
 
 if TYPE_CHECKING:
-    from typing import Iterable, Tuple
+    from typing import Iterable
+    from numpy import float64, int32
+    from numpy.typing import NDArray as NPArray
     from ..tracking.machine_base import MachineABC
 
-    FloatArr = np.ndarray[float]
-    IntArray = np.ndarray[int]
+    FloatArr = NPArray[float64]
+    IntArray = NPArray[int32]
 
 
 def foot_tangent_fit_dq(x: Iterable[float], y: Iterable[float],
                         t_rf: float, apply_filter: bool=True)\
-                                                        -> Tuple[float, float]:
+                                                        -> tuple[float, float]:
     """
     Compute the x-intercepts of the foot tangent fit
 
@@ -94,7 +96,7 @@ def foot_tangent_fit_dq(x: Iterable[float], y: Iterable[float],
                                       +" one RF period")
 
 
-def foot_tangent_fit(y: Iterable[float], dx: float = 1) -> Tuple[float, float]:
+def foot_tangent_fit(y: Iterable[float], dx: float = 1) -> tuple[float, float]:
     """
     Compute the foot tangent fit
 
@@ -157,7 +159,7 @@ def foot_tangent_fit_density(y: Iterable[float], x: Iterable[float],
 
 def _urf_length_at_level(phi_array: Iterable[float], urf: Iterable[float],
                          phi_0: float, urf_level: float)\
-                                                 -> Tuple[float, float, float]:
+                                                 -> tuple[float, float, float]:
 
     urf_left = urf[phi_array < phi_0] - urf_level
     urf_right = urf[phi_array > phi_0] - urf_level
@@ -253,7 +255,7 @@ def matched_area_calc(tomomachine: MachineABC, bunch_length: float,
 
 
 def _cumulative_density_calc(tomo_image: Iterable[float], dt: float,
-                             dE: float) -> Tuple[np.ndarray]:
+                             dE: float) -> tuple[NPArray]:
 
     cumulative_density = np.cumsum(-np.sort(-tomo_image.flatten()))
     cumulative_density_x_array = np.arange(len(cumulative_density)) * dt * dE
@@ -304,7 +306,7 @@ def emittance_density_calc(tomo_image: Iterable[float], dt: float,
 
 
 def rms_params(tomo_image: Iterable[float], dt: float, dE: float)\
-                                   -> Tuple[float, float, float, float, float]:
+                                   -> tuple[float, float, float, float, float]:
     """
     Compute the RMS emittance, mean dt, RMS dt, mean dE and RMS dE
 
@@ -348,7 +350,7 @@ def rms_params(tomo_image: Iterable[float], dt: float, dE: float)\
 def density_vs_emittance(tomomachine: MachineABC, tomo_image: Iterable[float],
                          time_array: Iterable[float], dE_array: Iterable[float],
                          n_points_amplitude: int=100, idx_frame: int=None)\
-                                   -> Tuple[float, float, float, float, float]:
+                                   -> tuple[float, float, float, float, float]:
     """
     TODO: Good description?
 
@@ -496,7 +498,7 @@ def tomo_weight_clipping(tomomachine: MachineABC, time_array: Iterable[float],
                          map_tomo_y: Iterable[float],
                          weight_tomo: Iterable[float], emittance_target: float,
                          n_points_amplitude: int=100, idx_frame: int=None)\
-                                        -> Tuple[FloatArr, FloatArr, IntArray]:
+                                        -> tuple[FloatArr, FloatArr, IntArray]:
     """
 
 

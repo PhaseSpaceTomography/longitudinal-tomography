@@ -2,12 +2,17 @@
 
 :Author(s): **Bernardo Abreu Figueiredo**
 """
+from __future__ import annotations
 
 import numpy as np
 import cupy as cp
+from typing import TYPE_CHECKING
 from ..utils.tomo_config import GPUDev
 from ..utils.tomo_config import AppConfig as conf
 import longitudinal_tomography.cuda_kernels as cuda_kernels
+
+if TYPE_CHECKING:
+    from cupy.typing import NDArray as CPArray
 
 gpu_dev = GPUDev.get_gpu_dev()
 block_size = gpu_dev.block_size
@@ -27,28 +32,28 @@ def refresh_kernels():
     create_flat_points_kernel = gpu_dev.rec_mod.get_function("create_flat_points")
 
 
-def back_project(weights: cp.ndarray,
-                 flat_points: cp.ndarray,
-                 flat_profiles: cp.ndarray,
+def back_project(weights: CPArray,
+                 flat_points: CPArray,
+                 flat_profiles: CPArray,
                  n_particles: int,
-                 n_profiles: int) -> cp.ndarray:
+                 n_profiles: int) -> CPArray:
     back_project_kernel(args=(weights, flat_points, flat_profiles, n_particles, n_profiles),
                             block=(cuda_kernels.REDUCTION_BLOCK_SIZE, 1, 1),
                             grid=(n_particles, 1, 1))
     return weights
 
 
-def project(flat_rec: cp.ndarray,
-            flat_points: cp.ndarray,
-            weights: cp.ndarray, n_particles: int,
-            n_profiles: int, n_bins: int) -> cp.ndarray:
+def project(flat_rec: CPArray,
+            flat_points: CPArray,
+            weights: CPArray, n_particles: int,
+            n_profiles: int, n_bins: int) -> CPArray:
     project_kernel(args=(flat_rec, flat_points, weights, n_particles, n_profiles),
                         block=block_size,
                         grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
     return flat_rec
 
-def normalize(flat_rec: cp.ndarray,
-              n_profiles: int, n_bins: int) -> cp.ndarray:
+def normalize(flat_rec: CPArray,
+              n_profiles: int, n_bins: int) -> CPArray:
     flat_rec = flat_rec.reshape((n_profiles, n_bins))
     sum_profile = cp.sum(flat_rec, axis=1)
     flat_rec /= cp.expand_dims(sum_profile, axis=1)
@@ -59,16 +64,16 @@ def normalize(flat_rec: cp.ndarray,
         raise RuntimeError("Phase space reduced to zeros!")
     return flat_rec
 
-def clip(array: cp.ndarray,
+def clip(array: CPArray,
          array_length: int,
-        clip_val: float) -> cp.ndarray:
+        clip_val: float) -> CPArray:
     clip_kernel(args=(array, array_length, clip_val),
                 block=block_size,
                 grid=(int(array_length / block_size[0] + 1), 1, 1))
     return array
 
-def find_difference_profile(flat_rec: cp.ndarray,
-                            flat_profiles: cp.ndarray) -> cp.ndarray:
+def find_difference_profile(flat_rec: CPArray,
+                            flat_profiles: CPArray) -> CPArray:
     length = len(flat_rec)
     diff_prof = cp.empty(length, dtype=flat_rec.dtype)
     find_diffprof_kernel(args=(diff_prof, flat_rec, flat_profiles, length),
@@ -76,28 +81,28 @@ def find_difference_profile(flat_rec: cp.ndarray,
                          grid=(int(length / block_size[0] + 1), 1, 1))
     return diff_prof
 
-def discrepancy(diff_prof: cp.ndarray,
+def discrepancy(diff_prof: CPArray,
                 n_profiles: int, n_bins: int) -> float:
     all_bins = n_profiles * n_bins
     squared_sum = cp.sum(cp.power(diff_prof, 2))
 
     return cp.sqrt(squared_sum / all_bins)
 
-def compensate_particle_amount(diff_prof: cp.ndarray,
-                               rparts: cp.ndarray,
-                               n_profiles: int, n_bins: int) -> cp.ndarray:
+def compensate_particle_amount(diff_prof: CPArray,
+                               rparts: CPArray,
+                               n_profiles: int, n_bins: int) -> CPArray:
     comp_part_amount_kernel(args=(diff_prof, rparts, n_profiles, n_bins),
                             block=block_size,
                             grid=(int((n_profiles * n_bins) / block_size[0] + 1), 1, 1))
     return diff_prof
 
-def max_2d(array: cp.ndarray,
+def max_2d(array: CPArray,
            x_axis: int, y_axis: int) -> float:
     return cp.max(array[:y_axis, :x_axis])
 
-def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
+def reciprocal_particles(rparts: CPArray, xp: CPArray,
                          n_bins: int, n_profiles: int,
-                         n_particles: int) -> cp.ndarray:
+                         n_particles: int) -> CPArray:
     count_part_bin_kernel(args=(rparts, xp, n_profiles, n_particles, n_bins),
                           block=block_size,
                           grid=(int((n_particles * n_profiles) / block_size[0] + 1), 1, 1))
@@ -110,9 +115,9 @@ def reciprocal_particles(rparts: cp.ndarray, xp: cp.ndarray,
 
     return rparts
 
-def create_flat_points(xp: cp.ndarray,
+def create_flat_points(xp: CPArray,
                        n_particles: int, n_profiles: int,
-                       n_bins: int) -> cp.ndarray:
+                       n_bins: int) -> CPArray:
     flat_points = cp.copy(xp)
 
     create_flat_points_kernel(args=(flat_points, n_particles, n_profiles, n_bins),
@@ -121,8 +126,8 @@ def create_flat_points(xp: cp.ndarray,
 
     return flat_points
 
-def reconstruct_cuda(xp: cp.ndarray,
-                waterfall: cp.ndarray, n_iter: int,
+def reconstruct_cuda(xp: CPArray,
+                waterfall: CPArray, n_iter: int,
                 n_bins: int, n_particles: int, n_profiles: int,
                 verbose: bool = False, callback = None) -> tuple:
     xp = xp.flatten()

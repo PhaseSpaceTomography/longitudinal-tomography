@@ -6,12 +6,18 @@ from __future__ import annotations
 import logging
 
 from abc import ABC, abstractmethod
-import typing as t
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 import longitudinal_tomography.utils.tomo_config as conf
 from .. import exceptions as expt
 from ..cpp_routines import libtomo
+
+if TYPE_CHECKING:
+    from typing import Callable
+
+    from numpy.typing import NDArray as NPArray
 
 log = logging.getLogger(__name__)
 
@@ -52,8 +58,8 @@ class TomographyABC(ABC):
         of the reconstruction process.
     """
 
-    def __init__(self, waterfall: np.ndarray,
-                 x_coords: np.ndarray = None, y_coords: np.ndarray = None):
+    def __init__(self, waterfall: NPArray,
+                 x_coords: NPArray = None, y_coords: NPArray = None):
         waterfall = conf.cast(waterfall)
         self._waterfall = self._normalize_profiles(waterfall.clip(0.0))
 
@@ -64,12 +70,12 @@ class TomographyABC(ABC):
         self.yp = y_coords
 
         self.recreated = conf.cast(np.zeros(self.waterfall.shape))
-        self.diff: np.ndarray = None
-        self.diff_split: np.ndarray = None
-        self.weight: np.ndarray = None
+        self.diff: NPArray = None
+        self.diff_split: NPArray = None
+        self.weight: NPArray = None
 
     @property
-    def waterfall(self) -> np.ndarray:
+    def waterfall(self) -> NPArray:
         """Waterfall defined as @property.
 
         Returns
@@ -81,7 +87,7 @@ class TomographyABC(ABC):
         return self._waterfall
 
     @property
-    def yp(self) -> np.ndarray:
+    def yp(self) -> NPArray:
         """Y-coordinates defined as @property.
 
         Parameters
@@ -109,7 +115,7 @@ class TomographyABC(ABC):
         return self._yp
 
     @yp.setter
-    def yp(self, value: np.ndarray):
+    def yp(self, value: NPArray):
         if hasattr(value, '__iter__'):
             if self._xp is None:
                 raise expt.CoordinateImportError(
@@ -128,7 +134,7 @@ class TomographyABC(ABC):
                 'Y-coordinates should be iterable, or None.')
 
     @property
-    def xp(self) -> np.ndarray:
+    def xp(self) -> NPArray:
         """X-coordinates defined as @property.
 
         Automatically updates `nparts`.
@@ -160,7 +166,7 @@ class TomographyABC(ABC):
         return self._xp
 
     @xp.setter
-    def xp(self, value: np.ndarray):
+    def xp(self, value: NPArray):
 
         if hasattr(value, '__iter__'):
             value = conf.cast(value)
@@ -225,19 +231,19 @@ class TomographyABC(ABC):
         """
         return self._nprofs
 
-    def _normalize_profiles(self, waterfall: np.ndarray) -> np.ndarray:
+    def _normalize_profiles(self, waterfall: NPArray) -> NPArray:
         if not waterfall.any():
             raise expt.WaterfallReducedToZero()
         waterfall /= conf.sum(waterfall, axis=1)[:, None]
         return waterfall
 
     # Calculates discrepancy for the whole waterfall
-    def _discrepancy(self, diff_waterfall: np.ndarray):
+    def _discrepancy(self, diff_waterfall: NPArray):
         return np.sqrt(
             np.sum(diff_waterfall ** 2) / (self.nbins * self.nprofs))
 
     # Created xp array modified to point at flattened version of waterfall.
-    def _create_flat_points(self) -> np.ndarray:
+    def _create_flat_points(self) -> NPArray:
         flat_points = self.xp.copy()
         for i in range(self.nprofs):
             flat_points[:, i] += self.nbins * i
@@ -248,7 +254,7 @@ class TomographyABC(ABC):
     # particles in the different bins.
     # Bins with fewer particles have a larger amplification,
     # relative to bins containing many particles.
-    def _reciprocal_particles(self) -> np.ndarray:
+    def _reciprocal_particles(self) -> NPArray:
         ppb = np.zeros((self.nbins, self.nprofs))
         ppb = self._count_particles_in_bins(
             ppb, self.nprofs, self.xp, self.nparts)
@@ -257,7 +263,7 @@ class TomographyABC(ABC):
         ppb[ppb == 0] = 1
         return np.max(ppb) / ppb
 
-    def _reciprocal_particles_multi(self, centers) -> np.ndarray:
+    def _reciprocal_particles_multi(self, centers) -> NPArray:
 
         ppb = np.zeros((self.nprofs, self.nbins))
         # for c in centers:
@@ -273,9 +279,9 @@ class TomographyABC(ABC):
 
     # Needed by reciprocal particles function.
     # TODO: removed njit, reimplement in C in the future
-    def _count_particles_in_bins(self, ppb: np.ndarray,
+    def _count_particles_in_bins(self, ppb: NPArray,
                                  profile_count: int,
-                                 xp: np.ndarray, nparts: int) -> np.ndarray:
+                                 xp: NPArray, nparts: int) -> NPArray:
 
         # ppb = libtomo.count_particles_in_bins(ppb, xp, profile_count, nparts,
         #                                       ppb.shape[0])
@@ -287,5 +293,5 @@ class TomographyABC(ABC):
 
     @abstractmethod
     def run(self, niter: int = 20, verbose: bool = False,
-            callback: t.Callable = None) -> np.ndarray:
+            callback: Callable = None) -> NPArray:
         pass
