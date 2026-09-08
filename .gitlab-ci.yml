@@ -10,16 +10,32 @@ variables:
 
 # ================ Build ==================
 
+.test_rules:
+  # Run tests on merge requests, branches and tags. Branch pipelines are
+  # skipped while a merge request is open, to avoid duplicate runs.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
+
 build_wheel:
-  extends: .acc_py_build_wheel
+  extends:
+    - .acc_py_build_wheel
+    - .test_rules
 
 
 build_sdist:
-  extends: .acc_py_build_sdist
+  extends:
+    - .acc_py_build_sdist
+    - .test_rules
 
 
 # ================ Test ==================
+
 test_dev_gpu:
+  extends: .test_rules
   image: registry.cern.ch/docker.io/cupy/cupy:v14.0.1
 
   script:
@@ -59,7 +75,9 @@ test_dev_gpu:
     - k8s-gpu
 
 test_dev:
-  extends: .acc_py_dev_test
+  extends:
+    - .acc_py_dev_test
+    - .test_rules
   script:
     # Run the unit-tests with coverage output.
     - cd ${project_root}
@@ -74,7 +92,9 @@ test_dev:
 
 test_minimum:
   # Check dependency lower bounds
-  extends: .acc_py_dev_test
+  extends:
+    - .acc_py_dev_test
+    - .test_rules
   before_script:
     - cd ${project_root}
     - python -m venv .venv-minimum
@@ -88,7 +108,9 @@ test_minimum:
 
 
 test_wheel:
-  extends: .acc_py_wheel_test
+  extends:
+    - .acc_py_wheel_test
+    - .test_rules
   needs:
     - build_wheel
   script:

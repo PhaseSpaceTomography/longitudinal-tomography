@@ -211,11 +211,12 @@ py::tuple wrapper_kick_and_drift_scalar(
         const bool ftn_out,
         const std::optional<const py::object> callback
 ) {
-    real_t *ptr_phi12 = new real_t[nturns];
-    std::fill_n(ptr_phi12, nturns, phi12);
+    const int n_phi12 = nturns + 1;
+    real_t *ptr_phi12 = new real_t[n_phi12];
+    std::fill_n(ptr_phi12, n_phi12, phi12);
 
     py::capsule capsule(ptr_phi12, [](void *p) { delete[] reinterpret_cast<real_t *>(p); });
-    real_Tarr arr_phi12({nturns}, ptr_phi12, capsule);
+    real_Tarr arr_phi12({n_phi12}, ptr_phi12, capsule);
 
     wrapper_kick_and_drift_array(input_xp, input_yp, input_denergy, input_dphi, input_rf1v, input_rf2v, input_phi0,
                                  input_deltaE0,
