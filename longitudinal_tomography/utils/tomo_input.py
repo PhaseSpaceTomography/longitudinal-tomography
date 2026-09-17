@@ -68,6 +68,11 @@ DAT_FILE_LINE_INDEX: dict[str, int] = {
     'zwall_over_n': 95,
     'pickup_sensitivity': 97,
 }
+#: `.dat` fields that are 1-based in the file and must be converted to
+#: 0-based indices once, when building a :class:`Parameters` from a `.dat`
+#: file's lines.
+FORTRAN_TO_C_FIELDS = frozenset((
+    'filmstart', 'filmstop', 'beam_ref_frame', 'machine_ref_frame'))
 RAW_DATA_FILE_IDX = DAT_FILE_LINE_INDEX['raw_data_path']
 OUTPUT_DIR_IDX = DAT_FILE_LINE_INDEX['output_dir']
 
@@ -75,13 +80,10 @@ OUTPUT_DIR_IDX = DAT_FILE_LINE_INDEX['output_dir']
 class Parameters(pydantic.BaseModel):
     """Validated, type-coerced machine and reconstruction parameters.
 
-    Field names match the canonical names in :data:`LEGACY_LINE_INDEX`.
-    Values that need Fortran-to-C index conversion (`filmstart`, `filmstop`,
-    `beam_ref_frame`, `machine_ref_frame`) are kept in their raw,
-    file-as-written form; conversion happens where the value is consumed.
+    Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
     """
 
-    output_dir: str
+    output_dir: str = "/tmp/"
     framecount: int = pydantic.Field(gt=0)
     skip_frames: int = pydantic.Field(ge=0)
     framelength: int = pydantic.Field(gt=0)
@@ -92,30 +94,30 @@ class Parameters(pydantic.BaseModel):
     min_dt_bin: int = pydantic.Field(ge=0)
     max_dt_bin: int = pydantic.Field(ge=0)
     rebin: int = pydantic.Field(gt=0)
-    synch_part_x: float
-    demax: float
-    filmstart: int = pydantic.Field(ge=0)
-    filmstop: int = pydantic.Field(ge=0)
+    synch_part_x: float = -1.0
+    demax: float = -1.0e6
+    filmstart: int = pydantic.Field(default=0, ge=0)
+    filmstop: int = pydantic.Field(default=1, ge=0)
     filmstep: int = pydantic.Field(gt=0)
-    niter: int = pydantic.Field(gt=0)
-    snpt: int = pydantic.Field(gt=0)
-    full_pp_flag: bool
-    beam_ref_frame: int = pydantic.Field(gt=0)
-    machine_ref_frame: int = pydantic.Field(gt=0)
+    niter: int = pydantic.Field(default=20, gt=0)
+    snpt: int = pydantic.Field(default=4, gt=0)
+    full_pp_flag: bool = False
+    beam_ref_frame: int = pydantic.Field(default=0, ge=0)
+    machine_ref_frame: int = pydantic.Field(default=0, ge=0)
     vrf1: float
-    vrf1dot: float
-    vrf2: float
-    vrf2dot: float
-    h_num: float = pydantic.Field(gt=0)
-    h_ratio: float = pydantic.Field(gt=0)
-    phi12: float
+    vrf1dot: float = 0.0
+    vrf2: float = 0.0
+    vrf2dot: float = 0.0
+    h_num: float = pydantic.Field(default=1.0, gt=0)
+    h_ratio: float = pydantic.Field(default=1.0, gt=0)
+    phi12: float = 0.0
     b0: float = pydantic.Field(gt=0)
-    bdot: float
+    bdot: float = 0.0
     mean_orbit_rad: float = pydantic.Field(gt=0)
     bending_rad: float = pydantic.Field(gt=0)
     trans_gamma: float
     rest_energy: float = pydantic.Field(gt=0)
-    charge: float
+    charge: float = 1.0
     self_field_flag: bool = False
     g_coupling: float = 0
     zwall_over_n: float = 0
@@ -518,11 +520,19 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
         input_array[i] = input_array[i].strip('\r\n')
 
     raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']]
+
+    param_values = {}
+    for name, idx in DAT_FILE_LINE_INDEX.items():
+        if name == 'raw_data_path':
+            continue
+        value = input_array[idx]
+        # Offset values to account for Fortran vs C indexing
+        if name in FORTRAN_TO_C_FIELDS:
+            value = int(value) - 1
+        param_values[name] = value
+
     try:
-        params = Parameters(**{
-            name: input_array[idx]
-            for name, idx in DAT_FILE_LINE_INDEX.items()
-            if name != 'raw_data_path'})
+        params = Parameters(**param_values)
     except pydantic.ValidationError as exc:
         raise expt.InputError(
             f'Invalid legacy input parameters:\n{exc}') from exc
@@ -543,22 +553,20 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
     min_dt = params.min_dt_bin * params.dtbin
     max_dt = (frame.nbins - params.max_dt_bin) * params.dtbin
 
-    # Machine arguments. filmstart/filmstop/beam_ref_frame/machine_ref_frame
-    # are subtracted by one to convert from Fortran to C indexing.
     machine_kwargs = {
         'output_dir': params.output_dir,
         'dtbin': params.dtbin,
         'dturns': params.dturns,
         'synch_part_x': params.synch_part_x,
         'demax': params.demax,
-        'filmstart': params.filmstart - 1,
-        'filmstop': params.filmstop - 1,
+        'filmstart': params.filmstart,
+        'filmstop': params.filmstop,
         'filmstep': params.filmstep,
         'niter': params.niter,
         'snpt': params.snpt,
         'full_pp_flag': params.full_pp_flag,
-        'beam_ref_frame': params.beam_ref_frame - 1,
-        'machine_ref_frame': params.machine_ref_frame - 1,
+        'beam_ref_frame': params.beam_ref_frame,
+        'machine_ref_frame': params.machine_ref_frame,
         'vrf1': params.vrf1,
         'vrf1dot': params.vrf1dot,
         'vrf2': params.vrf2,
