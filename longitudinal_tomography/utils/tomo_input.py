@@ -9,6 +9,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pydantic
 
 from .. import assertions as asrt, exceptions as expt
 from ..data import pre_process
@@ -23,8 +24,102 @@ if TYPE_CHECKING:
     from ..tracking.machine_base import MachineABC
 
 PARAMETER_LENGTH = 98
-RAW_DATA_FILE_IDX = 12
-OUTPUT_DIR_IDX = 14
+
+#: Canonical parameter name -> 0-based line index in a `.dat` file.
+DAT_FILE_LINE_INDEX: dict[str, int] = {
+    'raw_data_path': 12,
+    'output_dir': 14,
+    'framecount': 16,
+    'skip_frames': 18,
+    'framelength': 20,
+    'dtbin': 22,
+    'dturns': 24,
+    'skip_bins_start': 26,
+    'skip_bins_end': 28,
+    'min_dt_bin': 31,
+    'max_dt_bin': 34,
+    'rebin': 36,
+    'synch_part_x': 39,
+    'demax': 41,
+    'filmstart': 43,
+    'filmstop': 45,
+    'filmstep': 47,
+    'niter': 49,
+    'snpt': 51,
+    'full_pp_flag': 53,
+    'beam_ref_frame': 55,
+    'machine_ref_frame': 57,
+    'vrf1': 61,
+    'vrf1dot': 63,
+    'vrf2': 65,
+    'vrf2dot': 67,
+    'h_num': 69,
+    'h_ratio': 71,
+    'phi12': 73,
+    'b0': 75,
+    'bdot': 77,
+    'mean_orbit_rad': 79,
+    'bending_rad': 81,
+    'trans_gamma': 83,
+    'rest_energy': 85,
+    'charge': 87,
+    'self_field_flag': 91,
+    'g_coupling': 93,
+    'zwall_over_n': 95,
+    'pickup_sensitivity': 97,
+}
+RAW_DATA_FILE_IDX = DAT_FILE_LINE_INDEX['raw_data_path']
+OUTPUT_DIR_IDX = DAT_FILE_LINE_INDEX['output_dir']
+
+
+class Parameters(pydantic.BaseModel):
+    """Validated, type-coerced machine and reconstruction parameters.
+
+    Field names match the canonical names in :data:`LEGACY_LINE_INDEX`.
+    Values that need Fortran-to-C index conversion (`filmstart`, `filmstop`,
+    `beam_ref_frame`, `machine_ref_frame`) are kept in their raw,
+    file-as-written form; conversion happens where the value is consumed.
+    """
+
+    output_dir: str
+    framecount: int
+    skip_frames: int
+    framelength: int
+    dtbin: float
+    dturns: int
+    skip_bins_start: int
+    skip_bins_end: int
+    min_dt_bin: int
+    max_dt_bin: int
+    rebin: int
+    synch_part_x: float
+    demax: float
+    filmstart: int
+    filmstop: int
+    filmstep: int
+    niter: int
+    snpt: int
+    full_pp_flag: bool
+    beam_ref_frame: int
+    machine_ref_frame: int
+    vrf1: float
+    vrf1dot: float
+    vrf2: float
+    vrf2dot: float
+    h_num: float
+    h_ratio: float
+    phi12: float
+    b0: float
+    bdot: float
+    mean_orbit_rad: float
+    bending_rad: float
+    trans_gamma: float
+    rest_energy: float
+    charge: float
+    self_field_flag: bool = False
+    g_coupling: float = 0
+    zwall_over_n: float = 0
+    pickup_sensitivity: float = 0
 
 
 class Frames:
@@ -263,9 +358,9 @@ def _get_input_stdin() -> NPArray:
             if 'pipe' in read[-1]:
                 piped_raw_data = True
         if piped_raw_data:
-            if line_num == 16:
+            if line_num == DAT_FILE_LINE_INDEX['framecount']:
                 nframes = int(read[-1])
-            if line_num == 20:
+            if line_num == DAT_FILE_LINE_INDEX['framelength']:
                 nbins = int(read[-1])
                 ndata_points += nframes * nbins
         if line_num == ndata_points:
@@ -279,8 +374,8 @@ def _get_input_stdin() -> NPArray:
 # If the raw data is not already read from the input file, the
 #  data will be found in the file given by the parameter file.
 def _split_input(read_input: Sequence) -> tuple[list, NPArray]:
-    nframes_idx = 16
-    nbins_idx = 20
+    nframes_idx = DAT_FILE_LINE_INDEX['framecount']
+    nbins_idx = DAT_FILE_LINE_INDEX['framelength']
     ndata = 0
     read_parameters = None
     read_data = None
@@ -361,63 +456,68 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
     for i in range(len(input_array)):
         input_array[i] = input_array[i].strip('\r\n')
 
-    # Arguments for shaping waterfall from raw data
-    fargs = {
-        'raw_data_path': input_array[12],
-        'framecount': int(input_array[16]),
-        'skip_frames': int(input_array[18]),
-        'framelength': int(input_array[20]),
-        'dtbin': float(input_array[22]),
-        'skip_bins_start': int(input_array[26]),
-        'skip_bins_end': int(input_array[28]),
-        'rebin': int(input_array[36])
-    }
+    raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']]
+    try:
+        params = Parameters(**{
+            name: input_array[idx]
+            for name, idx in DAT_FILE_LINE_INDEX.items()
+            if name != 'raw_data_path'})
+    except pydantic.ValidationError as exc:
+        raise expt.InputError(
+            f'Invalid legacy input parameters:\n{exc}') from exc
 
     # Creating waterfall from raw data
-    frame = Frames(**fargs)
-    nprofiles = frame.nprofs()
+    frame = Frames(
+        raw_data_path=raw_data_path,
+        framecount=params.framecount,
+        skip_frames=params.skip_frames,
+        framelength=params.framelength,
+        dtbin=params.dtbin,
+        skip_bins_start=params.skip_bins_start,
+        skip_bins_end=params.skip_bins_end,
+        rebin=params.rebin)
     nbins = frame.nbins()
 
-    # Calculating limits in phase for reconstruction area
-    # Specified by user.
-    min_dt, max_dt = _min_max_dt(nbins, input_array)
+    # Calculating limits in phase for reconstruction area, specified by
+    # user, from bin offsets to physical units of phase [s].
+    min_dt = params.min_dt_bin * params.dtbin
+    max_dt = (nbins - params.max_dt_bin) * params.dtbin
 
-    # Machine arguments
-    # Some of the arguments are subtracted by one. This is
-    # to convert from Fortran to C indexing.
+    # Machine arguments. filmstart/filmstop/beam_ref_frame/machine_ref_frame
+    # are subtracted by one to convert from Fortran to C indexing.
     machine_kwargs = {
-        'output_dir': input_array[14],
-        'dtbin': float(input_array[22]),
-        'dturns': int(input_array[24]),
-        'synch_part_x': float(input_array[39]),
-        'demax': float(input_array[41]),
-        'filmstart': int(input_array[43]) - 1,
-        'filmstop': int(input_array[45]) - 1,
-        'filmstep': int(input_array[47]),
-        'niter': int(input_array[49]),
-        'snpt': int(input_array[51]),
-        'full_pp_flag': bool(int(input_array[53])),
-        'beam_ref_frame': int(input_array[55]) - 1,
-        'machine_ref_frame': int(input_array[57]) - 1,
-        'vrf1': float(input_array[61]),
-        'vrf1dot': float(input_array[63]),
-        'vrf2': float(input_array[65]),
-        'vrf2dot': float(input_array[67]),
-        'h_num': float(input_array[69]),
-        'h_ratio': float(input_array[71]),
-        'phi12': float(input_array[73]),
-        'b0': float(input_array[75]),
-        'bdot': float(input_array[77]),
-        'mean_orbit_rad': float(input_array[79]),
-        'bending_rad': float(input_array[81]),
-        'trans_gamma': float(input_array[83]),
-        'rest_energy': float(input_array[85]),
-        'charge': float(input_array[87]),
-        'self_field_flag': bool(int(input_array[91])),
-        'g_coupling': float(input_array[93]),
-        'zwall_over_n': float(input_array[95]),
-        'pickup_sensitivity': float(input_array[97]),
-        'nprofiles': nprofiles,
+        'output_dir': params.output_dir,
+        'dtbin': params.dtbin,
+        'dturns': params.dturns,
+        'synch_part_x': params.synch_part_x,
+        'demax': params.demax,
+        'filmstart': params.filmstart - 1,
+        'filmstop': params.filmstop - 1,
+        'filmstep': params.filmstep,
+        'niter': params.niter,
+        'snpt': params.snpt,
+        'full_pp_flag': params.full_pp_flag,
+        'beam_ref_frame': params.beam_ref_frame - 1,
+        'machine_ref_frame': params.machine_ref_frame - 1,
+        'vrf1': params.vrf1,
+        'vrf1dot': params.vrf1dot,
+        'vrf2': params.vrf2,
+        'vrf2dot': params.vrf2dot,
+        'h_num': params.h_num,
+        'h_ratio': params.h_ratio,
+        'phi12': params.phi12,
+        'b0': params.b0,
+        'bdot': params.bdot,
+        'mean_orbit_rad': params.mean_orbit_rad,
+        'bending_rad': params.bending_rad,
+        'trans_gamma': params.trans_gamma,
+        'rest_energy': params.rest_energy,
+        'charge': params.charge,
+        'self_field_flag': params.self_field_flag,
+        'g_coupling': params.g_coupling,
+        'zwall_over_n': params.zwall_over_n,
+        'pickup_sensitivity': params.pickup_sensitivity,
+        'nprofiles': frame.nprofs(),
         'nbins': nbins,
         'min_dt': min_dt,
         'max_dt': max_dt
@@ -427,18 +527,6 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
     machine = Machine(**machine_kwargs)
 
     return machine, frame
-
-
-# Convert from setting min and max phase of reconstruction area
-# as phase space coordinates to physical units of phase [s].
-def _min_max_dt(nbins: int, input_array: Sequence) -> tuple[float, float]:
-    dtbin = float(input_array[22])
-    min_dt_bin = int(input_array[31])
-    max_dt_bin = int(input_array[34])
-
-    min_dt = min_dt_bin * dtbin
-    max_dt = (nbins - max_dt_bin) * dtbin
-    return min_dt, max_dt
 
 
 def raw_data_to_profiles(waterfall: NPArray, machine: MachineABC, rbn: int,
