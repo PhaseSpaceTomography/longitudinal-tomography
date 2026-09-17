@@ -82,44 +82,87 @@ class Parameters(pydantic.BaseModel):
     """
 
     output_dir: str
-    framecount: int
-    skip_frames: int
-    framelength: int
-    dtbin: float
-    dturns: int
-    skip_bins_start: int
-    skip_bins_end: int
-    min_dt_bin: int
-    max_dt_bin: int
-    rebin: int
+    framecount: int = pydantic.Field(gt=0)
+    skip_frames: int = pydantic.Field(ge=0)
+    framelength: int = pydantic.Field(gt=0)
+    dtbin: float = pydantic.Field(gt=0)
+    dturns: int = pydantic.Field(gt=0)
+    skip_bins_start: int = pydantic.Field(ge=0)
+    skip_bins_end: int = pydantic.Field(ge=0)
+    min_dt_bin: int = pydantic.Field(ge=0)
+    max_dt_bin: int = pydantic.Field(ge=0)
+    rebin: int = pydantic.Field(gt=0)
     synch_part_x: float
     demax: float
-    filmstart: int
-    filmstop: int
-    filmstep: int
-    niter: int
-    snpt: int
+    filmstart: int = pydantic.Field(ge=0)
+    filmstop: int = pydantic.Field(ge=0)
+    filmstep: int = pydantic.Field(gt=0)
+    niter: int = pydantic.Field(gt=0)
+    snpt: int = pydantic.Field(gt=0)
     full_pp_flag: bool
-    beam_ref_frame: int
-    machine_ref_frame: int
+    beam_ref_frame: int = pydantic.Field(gt=0)
+    machine_ref_frame: int = pydantic.Field(gt=0)
     vrf1: float
     vrf1dot: float
     vrf2: float
     vrf2dot: float
-    h_num: float
-    h_ratio: float
+    h_num: float = pydantic.Field(gt=0)
+    h_ratio: float = pydantic.Field(gt=0)
     phi12: float
-    b0: float
+    b0: float = pydantic.Field(gt=0)
     bdot: float
-    mean_orbit_rad: float
-    bending_rad: float
+    mean_orbit_rad: float = pydantic.Field(gt=0)
+    bending_rad: float = pydantic.Field(gt=0)
     trans_gamma: float
-    rest_energy: float
+    rest_energy: float = pydantic.Field(gt=0)
     charge: float
     self_field_flag: bool = False
     g_coupling: float = 0
     zwall_over_n: float = 0
     pickup_sensitivity: float = 0
+
+    @pydantic.field_validator('charge')
+    @classmethod
+    def _charge_nonzero(cls, v: float) -> float:
+        if v == 0:
+            raise ValueError('charge must be nonzero')
+        return v
+
+    @pydantic.model_validator(mode='after')
+    def _check_cross_field_bounds(self) -> Parameters:
+        if not self.skip_frames < self.framecount:
+            raise ValueError(
+                f'skip_frames ({self.skip_frames}) must be less than '
+                f'framecount ({self.framecount})')
+        if not self.skip_bins_start < self.framelength:
+            raise ValueError(
+                f'skip_bins_start ({self.skip_bins_start}) must be less '
+                f'than framelength ({self.framelength})')
+        if not self.skip_bins_end < self.framelength:
+            raise ValueError(
+                f'skip_bins_end ({self.skip_bins_end}) must be less than '
+                f'framelength ({self.framelength})')
+        if not self.synch_part_x < self.framelength:
+            raise ValueError(
+                f'synch_part_x ({self.synch_part_x}) must be less than '
+                f'framelength ({self.framelength})')
+        if not self.filmstart < self.framecount:
+            raise ValueError(
+                f'filmstart ({self.filmstart}) must be less than '
+                f'framecount ({self.framecount})')
+        if not self.filmstop < self.framecount:
+            raise ValueError(
+                f'filmstop ({self.filmstop}) must be less than '
+                f'framecount ({self.framecount})')
+        if not self.beam_ref_frame < self.framecount:
+            raise ValueError(
+                f'beam_ref_frame ({self.beam_ref_frame}) must be less than '
+                f'framecount ({self.framecount})')
+        if not self.machine_ref_frame < self.framecount:
+            raise ValueError(
+                f'machine_ref_frame ({self.machine_ref_frame}) must be '
+                f'less than framecount ({self.framecount})')
+        return self
 
 
 class Frames(pydantic.BaseModel):
@@ -175,13 +218,13 @@ class Frames(pydantic.BaseModel):
         ``skip_bins_start``/``skip_bins_end`` are applied.
     """
 
-    nframes: int
-    nbins_frame: int
-    skip_frames: int
-    skip_bins_start: int
-    skip_bins_end: int
-    rebin: int
-    sampling_time: float
+    nframes: int = pydantic.Field(gt=0)
+    nbins_frame: int = pydantic.Field(gt=0)
+    skip_frames: int = pydantic.Field(ge=0)
+    skip_bins_start: int = pydantic.Field(ge=0)
+    skip_bins_end: int = pydantic.Field(ge=0)
+    rebin: int = pydantic.Field(gt=0)
+    sampling_time: float = pydantic.Field(gt=0)
     raw_data_path: str = ''
 
     _raw_data = pydantic.PrivateAttr(default=None)
@@ -194,6 +237,22 @@ class Frames(pydantic.BaseModel):
             skip_frames=skip_frames, skip_bins_start=skip_bins_start,
             skip_bins_end=skip_bins_end, rebin=rebin,
             sampling_time=dtbin, raw_data_path=raw_data_path)
+
+    @pydantic.model_validator(mode='after')
+    def _check_cross_field_bounds(self) -> Frames:
+        if not self.skip_frames < self.nframes:
+            raise ValueError(
+                f'skip_frames ({self.skip_frames}) must be less than '
+                f'nframes ({self.nframes})')
+        if not self.skip_bins_start < self.nbins_frame:
+            raise ValueError(
+                f'skip_bins_start ({self.skip_bins_start}) must be less '
+                f'than nbins_frame ({self.nbins_frame})')
+        if not self.skip_bins_end < self.nbins_frame:
+            raise ValueError(
+                f'skip_bins_end ({self.skip_bins_end}) must be less than '
+                f'nbins_frame ({self.nbins_frame})')
+        return self
 
     @pydantic.computed_field
     @property
