@@ -122,7 +122,7 @@ class Parameters(pydantic.BaseModel):
     pickup_sensitivity: float = 0
 
 
-class Frames:
+class Frames(pydantic.BaseModel):
     """Class for storing raw data and information on how to treat them,
     based on a Fortran style input file.
 
@@ -168,21 +168,45 @@ class Frames:
         Size of profile bins [s].
     raw_data_path: string
         Path to file holding raw data for programmers reference.
+    nprofs: int
+        Number of profiles, i.e. frames after ``skip_frames`` is applied.
+    nbins: int
+        Number of bins in a profile, i.e. frame bins after
+        ``skip_bins_start``/``skip_bins_end`` are applied.
     """
+
+    nframes: int
+    nbins_frame: int
+    skip_frames: int
+    skip_bins_start: int
+    skip_bins_end: int
+    rebin: int
+    sampling_time: float
+    raw_data_path: str = ''
+
+    _raw_data = pydantic.PrivateAttr(default=None)
 
     def __init__(self, framecount: int, framelength: int, skip_frames: int,
                  skip_bins_start: int, skip_bins_end: int, rebin: int,
                  dtbin: float, raw_data_path: str = ''):
-        self.raw_data_path = raw_data_path
-        self.nframes = framecount
-        self.nbins_frame = framelength
-        self.skip_frames = skip_frames
-        self.skip_bins_start = skip_bins_start
-        self.skip_bins_end = skip_bins_end
-        self.rebin = rebin
-        self.sampling_time = dtbin
+        super().__init__(
+            nframes=framecount, nbins_frame=framelength,
+            skip_frames=skip_frames, skip_bins_start=skip_bins_start,
+            skip_bins_end=skip_bins_end, rebin=rebin,
+            sampling_time=dtbin, raw_data_path=raw_data_path)
 
-        self._raw_data: NPArray = None
+    @pydantic.computed_field
+    @property
+    def nprofs(self) -> int:
+        """Number of profiles, to be used when creating a machine object."""
+        return self.nframes - self.skip_frames
+
+    @pydantic.computed_field
+    @property
+    def nbins(self) -> int:
+        """Number of bins in a profile, to be used when creating a machine
+        object."""
+        return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
 
     @property
     def raw_data(self) -> NPArray | None:
@@ -224,28 +248,6 @@ class Frames:
             raise expt.RawDataImportError(
                 f'Raw data has length {len(in_raw_data)}.\n'
                 f'expected length: {ndata}')
-
-    def nprofs(self) -> int:
-        """Function for calculating the number of profiles.
-        This number should be used when creating a machine object.
-
-        Returns
-        -------
-        nprofiles: int
-            Number of profiles.
-        """
-        return self.nframes - self.skip_frames
-
-    def nbins(self) -> int:
-        """Function to calculate number of bins in profiles.
-        This number should be used when creating a machine object.
-
-        Returns
-        -------
-        nbins: int
-            Number of bins in profiles.
-        """
-        return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
 
     def to_waterfall(self, raw_data: NPArray) -> NPArray:
         """Function to convert from raw data to waterfall for use in
@@ -476,12 +478,11 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
         skip_bins_start=params.skip_bins_start,
         skip_bins_end=params.skip_bins_end,
         rebin=params.rebin)
-    nbins = frame.nbins()
 
     # Calculating limits in phase for reconstruction area, specified by
     # user, from bin offsets to physical units of phase [s].
     min_dt = params.min_dt_bin * params.dtbin
-    max_dt = (nbins - params.max_dt_bin) * params.dtbin
+    max_dt = (frame.nbins - params.max_dt_bin) * params.dtbin
 
     # Machine arguments. filmstart/filmstop/beam_ref_frame/machine_ref_frame
     # are subtracted by one to convert from Fortran to C indexing.
@@ -517,8 +518,8 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
         'g_coupling': params.g_coupling,
         'zwall_over_n': params.zwall_over_n,
         'pickup_sensitivity': params.pickup_sensitivity,
-        'nprofiles': frame.nprofs(),
-        'nbins': nbins,
+        'nprofiles': frame.nprofs,
+        'nbins': frame.nbins,
         'min_dt': min_dt,
         'max_dt': max_dt
     }

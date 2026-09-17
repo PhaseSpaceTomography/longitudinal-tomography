@@ -49,12 +49,12 @@ class TestTomoIn(unittest.TestCase):
 
     def test_nprofs_correct(self):
         frames = tomoin.Frames(**frame_input_args)
-        nprof = frames.nprofs()
+        nprof = frames.nprofs
         self.assertEqual(nprof, 150, msg='Error in calculation of nprofs')
 
     def test_nbins_correct(self):
         frames = tomoin.Frames(**frame_input_args)
-        nbins = frames.nbins()
+        nbins = frames.nbins
         self.assertEqual(nbins, 760, msg='Error in calculation of nbins')
 
     def test_to_waterfall_skip_bins_both_sides(self):
