@@ -166,6 +166,44 @@ class Parameters(pydantic.BaseModel):
                 f'less than framecount ({self.framecount})')
         return self
 
+    @classmethod
+    def from_dat_lines(cls, lines: Sequence[str]) -> Parameters:
+        """Build Parameters from the header lines of a legacy `.dat` file.
+
+        Parameters
+        ----------
+        lines: Sequence[str]
+            The `.dat` file's `PARAMETER_LENGTH` header lines (raw-data
+            lines, if any, excluded).
+
+        Returns
+        -------
+        Parameters
+        """
+        if not hasattr(lines, '__iter__'):
+            raise expt.InputError('Input should be iterable')
+        if len(lines) != PARAMETER_LENGTH:
+            raise expt.InputError(
+                f'Input array be of length {PARAMETER_LENGTH}, containing '
+                f'every line of input file (not including raw-data).')
+
+        stripped = [line.strip('\r\n') for line in lines]
+
+        param_values = {}
+        for name, idx in DAT_FILE_LINE_INDEX.items():
+            if name == 'raw_data_path':
+                continue
+            value = stripped[idx]
+            if name in FORTRAN_TO_C_FIELDS:
+                value = int(value) - 1
+            param_values[name] = value
+
+        try:
+            return cls(**param_values)
+        except pydantic.ValidationError as exc:
+            raise expt.InputError(
+                f'Invalid legacy input parameters:\n{exc}') from exc
+
 
 class Frames(pydantic.BaseModel):
     """Class for storing raw data and information on how to treat them,
@@ -255,6 +293,20 @@ class Frames(pydantic.BaseModel):
                 f'skip_bins_end ({self.skip_bins_end}) must be less than '
                 f'nbins_frame ({self.nbins_frame})')
         return self
+
+    @classmethod
+    def from_parameters(cls, params: Parameters,
+                         raw_data_path: str = '') -> Frames:
+        """Build Frames from the frame-shaping fields of a Parameters."""
+        return cls(
+            framecount=params.framecount,
+            framelength=params.framelength,
+            skip_frames=params.skip_frames,
+            skip_bins_start=params.skip_bins_start,
+            skip_bins_end=params.skip_bins_end,
+            rebin=params.rebin,
+            dtbin=params.dtbin,
+            raw_data_path=raw_data_path)
 
     @pydantic.computed_field
     @property
@@ -362,6 +414,35 @@ class Frames(pydantic.BaseModel):
                 f'expected length: {ndata}')
 
         return np.array(raw_data)
+
+
+class TomographyData(pydantic.BaseModel):
+    """Full input data parsed from a legacy `.dat` file: the machine and
+    reconstruction parameters plus the frame/raw-data metadata.
+    """
+
+    parameters: Parameters
+    frames: Frames
+
+    @classmethod
+    def from_dat_file(cls, path: str) -> TomographyData:
+        """Build a DatFile by reading and parsing a legacy `.dat` file.
+
+        Parameters
+        ----------
+        path: str
+            Path to the `.dat` file.
+
+        Returns
+        -------
+        DatFile
+        """
+        raw_params, raw_data = get_user_input(path)
+        params = Parameters.from_dat_lines(raw_params)
+        raw_data_path = raw_params[DAT_FILE_LINE_INDEX['raw_data_path']]
+        frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
+        frame.raw_data = raw_data
+        return cls(parameters=params, frames=frame)
 
 
 def get_user_input(input: str = ''):
@@ -507,46 +588,10 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
         Error in input array
     """
 
-    # Checks if input is valid
-    if not hasattr(input_array, '__iter__'):
-        raise expt.InputError('Input should be iterable')
-    if len(input_array) != PARAMETER_LENGTH:
-        raise expt.InputError(f'Input array be of length {PARAMETER_LENGTH}, '
-                              f'containing every line of input file '
-                              f'(not including raw-data).')
-
-    # String formatting
-    for i in range(len(input_array)):
-        input_array[i] = input_array[i].strip('\r\n')
-
-    raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']]
-
-    param_values = {}
-    for name, idx in DAT_FILE_LINE_INDEX.items():
-        if name == 'raw_data_path':
-            continue
-        value = input_array[idx]
-        # Offset values to account for Fortran vs C indexing
-        if name in FORTRAN_TO_C_FIELDS:
-            value = int(value) - 1
-        param_values[name] = value
-
-    try:
-        params = Parameters(**param_values)
-    except pydantic.ValidationError as exc:
-        raise expt.InputError(
-            f'Invalid legacy input parameters:\n{exc}') from exc
-
-    # Creating waterfall from raw data
-    frame = Frames(
-        raw_data_path=raw_data_path,
-        framecount=params.framecount,
-        skip_frames=params.skip_frames,
-        framelength=params.framelength,
-        dtbin=params.dtbin,
-        skip_bins_start=params.skip_bins_start,
-        skip_bins_end=params.skip_bins_end,
-        rebin=params.rebin)
+    params = Parameters.from_dat_lines(input_array)
+    raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']].strip(
+        '\r\n')
+    frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
 
     # Calculating limits in phase for reconstruction area, specified by
     # user, from bin offsets to physical units of phase [s].
