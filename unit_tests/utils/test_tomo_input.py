@@ -55,17 +55,15 @@ class TestTomoIn(unittest.TestCase):
     # ---------------------
 
     def test_frames_set_raw_data_fails(self):
-        frames = tomoin.Frames(**frame_input_args)
-
-        with self.assertRaises(expt.RawDataImportError,
-                               msg='raw data provided as scalar should raise '
-                                   'an exception'):
-            frames.raw_data = 1
-
-        with self.assertRaises(expt.RawDataImportError,
-                               msg='Wrong amount of data points should raise '
-                                   'an exception'):
-            frames.raw_data = [1]
+        for description, raw_data in (('scalar raw data', 1),
+                                      ('wrong amount of data points', [1])):
+            with self.subTest(case=description):
+                frames = tomoin.Frames(**frame_input_args)
+                frames.raw_data = raw_data
+                with self.assertRaises(
+                        expt.RawDataImportError,
+                        msg=f'{description} should raise an exception'):
+                    frames.validate()
 
     def test_nprofs_correct(self):
         frames = tomoin.Frames(**frame_input_args)
@@ -538,6 +536,24 @@ class TestParameters(unittest.TestCase):
                     msg=f'the default for {name} differs from the one used '
                         f'by Machine')
 
+    def test_validate_rejects_an_invalid_change(self):
+        params = tomoin.Parameters.from_dat_lines(_parameter_lines())
+        params.niter = -1
+
+        with self.assertRaises(pydantic.ValidationError,
+                               msg='an invalid value should be rejected by '
+                                   'validate'):
+            params.validate()
+
+    def test_validate_rejects_a_broken_cross_field_bound(self):
+        params = tomoin.Parameters.from_dat_lines(_parameter_lines())
+        params.filmstop = params.framecount
+
+        with self.assertRaises(pydantic.ValidationError,
+                               msg='filmstop beyond framecount should be '
+                                   'rejected by validate'):
+            params.validate()
+
     def test_from_dat_lines_no_iter_fails(self):
         with self.assertRaises(expt.InputError,
                                msg='non iterable input should '
@@ -655,15 +671,35 @@ class TestFramesValidation(unittest.TestCase):
                             f'should be rejected'):
                     tomoin.Frames(**{**frame_input_args, name: value})
 
-    def test_attributes_remain_mutable(self):
-        # assert_frame_inputs is the use-time check, so construction-time
-        # validation must not lock the object down.
+    def test_validate_accepts_a_valid_change(self):
         frames = tomoin.Frames(**frame_input_args)
-        frames.skip_frames = -1
+        frames.skip_frames = 5
 
-        self.assertEqual(frames.skip_frames, -1,
-                         msg='Frames attributes should not be revalidated '
-                             'on assignment')
+        frames.validate()
+
+        self.assertEqual(frames.skip_frames, 5,
+                         msg='a valid value should be assignable')
+
+    def test_validate_rejects_an_invalid_change(self):
+        for name, value in (('skip_frames', -1), ('nframes', 0),
+                            ('rebin', 0), ('skip_bins_start', 1000)):
+            with self.subTest(field=name):
+                frames = tomoin.Frames(**frame_input_args)
+                setattr(frames, name, value)
+                with self.assertRaises(
+                        pydantic.ValidationError,
+                        msg=f'{name}={value} should be rejected by '
+                            f'validate'):
+                    frames.validate()
+
+    def test_validate_rejects_bad_raw_data(self):
+        frames = tomoin.Frames(**frame_input_args)
+        frames.raw_data = [1.0]
+
+        with self.assertRaises(expt.RawDataImportError,
+                               msg='raw data of the wrong length should be '
+                                   'rejected by validate'):
+            frames.validate()
 
     def test_from_parameters_maps_fields(self):
         params = tomoin.Parameters.from_dat_lines(_parameter_lines())
@@ -767,6 +803,36 @@ class TestFramesConstruction(unittest.TestCase):
                             msg='frames holding different raw data should '
                                 'not compare equal')
 
+    def test_raw_data_accepted_at_construction(self):
+        raw_data = np.arange(150 * 1000)
+
+        frames = tomoin.Frames(**frame_input_args, raw_data=raw_data)
+
+        nptest.assert_array_equal(
+            frames.raw_data, raw_data,
+            err_msg='raw data given at construction should be held')
+
+    def test_raw_data_coerced_to_array(self):
+        values = [float(i) for i in range(150 * 1000)]
+
+        frames = tomoin.Frames(**frame_input_args, raw_data=values)
+
+        self.assertIsInstance(frames.raw_data, np.ndarray,
+                              msg='a list of raw data should be coerced to '
+                                  'an array')
+
+    def test_raw_data_wrong_length_at_construction_fails(self):
+        with self.assertRaises(expt.RawDataImportError,
+                               msg='raw data of the wrong length should '
+                                   'raise an exception'):
+            tomoin.Frames(**frame_input_args, raw_data=[1.0])
+
+    def test_raw_data_dumped_as_list(self):
+        frames = tomoin.Frames(**frame_input_args, raw_data=np.zeros(150000))
+
+        self.assertIsInstance(frames.model_dump()['raw_data'], list,
+                              msg='raw data should dump as a list')
+
     def test_equality_with_other_type(self):
         self.assertNotEqual(tomoin.Frames(**frame_input_args), 1,
                             msg='a Frames should not equal a non-Frames')
@@ -843,9 +909,13 @@ class TestTomographyData(unittest.TestCase):
                          msg='nprofs differs from machine.nprofiles')
         self.assertEqual(data.frames.nbins, machine.nbins,
                          msg='nbins differs from machine.nbins')
-        self.assertEqual(data.frames.model_dump(), frames.model_dump(),
+        self.assertEqual(data.frames.model_dump(exclude={'raw_data'}),
+                         frames.model_dump(exclude={'raw_data'}),
                          msg='frames differ between TomographyData and '
                              'txt_input_to_machine')
+        self.assertIsNone(frames.raw_data,
+                          msg='txt_input_to_machine should not attach '
+                              'raw data')
 
     def test_json_round_trip(self):
         data = tomoin.TomographyData.from_dat_file(self._dat_path())
@@ -855,12 +925,31 @@ class TestTomographyData(unittest.TestCase):
 
         self.assertEqual(restored.parameters, data.parameters,
                          msg='parameters should survive a JSON round trip')
-        self.assertEqual(restored.frames.model_dump(),
-                         data.frames.model_dump(),
+        self.assertEqual(restored.frames, data.frames,
                          msg='frames should survive a JSON round trip')
-        self.assertIsNone(restored.frames.raw_data,
-                          msg='raw data is not serialised, so it should not '
-                              'silently reappear after a round trip')
+        nptest.assert_array_equal(
+            restored.frames.raw_data, data.frames.raw_data,
+            err_msg='raw data should survive a JSON round trip')
+
+    def test_validate_checks_nested_models(self):
+        data = tomoin.TomographyData.from_dat_file(self._dat_path())
+        data.validate()
+
+        data.parameters.niter = -1
+
+        with self.assertRaises(pydantic.ValidationError,
+                               msg='validate should reach the parameters it '
+                                   'holds'):
+            data.validate()
+
+    def test_validate_checks_nested_frames(self):
+        data = tomoin.TomographyData.from_dat_file(self._dat_path())
+        data.frames.rebin = 0
+
+        with self.assertRaises(pydantic.ValidationError,
+                               msg='validate should reach the frames it '
+                                   'holds'):
+            data.validate()
 
     def test_from_dat_file_missing_file_fails(self):
         with self.assertRaises(expt.InputError,
@@ -976,11 +1065,14 @@ class TestDatFileWriting(unittest.TestCase):
 
     def test_missing_inline_data_fails(self):
         data = tomoin.TomographyData.from_dat_file(self._dat_path())
-        restored = tomoin.TomographyData.model_validate_json(
-            data.model_dump_json())
+        without_data = tomoin.TomographyData(
+            parameters=data.parameters,
+            frames=tomoin.Frames.from_parameters(data.parameters,
+                                                 raw_data_path='pipe'))
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             with self.assertRaises(expt.RawDataImportError,
                                    msg='writing inline data that is not '
                                        'held should raise an exception'):
-                restored.to_dat_file(os.path.join(tmp_dir, 'no_data.dat'))
+                without_data.to_dat_file(
+                    os.path.join(tmp_dir, 'no_data.dat'))

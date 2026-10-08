@@ -6,7 +6,7 @@ Fortran style text files.
 from __future__ import annotations
 import os
 import sys
-from typing import TYPE_CHECKING
+from typing import Annotated, TYPE_CHECKING
 
 import numpy as np
 import pydantic
@@ -180,7 +180,30 @@ DAT_FILE_TEMPLATE = (
 )
 
 
-class Parameters(pydantic.BaseModel):
+class _ValidatedModel(pydantic.BaseModel):
+    """Base model whose values can be checked after they are changed.
+
+    Fields are validated when a model is created, but not when one is
+    assigned to afterwards, so :meth:`validate` is the check to call on a
+    model that has been edited.
+    """
+
+    # nested models are revalidated too, so checking a model checks
+    # everything it holds
+    model_config = pydantic.ConfigDict(revalidate_instances='always')
+
+    def validate(self):
+        """Raise if the model's current values are not valid.
+
+        Raises
+        ------
+        ValidationError: Exception
+            Raised if a value, or a combination of values, is invalid.
+        """
+        type(self).model_validate(dict(self))
+
+
+class Parameters(_ValidatedModel):
     """Validated, type-coerced machine and reconstruction parameters.
 
     Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
@@ -294,8 +317,6 @@ class Parameters(pydantic.BaseModel):
                 f'Input array be of length {PARAMETER_LENGTH}, containing '
                 f'every line of input file (not including raw-data).')
 
-        # Full strip, not just line endings: Fortran writers pad numeric
-        # fields, and the coercion of a padded value to bool would fail.
         stripped = [line.strip() for line in lines]
 
         param_values = {'header': stripped[:DAT_FILE_HEADER_LENGTH]}
@@ -358,7 +379,22 @@ class Parameters(pydantic.BaseModel):
         return header + block.splitlines()
 
 
-class Frames(pydantic.BaseModel):
+def _to_raw_data(value: Collection) -> NPArray:
+    """Coerce raw data to a 1D float array."""
+    if not hasattr(value, '__iter__'):
+        raise expt.RawDataImportError('Raw data should be iterable')
+    return np.asarray(value, dtype=float)
+
+
+#: Raw data as read from an input file. Held as an array, but dumped and
+#: serialised as a list of floats.
+RawData = Annotated[
+    pydantic.InstanceOf[np.ndarray],
+    pydantic.BeforeValidator(_to_raw_data),
+    pydantic.PlainSerializer(lambda value: value.tolist(), return_type=list)]
+
+
+class Frames(_ValidatedModel):
     """Class for storing raw data and information on how to treat them,
     based on a Fortran style input file.
 
@@ -408,6 +444,8 @@ class Frames(pydantic.BaseModel):
         Size of profile bins [s].
     raw_data_path: string
         Path to file holding raw data for programmers reference.
+    raw_data: ndarray, None
+        1D array holding raw data as a direct read from an input file.
     nprofs: int
         Number of profiles, i.e. frames after ``skip_frames`` is applied.
     nbins: int
@@ -415,6 +453,10 @@ class Frames(pydantic.BaseModel):
         ``skip_bins_start``/``skip_bins_end`` are applied.
     """
 
+    # TODO: the aliases accept the legacy constructor argument names
+    # framecount, framelength and dtbin alongside the field names, which
+    # every other module already uses. Remove them, with the custom
+    # __init__, at the next major version.
     nframes: int = pydantic.Field(
         gt=0, validation_alias=pydantic.AliasChoices('nframes', 'framecount'))
     nbins_frame: int = pydantic.Field(
@@ -427,8 +469,7 @@ class Frames(pydantic.BaseModel):
     sampling_time: float = pydantic.Field(
         gt=0, validation_alias=pydantic.AliasChoices('sampling_time', 'dtbin'))
     raw_data_path: str = ''
-
-    _raw_data = pydantic.PrivateAttr(default=None)
+    raw_data: RawData | None = None
 
     def __init__(self, *args: Any, **kwargs: Any):
         # Positional arguments follow the legacy order; keyword arguments
@@ -444,13 +485,12 @@ class Frames(pydantic.BaseModel):
         super().__init__(**dict(zip(legacy_order, args)), **kwargs)
 
     def __eq__(self, other: object) -> bool:
-        # pydantic's generated __eq__ compares the private attributes, which
-        # would compare raw data element-wise and give an ambiguous truth
-        # value.
+        # pydantic's generated __eq__ compares the stored fields, where the
+        # raw data array has no scalar truth value. Dumping it first gives
+        # a list, which compares element-wise.
         if not isinstance(other, Frames):
             return NotImplemented
-        return (self.model_dump() == other.model_dump()
-                and np.array_equal(self._raw_data, other._raw_data))
+        return self.model_dump() == other.model_dump()
 
     @pydantic.model_validator(mode='after')
     def _check_cross_field_bounds(self) -> Frames:
@@ -468,11 +508,22 @@ class Frames(pydantic.BaseModel):
                 f'nbins_frame ({self.nbins_frame})')
         return self
 
+    @pydantic.model_validator(mode='after')
+    def _check_raw_data_length(self) -> Frames:
+        if self.raw_data is not None:
+            ndata = self.nframes * self.nbins_frame
+            if len(self.raw_data) != ndata:
+                raise expt.RawDataImportError(
+                    f'Raw data has length {len(self.raw_data)}.\n'
+                    f'expected length: {ndata}')
+        return self
+
     @classmethod
-    def from_parameters(cls, params: Parameters,
-                        raw_data_path: str = '') -> Frames:
+    def from_parameters(cls, params: Parameters, raw_data_path: str = '',
+                        raw_data: Collection = None) -> Frames:
         """Build Frames from the frame-shaping fields of a Parameters."""
         return cls(
+            raw_data=raw_data,
             framecount=params.framecount,
             framelength=params.framelength,
             skip_frames=params.skip_frames,
@@ -494,47 +545,6 @@ class Frames(pydantic.BaseModel):
         """Number of bins in a profile, to be used when creating a machine
         object."""
         return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
-
-    @property
-    def raw_data(self) -> NPArray | None:
-        """Raw data defined as a @property.
-
-        Holds assertions for validity of raw data.
-
-        Parameters
-        ----------
-        in_raw_data: ndarray
-            1D array holding raw data as a direct read from text file.
-
-        Returns
-        -------
-        raw_data: ndarray, none
-            Copy of array holding raw data as a direct read from text file.
-            None is returned if object holds no raw data.
-
-        Raises
-        ------
-        RawDataImportError: Exception
-            Raised if raw data is not iterable or has an unexpected length.
-
-        """
-        if self._raw_data is not None:
-            return np.copy(self._raw_data)
-        else:
-            return None
-
-    @raw_data.setter
-    def raw_data(self, in_raw_data: Collection):
-        if not hasattr(in_raw_data, '__iter__'):
-            raise expt.RawDataImportError('Raw data should be iterable')
-
-        ndata = self.nframes * self.nbins_frame
-        if len(in_raw_data) == ndata:
-            self._raw_data = np.array(in_raw_data)
-        else:
-            raise expt.RawDataImportError(
-                f'Raw data has length {len(in_raw_data)}.\n'
-                f'expected length: {ndata}')
 
     def to_waterfall(self, raw_data: NPArray) -> NPArray:
         """Function to convert from raw data to waterfall for use in
@@ -590,7 +600,7 @@ class Frames(pydantic.BaseModel):
         return np.array(raw_data)
 
 
-class TomographyData(pydantic.BaseModel):
+class TomographyData(_ValidatedModel):
     """Full input data parsed from a legacy `.dat` file: the machine and
     reconstruction parameters plus the frame/raw-data metadata.
     """
@@ -614,8 +624,8 @@ class TomographyData(pydantic.BaseModel):
         raw_params, raw_data = get_user_input(path)
         params = Parameters.from_dat_lines(raw_params)
         raw_data_path = raw_params[DAT_FILE_LINE_INDEX['raw_data_path']]
-        frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
-        frame.raw_data = raw_data
+        frame = Frames.from_parameters(params, raw_data_path=raw_data_path,
+                                       raw_data=raw_data)
         return cls(parameters=params, frames=frame)
 
     def to_dat_file(self, path: str):
