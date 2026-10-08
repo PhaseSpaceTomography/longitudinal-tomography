@@ -187,7 +187,7 @@ class Parameters(pydantic.BaseModel):
                 f'Input array be of length {PARAMETER_LENGTH}, containing '
                 f'every line of input file (not including raw-data).')
 
-        stripped = [line.strip('\r\n') for line in lines]
+        stripped = [line.strip() for line in lines]
 
         param_values = {}
         for name, idx in DAT_FILE_LINE_INDEX.items():
@@ -195,7 +195,12 @@ class Parameters(pydantic.BaseModel):
                 continue
             value = stripped[idx]
             if name in FORTRAN_TO_C_FIELDS:
-                value = int(value) - 1
+                try:
+                    value = int(value) - 1
+                except ValueError as exc:
+                    raise expt.InputError(
+                        f'Invalid legacy input parameters:\n{name} on line '
+                        f'{idx} is not an integer: {value!r}') from exc
             param_values[name] = value
 
         try:
