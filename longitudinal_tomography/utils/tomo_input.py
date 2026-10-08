@@ -83,7 +83,7 @@ class Parameters(pydantic.BaseModel):
     Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
     """
 
-    output_dir: str = "/tmp/"
+    output_dir: str | None = None
     framecount: int = pydantic.Field(gt=0)
     skip_frames: int = pydantic.Field(ge=0)
     framelength: int = pydantic.Field(gt=0)
@@ -98,7 +98,7 @@ class Parameters(pydantic.BaseModel):
     demax: float = -1.0e6
     filmstart: int = pydantic.Field(default=0, ge=0)
     filmstop: int = pydantic.Field(default=1, ge=0)
-    filmstep: int = pydantic.Field(gt=0)
+    filmstep: int = pydantic.Field(default=1, gt=0)
     niter: int = pydantic.Field(default=20, gt=0)
     snpt: int = pydantic.Field(default=4, gt=0)
     full_pp_flag: bool = False
@@ -119,9 +119,9 @@ class Parameters(pydantic.BaseModel):
     rest_energy: float = pydantic.Field(gt=0)
     charge: float = 1.0
     self_field_flag: bool = False
-    g_coupling: float = 0
-    zwall_over_n: float = 0
-    pickup_sensitivity: float = 0
+    g_coupling: float | None = None
+    zwall_over_n: float | None = None
+    pickup_sensitivity: float | None = None
 
     @pydantic.field_validator('charge')
     @classmethod
