@@ -263,25 +263,46 @@ class Frames(pydantic.BaseModel):
         ``skip_bins_start``/``skip_bins_end`` are applied.
     """
 
-    nframes: int = pydantic.Field(gt=0)
-    nbins_frame: int = pydantic.Field(gt=0)
+    # TODO: the aliases accept the legacy constructor argument names
+    # framecount, framelength and dtbin alongside the field names, which
+    # every other module already uses. Remove them, with the custom
+    # __init__, at the next major version.
+    nframes: int = pydantic.Field(
+        gt=0, validation_alias=pydantic.AliasChoices('nframes', 'framecount'))
+    nbins_frame: int = pydantic.Field(
+        gt=0,
+        validation_alias=pydantic.AliasChoices('nbins_frame', 'framelength'))
     skip_frames: int = pydantic.Field(ge=0)
     skip_bins_start: int = pydantic.Field(ge=0)
     skip_bins_end: int = pydantic.Field(ge=0)
     rebin: int = pydantic.Field(gt=0)
-    sampling_time: float = pydantic.Field(gt=0)
+    sampling_time: float = pydantic.Field(
+        gt=0, validation_alias=pydantic.AliasChoices('sampling_time', 'dtbin'))
     raw_data_path: str = ''
 
     _raw_data = pydantic.PrivateAttr(default=None)
 
-    def __init__(self, framecount: int, framelength: int, skip_frames: int,
-                 skip_bins_start: int, skip_bins_end: int, rebin: int,
-                 dtbin: float, raw_data_path: str = ''):
-        super().__init__(
-            nframes=framecount, nbins_frame=framelength,
-            skip_frames=skip_frames, skip_bins_start=skip_bins_start,
-            skip_bins_end=skip_bins_end, rebin=rebin,
-            sampling_time=dtbin, raw_data_path=raw_data_path)
+    def __init__(self, *args: Any, **kwargs: Any):
+        # Positional arguments follow the legacy order; keyword arguments
+        # accept either the legacy names or the field names. pydantic routes
+        # every validation of a Frames through here, so both must be handled.
+        legacy_order = ('framecount', 'framelength', 'skip_frames',
+                        'skip_bins_start', 'skip_bins_end', 'rebin', 'dtbin',
+                        'raw_data_path')
+        if len(args) > len(legacy_order):
+            raise TypeError(
+                f'Frames takes at most {len(legacy_order)} positional '
+                f'arguments but {len(args)} were given')
+        super().__init__(**dict(zip(legacy_order, args)), **kwargs)
+
+    def __eq__(self, other: object) -> bool:
+        # pydantic's generated __eq__ compares the private attributes, which
+        # would compare raw data element-wise and give an ambiguous truth
+        # value.
+        if not isinstance(other, Frames):
+            return NotImplemented
+        return (self.model_dump() == other.model_dump()
+                and np.array_equal(self._raw_data, other._raw_data))
 
     @pydantic.model_validator(mode='after')
     def _check_cross_field_bounds(self) -> Frames:
