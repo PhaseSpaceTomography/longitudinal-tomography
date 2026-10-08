@@ -76,6 +76,109 @@ FORTRAN_TO_C_FIELDS = frozenset((
 RAW_DATA_FILE_IDX = DAT_FILE_LINE_INDEX['raw_data_path']
 OUTPUT_DIR_IDX = DAT_FILE_LINE_INDEX['output_dir']
 
+#: Number of undocumented lines preceding the parameter block of a `.dat`
+#: file.
+DAT_FILE_HEADER_LENGTH = 8
+
+#: The parameter block of a `.dat` file, lines 8 to 97, with a placeholder
+#: at every line that holds a value. The one spliced comment line is only
+#: split to stay within the line length limit, and the escaped space
+#: preserves a trailing space the Fortran writer emits.
+DAT_FILE_TEMPLATE = (
+    """! Version 2
+!
+! Data Format:
+! Input data file =
+{raw_data_path}
+! Directory in which to write all output =
+{output_dir}
+! Number of frames in input data =
+{framecount}
+! Number of frames to ignore =
+{skip_frames}
+! Number of bins in each frame =
+{framelength}
+! Width (in s) of each frame bin =
+{dtbin}
+! Number of machine turns between frames =
+{dturns}
+! Number of frame bins before the lower profile bound to ignore =
+{skip_bins_start}
+! Number of frame bins after the upper profile bound to ignore =
+{skip_bins_end}
+! Number of frame bins after the lower profile bound to treat as empty
+! at the reconstructed time =
+{min_dt_bin}
+! Number of frame bins before the upper profile bound to treat as empty
+! at the reconstructed time =
+{max_dt_bin}
+! Number of frame bins to rebin into one profile bin =
+{rebin}
+! Time (in frame bins) from the lower profile bound to the synchronous phase
+! (if <0, a fit is performed) in the "bunch reference" frame =
+{synch_part_x}
+! Max energy (in eV) of reconstructed phase space (if >0) =
+{demax}
+! Number of the first profile at which to reconstruct =
+{filmstart}
+! Number of the last profile at which to reconstruct =
+{filmstop}
+! Step between reconstructions =
+{filmstep}
+! Number of iterations for each reconstruction =
+{niter}
+! Square root of the number of test particles to track per cell =
+{snpt}
+! Flag to extend the region in phase space of map elements (if =1) =
+{full_pp_flag}
+"""
+    '! Reference frame for bunch parameters (synchronous phase, '
+    'baseline, integral) =\n'
+    """{beam_ref_frame}
+! Reference frame for machine parameters (RF voltages, B-field) =
+{machine_ref_frame}
+!
+! Machine and Particle Parameters:
+! Peak RF voltage (in V) of principal RF system =
+{vrf1}
+! and its time derivative (in V/s) =
+{vrf1dot}
+! Peak RF voltage (in V) of higher-harmonic RF system =
+{vrf2}
+! and its time derivative (in V/s) =
+{vrf2dot}
+! Harmonic number of principal RF system =
+{h_num}
+! Ratio of harmonics between RF systems =
+{h_ratio}
+! Phase difference (in radians of the principal harmonic) between RF systems =
+{phi12}
+! Dipole magnetic field (in T) =
+{b0}
+! and its time derivative (in T/s) =
+{bdot}
+! Machine radius (in m) =
+{mean_orbit_rad}
+! Bending radius (in m) =
+{bending_rad}
+! Gamma transition =
+{trans_gamma}
+! Rest mass (in eV/c**2) of accelerated particle =
+{rest_energy}
+! Charge state of accelerated particle =
+{charge}
+!
+! Space Charge Parameters:
+! Flag to include self-fields in the tracking (if =1) =
+{self_field_flag}
+! Geometrical coupling coefficient =\x20
+{g_coupling}
+! Reactive impedance (in Ohms per mode number) over a machine turn =
+{zwall_over_n}
+! Effective pick-up sensitivity (in digitizer units per instantaneous Amp) =
+{pickup_sensitivity}"""
+)
+
 
 class Parameters(pydantic.BaseModel):
     """Validated, type-coerced machine and reconstruction parameters.
@@ -83,6 +186,10 @@ class Parameters(pydantic.BaseModel):
     Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
     """
 
+    # Lines 0 to 7 of a `.dat` file, held verbatim. Their meaning is
+    # undocumented, so they are neither parsed nor validated.
+    header: list[str] = pydantic.Field(
+        default=[], max_length=DAT_FILE_HEADER_LENGTH)
     output_dir: str | None = None
     framecount: int = pydantic.Field(gt=0)
     skip_frames: int = pydantic.Field(ge=0)
@@ -187,9 +294,11 @@ class Parameters(pydantic.BaseModel):
                 f'Input array be of length {PARAMETER_LENGTH}, containing '
                 f'every line of input file (not including raw-data).')
 
+        # Full strip, not just line endings: Fortran writers pad numeric
+        # fields, and the coercion of a padded value to bool would fail.
         stripped = [line.strip() for line in lines]
 
-        param_values = {}
+        param_values = {'header': stripped[:DAT_FILE_HEADER_LENGTH]}
         for name, idx in DAT_FILE_LINE_INDEX.items():
             if name == 'raw_data_path':
                 continue
@@ -208,6 +317,45 @@ class Parameters(pydantic.BaseModel):
         except pydantic.ValidationError as exc:
             raise expt.InputError(
                 f'Invalid legacy input parameters:\n{exc}') from exc
+
+    def _dat_value(self, name: str) -> str:
+        # Fortran index fields are stored 0-based, so the inverse of the
+        # conversion in from_dat_lines is applied here.
+        value = getattr(self, name)
+        if value is None:
+            raise expt.InputError(
+                f'{name} has no value, which a .dat file cannot represent')
+        if isinstance(value, bool):
+            return str(int(value))
+        if name in FORTRAN_TO_C_FIELDS:
+            return str(value + 1)
+        return str(value)
+
+    def to_dat_lines(self, raw_data_path: str = 'pipe') -> list[str]:
+        """Render the parameters as the header lines of a legacy `.dat` file.
+
+        Parameters
+        ----------
+        raw_data_path: str
+            Value for the raw data path line, which is not a parameter.
+            ``'pipe'`` means the raw data follows the header lines.
+
+        Returns
+        -------
+        list[str]
+            The `PARAMETER_LENGTH` header lines, without line endings.
+
+        Raises
+        ------
+        InputError: Exception
+            Raised if a parameter holds no value the format can represent.
+        """
+        header = list(self.header)
+        header += [''] * (DAT_FILE_HEADER_LENGTH - len(header))
+        values = {name: self._dat_value(name)
+                  for name in DAT_FILE_LINE_INDEX if name != 'raw_data_path'}
+        block = DAT_FILE_TEMPLATE.format(raw_data_path=raw_data_path, **values)
+        return header + block.splitlines()
 
 
 class Frames(pydantic.BaseModel):
@@ -267,10 +415,6 @@ class Frames(pydantic.BaseModel):
         ``skip_bins_start``/``skip_bins_end`` are applied.
     """
 
-    # TODO: the aliases accept the legacy constructor argument names
-    # framecount, framelength and dtbin alongside the field names, which
-    # every other module already uses. Remove them, with the custom
-    # __init__, at the next major version.
     nframes: int = pydantic.Field(
         gt=0, validation_alias=pydantic.AliasChoices('nframes', 'framecount'))
     nbins_frame: int = pydantic.Field(
@@ -473,6 +617,33 @@ class TomographyData(pydantic.BaseModel):
         frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
         frame.raw_data = raw_data
         return cls(parameters=params, frames=frame)
+
+    def to_dat_file(self, path: str):
+        """Write the input data to a legacy `.dat` file.
+
+        Raw data is appended to the parameter lines when the frames hold it
+        inline, i.e. when their raw data path is ``'pipe'``.
+
+        Parameters
+        ----------
+        path: str
+            Path of the file to write.
+
+        Raises
+        ------
+        RawDataImportError: Exception
+            Raised if raw data should be written inline but is missing.
+        """
+        lines = self.parameters.to_dat_lines(self.frames.raw_data_path)
+        if self.frames.raw_data_path == 'pipe':
+            raw_data = self.frames.raw_data
+            if raw_data is None:
+                raise expt.RawDataImportError(
+                    'No raw data held to write inline')
+            lines += [str(value) for value in raw_data.tolist()]
+
+        with open(path, 'w') as f:
+            f.write('\n'.join(lines) + '\n')
 
 
 def get_user_input(input: str = ''):

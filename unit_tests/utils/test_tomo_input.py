@@ -4,6 +4,7 @@ Run as python test_tomo_input.py in console or via coverage
 """
 
 import os
+import tempfile
 import unittest
 
 import numpy as np
@@ -866,3 +867,120 @@ class TestTomographyData(unittest.TestCase):
                                msg='a missing input file should raise '
                                    'an exception'):
             tomoin.TomographyData.from_dat_file('does/not/exist.dat')
+
+
+class TestDatFileWriting(unittest.TestCase):
+
+    def _dat_path(self) -> str:
+        return os.path.join(_resource_dir(), 'INDIVShavingC325.dat')
+
+    def _round_trip(self) -> tuple:
+        original = tomoin.TomographyData.from_dat_file(self._dat_path())
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            written = os.path.join(tmp_dir, 'round_trip.dat')
+            original.to_dat_file(written)
+            with open(written) as f:
+                lines = f.read().splitlines()
+            restored = tomoin.TomographyData.from_dat_file(written)
+        return original, restored, lines
+
+    def test_round_trip_preserves_parameters(self):
+        original, restored, _ = self._round_trip()
+
+        self.assertEqual(restored.parameters, original.parameters,
+                         msg='parameters should survive a .dat round trip')
+
+    def test_round_trip_preserves_frames_and_data(self):
+        original, restored, _ = self._round_trip()
+
+        self.assertEqual(restored.frames, original.frames,
+                         msg='frames should survive a .dat round trip')
+        nptest.assert_array_equal(
+            restored.frames.raw_data, original.frames.raw_data,
+            err_msg='raw data should survive a .dat round trip')
+
+    def test_round_trip_preserves_header(self):
+        original, restored, lines = self._round_trip()
+
+        with open(self._dat_path()) as f:
+            source = f.read().splitlines()
+        self.assertEqual(original.parameters.header,
+                         source[:tomoin.DAT_FILE_HEADER_LENGTH],
+                         msg='the header lines should be held verbatim')
+        self.assertEqual(restored.parameters.header,
+                         original.parameters.header,
+                         msg='the header lines should be written back')
+
+    def test_comment_lines_are_unchanged(self):
+        _, _, lines = self._round_trip()
+        with open(self._dat_path()) as f:
+            source = f.read().splitlines()
+
+        for i in range(tomoin.PARAMETER_LENGTH):
+            if source[i].lstrip().startswith('!'):
+                with self.subTest(line=i):
+                    self.assertEqual(lines[i], source[i],
+                                     msg=f'comment line {i} was altered')
+
+    def test_written_values_hold_the_same_numbers(self):
+        _, _, lines = self._round_trip()
+        with open(self._dat_path()) as f:
+            source = f.read().splitlines()
+
+        for name, i in tomoin.DAT_FILE_LINE_INDEX.items():
+            if name in ('raw_data_path', 'output_dir'):
+                continue
+            with self.subTest(field=name):
+                self.assertEqual(float(lines[i]), float(source[i]),
+                                 msg=f'{name} changed value when written')
+
+    def test_fortran_indices_are_restored(self):
+        original, _, lines = self._round_trip()
+
+        for name in tomoin.FORTRAN_TO_C_FIELDS:
+            with self.subTest(field=name):
+                written = int(lines[tomoin.DAT_FILE_LINE_INDEX[name]])
+                stored = getattr(original.parameters, name)
+                self.assertEqual(written, stored + 1,
+                                 msg=f'{name} should be written 1-based')
+
+    def test_template_agrees_with_line_index(self):
+        lines = tomoin.DAT_FILE_TEMPLATE.splitlines()
+
+        placeholders = {line.strip('{}'): i + tomoin.DAT_FILE_HEADER_LENGTH
+                        for i, line in enumerate(lines)
+                        if line.startswith('{')}
+        self.assertEqual(placeholders, tomoin.DAT_FILE_LINE_INDEX,
+                         msg='the write template and the parse indices '
+                             'disagree on the file layout')
+
+    def test_mutated_parameters_are_written(self):
+        data = tomoin.TomographyData.from_dat_file(self._dat_path())
+        data.parameters.niter = 42
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            written = os.path.join(tmp_dir, 'mutated.dat')
+            data.to_dat_file(written)
+            restored = tomoin.TomographyData.from_dat_file(written)
+
+        self.assertEqual(restored.parameters.niter, 42,
+                         msg='a mutated parameter should be written out')
+
+    def test_absent_value_cannot_be_written(self):
+        params = tomoin.Parameters(**PARAMETER_ARGS)
+
+        with self.assertRaises(expt.InputError,
+                               msg='a parameter with no value cannot be '
+                                   'represented in a .dat file'):
+            params.to_dat_lines()
+
+    def test_missing_inline_data_fails(self):
+        data = tomoin.TomographyData.from_dat_file(self._dat_path())
+        restored = tomoin.TomographyData.model_validate_json(
+            data.model_dump_json())
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with self.assertRaises(expt.RawDataImportError,
+                                   msg='writing inline data that is not '
+                                       'held should raise an exception'):
+                restored.to_dat_file(os.path.join(tmp_dir, 'no_data.dat'))
