@@ -18,7 +18,7 @@ from ..tracking.machine import Machine
 from ..compat import fortran
 
 if TYPE_CHECKING:
-    from typing import Collection, Sequence
+    from typing import Any, Collection, Sequence
     from numpy.typing import NDArray as NPArray
 
     from ..tracking.machine_base import MachineABC
@@ -214,6 +214,10 @@ class Frames(pydantic.BaseModel):
     """Class for storing raw data and information on how to treat them,
     based on a Fortran style input file.
 
+    Arguments may be given positionally in the order below, or by keyword
+    using either these names or the attribute names ``nframes``,
+    ``nbins_frame`` and ``sampling_time``.
+
     Parameters
     ----------
     framecount: int
@@ -322,7 +326,7 @@ class Frames(pydantic.BaseModel):
 
     @classmethod
     def from_parameters(cls, params: Parameters,
-                         raw_data_path: str = '') -> Frames:
+                        raw_data_path: str = '') -> Frames:
         """Build Frames from the frame-shaping fields of a Parameters."""
         return cls(
             framecount=params.framecount,
@@ -452,7 +456,7 @@ class TomographyData(pydantic.BaseModel):
 
     @classmethod
     def from_dat_file(cls, path: str) -> TomographyData:
-        """Build a DatFile by reading and parsing a legacy `.dat` file.
+        """Build a TomographyData by reading and parsing a legacy `.dat` file.
 
         Parameters
         ----------
@@ -461,7 +465,7 @@ class TomographyData(pydantic.BaseModel):
 
         Returns
         -------
-        DatFile
+        TomographyData
         """
         raw_params, raw_data = get_user_input(path)
         params = Parameters.from_dat_lines(raw_params)
@@ -615,8 +619,7 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
     """
 
     params = Parameters.from_dat_lines(input_array)
-    raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']].strip(
-        '\r\n')
+    raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']].strip()
     frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
 
     # Calculating limits in phase for reconstruction area, specified by
