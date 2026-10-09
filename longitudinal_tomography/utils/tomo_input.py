@@ -343,8 +343,13 @@ class Parameters(_ValidatedModel):
         # conversion in from_dat_lines is applied here.
         value = getattr(self, name)
         if value is None:
-            raise expt.InputError(
-                f'{name} has no value, which a .dat file cannot represent')
+            if name == 'output_dir':
+                raise expt.InputError(
+                    'output_dir has no value, which a .dat file cannot '
+                    'represent')
+            # The format has no way to say "unset", so an optional
+            # parameter without a value is written as zero.
+            return '0'
         if isinstance(value, bool):
             return str(int(value))
         if name in FORTRAN_TO_C_FIELDS:
