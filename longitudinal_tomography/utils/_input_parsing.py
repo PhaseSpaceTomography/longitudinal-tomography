@@ -184,11 +184,15 @@ DAT_FILE_TEMPLATE = (
 def read_input(input: str = '') -> tuple[list, NPArray]:
     """Read input from stdin, or from the file at the given path, and
     split it into parameter lines and raw data."""
+    return split_input(read_lines(input))
+
+
+def read_lines(input: str = '') -> NPArray:
+    """Read every line of input from stdin, or from the file at the given
+    path."""
     if input == 'stdin' or input == '':
-        read = get_input_stdin()
-    else:
-        read = get_input_args(input)
-    return split_input(read)
+        return get_input_stdin()
+    return get_input_args(input)
 
 
 # Receive path to input file via sys.argv.

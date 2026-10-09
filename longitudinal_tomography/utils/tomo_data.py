@@ -14,12 +14,12 @@ from ..data import data_treatment as dtreat
 from ..tomography import tomography
 from ..tracking import particles as pts, tracking
 from ..tracking.machine import Machine
-from ..utils import (_input_parsing as parsing,
+from ..utils import (_input_parsing as parsing, file_handling as fhand,
                      parameter_descriptions as pdesc,
                      tomo_config as conf)
 
 if TYPE_CHECKING:
-    from typing import Any, Collection, Sequence
+    from typing import Any, Collection
     from numpy.typing import NDArray as NPArray
 
     from ..data.profiles import Profiles
@@ -145,101 +145,6 @@ class Parameters(_ValidatedModel):
             raise ValueError(merged_error)
 
         return self
-
-    @classmethod
-    def from_dat_lines(cls, lines: Sequence[str]) -> Parameters:
-        """Build Parameters from the header lines of a legacy `.dat` file.
-
-        Parameters
-        ----------
-        lines: Sequence[str]
-            The `.dat` file's `PARAMETER_LENGTH` header lines (raw-data
-            lines, if any, excluded).
-
-        Returns
-        -------
-        Parameters
-        """
-        if not hasattr(lines, '__iter__'):
-            raise expt.InputError('Input should be iterable')
-        if len(lines) != parsing.PARAMETER_LENGTH:
-            raise expt.InputError(
-                f'Input array be of length {parsing.PARAMETER_LENGTH}, '
-                f'containing every line of input file (not including '
-                f'raw-data).')
-
-        stripped = [line.strip() for line in lines]
-
-        param_values = {}
-        for name, idx in parsing.DAT_FILE_LINE_INDEX.items():
-            if name == 'raw_data_path':
-                continue
-            value = stripped[idx]
-            if name in parsing.FORTRAN_TO_C_FIELDS:
-                try:
-                    value = int(value) - 1
-                except ValueError as exc:
-                    raise expt.InputError(
-                        f'Invalid legacy input parameters:\n{name} on line '
-                        f'{idx} is not an integer: {value!r}') from exc
-            param_values[name] = value
-
-        try:
-            return cls(**param_values)
-        except pydantic.ValidationError as exc:
-            raise expt.InputError(
-                f'Invalid legacy input parameters:\n{exc}') from exc
-
-    def _dat_value(self, name: str) -> str:
-        # Fortran index fields are stored 0-based, so the inverse of the
-        # conversion in from_dat_lines is applied here.
-        value = getattr(self, name)
-        if value is None:
-            if name == 'output_dir':
-                raise expt.InputError(
-                    'output_dir has no value, which a .dat file cannot '
-                    'represent')
-            # The format has no way to say "unset", so an optional
-            # parameter without a value is written as zero.
-            return '0'
-        if isinstance(value, bool):
-            return str(int(value))
-        if name in parsing.FORTRAN_TO_C_FIELDS:
-            return str(value + 1)
-        return str(value)
-
-    def to_dat_lines(self, raw_data_path: str = 'pipe',
-                     preamble: Sequence[str] = ()) -> list[str]:
-        """Render the parameters as the header lines of a legacy `.dat` file.
-
-        Parameters
-        ----------
-        raw_data_path: str
-            Value for the raw data path line, which is not a parameter.
-            ``'pipe'`` means the raw data follows the header lines.
-        preamble: Sequence[str], optional
-            Lines preceding the parameters, padded with blank lines to
-            `DAT_FILE_HEADER_LENGTH`.
-
-        Returns
-        -------
-        list[str]
-            The `PARAMETER_LENGTH` header lines, without line endings.
-
-        Raises
-        ------
-        InputError: Exception
-            Raised if a parameter holds no value the format can represent.
-        """
-        header = list(preamble)
-        header += [''] * (parsing.DAT_FILE_HEADER_LENGTH - len(header))
-        values = {name: self._dat_value(name)
-                  for name in parsing.DAT_FILE_LINE_INDEX
-                  if name != 'raw_data_path'}
-        block = parsing.DAT_FILE_TEMPLATE.format(
-            raw_data_path=raw_data_path, **values)
-        return header + block.splitlines()
-
 
 def _to_raw_data(value: Collection) -> NPArray:
     """Coerce raw data to a float array."""
@@ -509,62 +414,10 @@ class Metadata(_ValidatedModel):
     v_scale: float | None = None  # V/div
     v_position: float | None = None  # div
 
-    @classmethod
-    def from_dat_lines(cls, lines: Sequence[str]) -> Metadata:
-        """Build Metadata from the preamble of a legacy `.dat` file.
-
-        Parameters
-        ----------
-        lines: Sequence[str]
-            Lines of the `.dat` file, of which the first
-            `DAT_FILE_HEADER_LENGTH` are read.
-
-        Returns
-        -------
-        Metadata
-
-        Raises
-        ------
-        InputError: Exception
-            Raised if a preamble line holds an invalid value.
-        """
-        lines = [line.strip() for line in
-                 lines[:parsing.DAT_FILE_HEADER_LENGTH]]
-        selector, _, context_name = lines[0].partition('=')
-        values = {'selector': selector, 'context_name': context_name,
-                  **dict(zip(parsing.DAT_FILE_PREAMBLE, lines[2:]))}
-        # pydantic's ValidationError is a ValueError too.
-        try:
-            # The cycle stamp is given in seconds.
-            if lines[1]:
-                values['cycle_stamp_ns'] = int(lines[1]) * 10**9
-            # A blank line holds no value.
-            return cls(**{name: value for name, value in values.items()
-                          if value != ''})
-        except ValueError as exc:
-            raise expt.InputError(
-                f'Invalid legacy input preamble:\n{exc}') from exc
-
-    def to_dat_lines(self) -> list[str]:
-        """Render the metadata as the preamble of a legacy `.dat` file.
-
-        Returns
-        -------
-        list[str]
-            The `DAT_FILE_HEADER_LENGTH` preamble lines, without line endings.
-        """
-        names = (self.selector or '', self.context_name or '')
-        # The cycle stamp is written in seconds, so any fraction is lost.
-        stamp = (None if self.cycle_stamp_ns is None
-                 else self.cycle_stamp_ns // 10**9)
-        values = ['='.join(names) if any(names) else None, stamp,
-                  *(getattr(self, name) for name in parsing.DAT_FILE_PREAMBLE)]
-        return ['' if value is None else str(value) for value in values]
-
-
 class TomographyData(_ValidatedModel):
-    """Full input data parsed from a legacy `.dat` file: the machine and
-    reconstruction parameters plus the frame/raw-data metadata.
+    """Full input data, as held by a file of the latest JSON format version:
+    the machine and reconstruction parameters, the frames holding the raw
+    data, and the metadata.
     """
 
     # Fields are dumped in this order, so the raw data in frames comes last.
@@ -575,56 +428,66 @@ class TomographyData(_ValidatedModel):
     frames: Frames
 
     @classmethod
-    def from_dat_file(cls, path: str) -> TomographyData:
-        """Build a TomographyData by reading and parsing a legacy `.dat` file.
+    def from_file(cls, path: str) -> TomographyData:
+        """Read input data from a file of any supported format version,
+        converting it to the latest version first if needed.
 
         Parameters
         ----------
         path: str
-            Path to the `.dat` file.
+            Path to the file. ``'stdin'`` or ``''`` reads a `.dat` file from
+            stdin.
 
         Returns
         -------
         TomographyData
+            The input data, with the file's format version in its metadata.
+
+        Raises
+        ------
+        InputError: Exception
+            Raised if the file's format version is not supported, or the file
+            holds invalid input.
         """
-        raw_params, raw_data = parsing.read_input(path)
-        params = Parameters.from_dat_lines(raw_params)
-        raw_data_path = raw_params[parsing.RAW_DATA_FILE_IDX]
-        frame = Frames.from_parameters(params, raw_data_path=raw_data_path,
-                                       raw_data=raw_data)
-        return cls(parameters=params, frames=frame,
-                   metadata=Metadata.from_dat_lines(raw_params))
+        text, version = fhand.read_file(path)
+        try:
+            data = cls.model_validate_json(
+                fhand.convert_text(text, version, fhand.JSON_VERSION))
+        except pydantic.ValidationError as exc:
+            raise expt.InputError(
+                f'Invalid input in "{path}":\n{exc}') from exc
+        data.metadata.format_version = version
+        return data
 
-    def to_dat_file(self, path: str):
-        """Write the input data to a legacy `.dat` file.
-
-        Raw data is appended to the parameter lines unless the frames name
-        an external file holding it.
+    def to_file(self, path: str, version: str = fhand.JSON_VERSION):
+        """Write the input data to a file of the given format version,
+        converting it from the latest version if needed.
 
         Parameters
         ----------
         path: str
             Path of the file to write.
+        version: str, optional, default=JSON_VERSION
+            Format version to write, :data:`DAT_VERSION` for a `.dat` file.
 
         Raises
         ------
+        InputError: Exception
+            Raised if the format version is not supported, or the data
+            cannot be represented in it.
         RawDataImportError: Exception
-            Raised if raw data should be written inline but is missing.
+            Raised if a `.dat` file should hold raw data that is missing.
         """
-        # An empty path names no external file, so the data goes inline.
-        raw_data_path = ('pipe' if self.frames.raw_data_path == ''
-                          else self.frames.raw_data_path)
-
-        lines = self.parameters.to_dat_lines(raw_data_path,
-                                             self.metadata.to_dat_lines())
-        if raw_data_path == 'pipe':
-            if self.frames.raw_data is None:
-                raise expt.RawDataImportError(
-                    'No raw data held to write inline')
-            lines += [str(value) for value in self.frames.raw_data.tolist()]
-
+        metadata = self.metadata.model_copy(
+            update={'format_version': fhand.JSON_VERSION})
+        # The profile counts are derived, so they are left out and the raw
+        # data ends the file.
+        document = self.model_copy(update={'metadata': metadata}).model_dump(
+            mode='json', exclude={'frames': {'nprofs', 'nbins'}})
+        text = fhand.convert_text(fhand.format_json(document),
+                                  fhand.JSON_VERSION, version)
         with open(path, 'w') as f:
-            f.write('\n'.join(lines) + '\n')
+            f.write(text)
 
     def to_machine(self) -> Machine:
         """Build a Machine from the input data.

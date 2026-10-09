@@ -4,7 +4,6 @@ Run as python test_tomo_data.py in console or via coverage
 """
 
 import os
-import tempfile
 import unittest
 
 import numpy as np
@@ -15,7 +14,6 @@ from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 import longitudinal_tomography.tracking.machine_base as machine_base
 from longitudinal_tomography import exceptions as expt
-import longitudinal_tomography.utils._input_parsing as parsing
 import longitudinal_tomography.utils.tomo_data as tdata
 import longitudinal_tomography.utils.tomo_input as tomoin
 
@@ -44,11 +42,10 @@ def _resource_dir() -> str:
     return os.path.join(base_dir, 'resources')
 
 
-def _parameter_lines() -> list:
-    """The 98 header lines of the reference .dat file, without raw data."""
-    infile = os.path.join(_resource_dir(), 'parameters_INDIVShavingC325.dat')
-    with open(infile, 'r') as f:
-        return f.readlines()
+def _reference_data() -> tdata.TomographyData:
+    """The input data of the reference .dat file."""
+    return tdata.TomographyData.from_file(
+        os.path.join(_resource_dir(), 'INDIVShavingC325.dat'))
 
 
 # Minimal set of fields with no default, for building a Parameters by hand.
@@ -75,96 +72,6 @@ PARAMETER_ARGS = {
 
 class TestParameters(unittest.TestCase):
 
-    def test_from_dat_lines_matches_machine_args(self):
-        params = tdata.Parameters.from_dat_lines(_parameter_lines())
-
-        for name, expected in MACHINE_ARGS.items():
-            if name in DERIVED_MACHINE_ARGS:
-                continue
-            self.assertEqual(
-                getattr(params, name), expected,
-                msg=f'{name} parsed incorrectly from the .dat file')
-
-    def test_from_dat_lines_frame_fields(self):
-        params = tdata.Parameters.from_dat_lines(_parameter_lines())
-
-        for name in ('framecount', 'skip_frames', 'framelength',
-                     'skip_bins_start', 'skip_bins_end', 'rebin'):
-            self.assertEqual(
-                getattr(params, name), frame_input_args[name],
-                msg=f'{name} parsed incorrectly from the .dat file')
-
-        self.assertEqual(params.min_dt_bin, 0,
-                         msg='min_dt_bin parsed incorrectly')
-        self.assertEqual(params.max_dt_bin, 0,
-                         msg='max_dt_bin parsed incorrectly')
-
-    def test_from_dat_lines_converts_fortran_indices(self):
-        lines = _parameter_lines()
-        for name, value in (('filmstart', 3), ('filmstop', 5),
-                            ('beam_ref_frame', 7), ('machine_ref_frame', 9)):
-            lines[parsing.DAT_FILE_LINE_INDEX[name]] = f'{value}\n'
-        # dturns is an ordinary int field, it must survive untouched.
-        lines[parsing.DAT_FILE_LINE_INDEX['dturns']] = '9\n'
-
-        params = tdata.Parameters.from_dat_lines(lines)
-
-        self.assertEqual(params.filmstart, 2,
-                         msg='filmstart not converted to 0-based indexing')
-        self.assertEqual(params.filmstop, 4,
-                         msg='filmstop not converted to 0-based indexing')
-        self.assertEqual(
-            params.beam_ref_frame, 6,
-            msg='beam_ref_frame not converted to 0-based indexing')
-        self.assertEqual(
-            params.machine_ref_frame, 8,
-            msg='machine_ref_frame not converted to 0-based indexing')
-        self.assertEqual(params.dturns, 9,
-                         msg='dturns should not be index-converted')
-
-    def test_from_dat_lines_leaves_input_unchanged(self):
-        lines = _parameter_lines()
-        original = list(lines)
-
-        tdata.Parameters.from_dat_lines(lines)
-
-        self.assertEqual(lines, original,
-                         msg='from_dat_lines must not mutate its input')
-
-    def test_from_dat_lines_strips_line_endings(self):
-        lines = [line.rstrip('\n') + '\r\n' for line in _parameter_lines()]
-
-        params = tdata.Parameters.from_dat_lines(lines)
-
-        self.assertEqual(params.output_dir, MACHINE_ARGS['output_dir'],
-                         msg='carriage returns not stripped from .dat lines')
-
-    def test_from_dat_lines_strips_padding(self):
-        # Fortran writers pad numeric fields; bool coercion of a padded
-        # value fails unless the whole line is stripped.
-        lines = [f'   {line.strip()}  \n' for line in _parameter_lines()]
-
-        params = tdata.Parameters.from_dat_lines(lines)
-        expected = tdata.Parameters.from_dat_lines(_parameter_lines())
-
-        self.assertEqual(params.model_dump(), expected.model_dump(),
-                         msg='padded .dat lines should parse identically to '
-                             'unpadded ones')
-
-    def test_from_dat_lines_unparsable_index_fails(self):
-        # The index fields are converted before pydantic sees them, so they
-        # need their own error handling.
-        for name in parsing.FORTRAN_TO_C_FIELDS:
-            with self.subTest(field=name):
-                lines = _parameter_lines()
-                lines[parsing.DAT_FILE_LINE_INDEX[name]] = 'not a number\n'
-
-                with self.assertRaises(
-                        expt.InputError,
-                        msg=f'an uncoercible {name} should raise '
-                            f'an InputError'):
-                    tdata.Parameters.from_dat_lines(lines)
-
     def test_defaults_match_machine_defaults(self):
         defaults = {**machine_base._machine_base_defaults,
                     **mch._machine_opts_def}
@@ -179,7 +86,7 @@ class TestParameters(unittest.TestCase):
                         f'by Machine')
 
     def test_validate_rejects_an_invalid_change(self):
-        params = tdata.Parameters.from_dat_lines(_parameter_lines())
+        params = _reference_data().parameters
         params.niter = -1
 
         with self.assertRaises(pydantic.ValidationError,
@@ -188,43 +95,13 @@ class TestParameters(unittest.TestCase):
             params.validate()
 
     def test_validate_rejects_a_broken_cross_field_bound(self):
-        params = tdata.Parameters.from_dat_lines(_parameter_lines())
+        params = _reference_data().parameters
         params.filmstop = params.framecount
 
         with self.assertRaises(pydantic.ValidationError,
                                msg='filmstop beyond framecount should be '
                                    'rejected by validate'):
             params.validate()
-
-    def test_from_dat_lines_no_iter_fails(self):
-        with self.assertRaises(expt.InputError,
-                               msg='non iterable input should '
-                                   'raise an exception'):
-            tdata.Parameters.from_dat_lines(1)
-
-    def test_from_dat_lines_wrong_len_fails(self):
-        with self.assertRaises(expt.InputError,
-                               msg='input of the wrong length should '
-                                   'raise an exception'):
-            tdata.Parameters.from_dat_lines(['1', '2', '3'])
-
-    def test_from_dat_lines_invalid_value_fails(self):
-        lines = _parameter_lines()
-        lines[parsing.DAT_FILE_LINE_INDEX['rebin']] = '0\n'
-
-        with self.assertRaises(expt.InputError,
-                               msg='a value violating a field constraint '
-                                   'should raise an InputError'):
-            tdata.Parameters.from_dat_lines(lines)
-
-    def test_from_dat_lines_unparsable_value_fails(self):
-        lines = _parameter_lines()
-        lines[parsing.DAT_FILE_LINE_INDEX['dturns']] = 'not a number\n'
-
-        with self.assertRaises(expt.InputError,
-                               msg='a value that cannot be coerced should '
-                                   'raise an InputError'):
-            tdata.Parameters.from_dat_lines(lines)
 
     def test_rejects_out_of_range_values(self):
         for name, value in (('framecount', 0), ('framelength', 0),
@@ -286,23 +163,6 @@ class TestParameters(unittest.TestCase):
                                    'silently truncated to an int field'):
             tdata.Parameters(**{**PARAMETER_ARGS, 'dturns': 5.5})
 
-    def test_flags_parsed_from_dat_digits(self):
-        for value, expected in (('0', False), ('1', True)):
-            with self.subTest(value=value):
-                lines = _parameter_lines()
-                lines[parsing.DAT_FILE_LINE_INDEX['full_pp_flag']] = \
-                    f'{value}\n'
-                lines[parsing.DAT_FILE_LINE_INDEX['self_field_flag']] = \
-                    f'{value}\n'
-
-                params = tdata.Parameters.from_dat_lines(lines)
-
-                self.assertIs(params.full_pp_flag, expected,
-                              msg='full_pp_flag parsed incorrectly')
-                self.assertIs(params.self_field_flag, expected,
-                              msg='self_field_flag parsed incorrectly')
-
-
 class TestFramesValidation(unittest.TestCase):
 
     def test_rejects_out_of_range_values(self):
@@ -357,7 +217,7 @@ class TestFramesValidation(unittest.TestCase):
             frames.validate()
 
     def test_from_parameters_maps_fields(self):
-        params = tdata.Parameters.from_dat_lines(_parameter_lines())
+        params = _reference_data().parameters
         frames = tdata.Frames.from_parameters(params, raw_data_path='a/path')
 
         self.assertEqual(frames.nframes, params.framecount,
@@ -378,7 +238,7 @@ class TestFramesValidation(unittest.TestCase):
                          msg='raw_data_path not set')
 
     def test_from_parameters_default_raw_data_path(self):
-        params = tdata.Parameters.from_dat_lines(_parameter_lines())
+        params = _reference_data().parameters
         frames = tdata.Frames.from_parameters(params)
 
         self.assertEqual(frames.raw_data_path, '',
@@ -498,22 +358,23 @@ class TestTomographyData(unittest.TestCase):
     def _dat_path(self) -> str:
         return os.path.join(_resource_dir(), 'INDIVShavingC325.dat')
 
-    def test_from_dat_file_parameters(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+    def test_from_file_parameters(self):
+        data = _reference_data()
 
         self.assertIsInstance(data.parameters, tdata.Parameters,
                               msg='parameters should be a Parameters')
         self.assertIsInstance(data.frames, tdata.Frames,
                               msg='frames should be a Frames')
 
-        expected = tdata.Parameters.from_dat_lines(_parameter_lines())
-        self.assertEqual(
-            data.parameters.model_dump(), expected.model_dump(),
-            msg='parameters read from the file differ from the same file '
-                'parsed as lines')
+        for name, expected in MACHINE_ARGS.items():
+            if name in DERIVED_MACHINE_ARGS:
+                continue
+            with self.subTest(field=name):
+                self.assertEqual(getattr(data.parameters, name), expected,
+                                 msg=f'{name} read incorrectly from the file')
 
-    def test_from_dat_file_frames(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+    def test_from_file_frames(self):
+        data = _reference_data()
 
         self.assertEqual(data.frames.nprofs, 150,
                          msg='nprofs not derived from the parsed parameters')
@@ -522,16 +383,16 @@ class TestTomographyData(unittest.TestCase):
         self.assertEqual(data.frames.raw_data_path, 'pipe',
                          msg='raw_data_path not taken from the .dat file')
 
-    def test_from_dat_file_holds_raw_data(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+    def test_from_file_holds_raw_data(self):
+        data = _reference_data()
 
         self.assertIsNotNone(data.frames.raw_data,
                              msg='raw data should be attached to the frames')
         self.assertEqual(len(data.frames.raw_data), 150 * 1000,
                          msg='wrong amount of raw data attached')
 
-    def test_from_dat_file_waterfall_correct(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+    def test_from_file_waterfall_correct(self):
+        data = _reference_data()
 
         waterfall = data.frames.to_waterfall(data.frames.raw_data)
 
@@ -544,11 +405,11 @@ class TestTomographyData(unittest.TestCase):
             err_msg='waterfall built from TomographyData does not match the '
                     'reference waterfall')
 
-    def test_from_dat_file_agrees_with_txt_input_to_machine(self):
+    def test_from_file_agrees_with_txt_input_to_machine(self):
         raw_params, _ = tomoin.get_user_input(self._dat_path())
         machine, frames = tomoin.txt_input_to_machine(raw_params)
 
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+        data = _reference_data()
 
         for name in MACHINE_ARGS:
             if name in DERIVED_MACHINE_ARGS:
@@ -573,7 +434,7 @@ class TestTomographyData(unittest.TestCase):
                               'raw data')
 
     def test_json_round_trip(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+        data = _reference_data()
 
         restored = tdata.TomographyData.model_validate_json(
             data.model_dump_json())
@@ -587,7 +448,7 @@ class TestTomographyData(unittest.TestCase):
             err_msg='raw data should survive a JSON round trip')
 
     def test_validate_checks_nested_models(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+        data = _reference_data()
         data.validate()
 
         data.parameters.niter = -1
@@ -598,199 +459,10 @@ class TestTomographyData(unittest.TestCase):
             data.validate()
 
     def test_validate_checks_nested_frames(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
+        data = _reference_data()
         data.frames.rebin = 0
 
         with self.assertRaises(pydantic.ValidationError,
                                msg='validate should reach the frames it '
                                    'holds'):
             data.validate()
-
-    def test_from_dat_file_missing_file_fails(self):
-        with self.assertRaises(expt.InputError,
-                               msg='a missing input file should raise '
-                                   'an exception'):
-            tdata.TomographyData.from_dat_file('does/not/exist.dat')
-
-
-class TestDatFileWriting(unittest.TestCase):
-
-    def _dat_path(self) -> str:
-        return os.path.join(_resource_dir(), 'INDIVShavingC325.dat')
-
-    def _round_trip(self) -> tuple:
-        original = tdata.TomographyData.from_dat_file(self._dat_path())
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            written = os.path.join(tmp_dir, 'round_trip.dat')
-            original.to_dat_file(written)
-            with open(written) as f:
-                lines = f.read().splitlines()
-            restored = tdata.TomographyData.from_dat_file(written)
-        return original, restored, lines
-
-    def test_round_trip_preserves_parameters(self):
-        original, restored, _ = self._round_trip()
-
-        self.assertEqual(restored.parameters, original.parameters,
-                         msg='parameters should survive a .dat round trip')
-
-    def test_round_trip_preserves_frames_and_data(self):
-        original, restored, _ = self._round_trip()
-
-        self.assertEqual(restored.frames, original.frames,
-                         msg='frames should survive a .dat round trip')
-        nptest.assert_array_equal(
-            restored.frames.raw_data, original.frames.raw_data,
-            err_msg='raw data should survive a .dat round trip')
-
-    def test_round_trip_preserves_preamble(self):
-        original, restored, lines = self._round_trip()
-
-        with open(self._dat_path()) as f:
-            source = f.read().splitlines()
-        preamble = source[:parsing.DAT_FILE_HEADER_LENGTH]
-        self.assertEqual(original.metadata.to_dat_lines(), preamble,
-                         msg='the preamble should be held in the metadata')
-        self.assertEqual(lines[:parsing.DAT_FILE_HEADER_LENGTH], preamble,
-                         msg='the preamble should be written back')
-        self.assertEqual(restored.metadata, original.metadata,
-                         msg='the metadata should survive a .dat round trip')
-
-    def test_preamble_is_parsed(self):
-        metadata = tdata.TomographyData.from_dat_file(
-            self._dat_path()).metadata
-
-        expected = {'selector': 'LHCINDIV', 'context_name': 'LHCINDIV',
-                    'cycle_stamp_ns': 1520341165 * 10**9, 'c_time': 325,
-                    'timespan': 1015.943, 'ring': 3,
-                    'delay': 1259.0000000000002, 'v_scale': 0.01,
-                    'v_position': -1.8679245283018875}
-        for name, value in expected.items():
-            with self.subTest(field=name):
-                self.assertEqual(getattr(metadata, name), value,
-                                 msg=f'{name} should be read from the '
-                                     f'preamble')
-
-    def test_empty_metadata_gives_blank_preamble(self):
-        self.assertEqual(tdata.Metadata().to_dat_lines(),
-                         [''] * parsing.DAT_FILE_HEADER_LENGTH,
-                         msg='metadata without values should give blank '
-                             'lines')
-
-    def test_comment_lines_are_unchanged(self):
-        _, _, lines = self._round_trip()
-        with open(self._dat_path()) as f:
-            source = f.read().splitlines()
-
-        for i in range(parsing.PARAMETER_LENGTH):
-            if source[i].lstrip().startswith('!'):
-                with self.subTest(line=i):
-                    self.assertEqual(lines[i], source[i],
-                                     msg=f'comment line {i} was altered')
-
-    def test_written_values_hold_the_same_numbers(self):
-        _, _, lines = self._round_trip()
-        with open(self._dat_path()) as f:
-            source = f.read().splitlines()
-
-        for name, i in parsing.DAT_FILE_LINE_INDEX.items():
-            if name in ('raw_data_path', 'output_dir'):
-                continue
-            with self.subTest(field=name):
-                self.assertEqual(float(lines[i]), float(source[i]),
-                                 msg=f'{name} changed value when written')
-
-    def test_fortran_indices_are_restored(self):
-        original, _, lines = self._round_trip()
-
-        for name in parsing.FORTRAN_TO_C_FIELDS:
-            with self.subTest(field=name):
-                written = int(lines[parsing.DAT_FILE_LINE_INDEX[name]])
-                stored = getattr(original.parameters, name)
-                self.assertEqual(written, stored + 1,
-                                 msg=f'{name} should be written 1-based')
-
-    def test_template_agrees_with_line_index(self):
-        lines = parsing.DAT_FILE_TEMPLATE.splitlines()
-
-        placeholders = {line.strip('{}'): i + parsing.DAT_FILE_HEADER_LENGTH
-                        for i, line in enumerate(lines)
-                        if line.startswith('{')}
-        self.assertEqual(placeholders, parsing.DAT_FILE_LINE_INDEX,
-                         msg='the write template and the parse indices '
-                             'disagree on the file layout')
-
-    def test_mutated_parameters_are_written(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
-        data.parameters.niter = 42
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            written = os.path.join(tmp_dir, 'mutated.dat')
-            data.to_dat_file(written)
-            restored = tdata.TomographyData.from_dat_file(written)
-
-        self.assertEqual(restored.parameters.niter, 42,
-                         msg='a mutated parameter should be written out')
-
-    def test_absent_output_dir_cannot_be_written(self):
-        params = tdata.Parameters(**PARAMETER_ARGS)
-
-        with self.assertRaises(expt.InputError,
-                               msg='an output directory with no value '
-                                   'cannot be represented in a .dat file'):
-            params.to_dat_lines()
-
-    def test_absent_optional_is_written_as_zero(self):
-        optional = ('g_coupling', 'zwall_over_n', 'pickup_sensitivity')
-        params = tdata.Parameters(**PARAMETER_ARGS, output_dir='/tmp/')
-        lines = params.to_dat_lines()
-
-        for name in optional:
-            with self.subTest(field=name):
-                self.assertIsNone(getattr(params, name),
-                                  msg=f'{name} should have no value')
-                self.assertEqual(lines[parsing.DAT_FILE_LINE_INDEX[name]], '0',
-                                 msg=f'{name} should be written as zero')
-
-    def test_missing_inline_data_fails(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
-        without_data = tdata.TomographyData(
-            parameters=data.parameters,
-            frames=tdata.Frames.from_parameters(data.parameters,
-                                                 raw_data_path='pipe'))
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            with self.assertRaises(expt.RawDataImportError,
-                                   msg='writing inline data that is not '
-                                       'held should raise an exception'):
-                without_data.to_dat_file(
-                    os.path.join(tmp_dir, 'no_data.dat'))
-
-    def test_data_is_written_inline_without_a_path(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
-        no_path = tdata.TomographyData(
-            parameters=data.parameters,
-            frames=tdata.Frames.from_parameters(
-                data.parameters, raw_data=data.frames.raw_data))
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            written = os.path.join(tmp_dir, 'no_path.dat')
-            no_path.to_dat_file(written)
-            restored = tdata.TomographyData.from_dat_file(written)
-
-        nptest.assert_array_equal(
-            restored.frames.raw_data, data.frames.raw_data,
-            err_msg='frames naming no raw-data file should be written inline')
-
-    def test_missing_inline_data_without_a_path_fails(self):
-        data = tdata.TomographyData.from_dat_file(self._dat_path())
-        without_data = tdata.TomographyData(
-            parameters=data.parameters,
-            frames=tdata.Frames.from_parameters(data.parameters))
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            with self.assertRaises(expt.RawDataImportError,
-                                   msg='writing frames that hold neither '
-                                       'data nor a path should raise'):
-                without_data.to_dat_file(
-                    os.path.join(tmp_dir, 'no_data.dat'))

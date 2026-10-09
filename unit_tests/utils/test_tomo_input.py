@@ -12,6 +12,7 @@ import numpy.testing as nptest
 from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 from longitudinal_tomography import exceptions as expt
+import longitudinal_tomography.utils._input_parsing as parsing
 import longitudinal_tomography.utils.tomo_input as tomoin
 
 # All values retrieved from INDIVShavingC325.dat
@@ -394,6 +395,18 @@ class TestTomoIn(unittest.TestCase):
                                msg='non iterable of the wrong length '
                                    'should raise an exception'):
             _, _ = tomoin.txt_input_to_machine(wrong_length_iter)
+
+    def test_txt_input_to_machine_invalid_value_fails(self):
+        infile = os.path.join(self._find_resource_dir(),
+                              'parameters_INDIVShavingC325.dat')
+        with open(infile, 'r') as f:
+            file_lines = f.readlines()
+        file_lines[parsing.DAT_FILE_LINE_INDEX['rebin']] = '0\n'
+
+        with self.assertRaises(expt.InputError,
+                               msg='a value violating a field constraint '
+                                   'should raise an InputError'):
+            tomoin.txt_input_to_machine(file_lines)
 
     def _load_waterfall(self):
         data_path = self._find_resource_dir()

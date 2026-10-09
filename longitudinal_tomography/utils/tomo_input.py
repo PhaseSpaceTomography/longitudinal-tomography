@@ -6,7 +6,11 @@ Fortran style text files.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ..utils import _input_parsing as parsing, tomo_data as tdata
+import pydantic
+
+from .. import exceptions as expt
+from ..utils import (_input_parsing as parsing, file_handling as fhand,
+                     tomo_data as tdata)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray as NPArray
@@ -71,17 +75,18 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, tdata.Frames]:
         Error in input array
     """
 
-    params = tdata.Parameters.from_dat_lines(input_array)
-    raw_data_path = input_array[RAW_DATA_FILE_IDX].strip()
     # TODO: only the parameter lines are given here, so these frames never
-    # hold raw data, unlike those built by TomographyData.from_dat_file, and
+    # hold raw data, unlike those read by TomographyData.from_file, and
     # callers have to carry the array themselves. Drop the difference when
     # the input seam moves to a single reader.
-    frame = tdata.Frames.from_parameters(params, raw_data_path=raw_data_path)
-    machine = tdata.TomographyData(
-        parameters=params, frames=frame).to_machine()
+    text = fhand.dat_to_json(input_array)
+    try:
+        data = tdata.TomographyData.model_validate_json(text)
+    except pydantic.ValidationError as exc:
+        raise expt.InputError(
+            f'Invalid legacy input parameters:\n{exc}') from exc
 
-    return machine, frame
+    return data.to_machine(), data.frames
 
 
 
