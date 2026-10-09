@@ -643,17 +643,39 @@ class TestDatFileWriting(unittest.TestCase):
             restored.frames.raw_data, original.frames.raw_data,
             err_msg='raw data should survive a .dat round trip')
 
-    def test_round_trip_preserves_header(self):
+    def test_round_trip_preserves_preamble(self):
         original, restored, lines = self._round_trip()
 
         with open(self._dat_path()) as f:
             source = f.read().splitlines()
-        self.assertEqual(original.parameters.header,
-                         source[:parsing.DAT_FILE_HEADER_LENGTH],
-                         msg='the header lines should be held verbatim')
-        self.assertEqual(restored.parameters.header,
-                         original.parameters.header,
-                         msg='the header lines should be written back')
+        preamble = source[:parsing.DAT_FILE_HEADER_LENGTH]
+        self.assertEqual(original.metadata.to_dat_lines(), preamble,
+                         msg='the preamble should be held in the metadata')
+        self.assertEqual(lines[:parsing.DAT_FILE_HEADER_LENGTH], preamble,
+                         msg='the preamble should be written back')
+        self.assertEqual(restored.metadata, original.metadata,
+                         msg='the metadata should survive a .dat round trip')
+
+    def test_preamble_is_parsed(self):
+        metadata = tdata.TomographyData.from_dat_file(
+            self._dat_path()).metadata
+
+        expected = {'selector': 'LHCINDIV', 'context_name': 'LHCINDIV',
+                    'cycle_stamp_ns': 1520341165 * 10**9, 'c_time': 325,
+                    'timespan': 1015.943, 'ring': 3,
+                    'delay': 1259.0000000000002, 'v_scale': 0.01,
+                    'v_position': -1.8679245283018875}
+        for name, value in expected.items():
+            with self.subTest(field=name):
+                self.assertEqual(getattr(metadata, name), value,
+                                 msg=f'{name} should be read from the '
+                                     f'preamble')
+
+    def test_empty_metadata_gives_blank_preamble(self):
+        self.assertEqual(tdata.Metadata().to_dat_lines(),
+                         [''] * parsing.DAT_FILE_HEADER_LENGTH,
+                         msg='metadata without values should give blank '
+                             'lines')
 
     def test_comment_lines_are_unchanged(self):
         _, _, lines = self._round_trip()

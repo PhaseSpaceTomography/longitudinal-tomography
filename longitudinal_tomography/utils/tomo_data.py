@@ -242,18 +242,16 @@ class Parameters(_ValidatedModel):
 
 
 def _to_raw_data(value: Collection) -> NPArray:
-    """Coerce raw data to a 1D float array."""
+    """Coerce raw data to a float array."""
     if not hasattr(value, '__iter__'):
         raise expt.RawDataImportError('Raw data should be iterable')
     return np.asarray(value, dtype=float)
 
 
-#: Raw data as read from an input file. Held as an array, but dumped and
-#: serialised as a list of floats.
+#: Raw data as read from an input file, held as an array.
 RawData = Annotated[
     pydantic.InstanceOf[np.ndarray],
-    pydantic.BeforeValidator(_to_raw_data),
-    pydantic.PlainSerializer(lambda value: value.tolist(), return_type=list)]
+    pydantic.BeforeValidator(_to_raw_data)]
 
 
 class Frames(_ValidatedModel):
@@ -353,6 +351,27 @@ class Frames(_ValidatedModel):
         if not isinstance(other, Frames):
             return NotImplemented
         return self.model_dump() == other.model_dump()
+
+    @pydantic.field_validator('raw_data')
+    @classmethod
+    def _flatten_raw_data(cls, raw_data: NPArray | None,
+                          info: pydantic.ValidationInfo) -> NPArray | None:
+        # Raw data given in 2D must hold one frame per row, and is held flat.
+        if raw_data is not None and raw_data.ndim == 2:
+            nframes = info.data.get('nframes')
+            if raw_data.shape[0] != nframes:
+                raise expt.RawDataImportError(
+                    f'Raw data has {raw_data.shape[0]} rows, expected one '
+                    f'per frame ({nframes})')
+            raw_data = raw_data.ravel()
+        return raw_data
+
+    @pydantic.field_serializer('raw_data')
+    def _dump_raw_data(self, raw_data: NPArray | None) -> list | None:
+        # Dumped with one frame per row.
+        if raw_data is None:
+            return None
+        return raw_data.reshape(self.nframes, self.nbins_frame).tolist()
 
     @pydantic.model_validator(mode='after')
     def _check_cross_field_bounds(self) -> Frames:
@@ -548,11 +567,12 @@ class TomographyData(_ValidatedModel):
     reconstruction parameters plus the frame/raw-data metadata.
     """
 
+    # Fields are dumped in this order, so the raw data in frames comes last.
+    metadata: Metadata = pydantic.Field(default_factory=Metadata)
     parameter_descriptions: dict[str, str] = (
         pdesc.PARAMETER_DESCRIPTIONS_V3_0_0)
     parameters: Parameters
     frames: Frames
-    metadata: Metadata = pydantic.Field(default_factory=Metadata)
 
     @classmethod
     def from_dat_file(cls, path: str) -> TomographyData:
@@ -572,7 +592,8 @@ class TomographyData(_ValidatedModel):
         raw_data_path = raw_params[parsing.RAW_DATA_FILE_IDX]
         frame = Frames.from_parameters(params, raw_data_path=raw_data_path,
                                        raw_data=raw_data)
-        return cls(parameters=params, frames=frame)
+        return cls(parameters=params, frames=frame,
+                   metadata=Metadata.from_dat_lines(raw_params))
 
     def to_dat_file(self, path: str):
         """Write the input data to a legacy `.dat` file.
@@ -594,7 +615,8 @@ class TomographyData(_ValidatedModel):
         raw_data_path = ('pipe' if self.frames.raw_data_path == ''
                           else self.frames.raw_data_path)
 
-        lines = self.parameters.to_dat_lines(raw_data_path)
+        lines = self.parameters.to_dat_lines(raw_data_path,
+                                             self.metadata.to_dat_lines())
         if raw_data_path == 'pipe':
             if self.frames.raw_data is None:
                 raise expt.RawDataImportError(
@@ -623,9 +645,8 @@ class TomographyData(_ValidatedModel):
         # Machine silently ignores unknown arguments, so the fields it does
         # not take are excluded explicitly.
         machine_kwargs = params.model_dump(exclude={
-            'header', 'framecount', 'framelength', 'skip_frames',
-            'skip_bins_start', 'skip_bins_end', 'min_dt_bin', 'max_dt_bin',
-            'rebin'})
+            'framecount', 'framelength', 'skip_frames', 'skip_bins_start',
+            'skip_bins_end', 'min_dt_bin', 'max_dt_bin', 'rebin'})
 
         return Machine(**machine_kwargs, nprofiles=self.frames.nprofs,
                        nbins=self.frames.nbins, min_dt=min_dt, max_dt=max_dt)
