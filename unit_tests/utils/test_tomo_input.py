@@ -172,6 +172,26 @@ class TestTomoIn(unittest.TestCase):
                                    'an exception'):
             frames.to_waterfall(raw_data)
 
+    def test_to_waterfall_uses_held_raw_data(self):
+        nframes = 3
+        nbins_frame = 30
+        raw_data = np.arange(nframes * nbins_frame, dtype=float)
+
+        frames = tomoin.Frames(nframes, nbins_frame, 1, 6, 0, 1,
+                               9.999999999999999E-10, raw_data=raw_data)
+
+        nptest.assert_array_equal(
+            frames.to_waterfall(), frames.to_waterfall(raw_data),
+            err_msg='the held raw data should be used when none is given')
+
+    def test_to_waterfall_without_raw_data_fails(self):
+        frames = tomoin.Frames(3, 30, 1, 6, 0, 1, 9.999999999999999E-10)
+
+        with self.assertRaises(expt.RawDataImportError,
+                               msg='no raw data given and none held should '
+                                   'raise an exception'):
+            frames.to_waterfall()
+
     # Tests for module functions
     # --------------------------
 
@@ -1055,13 +1075,25 @@ class TestDatFileWriting(unittest.TestCase):
         self.assertEqual(restored.parameters.niter, 42,
                          msg='a mutated parameter should be written out')
 
-    def test_absent_value_cannot_be_written(self):
+    def test_absent_output_dir_cannot_be_written(self):
         params = tomoin.Parameters(**PARAMETER_ARGS)
 
         with self.assertRaises(expt.InputError,
-                               msg='a parameter with no value cannot be '
-                                   'represented in a .dat file'):
+                               msg='an output directory with no value '
+                                   'cannot be represented in a .dat file'):
             params.to_dat_lines()
+
+    def test_absent_optional_is_written_as_zero(self):
+        optional = ('g_coupling', 'zwall_over_n', 'pickup_sensitivity')
+        params = tomoin.Parameters(**PARAMETER_ARGS, output_dir='/tmp/')
+        lines = params.to_dat_lines()
+
+        for name in optional:
+            with self.subTest(field=name):
+                self.assertIsNone(getattr(params, name),
+                                  msg=f'{name} should have no value')
+                self.assertEqual(lines[tomoin.DAT_FILE_LINE_INDEX[name]], '0',
+                                 msg=f'{name} should be written as zero')
 
     def test_missing_inline_data_fails(self):
         data = tomoin.TomographyData.from_dat_file(self._dat_path())
@@ -1074,5 +1106,34 @@ class TestDatFileWriting(unittest.TestCase):
             with self.assertRaises(expt.RawDataImportError,
                                    msg='writing inline data that is not '
                                        'held should raise an exception'):
+                without_data.to_dat_file(
+                    os.path.join(tmp_dir, 'no_data.dat'))
+
+    def test_data_is_written_inline_without_a_path(self):
+        data = tomoin.TomographyData.from_dat_file(self._dat_path())
+        no_path = tomoin.TomographyData(
+            parameters=data.parameters,
+            frames=tomoin.Frames.from_parameters(
+                data.parameters, raw_data=data.frames.raw_data))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            written = os.path.join(tmp_dir, 'no_path.dat')
+            no_path.to_dat_file(written)
+            restored = tomoin.TomographyData.from_dat_file(written)
+
+        nptest.assert_array_equal(
+            restored.frames.raw_data, data.frames.raw_data,
+            err_msg='frames naming no raw-data file should be written inline')
+
+    def test_missing_inline_data_without_a_path_fails(self):
+        data = tomoin.TomographyData.from_dat_file(self._dat_path())
+        without_data = tomoin.TomographyData(
+            parameters=data.parameters,
+            frames=tomoin.Frames.from_parameters(data.parameters))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with self.assertRaises(expt.RawDataImportError,
+                                   msg='writing frames that hold neither '
+                                       'data nor a path should raise'):
                 without_data.to_dat_file(
                     os.path.join(tmp_dir, 'no_data.dat'))
