@@ -469,6 +469,17 @@ class Frames(_ValidatedModel):
         return np.array(raw_data)
 
 
+class Metadata(_ValidatedModel):
+    """Information identifying where input data came from, which JSON files
+    hold but a `.dat` file has no place for."""
+
+    selector: str | None = None
+    cycle_stamp_ns: int | None = None
+    context_name: str | None = None
+    acquisition_id: int = 1
+    bunch_id: int = 0
+
+
 class TomographyData(_ValidatedModel):
     """Full input data parsed from a legacy `.dat` file: the machine and
     reconstruction parameters plus the frame/raw-data metadata.
@@ -476,6 +487,7 @@ class TomographyData(_ValidatedModel):
 
     parameters: Parameters
     frames: Frames
+    metadata: Metadata = pydantic.Field(default_factory=Metadata)
 
     @classmethod
     def from_dat_file(cls, path: str) -> TomographyData:
