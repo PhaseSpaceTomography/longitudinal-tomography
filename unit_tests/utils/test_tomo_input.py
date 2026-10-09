@@ -633,6 +633,19 @@ class TestParameters(unittest.TestCase):
                             f'should be rejected'):
                     tomoin.Parameters(**{**PARAMETER_ARGS, name: value})
 
+    def test_cross_field_violations_all_raised(self):
+        bad_input = {'skip_frames':150, 'skip_bins_start': 1000,
+                     'skip_bins_end': 1000, 'synch_part_x': 1000.0,
+                     'filmstart': 150, 'filmstop': 150,
+                     'beam_ref_frame': 150, 'machine_ref_frame': 150}
+        with (self.assertRaises(pydantic.ValidationError,
+                               msg="Ill formed input should be rejected")
+                               as exception):
+            tomoin.Parameters(**{**PARAMETER_ARGS, **bad_input})
+
+        for key in bad_input.keys():
+            self.assertIn(key, str(exception.exception))
+
     def test_accepts_numpy_scalars(self):
         params = tomoin.Parameters(
             **{**PARAMETER_ARGS, 'framecount': np.int32(150),

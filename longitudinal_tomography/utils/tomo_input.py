@@ -261,38 +261,47 @@ class Parameters(_ValidatedModel):
 
     @pydantic.model_validator(mode='after')
     def _check_cross_field_bounds(self) -> Parameters:
+
+        value_errors = []
         if not self.skip_frames < self.framecount:
-            raise ValueError(
-                f'skip_frames ({self.skip_frames}) must be less than '
-                f'framecount ({self.framecount})')
+            value_errors.append(
+                f'skip_frames ({self.skip_frames}) must be '
+                f'less than framecount ({self.framecount})')
         if not self.skip_bins_start < self.framelength:
-            raise ValueError(
-                f'skip_bins_start ({self.skip_bins_start}) must be less '
-                f'than framelength ({self.framelength})')
+            value_errors.append(
+                f'skip_bins_start ({self.skip_bins_start}) must be less than '
+                f'framelength ({self.framelength})')
         if not self.skip_bins_end < self.framelength:
-            raise ValueError(
+            value_errors.append(
                 f'skip_bins_end ({self.skip_bins_end}) must be less than '
                 f'framelength ({self.framelength})')
         if not self.synch_part_x < self.framelength:
-            raise ValueError(
+            value_errors.append(
                 f'synch_part_x ({self.synch_part_x}) must be less than '
                 f'framelength ({self.framelength})')
         if not self.filmstart < self.framecount:
-            raise ValueError(
+            value_errors.append(
                 f'filmstart ({self.filmstart}) must be less than '
                 f'framecount ({self.framecount})')
         if not self.filmstop < self.framecount:
-            raise ValueError(
+            value_errors.append(
                 f'filmstop ({self.filmstop}) must be less than '
                 f'framecount ({self.framecount})')
         if not self.beam_ref_frame < self.framecount:
-            raise ValueError(
+            value_errors.append(
                 f'beam_ref_frame ({self.beam_ref_frame}) must be less than '
                 f'framecount ({self.framecount})')
         if not self.machine_ref_frame < self.framecount:
-            raise ValueError(
+            value_errors.append(
                 f'machine_ref_frame ({self.machine_ref_frame}) must be '
                 f'less than framecount ({self.framecount})')
+
+        if len(value_errors) != 0:
+            merged_error = "Input values contain errors:"
+            for e in value_errors:
+                merged_error += f"\n  - {e}"
+            raise ValueError(merged_error)
+
         return self
 
     @classmethod
