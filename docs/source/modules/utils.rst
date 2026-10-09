@@ -9,6 +9,14 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`tomo_data` Module
+-----------------------
+
+.. automodule:: longitudinal_tomography.utils.tomo_data
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`tomo_input` Module
 ------------------------
 

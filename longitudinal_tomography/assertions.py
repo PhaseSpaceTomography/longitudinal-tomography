@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray as NPArray
 
     from longitudinal_tomography.tracking.machine import Machine
-    from longitudinal_tomography.utils.tomo_input import Frames
+    from longitudinal_tomography.utils.tomo_data import Frames
 
 
 # =========================================================

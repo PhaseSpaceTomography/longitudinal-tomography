@@ -29,32 +29,36 @@ frame_input_args = {
 MACHINE_ARGS = commons.get_machine_args()
 
 
+def _resource_dir() -> str:
+    base_dir = os.path.split(os.path.realpath(__file__))[0]
+    base_dir = os.path.split(base_dir)[0]
+    return os.path.join(base_dir, 'resources')
+
+
 class TestTomoIn(unittest.TestCase):
 
     # Tests for frame class
     # ---------------------
 
     def test_frames_set_raw_data_fails(self):
-        frames = tomoin.Frames(**frame_input_args)
-
-        with self.assertRaises(expt.RawDataImportError,
-                               msg='raw data provided as scalar should raise '
-                                   'an exception'):
-            frames.raw_data = 1
-
-        with self.assertRaises(expt.RawDataImportError,
-                               msg='Wrong amount of data points should raise '
-                                   'an exception'):
-            frames.raw_data = [1]
+        for description, raw_data in (('scalar raw data', 1),
+                                      ('wrong amount of data points', [1])):
+            with self.subTest(case=description):
+                frames = tomoin.Frames(**frame_input_args)
+                frames.raw_data = raw_data
+                with self.assertRaises(
+                        expt.RawDataImportError,
+                        msg=f'{description} should raise an exception'):
+                    frames.validate()
 
     def test_nprofs_correct(self):
         frames = tomoin.Frames(**frame_input_args)
-        nprof = frames.nprofs()
+        nprof = frames.nprofs
         self.assertEqual(nprof, 150, msg='Error in calculation of nprofs')
 
     def test_nbins_correct(self):
         frames = tomoin.Frames(**frame_input_args)
-        nbins = frames.nbins()
+        nbins = frames.nbins
         self.assertEqual(nbins, 760, msg='Error in calculation of nbins')
 
     def test_to_waterfall_skip_bins_both_sides(self):
@@ -153,6 +157,26 @@ class TestTomoIn(unittest.TestCase):
                                msg='Raw data as scalar should raise '
                                    'an exception'):
             frames.to_waterfall(raw_data)
+
+    def test_to_waterfall_uses_held_raw_data(self):
+        nframes = 3
+        nbins_frame = 30
+        raw_data = np.arange(nframes * nbins_frame, dtype=float)
+
+        frames = tomoin.Frames(nframes, nbins_frame, 1, 6, 0, 1,
+                               9.999999999999999E-10, raw_data=raw_data)
+
+        nptest.assert_array_equal(
+            frames.to_waterfall(), frames.to_waterfall(raw_data),
+            err_msg='the held raw data should be used when none is given')
+
+    def test_to_waterfall_without_raw_data_fails(self):
+        frames = tomoin.Frames(3, 30, 1, 6, 0, 1, 9.999999999999999E-10)
+
+        with self.assertRaises(expt.RawDataImportError,
+                               msg='no raw data given and none held should '
+                                   'raise an exception'):
+            frames.to_waterfall()
 
     # Tests for module functions
     # --------------------------
@@ -389,3 +413,4 @@ class TestTomoIn(unittest.TestCase):
         base_dir = os.path.split(base_dir)[0]
         data_path = os.path.join(base_dir, 'resources')
         return data_path
+

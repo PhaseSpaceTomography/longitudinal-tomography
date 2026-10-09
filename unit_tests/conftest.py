@@ -9,7 +9,7 @@ from . import commons
 if TYPE_CHECKING:
     from longitudinal_tomography.data.profiles import Profiles
     from longitudinal_tomography.tracking import Machine
-    from longitudinal_tomography.utils.tomo_input import Frames
+    from longitudinal_tomography.utils.tomo_data import Frames
 
 
 @pytest.fixture(scope='session')

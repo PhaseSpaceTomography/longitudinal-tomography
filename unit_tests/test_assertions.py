@@ -543,93 +543,35 @@ class TestAssertions(unittest.TestCase):
             asrt.assert_machine_input(machine)
 
     def test_assert_frame_input(self):
-        frame = tomoin.Frames(
-            framecount=10, framelength=10, skip_frames=2,
-            skip_bins_start=2, skip_bins_end=2, rebin=1, dtbin=1e-7)
+        # Frames rejects these values on construction, so model_construct
+        # is used to leave the assertions under test.
+        valid = {'nframes': 10, 'nbins_frame': 10, 'skip_frames': 2,
+                 'skip_bins_start': 2, 'skip_bins_end': 2, 'rebin': 1,
+                 'sampling_time': 1e-7}
 
-        # Checking nframes
-        frame.nframes = 0
-        with self.assertRaises(
-                expt.InputError,
-                msg='nframes equal to zero should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-        frame.nframes = 10
+        invalid = (
+            ('nframes equal to zero', {'nframes': 0}),
+            ('negative skip_frames', {'skip_frames': -1}),
+            ('skip_frames equal to nframes', {'skip_frames': 10}),
+            ('negative nbins_frame', {'nbins_frame': -1}),
+            ('negative skip_bins_start', {'skip_bins_start': -1}),
+            ('skip_bins_start equal to nbins_frame',
+             {'skip_bins_start': 10}),
+            ('negative skip_bins_end', {'skip_bins_end': -1}),
+            ('skip_bins_end equal to nbins_frame', {'skip_bins_end': 10}),
+            ('all bins skipped', {'skip_bins_start': 5, 'skip_bins_end': 5}),
+            ('rebin equal to zero', {'rebin': 0}),
+        )
 
-        # Checking skip_frames
-        frame.skip_frames = -1
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_frames with negative value '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
+        for description, override in invalid:
+            with self.subTest(case=description):
+                frame = tomoin.Frames.model_construct(**{**valid, **override})
+                with self.assertRaises(
+                        expt.InputError,
+                        msg=f'{description} should raise an Exception'):
+                    asrt.assert_frame_inputs(frame)
 
-        frame.skip_frames = frame.nframes
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_frames with value equal to nframes '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-        frame.skip_frames = 2
-
-        # Checking nbins_frame
-        frame.nbins_frame = -1
-        with self.assertRaises(
-                expt.InputError,
-                msg='nbins_frame with value lower than zero '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-        frame.nbins_frame = 10
-
-        # Checking skip_bins_start
-        frame.skip_bins_start = -1
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_bins_start with value lower than zero '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-
-        frame.skip_bins_start = frame.nbins_frame
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_bins_start with value equal to nbins_frame '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-        frame.skip_bins_start = 2
-
-        # Checking skip_bins_end
-        frame.skip_bins_end = -1
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_bins_end with value lower than zero '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-
-        frame.skip_bins_end = frame.nbins_frame
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_bins_end with value equal to nbins_frame '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-        frame.skip_bins_end = 2
-
-        # Checking total skipped bins
-        frame.skip_bins_start = 5
-        frame.skip_bins_end = 5
-        with self.assertRaises(
-                expt.InputError,
-                msg='total number of skipped bins greater than or equal to '
-                    'nbins_frame should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
-
-        frame.skip_bins_start = 2
-        frame.skip_bins_end = 2
-
-        frame.rebin = 0
-        with self.assertRaises(
-                expt.InputError,
-                msg='skip_bins_start with value lower than zero '
-                    'should raise an Exception'):
-            asrt.assert_frame_inputs(frame)
+        asrt.assert_frame_inputs(tomoin.Frames(**valid))
 
     def test_assert_var_not_none(self):
         error_class = AssertionError

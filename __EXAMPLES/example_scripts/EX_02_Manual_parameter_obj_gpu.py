@@ -34,8 +34,8 @@ frame_input_args = {
 }
 
 frames = tomoin.Frames(**frame_input_args)
-nprofiles = frames.nprofs()
-nbins = frames.nbins()
+nprofiles = frames.nprofs
+nbins = frames.nbins
 
 # Machine and reconstruction parameters
 machine_args = {
