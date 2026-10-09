@@ -74,7 +74,6 @@ DAT_FILE_LINE_INDEX: dict[str, int] = {
 FORTRAN_TO_C_FIELDS = frozenset((
     'filmstart', 'filmstop', 'beam_ref_frame', 'machine_ref_frame'))
 RAW_DATA_FILE_IDX = DAT_FILE_LINE_INDEX['raw_data_path']
-OUTPUT_DIR_IDX = DAT_FILE_LINE_INDEX['output_dir']
 
 #: Number of undocumented lines preceding the parameter block of a `.dat`
 #: file.
