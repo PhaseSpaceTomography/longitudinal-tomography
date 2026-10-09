@@ -5,16 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Tomo imports
-import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_data as tdata
 
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'flatTopINDIVRotate2.dat')
 
 # Raw data follows the parameter lines in the input file
-raw_data = np.loadtxt(in_file_pth, skiprows=tomoin.PARAMETER_LENGTH)
+raw_data = np.loadtxt(in_file_pth, skiprows=tdata.PARAMETER_LENGTH)
 
 # All values retrieved from flatTopINDIVRotate2.dat
-frames = tomoin.Frames(
+frames = tdata.Frames(
     nframes=390,
     nbins_frame=400,
     skip_frames=0,
@@ -27,7 +27,7 @@ frames = tomoin.Frames(
 # Parameters repeats the frame fields, so they are taken from frames to keep
 # the two in agreement. filmstart, filmstop, beam_ref_frame and
 # machine_ref_frame are 0-based, one less than in the input file.
-parameters = tomoin.Parameters(
+parameters = tdata.Parameters(
     output_dir='/tmp/',
     framecount=frames.nframes,
     skip_frames=frames.skip_frames,
@@ -68,7 +68,7 @@ parameters = tomoin.Parameters(
     zwall_over_n=0.0,
     pickup_sensitivity=0.36)
 
-tomo_data = tomoin.TomographyData(parameters=parameters, frames=frames)
+tomo_data = tdata.TomographyData(parameters=parameters, frames=frames)
 
 tRange, ERange, density = tomo_data.run()
 

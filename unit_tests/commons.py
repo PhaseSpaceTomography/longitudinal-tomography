@@ -11,7 +11,7 @@ import longitudinal_tomography.utils.tomo_input as tomoin
 if TYPE_CHECKING:
     from longitudinal_tomography.data.profiles import Profiles
     from longitudinal_tomography.tracking import Machine
-    from longitudinal_tomography.utils.tomo_input import Frames
+    from longitudinal_tomography.utils.tomo_data import Frames
 
 def load_data() -> tuple[Machine, Frames, Profiles]:
     base_dir = path.split(path.realpath(__file__))[0]
