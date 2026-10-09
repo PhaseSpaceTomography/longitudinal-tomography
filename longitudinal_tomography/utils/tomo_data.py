@@ -14,7 +14,9 @@ from ..data import data_treatment as dtreat
 from ..tomography import tomography
 from ..tracking import particles as pts, tracking
 from ..tracking.machine import Machine
-from ..utils import _input_parsing as parsing, tomo_config as conf
+from ..utils import (_input_parsing as parsing,
+                     parameter_descriptions as pdesc,
+                     tomo_config as conf)
 
 if TYPE_CHECKING:
     from typing import Any, Collection, Sequence
@@ -52,10 +54,6 @@ class Parameters(_ValidatedModel):
     Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
     """
 
-    # Lines 0 to 7 of a `.dat` file, held verbatim. Their meaning is
-    # undocumented, so they are neither parsed nor validated.
-    header: list[str] = pydantic.Field(
-        default=[], max_length=parsing.DAT_FILE_HEADER_LENGTH)
     output_dir: str | None = None
     framecount: int = pydantic.Field(gt=0)
     skip_frames: int = pydantic.Field(ge=0)
@@ -172,7 +170,7 @@ class Parameters(_ValidatedModel):
 
         stripped = [line.strip() for line in lines]
 
-        param_values = {'header': stripped[:parsing.DAT_FILE_HEADER_LENGTH]}
+        param_values = {}
         for name, idx in parsing.DAT_FILE_LINE_INDEX.items():
             if name == 'raw_data_path':
                 continue
@@ -210,7 +208,8 @@ class Parameters(_ValidatedModel):
             return str(value + 1)
         return str(value)
 
-    def to_dat_lines(self, raw_data_path: str = 'pipe') -> list[str]:
+    def to_dat_lines(self, raw_data_path: str = 'pipe',
+                     preamble: Sequence[str] = ()) -> list[str]:
         """Render the parameters as the header lines of a legacy `.dat` file.
 
         Parameters
@@ -218,6 +217,9 @@ class Parameters(_ValidatedModel):
         raw_data_path: str
             Value for the raw data path line, which is not a parameter.
             ``'pipe'`` means the raw data follows the header lines.
+        preamble: Sequence[str], optional
+            Lines preceding the parameters, padded with blank lines to
+            `DAT_FILE_HEADER_LENGTH`.
 
         Returns
         -------
@@ -229,7 +231,7 @@ class Parameters(_ValidatedModel):
         InputError: Exception
             Raised if a parameter holds no value the format can represent.
         """
-        header = list(self.header)
+        header = list(preamble)
         header += [''] * (parsing.DAT_FILE_HEADER_LENGTH - len(header))
         values = {name: self._dat_value(name)
                   for name in parsing.DAT_FILE_LINE_INDEX
@@ -470,14 +472,75 @@ class Frames(_ValidatedModel):
 
 
 class Metadata(_ValidatedModel):
-    """Information identifying where input data came from, which JSON files
-    hold but a `.dat` file has no place for."""
+    """Information describing input data and where it came from, held in
+    full only by JSON files."""
 
+    # Version of the file the data was read from, None if not read from one.
+    format_version: str | None = None
     selector: str | None = None
     cycle_stamp_ns: int | None = None
     context_name: str | None = None
     acquisition_id: int = 1
     bunch_id: int = 0
+    name: str | None = None
+    c_time: int | None = None  # ms
+    timespan: float | None = None  # µs
+    ring: int | None = None
+    delay: float | None = None  # ns
+    v_scale: float | None = None  # V/div
+    v_position: float | None = None  # div
+
+    @classmethod
+    def from_dat_lines(cls, lines: Sequence[str]) -> Metadata:
+        """Build Metadata from the preamble of a legacy `.dat` file.
+
+        Parameters
+        ----------
+        lines: Sequence[str]
+            Lines of the `.dat` file, of which the first
+            `DAT_FILE_HEADER_LENGTH` are read.
+
+        Returns
+        -------
+        Metadata
+
+        Raises
+        ------
+        InputError: Exception
+            Raised if a preamble line holds an invalid value.
+        """
+        lines = [line.strip() for line in
+                 lines[:parsing.DAT_FILE_HEADER_LENGTH]]
+        selector, _, context_name = lines[0].partition('=')
+        values = {'selector': selector, 'context_name': context_name,
+                  **dict(zip(parsing.DAT_FILE_PREAMBLE, lines[2:]))}
+        # pydantic's ValidationError is a ValueError too.
+        try:
+            # The cycle stamp is given in seconds.
+            if lines[1]:
+                values['cycle_stamp_ns'] = int(lines[1]) * 10**9
+            # A blank line holds no value.
+            return cls(**{name: value for name, value in values.items()
+                          if value != ''})
+        except ValueError as exc:
+            raise expt.InputError(
+                f'Invalid legacy input preamble:\n{exc}') from exc
+
+    def to_dat_lines(self) -> list[str]:
+        """Render the metadata as the preamble of a legacy `.dat` file.
+
+        Returns
+        -------
+        list[str]
+            The `DAT_FILE_HEADER_LENGTH` preamble lines, without line endings.
+        """
+        names = (self.selector or '', self.context_name or '')
+        # The cycle stamp is written in seconds, so any fraction is lost.
+        stamp = (None if self.cycle_stamp_ns is None
+                 else self.cycle_stamp_ns // 10**9)
+        values = ['='.join(names) if any(names) else None, stamp,
+                  *(getattr(self, name) for name in parsing.DAT_FILE_PREAMBLE)]
+        return ['' if value is None else str(value) for value in values]
 
 
 class TomographyData(_ValidatedModel):
@@ -485,6 +548,8 @@ class TomographyData(_ValidatedModel):
     reconstruction parameters plus the frame/raw-data metadata.
     """
 
+    parameter_descriptions: dict[str, str] = (
+        pdesc.PARAMETER_DESCRIPTIONS_V3_0_0)
     parameters: Parameters
     frames: Frames
     metadata: Metadata = pydantic.Field(default_factory=Metadata)
