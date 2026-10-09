@@ -524,7 +524,7 @@ class Frames(_ValidatedModel):
 
     @classmethod
     def from_parameters(cls, params: Parameters, raw_data_path: str = '',
-                        raw_data: Collection = None) -> Frames:
+                        raw_data: Collection | None = None) -> Frames:
         """Build Frames from the frame-shaping fields of a Parameters."""
         return cls(
             raw_data=raw_data,
@@ -550,7 +550,7 @@ class Frames(_ValidatedModel):
         object."""
         return self.nbins_frame - self.skip_bins_start - self.skip_bins_end
 
-    def to_waterfall(self, raw_data: NPArray) -> NPArray:
+    def to_waterfall(self, raw_data: NPArray | None = None) -> NPArray:
         """Function to convert from raw data to waterfall for use in
         reconstruction. The waterfall wil be shaped based on the
         settings found in the :class:`Frames` object.
@@ -560,9 +560,10 @@ class Frames(_ValidatedModel):
 
         Parameters
         ----------
-        raw_data: ndarray
-            1D array holding all measured raw data.
-            The function works on a copy of the given raw_data.
+        raw_data: ndarray, optional, default=None
+            1D array holding all measured raw data. The raw data held by
+            the object is used if none is given. The function works on a
+            copy of the given raw_data.
 
         Returns
         -------
@@ -572,8 +573,16 @@ class Frames(_ValidatedModel):
         Raises
         ------
         RawDataImportError: Exception
-            Raised if something is wrong with the raw data.
+            Raised if something is wrong with the raw data, or if none is
+            given and the object holds none.
         """
+
+        raw_data = self.raw_data if raw_data is None else raw_data
+
+        if raw_data is None:
+            raise expt.RawDataImportError(
+                'No raw data given, and none is held')
+
         waterfall = self._assert_raw_data(raw_data)
         asrt.assert_frame_inputs(self)
 
@@ -635,8 +644,8 @@ class TomographyData(_ValidatedModel):
     def to_dat_file(self, path: str):
         """Write the input data to a legacy `.dat` file.
 
-        Raw data is appended to the parameter lines when the frames hold it
-        inline, i.e. when their raw data path is ``'pipe'``.
+        Raw data is appended to the parameter lines unless the frames name
+        an external file holding it.
 
         Parameters
         ----------
@@ -648,13 +657,16 @@ class TomographyData(_ValidatedModel):
         RawDataImportError: Exception
             Raised if raw data should be written inline but is missing.
         """
-        lines = self.parameters.to_dat_lines(self.frames.raw_data_path)
-        if self.frames.raw_data_path == 'pipe':
-            raw_data = self.frames.raw_data
-            if raw_data is None:
+        # An empty path names no external file, so the data goes inline.
+        raw_data_path = ('pipe' if self.frames.raw_data_path == ''
+                          else self.frames.raw_data_path)
+
+        lines = self.parameters.to_dat_lines(raw_data_path)
+        if raw_data_path == 'pipe':
+            if self.frames.raw_data is None:
                 raise expt.RawDataImportError(
                     'No raw data held to write inline')
-            lines += [str(value) for value in raw_data.tolist()]
+            lines += [str(value) for value in self.frames.raw_data.tolist()]
 
         with open(path, 'w') as f:
             f.write('\n'.join(lines) + '\n')
@@ -805,6 +817,10 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
 
     params = Parameters.from_dat_lines(input_array)
     raw_data_path = input_array[DAT_FILE_LINE_INDEX['raw_data_path']].strip()
+    # TODO: only the parameter lines are given here, so these frames never
+    # hold raw data, unlike those built by TomographyData.from_dat_file, and
+    # callers have to carry the array themselves. Drop the difference when
+    # the input seam moves to a single reader.
     frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
 
     # Calculating limits in phase for reconstruction area, specified by
