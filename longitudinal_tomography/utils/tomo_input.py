@@ -12,10 +12,13 @@ import numpy as np
 import pydantic
 
 from .. import assertions as asrt, exceptions as expt
-from ..data import pre_process
+from ..data import data_treatment as dtreat, pre_process
 from ..data.profiles import Profiles
+from ..tomography import tomography
+from ..tracking import particles as pts, tracking
 from ..tracking.machine import Machine
 from ..compat import fortran
+from ..utils import tomo_config as conf
 
 if TYPE_CHECKING:
     from typing import Any, Collection, Sequence
@@ -680,6 +683,118 @@ class TomographyData(_ValidatedModel):
         with open(path, 'w') as f:
             f.write('\n'.join(lines) + '\n')
 
+    def to_machine(self) -> Machine:
+        """Build a Machine from the input data.
+
+        Returns
+        -------
+        machine: Machine
+            Machine object containing parameters for the machine and the
+            tomographic reconstruction.
+        """
+        params = self.parameters
+
+        # Calculating limits in phase for reconstruction area, specified by
+        # user, from bin offsets to physical units of phase [s].
+        min_dt = params.min_dt_bin * params.dtbin
+        max_dt = (self.frames.nbins - params.max_dt_bin) * params.dtbin
+
+        # Machine silently ignores unknown arguments, so the fields it does
+        # not take are excluded explicitly.
+        machine_kwargs = params.model_dump(exclude={
+            'header', 'framecount', 'framelength', 'skip_frames',
+            'skip_bins_start', 'skip_bins_end', 'min_dt_bin', 'max_dt_bin',
+            'rebin'})
+
+        return Machine(**machine_kwargs, nprofiles=self.frames.nprofs,
+                       nbins=self.frames.nbins, min_dt=min_dt, max_dt=max_dt)
+
+    def to_profiles(self) -> Profiles:
+        """Build Profiles from the held raw data, ready for tracking.
+
+        A new Machine is built for the profiles. Its dtbin and synch_part_x
+        are updated by the rebinning, and synch_part_x is fitted if the
+        parameters ask for a fit.
+
+        Returns
+        -------
+        profiles: Profiles
+            Profiles object holding the treated waterfall, with the machine
+            as ``profiles.machine``.
+
+        Raises
+        ------
+        RawDataImportError: Exception
+            Raised if no raw data is held.
+        """
+        machine = self.to_machine()
+        profiles = raw_data_to_profiles(
+            self.frames.to_waterfall(), machine, self.frames.rebin,
+            self.frames.sampling_time)
+        profiles.calc_profilecharge()
+
+        if machine.synch_part_x < 0:
+            fit_info = dtreat.fit_synch_part_x(profiles)
+            machine.load_fitted_synch_part_x_ftn(fit_info)
+
+        return profiles
+
+    def run(self, reconstruct_profile: int | None = None) \
+            -> tuple[NPArray, NPArray, NPArray]:
+        """Perform a full reconstruction of one profile.
+
+        Parameters
+        ----------
+        reconstruct_profile: int, optional, default=None
+            Index of the profile to reconstruct. The parameters' filmstart
+            is used if none is given.
+
+        Returns
+        -------
+        t_range: ndarray
+            1D array containing time axis of reconstructed phase space image.
+        E_range: ndarray
+            1D array containing energy axis of reconstructed phase space
+            image.
+        phase_space: ndarray
+            2D array containing the reconstructed phase space image,
+            normalised to sum to one.
+        """
+        profiles = self.to_profiles()
+        machine = profiles.machine
+        reconstr_idx = (machine.filmstart if reconstruct_profile is None
+                        else reconstruct_profile)
+
+        tracker = tracking.Tracking(machine)
+        if machine.self_field_flag:
+            profiles.calc_self_fields()
+            tracker.enable_self_fields(profiles)
+
+        xp, yp = tracker.track(reconstr_idx)
+
+        # Converting from physical coordinates ([rad], [eV])
+        # to phase space coordinates.
+        if not tracker.self_field_flag:
+            xp, yp = pts.physical_to_coords(
+                xp, yp, machine, tracker.particles.xorigin,
+                tracker.particles.dEbin)
+
+        # Filters out lost particles, transposes particle matrix,
+        # casts to np.int32.
+        xp, yp = pts.ready_for_tomography(xp, yp, machine.nbins)
+
+        tomo = tomography.Tomography(profiles.waterfall, xp, yp)
+        tomo.run(niter=machine.niter)
+
+        t_range, E_range, phase_space = dtreat.phase_space(
+            tomo, machine, reconstr_idx)
+
+        # Removing negative areas, then normalising.
+        phase_space = phase_space.clip(0.0)
+        phase_space /= conf.sum(phase_space)
+
+        return t_range, E_range, phase_space
+
 
 def get_user_input(input: str = ''):
     """Function to let user provide input as a text file either as
@@ -831,52 +946,7 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, Frames]:
     # callers have to carry the array themselves. Drop the difference when
     # the input seam moves to a single reader.
     frame = Frames.from_parameters(params, raw_data_path=raw_data_path)
-
-    # Calculating limits in phase for reconstruction area, specified by
-    # user, from bin offsets to physical units of phase [s].
-    min_dt = params.min_dt_bin * params.dtbin
-    max_dt = (frame.nbins - params.max_dt_bin) * params.dtbin
-
-    machine_kwargs = {
-        'output_dir': params.output_dir,
-        'dtbin': params.dtbin,
-        'dturns': params.dturns,
-        'synch_part_x': params.synch_part_x,
-        'demax': params.demax,
-        'filmstart': params.filmstart,
-        'filmstop': params.filmstop,
-        'filmstep': params.filmstep,
-        'niter': params.niter,
-        'snpt': params.snpt,
-        'full_pp_flag': params.full_pp_flag,
-        'beam_ref_frame': params.beam_ref_frame,
-        'machine_ref_frame': params.machine_ref_frame,
-        'vrf1': params.vrf1,
-        'vrf1dot': params.vrf1dot,
-        'vrf2': params.vrf2,
-        'vrf2dot': params.vrf2dot,
-        'h_num': params.h_num,
-        'h_ratio': params.h_ratio,
-        'phi12': params.phi12,
-        'b0': params.b0,
-        'bdot': params.bdot,
-        'mean_orbit_rad': params.mean_orbit_rad,
-        'bending_rad': params.bending_rad,
-        'trans_gamma': params.trans_gamma,
-        'rest_energy': params.rest_energy,
-        'charge': params.charge,
-        'self_field_flag': params.self_field_flag,
-        'g_coupling': params.g_coupling,
-        'zwall_over_n': params.zwall_over_n,
-        'pickup_sensitivity': params.pickup_sensitivity,
-        'nprofiles': frame.nprofs,
-        'nbins': frame.nbins,
-        'min_dt': min_dt,
-        'max_dt': max_dt
-    }
-
-    # Creating machine object
-    machine = Machine(**machine_kwargs)
+    machine = TomographyData(parameters=params, frames=frame).to_machine()
 
     return machine, frame
 
