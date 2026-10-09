@@ -6,6 +6,7 @@ import numpy as np
 
 # Tomo imports
 import longitudinal_tomography.utils.tomo_data as tdata
+import longitudinal_tomography.utils.tomo_input as tomoin
 import longitudinal_tomography
 
 longitudinal_tomography.use_gpu()
@@ -14,7 +15,7 @@ ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'flatTopINDIVRotate2.dat')
 
 # Raw data follows the parameter lines in the input file
-raw_data = np.loadtxt(in_file_pth, skiprows=tdata.PARAMETER_LENGTH)
+raw_data = np.loadtxt(in_file_pth, skiprows=tomoin.PARAMETER_LENGTH)
 
 # All values retrieved from flatTopINDIVRotate2.dat
 frames = tdata.Frames(

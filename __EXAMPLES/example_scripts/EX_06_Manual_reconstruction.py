@@ -29,8 +29,7 @@ else:
     ex_dir = os.path.split(this_dir)[0]
     in_file_pth = os.path.join(ex_dir, 'input_files', 'INDIVShavingC325.dat')
 
-    with open(in_file_pth, 'r') as file:
-        raw_params, raw_data = tomoin._split_input(file.readlines())
+    raw_params, raw_data = tomoin.get_user_input(in_file_pth)
 
     machine, frames = tomoin.txt_input_to_machine(raw_params)
     measured_waterfall = frames.to_waterfall(raw_data)

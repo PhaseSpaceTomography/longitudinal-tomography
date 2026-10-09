@@ -15,6 +15,7 @@ from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 import longitudinal_tomography.tracking.machine_base as machine_base
 from longitudinal_tomography import exceptions as expt
+import longitudinal_tomography.utils._input_parsing as parsing
 import longitudinal_tomography.utils.tomo_data as tdata
 import longitudinal_tomography.utils.tomo_input as tomoin
 
@@ -102,9 +103,9 @@ class TestParameters(unittest.TestCase):
         lines = _parameter_lines()
         for name, value in (('filmstart', 3), ('filmstop', 5),
                             ('beam_ref_frame', 7), ('machine_ref_frame', 9)):
-            lines[tdata.DAT_FILE_LINE_INDEX[name]] = f'{value}\n'
+            lines[parsing.DAT_FILE_LINE_INDEX[name]] = f'{value}\n'
         # dturns is an ordinary int field, it must survive untouched.
-        lines[tdata.DAT_FILE_LINE_INDEX['dturns']] = '9\n'
+        lines[parsing.DAT_FILE_LINE_INDEX['dturns']] = '9\n'
 
         params = tdata.Parameters.from_dat_lines(lines)
 
@@ -153,10 +154,10 @@ class TestParameters(unittest.TestCase):
     def test_from_dat_lines_unparsable_index_fails(self):
         # The index fields are converted before pydantic sees them, so they
         # need their own error handling.
-        for name in tdata.FORTRAN_TO_C_FIELDS:
+        for name in parsing.FORTRAN_TO_C_FIELDS:
             with self.subTest(field=name):
                 lines = _parameter_lines()
-                lines[tdata.DAT_FILE_LINE_INDEX[name]] = 'not a number\n'
+                lines[parsing.DAT_FILE_LINE_INDEX[name]] = 'not a number\n'
 
                 with self.assertRaises(
                         expt.InputError,
@@ -209,7 +210,7 @@ class TestParameters(unittest.TestCase):
 
     def test_from_dat_lines_invalid_value_fails(self):
         lines = _parameter_lines()
-        lines[tdata.DAT_FILE_LINE_INDEX['rebin']] = '0\n'
+        lines[parsing.DAT_FILE_LINE_INDEX['rebin']] = '0\n'
 
         with self.assertRaises(expt.InputError,
                                msg='a value violating a field constraint '
@@ -218,7 +219,7 @@ class TestParameters(unittest.TestCase):
 
     def test_from_dat_lines_unparsable_value_fails(self):
         lines = _parameter_lines()
-        lines[tdata.DAT_FILE_LINE_INDEX['dturns']] = 'not a number\n'
+        lines[parsing.DAT_FILE_LINE_INDEX['dturns']] = 'not a number\n'
 
         with self.assertRaises(expt.InputError,
                                msg='a value that cannot be coerced should '
@@ -289,9 +290,9 @@ class TestParameters(unittest.TestCase):
         for value, expected in (('0', False), ('1', True)):
             with self.subTest(value=value):
                 lines = _parameter_lines()
-                lines[tdata.DAT_FILE_LINE_INDEX['full_pp_flag']] = \
+                lines[parsing.DAT_FILE_LINE_INDEX['full_pp_flag']] = \
                     f'{value}\n'
-                lines[tdata.DAT_FILE_LINE_INDEX['self_field_flag']] = \
+                lines[parsing.DAT_FILE_LINE_INDEX['self_field_flag']] = \
                     f'{value}\n'
 
                 params = tdata.Parameters.from_dat_lines(lines)
@@ -648,7 +649,7 @@ class TestDatFileWriting(unittest.TestCase):
         with open(self._dat_path()) as f:
             source = f.read().splitlines()
         self.assertEqual(original.parameters.header,
-                         source[:tdata.DAT_FILE_HEADER_LENGTH],
+                         source[:parsing.DAT_FILE_HEADER_LENGTH],
                          msg='the header lines should be held verbatim')
         self.assertEqual(restored.parameters.header,
                          original.parameters.header,
@@ -659,7 +660,7 @@ class TestDatFileWriting(unittest.TestCase):
         with open(self._dat_path()) as f:
             source = f.read().splitlines()
 
-        for i in range(tdata.PARAMETER_LENGTH):
+        for i in range(parsing.PARAMETER_LENGTH):
             if source[i].lstrip().startswith('!'):
                 with self.subTest(line=i):
                     self.assertEqual(lines[i], source[i],
@@ -670,7 +671,7 @@ class TestDatFileWriting(unittest.TestCase):
         with open(self._dat_path()) as f:
             source = f.read().splitlines()
 
-        for name, i in tdata.DAT_FILE_LINE_INDEX.items():
+        for name, i in parsing.DAT_FILE_LINE_INDEX.items():
             if name in ('raw_data_path', 'output_dir'):
                 continue
             with self.subTest(field=name):
@@ -680,20 +681,20 @@ class TestDatFileWriting(unittest.TestCase):
     def test_fortran_indices_are_restored(self):
         original, _, lines = self._round_trip()
 
-        for name in tdata.FORTRAN_TO_C_FIELDS:
+        for name in parsing.FORTRAN_TO_C_FIELDS:
             with self.subTest(field=name):
-                written = int(lines[tdata.DAT_FILE_LINE_INDEX[name]])
+                written = int(lines[parsing.DAT_FILE_LINE_INDEX[name]])
                 stored = getattr(original.parameters, name)
                 self.assertEqual(written, stored + 1,
                                  msg=f'{name} should be written 1-based')
 
     def test_template_agrees_with_line_index(self):
-        lines = tdata.DAT_FILE_TEMPLATE.splitlines()
+        lines = parsing.DAT_FILE_TEMPLATE.splitlines()
 
-        placeholders = {line.strip('{}'): i + tdata.DAT_FILE_HEADER_LENGTH
+        placeholders = {line.strip('{}'): i + parsing.DAT_FILE_HEADER_LENGTH
                         for i, line in enumerate(lines)
                         if line.startswith('{')}
-        self.assertEqual(placeholders, tdata.DAT_FILE_LINE_INDEX,
+        self.assertEqual(placeholders, parsing.DAT_FILE_LINE_INDEX,
                          msg='the write template and the parse indices '
                              'disagree on the file layout')
 
@@ -726,7 +727,7 @@ class TestDatFileWriting(unittest.TestCase):
             with self.subTest(field=name):
                 self.assertIsNone(getattr(params, name),
                                   msg=f'{name} should have no value')
-                self.assertEqual(lines[tdata.DAT_FILE_LINE_INDEX[name]], '0',
+                self.assertEqual(lines[parsing.DAT_FILE_LINE_INDEX[name]], '0',
                                  msg=f'{name} should be written as zero')
 
     def test_missing_inline_data_fails(self):
