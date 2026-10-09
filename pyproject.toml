@@ -19,7 +19,7 @@ dependencies = [
     "matplotlib >= 3.9",
     "multipledispatch >= 1.0",
     "numpy >= 2.1",
-    "pydantic >= 2.0",
+    "pydantic >= 2.1",
     "scipy >= 1.14",
 ]
 dynamic = ["version", "readme"]
