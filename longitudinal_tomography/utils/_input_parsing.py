@@ -73,9 +73,13 @@ FORTRAN_TO_C_FIELDS = frozenset((
     'filmstart', 'filmstop', 'beam_ref_frame', 'machine_ref_frame'))
 RAW_DATA_FILE_IDX = DAT_FILE_LINE_INDEX['raw_data_path']
 
-#: Number of undocumented lines preceding the parameter block of a `.dat`
-#: file.
+#: Number of lines preceding the parameter block of a `.dat` file.
 DAT_FILE_HEADER_LENGTH = 8
+#: Metadata field held on each of lines 2 to 7 of a `.dat` file, in order.
+#: Line 0 holds ``selector=context_name`` and line 1 the cycle stamp in
+#: seconds.
+DAT_FILE_PREAMBLE = ('c_time', 'timespan', 'ring', 'delay', 'v_scale',
+                     'v_position')
 
 #: The parameter block of a `.dat` file, lines 8 to 97, with a placeholder
 #: at every line that holds a value. The one spliced comment line is only
