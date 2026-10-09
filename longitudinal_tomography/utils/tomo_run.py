@@ -12,7 +12,7 @@ from ..tomography import tomography as tomography
 from ..tracking import particles as pts
 # Tomo modules
 from ..tracking import tracking as tracking
-from ..utils import tomo_input as tomoin, tomo_output as tomoout
+from ..utils import tomo_data as tdata, tomo_output as tomoout
 from ..utils import tomo_config as conf
 
 from ..compat import tomoscope as tscp
@@ -73,29 +73,21 @@ def run(input: str, reconstruct_profile: bool = None,
     >>> plt.show()
     """
 
-    raw_params, raw_data = tomoin.get_user_input(input)
+    tomo_data = tdata.TomographyData.from_dat_file(input)
 
     if tomoscope:
         print(' Start')
 
-    machine, frames = tomoin.txt_input_to_machine(raw_params)
-    machine.values_at_turns()
-    waterfall = frames.to_waterfall(raw_data)
+    # Builds the machine, treats the raw data and fits synch_part_x if needed
+    profiles = tomo_data.to_profiles()
+    machine = profiles.machine
 
     if output_dir is None or output_dir == '':
         output_dir = machine.output_dir
     else:
         log.info(f'Overriding output dir with {output_dir}')
 
-    profiles = tomoin.raw_data_to_profiles(
-        waterfall, machine, frames.rebin, frames.sampling_time)
-    profiles.calc_profilecharge()
-
     # TODO: Insert space charge calculation from example file
-
-    if profiles.machine.synch_part_x < 0:
-        fit_info = dtreat.fit_synch_part_x(profiles)
-        machine.load_fitted_synch_part_x_ftn(fit_info)
 
     if reconstruct_profile is None:
         reconstr_idx = machine.filmstart
