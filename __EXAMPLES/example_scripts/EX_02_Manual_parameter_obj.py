@@ -75,7 +75,8 @@ machine_args = {
 
 machine = mch.Machine(**machine_args)
 
-raw_data = np.genfromtxt(frames.raw_data_path, skip_header=98,
+raw_data = np.genfromtxt(frames.raw_data_path,
+                         skip_header=tomoin.PARAMETER_LENGTH,
                          dtype=np.float32)
 measured_waterfall = frames.to_waterfall(raw_data)
 

@@ -3,9 +3,8 @@ import os
 import numpy as np
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
-import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_data as tdata
 import longitudinal_tomography.utils.tomo_output as tomoout
-import longitudinal_tomography.data.data_treatment as dtreat
 from longitudinal_tomography.cpp_routines import libtomo
 
 # -----------------------------------------------------------------------------
@@ -29,18 +28,10 @@ else:
     ex_dir = os.path.split(this_dir)[0]
     in_file_pth = os.path.join(ex_dir, 'input_files', 'INDIVShavingC325.dat')
 
-    raw_params, raw_data = tomoin.get_user_input(in_file_pth)
-
-    machine, frames = tomoin.txt_input_to_machine(raw_params)
-    measured_waterfall = frames.to_waterfall(raw_data)
-
-    profiles = tomoin.raw_data_to_profiles(
-        measured_waterfall, machine, frames.rebin, frames.sampling_time)
-    profiles.calc_profilecharge()
-
-    if profiles.machine.synch_part_x < 0:
-        fit_info = dtreat.fit_synch_part_x(profiles)
-        machine.load_fitted_synch_part_x_ftn(fit_info)
+    # Builds the machine, treats the raw data and fits synch_part_x if
+    # needed
+    profiles = tdata.TomographyData.from_file(in_file_pth).to_profiles()
+    machine = profiles.machine
 
     reconstr_idx = machine.filmstart
 
