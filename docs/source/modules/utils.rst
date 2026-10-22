@@ -9,6 +9,14 @@ utils Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`parameter_descriptions` Module
+------------------------------------
+
+.. automodule:: longitudinal_tomography.utils.parameter_descriptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`physics` Module
 ---------------------
 
