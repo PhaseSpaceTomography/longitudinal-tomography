@@ -11,9 +11,11 @@ files are format version 2, JSON files version 3.0.0.
 """
 from __future__ import annotations
 import json
+import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pydantic
 
 from .. import exceptions as expt
 from ..utils import _input_parsing as parsing, parameter_descriptions as pdesc
@@ -45,6 +47,16 @@ _DAT_V2_FRAMES_VALUES = {
     'skip_frames': 'skip_frames', 'skip_bins_start': 'skip_bins_start',
     'skip_bins_end': 'skip_bins_end', 'rebin': 'rebin',
     'sampling_time': 'dtbin'}
+# Version 3.0.0 parameters that may be omitted -> the value an omitted one
+# takes.
+_JSON_V3_0_0_DEFAULTS = {
+    'output_dir': None, 'synch_part_x': -1.0, 'demax': -1.0e6,
+    'filmstart': 0, 'filmstop': 1, 'filmstep': 1, 'niter': 20, 'snpt': 4,
+    'full_pp_flag': False, 'beam_ref_frame': 0, 'machine_ref_frame': 0,
+    'vrf1dot': 0.0, 'vrf2': 0.0, 'vrf2dot': 0.0, 'h_num': 1.0,
+    'h_ratio': 1.0, 'phi12': 0.0, 'bdot': 0.0, 'charge': 1.0,
+    'self_field_flag': False, 'g_coupling': None, 'zwall_over_n': None,
+    'pickup_sensitivity': 1.0}
 
 
 def detect_version(path: str) -> str:
@@ -125,6 +137,10 @@ def convert(input_path: str, output_path: str, version: str = JSON_VERSION):
     """Convert an input file of any supported format version to the given
     format version.
 
+    The input is validated as the latest format version, and converted as
+    given even if it is invalid. Values omitted from the input take their
+    defaults.
+
     Parameters
     ----------
     input_path: str
@@ -137,12 +153,22 @@ def convert(input_path: str, output_path: str, version: str = JSON_VERSION):
     Raises
     ------
     InputError: Exception
-        Raised if either format version is not supported.
+        Raised if either format version is not supported, or the input
+        cannot be represented in the given version.
+
+    Warns
+    -----
+    UserWarning
+        Given if the input is invalid.
     """
     text, input_version = read_file(input_path)
-    text = convert_text(text, input_version, version)
+    latest = convert_text(text, input_version, JSON_VERSION)
+    _warn_if_invalid(latest, input_path)
+    # Any other version is converted to directly from the input.
+    output = (latest if version == JSON_VERSION
+              else convert_text(text, input_version, version))
     with open(output_path, 'w') as f:
-        f.write(text)
+        f.write(output)
 
 
 def convert_text(text: str, from_version: str, to_version: str) -> str:
@@ -276,6 +302,16 @@ def _dat_to_document_v3(lines: Sequence[str],
             'frames': frames}
 
 
+def _warn_if_invalid(text: str, path: str):
+    # The models import this module, so are imported only when needed.
+    from ..utils import tomo_data as tdata
+    try:
+        tdata.TomographyData.model_validate_json(text)
+    except (pydantic.ValidationError, expt.RawDataImportError) as exc:
+        warnings.warn(f'Invalid input in "{path}", converted as given:\n'
+                      f'{exc}', stacklevel=3)
+
+
 def _version_index(version: str) -> int:
     if version not in VERSIONS:
         raise expt.InputError(
@@ -314,9 +350,19 @@ def _to_dat_v2(name: str, value: str | int | float | bool | None) -> str:
         return '0'
     if isinstance(value, bool):
         return str(int(value))
+    value = _whole_to_int(name, value)
     if name in parsing.FORTRAN_TO_C_FIELDS:
         return str(value + 1)
     return str(value)
+
+
+def _whole_to_int(name: str, value: str | int | float | None) \
+        -> str | int | float | None:
+    # JSON may give an integer as a whole float, which version 2 cannot read.
+    if (name in _DAT_V2_INTEGERS and isinstance(value, float)
+            and value.is_integer()):
+        return int(value)
+    return value
 
 
 def _dat_v2_to_json_v3(text: str) -> str:
@@ -334,13 +380,15 @@ def _json_v3_to_dat_v2(text: str) -> str:
     # The cycle stamp is written in seconds, so any fraction is lost.
     stamp = metadata.get('cycle_stamp_ns')
     preamble = ['='.join(names) if any(names) else None,
-                None if stamp is None else stamp // 10**9,
-                *(metadata.get(name) for name in parsing.DAT_FILE_PREAMBLE)]
+                None if stamp is None
+                else _whole_to_int('cycle_stamp', stamp // 10**9),
+                *(_whole_to_int(name, metadata.get(name))
+                  for name in parsing.DAT_FILE_PREAMBLE)]
 
     # An empty path names no external file, so the data goes inline.
     raw_data_path = frames.get('raw_data_path') or 'pipe'
     try:
-        given = {**document['parameters'],
+        given = {**_JSON_V3_0_0_DEFAULTS, **document['parameters'],
                  **{name: frames[field]
                     for field, name in _DAT_V2_FRAMES_VALUES.items()}}
         values = {name: _to_dat_v2(name, given[name])

@@ -11,6 +11,7 @@ import os
 import tempfile
 import unittest
 import unittest.mock as mock
+import warnings
 
 import numpy.testing as nptest
 
@@ -145,6 +146,105 @@ class TestFileHandling(unittest.TestCase):
                                msg='a value violating a field constraint '
                                    'should raise an InputError'):
             tdata.TomographyData.from_file(json_path)
+
+    def test_converting_invalid_json_warns(self):
+        json_path, document = self._to_json(
+            tdata.TomographyData.from_file(dat_path))
+        document['frames']['rebin'] = 0
+        with open(json_path, 'w') as f:
+            json.dump(document, f)
+        dat_copy = os.path.join(self.tmp_dir, 'copy.dat')
+
+        with self.assertWarns(UserWarning,
+                              msg='converting invalid input should warn'):
+            fhand.convert(json_path, dat_copy, fhand.DAT_VERSION)
+
+        with open(dat_copy) as f:
+            self.assertEqual(
+                f.read().splitlines()[parsing.DAT_FILE_LINE_INDEX['rebin']],
+                '0', msg='invalid input should be converted as given')
+
+    def test_converting_invalid_dat_warns(self):
+        with open(dat_path) as f:
+            lines = f.read().splitlines()
+        lines[parsing.DAT_FILE_LINE_INDEX['rebin']] = '0'
+        invalid = os.path.join(self.tmp_dir, 'invalid.dat')
+        with open(invalid, 'w') as f:
+            f.write('\n'.join(lines) + '\n')
+        json_path = os.path.join(self.tmp_dir, 'data.json')
+
+        with self.assertWarns(UserWarning,
+                              msg='converting invalid input should warn'):
+            fhand.convert(invalid, json_path)
+
+        with open(json_path) as f:
+            self.assertEqual(json.load(f)['frames']['rebin'], 0,
+                             msg='invalid input should be converted as given')
+
+    def test_omitted_defaults_are_written_to_dat(self):
+        # An unset output_dir or self-field coefficient cannot be read back
+        # from a .dat file.
+        kept = ('output_dir', 'g_coupling', 'zwall_over_n')
+        omitted = [name for name in fhand._JSON_V3_0_0_DEFAULTS
+                   if name not in kept]
+        json_path, document = self._to_json(
+            tdata.TomographyData.from_file(dat_path))
+        for name in omitted:
+            del document['parameters'][name]
+        with open(json_path, 'w') as f:
+            json.dump(document, f)
+        dat_copy = os.path.join(self.tmp_dir, 'copy.dat')
+
+        # Omitting a value with a default is valid, so gives no warning.
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            fhand.convert(json_path, dat_copy, fhand.DAT_VERSION)
+
+        parameters = tdata.TomographyData.from_file(dat_copy).parameters
+        for name in omitted:
+            with self.subTest(field=name):
+                self.assertEqual(getattr(parameters, name),
+                                 fhand._JSON_V3_0_0_DEFAULTS[name],
+                                 msg=f'an omitted {name} should be written '
+                                     f'as its default')
+
+    def test_whole_floats_are_written_as_integers(self):
+        json_path, document = self._to_json(
+            tdata.TomographyData.from_file(dat_path))
+        document['parameters'].update(niter=20.0, filmstart=0.0)
+        document['frames']['rebin'] = 3.0
+        document['metadata'].update(
+            cycle_stamp_ns=float(document['metadata']['cycle_stamp_ns']),
+            c_time=325.0, ring=3.0)
+        with open(json_path, 'w') as f:
+            json.dump(document, f)
+        dat_copy = os.path.join(self.tmp_dir, 'copy.dat')
+        fhand.convert(json_path, dat_copy, fhand.DAT_VERSION)
+
+        with open(dat_copy) as f:
+            lines = f.read().splitlines()
+        for name, expected in (('niter', '20'), ('filmstart', '1'),
+                               ('rebin', '3')):
+            with self.subTest(field=name):
+                self.assertEqual(lines[parsing.DAT_FILE_LINE_INDEX[name]],
+                                 expected,
+                                 msg=f'a whole float {name} should be '
+                                     f'written as an integer')
+        # Preamble lines 1, 2 and 4 hold cycle_stamp, c_time and ring.
+        self.assertEqual([lines[1], lines[2], lines[4]],
+                         ['1520341165', '325', '3'],
+                         msg='whole floats in the preamble should be '
+                             'written as integers')
+
+    def test_defaults_match_the_models(self):
+        # The two match only while 3.0.0 is the latest version.
+        defaults = {name: field.default
+                    for name, field in tdata.Parameters.model_fields.items()
+                    if not field.is_required()}
+
+        self.assertEqual(fhand._JSON_V3_0_0_DEFAULTS, defaults,
+                         msg='the version 3.0.0 defaults should be those of '
+                             'the models')
 
     def test_conversion_steps_through_each_version(self):
         steps = {('a', 'b'): lambda text: text + '>b',
