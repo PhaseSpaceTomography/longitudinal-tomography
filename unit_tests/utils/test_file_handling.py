@@ -27,9 +27,9 @@ examples_dir = os.path.join(base_dir, '..', '..', '__EXAMPLES', 'input_files')
 
 MACHINE_ARGS = commons.get_machine_args()
 
-# Machine args that are derived from the frame parameters rather than read
-# straight out of the .dat file, so have no parameter of their own.
-DERIVED_MACHINE_ARGS = ('nprofiles', 'nbins', 'min_dt', 'max_dt')
+# Machine args that are held by, or derived from, the frames, so have no
+# parameter of their own.
+DERIVED_MACHINE_ARGS = ('dtbin', 'nprofiles', 'nbins', 'min_dt', 'max_dt')
 
 
 def _parameter_lines() -> list:
@@ -137,7 +137,7 @@ class TestFileHandling(unittest.TestCase):
     def test_invalid_input_raises(self):
         json_path, document = self._to_json(
             tdata.TomographyData.from_file(dat_path))
-        document['parameters']['rebin'] = 0
+        document['frames']['rebin'] = 0
         with open(json_path, 'w') as f:
             json.dump(document, f)
 
@@ -212,10 +212,10 @@ class TestFileHandling(unittest.TestCase):
         _, document = self._to_json(data)
         raw_data = document['frames']['raw_data']
 
-        self.assertEqual(len(raw_data), data.parameters.framecount,
+        self.assertEqual(len(raw_data), data.frames.nframes,
                          msg='raw data should hold one row per frame')
         self.assertEqual({len(row) for row in raw_data},
-                         {data.parameters.framelength},
+                         {data.frames.nbins_frame},
                          msg='each row should hold one frame')
 
     def test_raw_data_is_last(self):
@@ -339,20 +339,24 @@ class TestDatParsing(unittest.TestCase):
                 getattr(params, name), expected,
                 msg=f'{name} parsed incorrectly from the .dat file')
 
-    def test_frames_match_parameters(self):
+    def test_frame_values_are_held_by_frames(self):
         document = self._document(_parameter_lines())
         parameters, frames = document['parameters'], document['frames']
 
-        for frame_name, name in (('nframes', 'framecount'),
-                                 ('nbins_frame', 'framelength'),
-                                 ('skip_frames', 'skip_frames'),
-                                 ('skip_bins_start', 'skip_bins_start'),
-                                 ('skip_bins_end', 'skip_bins_end'),
-                                 ('rebin', 'rebin'),
-                                 ('sampling_time', 'dtbin')):
+        for frame_name, name, value in (
+                ('nframes', 'framecount', 150),
+                ('nbins_frame', 'framelength', 1000),
+                ('skip_frames', 'skip_frames', 0),
+                ('skip_bins_start', 'skip_bins_start', 170),
+                ('skip_bins_end', 'skip_bins_end', 70),
+                ('rebin', 'rebin', 3),
+                ('sampling_time', 'dtbin', 9.999999999999999E-10)):
             with self.subTest(field=frame_name):
-                self.assertEqual(frames[frame_name], parameters[name],
+                self.assertEqual(frames[frame_name], value,
                                  msg=f'{frame_name} not taken from {name}')
+                self.assertNotIn(name, parameters,
+                                 msg=f'{name} should be held only by the '
+                                     f'frames')
         self.assertEqual(frames['raw_data_path'], 'pipe',
                          msg='raw_data_path not taken from the .dat file')
         self.assertIsNone(frames['raw_data'],

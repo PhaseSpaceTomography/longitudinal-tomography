@@ -4,14 +4,14 @@ format version.
 :Author(s): **Simon Albright**
 """
 
-#: Parameter name -> description, as written in JSON files of format version
-#: 3.0.0.
+#: Name of a parameters or frames field -> description, as written in JSON
+#: files of format version 3.0.0.
 PARAMETER_DESCRIPTIONS_V3_0_0 = {
     'output_dir': 'Directory in which to write all output',
-    'framecount': 'Number of frames in input data',
+    'nframes': 'Number of frames in input data',
     'skip_frames': 'Number of frames to ignore',
-    'framelength': 'Number of bins in each frame',
-    'dtbin': 'Width (in s) of each frame bin',
+    'nbins_frame': 'Number of bins in each frame',
+    'sampling_time': 'Width (in s) of each frame bin',
     'dturns': 'Number of machine turns between frames',
     'skip_bins_start': ('Number of frame bins before the lower profile '
                         'bound to ignore'),

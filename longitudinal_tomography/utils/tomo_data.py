@@ -52,19 +52,13 @@ class Parameters(_ValidatedModel):
     """Validated, type-coerced machine and reconstruction parameters.
 
     Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
+    The shape of the frames and their treatment are held by :class:`Frames`.
     """
 
     output_dir: str | None = None
-    framecount: int = pydantic.Field(gt=0)
-    skip_frames: int = pydantic.Field(ge=0)
-    framelength: int = pydantic.Field(gt=0)
-    dtbin: float = pydantic.Field(gt=0)
     dturns: int = pydantic.Field(gt=0)
-    skip_bins_start: int = pydantic.Field(ge=0)
-    skip_bins_end: int = pydantic.Field(ge=0)
     min_dt_bin: int = pydantic.Field(ge=0)
     max_dt_bin: int = pydantic.Field(ge=0)
-    rebin: int = pydantic.Field(gt=0)
     synch_part_x: float = -1.0
     demax: float = -1.0e6
     filmstart: int = pydantic.Field(default=0, ge=0)
@@ -102,49 +96,27 @@ class Parameters(_ValidatedModel):
         return v
 
     @pydantic.model_validator(mode='after')
-    def _check_cross_field_bounds(self) -> Parameters:
-
-        value_errors = []
-        if not self.skip_frames < self.framecount:
-            value_errors.append(
-                f'skip_frames ({self.skip_frames}) must be '
-                f'less than framecount ({self.framecount})')
-        # Bins are cut from both ends of a frame, and must leave at least
-        # one.
-        skip_bins = self.skip_bins_start + self.skip_bins_end
-        if not skip_bins < self.framelength:
-            value_errors.append(
-                f'skip_bins_start + skip_bins_end ({skip_bins}) must be less '
-                f'than framelength ({self.framelength}):'
-                f'    {self.skip_bins_start=}'
-                f'    {self.skip_bins_end=}')
-        if not self.synch_part_x < self.framelength:
-            value_errors.append(
-                f'synch_part_x ({self.synch_part_x}) must be less than '
-                f'framelength ({self.framelength})')
-        # These index profiles, the frames left after skip_frames.
-        nprofs = self.framecount - self.skip_frames
-        for name in ('filmstart', 'filmstop', 'beam_ref_frame',
-                     'machine_ref_frame'):
-            if not getattr(self, name) < nprofs:
-                value_errors.append(
-                    f'{name} ({getattr(self, name)}) must be less than the '
-                    f'number of profiles, framecount - skip_frames '
-                    f'({nprofs})')
+    def _check_self_fields(self) -> Parameters:
         # The self-field calculation needs both.
+        value_errors = []
         if self.self_field_flag:
             for name in ('g_coupling', 'zwall_over_n'):
                 if getattr(self, name) is None:
                     value_errors.append(
                         f'{name} must be set when self_field_flag is true')
 
-        if len(value_errors) != 0:
-            merged_error = "Input values contain errors:"
-            for e in value_errors:
-                merged_error += f"\n  - {e}"
-            raise ValueError(merged_error)
-
+        _raise_value_errors(value_errors)
         return self
+
+
+def _raise_value_errors(value_errors: list[str]):
+    """Raise every failed check at once, if any failed."""
+    if len(value_errors) != 0:
+        merged_error = "Input values contain errors:"
+        for e in value_errors:
+            merged_error += f"\n  - {e}"
+        raise ValueError(merged_error)
+
 
 def _to_raw_data(value: Collection) -> NPArray:
     """Coerce raw data to a float array."""
@@ -305,21 +277,6 @@ class Frames(_ValidatedModel):
                     f'expected length: {ndata}')
         return self
 
-    @classmethod
-    def from_parameters(cls, params: Parameters, raw_data_path: str = '',
-                        raw_data: Collection | None = None) -> Frames:
-        """Build Frames from the frame-shaping fields of a Parameters."""
-        return cls(
-            raw_data=raw_data,
-            framecount=params.framecount,
-            framelength=params.framelength,
-            skip_frames=params.skip_frames,
-            skip_bins_start=params.skip_bins_start,
-            skip_bins_end=params.skip_bins_end,
-            rebin=params.rebin,
-            dtbin=params.dtbin,
-            raw_data_path=raw_data_path)
-
     @pydantic.computed_field
     @property
     def nprofs(self) -> int:
@@ -428,6 +385,27 @@ class TomographyData(_ValidatedModel):
     parameters: Parameters
     frames: Frames
 
+    @pydantic.model_validator(mode='after')
+    def _check_parameters_fit_frames(self) -> TomographyData:
+        params, frames = self.parameters, self.frames
+
+        value_errors = []
+        if not params.synch_part_x < frames.nbins_frame:
+            value_errors.append(
+                f'synch_part_x ({params.synch_part_x}) must be less than '
+                f'nbins_frame ({frames.nbins_frame})')
+        # These index profiles, the frames left after skip_frames.
+        for name in ('filmstart', 'filmstop', 'beam_ref_frame',
+                     'machine_ref_frame'):
+            if not getattr(params, name) < frames.nprofs:
+                value_errors.append(
+                    f'{name} ({getattr(params, name)}) must be less than the '
+                    f'number of profiles, nframes - skip_frames '
+                    f'({frames.nprofs})')
+
+        _raise_value_errors(value_errors)
+        return self
+
     @classmethod
     def from_file(cls, path: str) -> TomographyData:
         """Read input data from a file of any supported format version,
@@ -498,21 +476,21 @@ class TomographyData(_ValidatedModel):
             Machine object containing parameters for the machine and the
             tomographic reconstruction.
         """
-        params = self.parameters
+        params, frames = self.parameters, self.frames
 
         # Calculating limits in phase for reconstruction area, specified by
         # user, from bin offsets to physical units of phase [s].
-        min_dt = params.min_dt_bin * params.dtbin
-        max_dt = (self.frames.nbins - params.max_dt_bin) * params.dtbin
+        min_dt = params.min_dt_bin * frames.sampling_time
+        max_dt = (frames.nbins - params.max_dt_bin) * frames.sampling_time
 
         # Machine silently ignores unknown arguments, so the fields it does
         # not take are excluded explicitly.
-        machine_kwargs = params.model_dump(exclude={
-            'framecount', 'framelength', 'skip_frames', 'skip_bins_start',
-            'skip_bins_end', 'min_dt_bin', 'max_dt_bin', 'rebin'})
+        machine_kwargs = params.model_dump(exclude={'min_dt_bin',
+                                                    'max_dt_bin'})
 
-        return Machine(**machine_kwargs, nprofiles=self.frames.nprofs,
-                       nbins=self.frames.nbins, min_dt=min_dt, max_dt=max_dt)
+        return Machine(**machine_kwargs, dtbin=frames.sampling_time,
+                       nprofiles=frames.nprofs, nbins=frames.nbins,
+                       min_dt=min_dt, max_dt=max_dt)
 
     def to_profiles(self) -> Profiles:
         """Build Profiles from the held raw data, ready for tracking.

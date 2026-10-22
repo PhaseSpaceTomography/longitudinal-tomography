@@ -38,6 +38,13 @@ _DAT_V2_INTEGERS = frozenset((
     'filmstart', 'filmstop', 'filmstep', 'niter', 'snpt', 'beam_ref_frame',
     'machine_ref_frame', 'c_time', 'ring'))
 _DAT_V2_FLAGS = frozenset(('full_pp_flag', 'self_field_flag'))
+# Version 3.0.0 frames field -> the version 2 value it holds. Every other
+# version 2 value but raw_data_path is held by the parameters.
+_DAT_V2_FRAMES_VALUES = {
+    'nframes': 'framecount', 'nbins_frame': 'framelength',
+    'skip_frames': 'skip_frames', 'skip_bins_start': 'skip_bins_start',
+    'skip_bins_end': 'skip_bins_end', 'rebin': 'rebin',
+    'sampling_time': 'dtbin'}
 
 
 def detect_version(path: str) -> str:
@@ -241,6 +248,8 @@ def _dat_to_document_v3(lines: Sequence[str],
         name: _from_dat_v2(name, lines[i])
         for name, i in parsing.DAT_FILE_LINE_INDEX.items()
         if name != 'raw_data_path'}
+    frames = {field: parameters.pop(name)
+              for field, name in _DAT_V2_FRAMES_VALUES.items()}
 
     preamble = lines[:parsing.DAT_FILE_HEADER_LENGTH]
     selector, _, context_name = preamble[0].partition('=')
@@ -257,18 +266,9 @@ def _dat_to_document_v3(lines: Sequence[str],
         **{name: _from_dat_v2(name, text)
            for name, text in zip(parsing.DAT_FILE_PREAMBLE, preamble[2:])}}
 
-    frames = {
-        'nframes': parameters['framecount'],
-        'nbins_frame': parameters['framelength'],
-        'skip_frames': parameters['skip_frames'],
-        'skip_bins_start': parameters['skip_bins_start'],
-        'skip_bins_end': parameters['skip_bins_end'],
-        'rebin': parameters['rebin'],
-        'sampling_time': parameters['dtbin'],
-        'raw_data_path': lines[parsing.RAW_DATA_FILE_IDX],
-        'raw_data': None if raw_data is None else np.reshape(
-            raw_data, (parameters['framecount'],
-                       parameters['framelength'])).tolist()}
+    frames['raw_data_path'] = lines[parsing.RAW_DATA_FILE_IDX]
+    frames['raw_data'] = None if raw_data is None else np.reshape(
+        raw_data, (frames['nframes'], frames['nbins_frame'])).tolist()
 
     return {'metadata': metadata,
             'parameter_descriptions': pdesc.PARAMETER_DESCRIPTIONS_V3_0_0,
@@ -340,12 +340,15 @@ def _json_v3_to_dat_v2(text: str) -> str:
     # An empty path names no external file, so the data goes inline.
     raw_data_path = frames.get('raw_data_path') or 'pipe'
     try:
-        values = {name: _to_dat_v2(name, document['parameters'][name])
+        given = {**document['parameters'],
+                 **{name: frames[field]
+                    for field, name in _DAT_V2_FRAMES_VALUES.items()}}
+        values = {name: _to_dat_v2(name, given[name])
                   for name in parsing.DAT_FILE_LINE_INDEX
                   if name != 'raw_data_path'}
     except KeyError as exc:
         raise expt.InputError(
-            f'Version 3.0.0 input has no parameter {exc}') from exc
+            f'Version 3.0.0 input has no value for {exc}') from exc
     lines = (['' if value is None else str(value) for value in preamble]
              + parsing.DAT_FILE_TEMPLATE.format(
                  raw_data_path=raw_data_path, **values).splitlines())
