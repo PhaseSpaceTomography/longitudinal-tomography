@@ -109,34 +109,34 @@ class Parameters(_ValidatedModel):
             value_errors.append(
                 f'skip_frames ({self.skip_frames}) must be '
                 f'less than framecount ({self.framecount})')
-        if not self.skip_bins_start < self.framelength:
+        # Bins are cut from both ends of a frame, and must leave at least
+        # one.
+        skip_bins = self.skip_bins_start + self.skip_bins_end
+        if not skip_bins < self.framelength:
             value_errors.append(
-                f'skip_bins_start ({self.skip_bins_start}) must be less than '
-                f'framelength ({self.framelength})')
-        if not self.skip_bins_end < self.framelength:
-            value_errors.append(
-                f'skip_bins_end ({self.skip_bins_end}) must be less than '
-                f'framelength ({self.framelength})')
+                f'skip_bins_start + skip_bins_end ({skip_bins}) must be less '
+                f'than framelength ({self.framelength}):'
+                f'    {self.skip_bins_start=}'
+                f'    {self.skip_bins_end=}')
         if not self.synch_part_x < self.framelength:
             value_errors.append(
                 f'synch_part_x ({self.synch_part_x}) must be less than '
                 f'framelength ({self.framelength})')
-        if not self.filmstart < self.framecount:
-            value_errors.append(
-                f'filmstart ({self.filmstart}) must be less than '
-                f'framecount ({self.framecount})')
-        if not self.filmstop < self.framecount:
-            value_errors.append(
-                f'filmstop ({self.filmstop}) must be less than '
-                f'framecount ({self.framecount})')
-        if not self.beam_ref_frame < self.framecount:
-            value_errors.append(
-                f'beam_ref_frame ({self.beam_ref_frame}) must be less than '
-                f'framecount ({self.framecount})')
-        if not self.machine_ref_frame < self.framecount:
-            value_errors.append(
-                f'machine_ref_frame ({self.machine_ref_frame}) must be '
-                f'less than framecount ({self.framecount})')
+        # These index profiles, the frames left after skip_frames.
+        nprofs = self.framecount - self.skip_frames
+        for name in ('filmstart', 'filmstop', 'beam_ref_frame',
+                     'machine_ref_frame'):
+            if not getattr(self, name) < nprofs:
+                value_errors.append(
+                    f'{name} ({getattr(self, name)}) must be less than the '
+                    f'number of profiles, framecount - skip_frames '
+                    f'({nprofs})')
+        # The self-field calculation needs both.
+        if self.self_field_flag:
+            for name in ('g_coupling', 'zwall_over_n'):
+                if getattr(self, name) is None:
+                    value_errors.append(
+                        f'{name} must be set when self_field_flag is true')
 
         if len(value_errors) != 0:
             merged_error = "Input values contain errors:"
@@ -284,14 +284,15 @@ class Frames(_ValidatedModel):
             raise ValueError(
                 f'skip_frames ({self.skip_frames}) must be less than '
                 f'nframes ({self.nframes})')
-        if not self.skip_bins_start < self.nbins_frame:
+        # Bins are cut from both ends of a frame, and must leave at least
+        # one.
+        skip_bins = self.skip_bins_start + self.skip_bins_end
+        if not skip_bins < self.nbins_frame:
             raise ValueError(
-                f'skip_bins_start ({self.skip_bins_start}) must be less '
-                f'than nbins_frame ({self.nbins_frame})')
-        if not self.skip_bins_end < self.nbins_frame:
-            raise ValueError(
-                f'skip_bins_end ({self.skip_bins_end}) must be less than '
-                f'nbins_frame ({self.nbins_frame})')
+                f'skip_bins_start + skip_bins_end ({skip_bins}) must be less '
+                f'than nbins_frame ({self.nbins_frame}):'
+                f'    {self.skip_bins_start=}'
+                f'    {self.skip_bins_end=}')
         return self
 
     @pydantic.model_validator(mode='after')

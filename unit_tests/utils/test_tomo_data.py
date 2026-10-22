@@ -132,6 +132,41 @@ class TestParameters(unittest.TestCase):
                             f'should be rejected'):
                     tdata.Parameters(**{**PARAMETER_ARGS, name: value})
 
+    def test_rejects_cutting_every_bin(self):
+        with self.assertRaises(pydantic.ValidationError,
+                               msg='cutting every bin of a frame should be '
+                                   'rejected'):
+            tdata.Parameters(**{**PARAMETER_ARGS, 'skip_bins_start': 500,
+                                'skip_bins_end': 500})
+
+    def test_indices_bounded_by_profiles(self):
+        # With 10 of 150 frames skipped, there are 140 profiles.
+        for name in ('filmstart', 'filmstop', 'beam_ref_frame',
+                     'machine_ref_frame'):
+            with self.subTest(field=name):
+                args = {**PARAMETER_ARGS, 'skip_frames': 10, 'filmstop': 139}
+                tdata.Parameters(**{**args, name: 139})
+                with self.assertRaises(
+                        pydantic.ValidationError,
+                        msg=f'{name} beyond the last profile should be '
+                            f'rejected'):
+                    tdata.Parameters(**{**args, name: 140})
+
+    def test_self_fields_need_coefficients(self):
+        coefficients = {'g_coupling': 0.0, 'zwall_over_n': 0.0}
+        tdata.Parameters(**PARAMETER_ARGS, **coefficients,
+                         self_field_flag=True)
+
+        for name in coefficients:
+            with self.subTest(field=name):
+                with self.assertRaises(
+                        pydantic.ValidationError,
+                        msg=f'self-fields without {name} should be '
+                            f'rejected'):
+                    tdata.Parameters(**PARAMETER_ARGS,
+                                     **{**coefficients, name: None},
+                                     self_field_flag=True)
+
     def test_cross_field_violations_all_raised(self):
         bad_input = {'skip_frames':150, 'skip_bins_start': 1000,
                      'skip_bins_end': 1000, 'synch_part_x': 1000.0,
@@ -185,6 +220,13 @@ class TestFramesValidation(unittest.TestCase):
                         msg=f'{name}={value} exceeds its frame bound and '
                             f'should be rejected'):
                     tdata.Frames(**{**frame_input_args, name: value})
+
+    def test_rejects_cutting_every_bin(self):
+        with self.assertRaises(pydantic.ValidationError,
+                               msg='cutting every bin of a frame should be '
+                                   'rejected'):
+            tdata.Frames(**{**frame_input_args, 'skip_bins_start': 500,
+                            'skip_bins_end': 500})
 
     def test_validate_accepts_a_valid_change(self):
         frames = tdata.Frames(**frame_input_args)
