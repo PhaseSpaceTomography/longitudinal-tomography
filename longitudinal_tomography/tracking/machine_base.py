@@ -26,7 +26,7 @@ _machine_base_defaults = {
     'max_dt': None,
     'self_field_flag': False,
     'full_pp_flag': False,
-    'pickup_sensitivity': None,
+    'pickup_sensitivity': 1.0,
     'machine_ref_frame': 0,
     'beam_ref_frame': 0,
     'snpt': 4,
@@ -132,7 +132,7 @@ class MachineABC(ABC):
         Maximum phase of reconstruction area measured in seconds.\n
     nprofiles: int
         Number of measured profiles.
-    pickup_sensitivity: float, default=None
+    pickup_sensitivity: float, default=1.0
         Effective pick-up sensitivity
         (in digitizer units per instantaneous Amp).\n
     nbins: int

@@ -92,7 +92,7 @@ class Parameters(_ValidatedModel):
     self_field_flag: bool = False
     g_coupling: float | None = None
     zwall_over_n: float | None = None
-    pickup_sensitivity: float | None = None
+    pickup_sensitivity: float = pydantic.Field(default=1.0, gt=0, le=1)
 
     @pydantic.field_validator('charge')
     @classmethod

@@ -591,7 +591,7 @@ class TestDatWriting(unittest.TestCase):
             self._write_dat(data)
 
     def test_absent_optional_is_written_as_zero(self):
-        optional = ('g_coupling', 'zwall_over_n', 'pickup_sensitivity')
+        optional = ('g_coupling', 'zwall_over_n')
         data = tdata.TomographyData.from_file(dat_path)
         for name in optional:
             setattr(data.parameters, name, None)
