@@ -67,8 +67,9 @@ def read_file(path: str) -> tuple[str, str]:
     Parameters
     ----------
     path: str
-        Path to the input file. ``'stdin'`` or ``''`` reads a `.dat` file
-        from stdin.
+        Path to the input file. ``'stdin'`` or ``''`` reads from stdin: a
+        JSON file to the end of the input, a `.dat` file to the end of its
+        raw data.
 
     Returns
     -------
@@ -83,22 +84,34 @@ def read_file(path: str) -> tuple[str, str]:
         Raised if the file does not exist or names no format version.
     """
     text = ''.join(parsing.read_lines(path))
-
-    if text.lstrip().startswith('{'):
-        version = json.loads(text).get('metadata', {}).get(
-            'format_version')
-    else:
-        # A `.dat` file names its version on the line after the preamble.
-        lines = text.splitlines()
-        version_line = (lines[parsing.DAT_FILE_HEADER_LENGTH]
-                        if len(lines) > parsing.DAT_FILE_HEADER_LENGTH
-                        else '')
-        version = (version_line.removeprefix('! Version').strip()
-                   if version_line.startswith('! Version') else None)
-
+    version = detect_text_version(text)
     if version is None:
         raise expt.InputError(f'No format version found in "{path}"')
     return text, version
+
+
+def detect_text_version(text: str) -> str | None:
+    """Find the format version of the text of an input file.
+
+    Parameters
+    ----------
+    text: str
+        The text of the file.
+
+    Returns
+    -------
+    version: str | None
+        The format version, or None if the text names none.
+    """
+    if text.lstrip().startswith('{'):
+        return json.loads(text).get('metadata', {}).get('format_version')
+
+    # A `.dat` file names its version on the line after the preamble.
+    lines = text.splitlines()
+    version_line = (lines[parsing.DAT_FILE_HEADER_LENGTH]
+                    if len(lines) > parsing.DAT_FILE_HEADER_LENGTH else '')
+    return (version_line.removeprefix('! Version').strip()
+            if version_line.startswith('! Version') else None)
 
 
 def convert(input_path: str, output_path: str, version: str = JSON_VERSION):

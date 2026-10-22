@@ -3,8 +3,11 @@
 Run as python test_tomo_input.py in console or via coverage
 """
 
+import io
 import os
+import tempfile
 import unittest
+import unittest.mock as mock
 
 import numpy as np
 import numpy.testing as nptest
@@ -13,6 +16,7 @@ from .. import commons
 import longitudinal_tomography.tracking.machine as mch
 from longitudinal_tomography import exceptions as expt
 import longitudinal_tomography.utils._input_parsing as parsing
+import longitudinal_tomography.utils.file_handling as fhand
 import longitudinal_tomography.utils.tomo_input as tomoin
 
 # All values retrieved from INDIVShavingC325.dat
@@ -407,6 +411,62 @@ class TestTomoIn(unittest.TestCase):
                                msg='a value violating a field constraint '
                                    'should raise an InputError'):
             tomoin.txt_input_to_machine(file_lines)
+
+    def test_get_user_input_promotes_to_json(self):
+        dat_path = os.path.join(self._find_resource_dir(),
+                                'INDIVShavingC325.dat')
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            json_path = os.path.join(tmp_dir, 'INDIVShavingC325.json')
+            fhand.convert(dat_path, json_path)
+            with open(json_path) as f:
+                text = f.read()
+            with mock.patch('sys.stdin', io.StringIO(text)):
+                from_stdin = tomoin.get_user_input('stdin')
+            inputs = {'.dat file': tomoin.get_user_input(dat_path),
+                      'JSON file': tomoin.get_user_input(json_path),
+                      'JSON on stdin': from_stdin}
+
+        with open(dat_path) as f:
+            _, raw_data = parsing.split_input(f.read().splitlines())
+        for source, (json_text, held_data) in inputs.items():
+            with self.subTest(source=source):
+                self.assertEqual(json_text, text,
+                                 msg='input should be given as JSON of the '
+                                     'latest format version')
+                nptest.assert_array_equal(
+                    held_data, raw_data,
+                    err_msg='the raw data should be given as for a .dat '
+                            'file')
+
+    def test_txt_input_to_machine_accepts_either_format(self):
+        dat_path = os.path.join(self._find_resource_dir(),
+                                'INDIVShavingC325.dat')
+        with open(dat_path) as f:
+            dat_text = f.read()
+        lines = dat_text.splitlines()
+        machine, frames = tomoin.txt_input_to_machine(
+            lines[:parsing.PARAMETER_LENGTH])
+        _, raw_data = parsing.split_input(lines)
+
+        self.assertIsNone(frames.raw_data,
+                          msg='.dat parameter lines should give frames '
+                              'without raw data')
+        for source, text in (('JSON', tomoin.get_user_input(dat_path)[0]),
+                             ('.dat', dat_text)):
+            with self.subTest(source=source):
+                text_machine, text_frames = tomoin.txt_input_to_machine(text)
+                nptest.assert_equal(
+                    vars(text_machine), vars(machine),
+                    err_msg=f'{source} text should give the same machine '
+                            f'as .dat parameter lines')
+                self.assertEqual(text_frames.model_dump(exclude={'raw_data'}),
+                                 frames.model_dump(exclude={'raw_data'}),
+                                 msg=f'{source} text should give the same '
+                                     f'frames as .dat parameter lines')
+                nptest.assert_array_equal(
+                    text_frames.raw_data, raw_data,
+                    err_msg=f'{source} text should give frames holding its '
+                            f'raw data')
 
     def _load_waterfall(self):
         data_path = self._find_resource_dir()

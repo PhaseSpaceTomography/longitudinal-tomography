@@ -436,8 +436,7 @@ class TomographyData(_ValidatedModel):
         Parameters
         ----------
         path: str
-            Path to the file. ``'stdin'`` or ``''`` reads a `.dat` file from
-            stdin.
+            Path to the file. ``'stdin'`` or ``''`` reads from stdin.
 
         Returns
         -------

@@ -471,9 +471,9 @@ class TestTomographyData(unittest.TestCase):
                          frames.model_dump(exclude={'raw_data'}),
                          msg='frames differ between TomographyData and '
                              'txt_input_to_machine')
-        self.assertIsNone(frames.raw_data,
-                          msg='txt_input_to_machine should not attach '
-                              'raw data')
+        nptest.assert_array_equal(frames.raw_data, data.frames.raw_data,
+                                  err_msg='txt_input_to_machine should hold '
+                                          'the raw data of the input')
 
     def test_json_round_trip(self):
         data = _reference_data()

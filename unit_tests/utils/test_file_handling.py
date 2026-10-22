@@ -5,6 +5,7 @@ Run as python test_file_handling.py in console or via coverage
 """
 
 import glob
+import io
 import json
 import os
 import tempfile
@@ -52,6 +53,47 @@ class TestFileHandling(unittest.TestCase):
         data.to_file(json_path)
         with open(json_path) as f:
             return json_path, json.load(f)
+
+    def _from_stdin(self, text: str) -> tdata.TomographyData:
+        with mock.patch('sys.stdin', io.StringIO(text)):
+            return tdata.TomographyData.from_file('stdin')
+
+    def test_reads_json_from_stdin(self):
+        json_path, _ = self._to_json(tdata.TomographyData.from_file(dat_path))
+        with open(json_path) as f:
+            text = f.read()
+
+        # Blank lines before the document should not matter.
+        self.assertEqual(self._from_stdin('\n' + text),
+                         tdata.TomographyData.from_file(json_path),
+                         msg='JSON should be read from stdin')
+
+    def test_reads_dat_from_stdin(self):
+        with open(dat_path) as f:
+            text = f.read()
+
+        with mock.patch('sys.stdin', io.StringIO(text + 'after\n')) as stdin:
+            data = tdata.TomographyData.from_file('stdin')
+            rest = stdin.read()
+
+        self.assertEqual(data, tdata.TomographyData.from_file(dat_path),
+                         msg='a .dat file should be read from stdin')
+        self.assertEqual(rest, 'after\n',
+                         msg='a .dat file should be read from stdin only to '
+                             'the end of its raw data')
+
+    def test_reads_dat_with_blank_preamble_from_stdin(self):
+        data = tdata.TomographyData.from_file(dat_path)
+        data.metadata = tdata.Metadata()
+        blank = os.path.join(self.tmp_dir, 'blank.dat')
+        data.to_file(blank, fhand.DAT_VERSION)
+        with open(blank) as f:
+            text = f.read()
+
+        self.assertEqual(self._from_stdin(text),
+                         tdata.TomographyData.from_file(blank),
+                         msg='a .dat file starting with blank lines should '
+                             'be read from stdin')
 
     def test_dat_file_is_version_2(self):
         self.assertEqual(fhand.detect_version(dat_path), fhand.DAT_VERSION,

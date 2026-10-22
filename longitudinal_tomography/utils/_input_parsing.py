@@ -1,5 +1,6 @@
-"""Parsing of tomography input from Fortran style text files, shared by
-:mod:`tomo_input` and :mod:`tomo_data`.
+"""Reading of tomography input files from a path or stdin, the layout and
+parsing of `.dat` files, and the treatment of raw data into profiles, shared
+by :mod:`file_handling`, :mod:`tomo_input` and :mod:`tomo_data`.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
@@ -181,12 +182,6 @@ DAT_FILE_TEMPLATE = (
 )
 
 
-def read_input(input: str = '') -> tuple[list, NPArray]:
-    """Read input from stdin, or from the file at the given path, and
-    split it into parameter lines and raw data."""
-    return split_input(read_lines(input))
-
-
 def read_lines(input: str = '') -> NPArray:
     """Read every line of input from stdin, or from the file at the given
     path."""
@@ -208,33 +203,40 @@ def get_input_args(input_file_pth: str) -> NPArray:
     return np.array(read)
 
 
-# Read machine parameters via stdin.
-# Here the measured data must be pipelined in the same file as
-# the machine parameters.
+# Read input via stdin: a JSON file to the end of the input, or a `.dat`
+# file to the end of its raw data, located by its own lines. For a `.dat`
+# file, the measured data must be pipelined in the same file as the machine
+# parameters.
 def get_input_stdin() -> NPArray:
-    read = []
-    finished = False
-    piped_raw_data = False
-
-    line_num = 0
-    ndata_points = PARAMETER_LENGTH
-
-    while line_num < ndata_points:
+    # The first line that is not blank tells JSON from a `.dat` file, in
+    # which it comes before any line the raw data is located by.
+    read = [sys.stdin.readline()]
+    while read[-1].isspace():
         read.append(sys.stdin.readline())
-        if line_num == RAW_DATA_FILE_IDX:
-            if 'pipe' in read[-1]:
-                piped_raw_data = True
-        if piped_raw_data:
-            if line_num == DAT_FILE_LINE_INDEX['framecount']:
-                nframes = int(read[-1])
-            if line_num == DAT_FILE_LINE_INDEX['framelength']:
-                nbins = int(read[-1])
-                ndata_points += nframes * nbins
-        if line_num == ndata_points:
-            finished = True
-        line_num += 1
+    if read[-1].lstrip().startswith('{'):
+        output = np.array(read + sys.stdin.readlines())
 
-    return np.array(read)
+    else:
+        piped_raw_data = False
+
+        line_num = len(read)
+        ndata_points = PARAMETER_LENGTH
+
+        while line_num < ndata_points:
+            read.append(sys.stdin.readline())
+            if line_num == RAW_DATA_FILE_IDX:
+                if 'pipe' in read[-1]:
+                    piped_raw_data = True
+            if piped_raw_data:
+                if line_num == DAT_FILE_LINE_INDEX['framecount']:
+                    nframes = int(read[-1])
+                if line_num == DAT_FILE_LINE_INDEX['framelength']:
+                    nbins = int(read[-1])
+                    ndata_points += nframes * nbins
+            line_num += 1
+
+        output = np.array(read)
+    return output
 
 
 # Splits the read input data to machine parameters and raw data.
