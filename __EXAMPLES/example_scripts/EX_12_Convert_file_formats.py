@@ -24,10 +24,14 @@ fhand.convert(json_pth, dat_pth, fhand.DAT_VERSION)
 print(f'{json_pth} is version {fhand.detect_version(json_pth)}')
 print(f'{dat_pth} is version {fhand.detect_version(dat_pth)}')
 
-# Files of every version are read into the same TomographyData
+# Files of every version are read into the same TomographyData, apart from
+# the format version recorded in the metadata
 tomo_data = tdata.TomographyData.from_file(json_pth)
+dat_data = tdata.TomographyData.from_file(in_file_pth)
+version = {'metadata': {'format_version'}}
 print('JSON holds the same data as the .dat file:',
-      tomo_data == tdata.TomographyData.from_file(in_file_pth))
+      tomo_data.model_dump(exclude=version)
+      == dat_data.model_dump(exclude=version))
 
 tRange, ERange, density = tomo_data.run()
 
