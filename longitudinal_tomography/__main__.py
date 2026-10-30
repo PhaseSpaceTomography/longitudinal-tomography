@@ -7,8 +7,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     parser.add_argument('input', default='stdin', type=str,
-                        help='Path to input .dat file, or use "stdin" for '
-                             'taking input from stdin.')
+                        help='Path to input JSON or .dat file, or use '
+                             '"stdin" for taking input from stdin.')
     parser.add_argument('-t', '--tomoscope', default=False,
                         action='store_true', help='Run in Tomoscope mode.')
     parser.add_argument('-o', '--output', type=str,

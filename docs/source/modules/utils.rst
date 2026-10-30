@@ -1,6 +1,22 @@
 utils Package
 ==============
 
+:mod:`file_handling` Module
+---------------------------
+
+.. automodule:: longitudinal_tomography.utils.file_handling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`parameter_descriptions` Module
+------------------------------------
+
+.. automodule:: longitudinal_tomography.utils.parameter_descriptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`physics` Module
 ---------------------
 

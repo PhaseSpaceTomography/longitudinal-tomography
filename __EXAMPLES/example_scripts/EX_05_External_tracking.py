@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-import longitudinal_tomography.utils.tomo_input as tin
+import longitudinal_tomography.utils.tomo_data as tdata
 
 
 def generate_bunch(bunch_position, bunch_length,
@@ -61,12 +61,7 @@ def kick(dphi, dE, charge, vrf1, vrf2, phi0, phi12, h_ratio, acc_kick):
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'C500MidPhaseNoise.dat')
 
-file = []
-with open(in_file_pth, 'r') as f:
-    for i in range(98):
-        file.append(f.readline().strip())
-
-machine, _ = tin.txt_input_to_machine(file)
+machine = tdata.TomographyData.from_file(in_file_pth).to_machine()
 
 bunch_position = machine.synch_part_x * machine.dtbin * 0.0
 bunch_length = machine.nbins * machine.dtbin

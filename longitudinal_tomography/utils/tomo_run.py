@@ -73,7 +73,7 @@ def run(input: str, reconstruct_profile: bool = None,
     >>> plt.show()
     """
 
-    tomo_data = tdata.TomographyData.from_dat_file(input)
+    tomo_data = tdata.TomographyData.from_file(input)
 
     if tomoscope:
         print(' Start')

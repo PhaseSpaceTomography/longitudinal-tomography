@@ -1,12 +1,18 @@
-"""Module containing functions for handling input from
-Fortran style text files.
+"""Module containing functions for handling input from JSON and `.dat`
+files of any format version.
 
 :Author(s): **Christoffer Hjertø Grindheim**, **Anton Lu**
 """
 from __future__ import annotations
+import json
 from typing import TYPE_CHECKING
 
-from ..utils import _input_parsing as parsing, tomo_data as tdata
+import numpy as np
+import pydantic
+
+from .. import exceptions as expt
+from ..utils import (_input_parsing as parsing, file_handling as fhand,
+                     tomo_data as tdata)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray as NPArray
@@ -21,41 +27,39 @@ PARAMETER_LENGTH = parsing.PARAMETER_LENGTH
 RAW_DATA_FILE_IDX = parsing.RAW_DATA_FILE_IDX
 
 
-def get_user_input(input: str = ''):
-    """Function to let user provide input as a text file either as
-    file path or as stdin.
+def get_user_input(input: str = '') -> tuple[str, NPArray | None]:
+    """Function to let user provide input as a JSON or `.dat` file either
+    as file path or as stdin. Input of any format version is converted to
+    JSON of the latest format version.
 
-    If a filepath is given through the **system arguments**, the path to the
-    output directory can be given as the second argument. The specified
-    output path will substitute the output path read from the input file.
-    A failed path to the measured data, or the measured data itself can
-    be given in the input file.
-
-    If the input is provided via **stdin**, the measured data must be
-    stored in the same input file.
+    The measured data can be held in the input file, or, for a `.dat` file,
+    in a file it names.
 
     Returns
     -------
-    tomo_input: tuple (list, ndarray)
-        Tuple holding machine and reconstruction parameters as a list of
-        strings directly read from text file and ndarray containing
-        raw data (parameters, raw data).
+    tomo_input: tuple (str, ndarray)
+        Tuple holding the input as JSON text, and ndarray containing the
+        raw data it holds, or None if it holds none (parameters, raw data).
     """
-    return parsing.read_input(input)
+    text, version = fhand.read_file(input)
+    text = fhand.convert_text(text, version, fhand.JSON_VERSION)
+    raw_data = json.loads(text)['frames'].get('raw_data')
+    return text, (None if raw_data is None
+                  else np.array(raw_data, dtype=float).ravel())
 
 
-def txt_input_to_machine(input_array: list) -> tuple[Machine, tdata.Frames]:
+def txt_input_to_machine(input_array: str | list) \
+        -> tuple[Machine, tdata.Frames]:
     """Function converts the content of an input file and uses this to
-    generate an machine object. The input file is given as a list
-    holding one line of the file in ach element. The list should
-    contain a direct read from a Fortran styled input file, where all
-    lines should be included.
+    generate an machine object. The input is given either as the text of
+    an input file of any format version, such as the JSON text from
+    :func:`get_user_input`, or as a list holding one line of a `.dat` file
+    in each element, every line before the raw data included.
 
     Parameters
     ----------
-    input_array: list
-        Array containing each line of an input file as an element of the array.
-        This should be a direct read from a tomography text file.
+    input_array: str | list
+        The text of an input file, or the parameter lines of a `.dat` file.
 
     Returns
     -------
@@ -71,17 +75,23 @@ def txt_input_to_machine(input_array: list) -> tuple[Machine, tdata.Frames]:
         Error in input array
     """
 
-    params = tdata.Parameters.from_dat_lines(input_array)
-    raw_data_path = input_array[RAW_DATA_FILE_IDX].strip()
-    # TODO: only the parameter lines are given here, so these frames never
-    # hold raw data, unlike those built by TomographyData.from_dat_file, and
-    # callers have to carry the array themselves. Drop the difference when
-    # the input seam moves to a single reader.
-    frame = tdata.Frames.from_parameters(params, raw_data_path=raw_data_path)
-    machine = tdata.TomographyData(
-        parameters=params, frames=frame).to_machine()
+    # TODO: `.dat` parameter lines hold no raw data, so frames from them
+    # never do, unlike those from the text of a file, and callers have to
+    # carry the array themselves. Drop the difference when the input seam
+    # moves to a single reader.
+    if isinstance(input_array, str):
+        text = fhand.convert_text(input_array,
+                                  fhand.detect_text_version(input_array),
+                                  fhand.JSON_VERSION)
+    else:
+        text = fhand.dat_to_json(input_array)
 
-    return machine, frame
+    try:
+        data = tdata.TomographyData.model_validate_json(text)
+    except pydantic.ValidationError as exc:
+        raise expt.InputError(f'Invalid input parameters:\n{exc}') from exc
+
+    return data.to_machine(), data.frames
 
 
 

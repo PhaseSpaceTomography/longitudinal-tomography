@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import yaml
 
-import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_data as tdata
 
 if TYPE_CHECKING:
     from longitudinal_tomography.data.profiles import Profiles
@@ -17,17 +17,10 @@ def load_data() -> tuple[Machine, Frames, Profiles]:
     base_dir = path.split(path.realpath(__file__))[0]
     data_path = path.join(base_dir, 'resources')
     dat_path = path.join(data_path, 'INDIVShavingC325.dat')
-    raw_params, raw_data = tomoin.get_user_input(dat_path)
+    data = tdata.TomographyData.from_file(dat_path)
+    profiles = data.to_profiles()
 
-    machine, frames = tomoin.txt_input_to_machine(raw_params)
-    machine.values_at_turns()
-    waterfall = frames.to_waterfall(raw_data)
-
-    profiles = tomoin.raw_data_to_profiles(
-        waterfall, machine, frames.rebin, frames.sampling_time)
-    profiles.calc_profilecharge()
-
-    return machine, frames, profiles
+    return profiles.machine, data.frames, profiles
 
 
 def get_machine_args() -> dict:

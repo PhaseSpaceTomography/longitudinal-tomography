@@ -1,12 +1,9 @@
 import os
 
-import numpy as np
-
 import longitudinal_tomography.tomography.tomography as tomography
 import longitudinal_tomography.tracking.particles as parts
 import longitudinal_tomography.tracking.tracking as tracking
-import longitudinal_tomography.data.data_treatment as dtreat
-import longitudinal_tomography.utils.tomo_input as tomoin
+import longitudinal_tomography.utils.tomo_data as tdata
 import longitudinal_tomography.utils.tomo_output as tomoout
 
 import longitudinal_tomography
@@ -16,28 +13,11 @@ longitudinal_tomography.use_gpu()
 ex_dir = os.path.split(os.path.realpath(os.path.dirname(__file__)))[0]
 in_file_pth = os.path.join(ex_dir, 'input_files', 'C500MidPhaseNoise.dat')
 
-parameter_lines = 98
-input_parameters = []
-with open(in_file_pth, 'r') as line:
-    for i in range(parameter_lines):
-        input_parameters.append(line.readline().strip())
+tomo_data = tdata.TomographyData.from_file(in_file_pth)
 
-raw_data = np.genfromtxt(in_file_pth, skip_header=98, dtype=np.float32)
-
-# Generating machine object
-machine, frames = tomoin.txt_input_to_machine(input_parameters)
-measured_waterfall = frames.to_waterfall(raw_data)
-
-# Creating profiles object
-profiles = tomoin.raw_data_to_profiles(
-    measured_waterfall, machine,
-    frames.rebin, frames.sampling_time)
-
-profiles.calc_profilecharge()
-
-if profiles.machine.synch_part_x < 0:
-    fit_info = dtreat.fit_synch_part_x(profiles)
-    machine.load_fitted_synch_part_x_ftn(fit_info)
+# Builds the machine, treats the raw data and fits synch_part_x if needed
+profiles = tomo_data.to_profiles()
+machine = profiles.machine
 
 tracker = tracking.Tracking(machine)
 tracker.enable_fortran_output(profiles.profile_charge)

@@ -14,10 +14,12 @@ from ..data import data_treatment as dtreat
 from ..tomography import tomography
 from ..tracking import particles as pts, tracking
 from ..tracking.machine import Machine
-from ..utils import _input_parsing as parsing, tomo_config as conf
+from ..utils import (_input_parsing as parsing, file_handling as fhand,
+                     parameter_descriptions as pdesc,
+                     tomo_config as conf)
 
 if TYPE_CHECKING:
-    from typing import Any, Collection, Sequence
+    from typing import Any, Collection
     from numpy.typing import NDArray as NPArray
 
     from ..data.profiles import Profiles
@@ -50,23 +52,13 @@ class Parameters(_ValidatedModel):
     """Validated, type-coerced machine and reconstruction parameters.
 
     Field names match the canonical names in :data:`DAT_FILE_LINE_INDEX`.
+    The shape of the frames and their treatment are held by :class:`Frames`.
     """
 
-    # Lines 0 to 7 of a `.dat` file, held verbatim. Their meaning is
-    # undocumented, so they are neither parsed nor validated.
-    header: list[str] = pydantic.Field(
-        default=[], max_length=parsing.DAT_FILE_HEADER_LENGTH)
     output_dir: str | None = None
-    framecount: int = pydantic.Field(gt=0)
-    skip_frames: int = pydantic.Field(ge=0)
-    framelength: int = pydantic.Field(gt=0)
-    dtbin: float = pydantic.Field(gt=0)
     dturns: int = pydantic.Field(gt=0)
-    skip_bins_start: int = pydantic.Field(ge=0)
-    skip_bins_end: int = pydantic.Field(ge=0)
     min_dt_bin: int = pydantic.Field(ge=0)
     max_dt_bin: int = pydantic.Field(ge=0)
-    rebin: int = pydantic.Field(gt=0)
     synch_part_x: float = -1.0
     demax: float = -1.0e6
     filmstart: int = pydantic.Field(default=0, ge=0)
@@ -94,7 +86,7 @@ class Parameters(_ValidatedModel):
     self_field_flag: bool = False
     g_coupling: float | None = None
     zwall_over_n: float | None = None
-    pickup_sensitivity: float | None = None
+    pickup_sensitivity: float = pydantic.Field(default=1.0, gt=0)
 
     @pydantic.field_validator('charge')
     @classmethod
@@ -104,154 +96,39 @@ class Parameters(_ValidatedModel):
         return v
 
     @pydantic.model_validator(mode='after')
-    def _check_cross_field_bounds(self) -> Parameters:
-
+    def _check_self_fields(self) -> Parameters:
+        # The self-field calculation needs both.
         value_errors = []
-        if not self.skip_frames < self.framecount:
-            value_errors.append(
-                f'skip_frames ({self.skip_frames}) must be '
-                f'less than framecount ({self.framecount})')
-        if not self.skip_bins_start < self.framelength:
-            value_errors.append(
-                f'skip_bins_start ({self.skip_bins_start}) must be less than '
-                f'framelength ({self.framelength})')
-        if not self.skip_bins_end < self.framelength:
-            value_errors.append(
-                f'skip_bins_end ({self.skip_bins_end}) must be less than '
-                f'framelength ({self.framelength})')
-        if not self.synch_part_x < self.framelength:
-            value_errors.append(
-                f'synch_part_x ({self.synch_part_x}) must be less than '
-                f'framelength ({self.framelength})')
-        if not self.filmstart < self.framecount:
-            value_errors.append(
-                f'filmstart ({self.filmstart}) must be less than '
-                f'framecount ({self.framecount})')
-        if not self.filmstop < self.framecount:
-            value_errors.append(
-                f'filmstop ({self.filmstop}) must be less than '
-                f'framecount ({self.framecount})')
-        if not self.beam_ref_frame < self.framecount:
-            value_errors.append(
-                f'beam_ref_frame ({self.beam_ref_frame}) must be less than '
-                f'framecount ({self.framecount})')
-        if not self.machine_ref_frame < self.framecount:
-            value_errors.append(
-                f'machine_ref_frame ({self.machine_ref_frame}) must be '
-                f'less than framecount ({self.framecount})')
+        if self.self_field_flag:
+            for name in ('g_coupling', 'zwall_over_n'):
+                if getattr(self, name) is None:
+                    value_errors.append(
+                        f'{name} must be set when self_field_flag is true')
 
-        if len(value_errors) != 0:
-            merged_error = "Input values contain errors:"
-            for e in value_errors:
-                merged_error += f"\n  - {e}"
-            raise ValueError(merged_error)
-
+        _raise_value_errors(value_errors)
         return self
 
-    @classmethod
-    def from_dat_lines(cls, lines: Sequence[str]) -> Parameters:
-        """Build Parameters from the header lines of a legacy `.dat` file.
 
-        Parameters
-        ----------
-        lines: Sequence[str]
-            The `.dat` file's `PARAMETER_LENGTH` header lines (raw-data
-            lines, if any, excluded).
-
-        Returns
-        -------
-        Parameters
-        """
-        if not hasattr(lines, '__iter__'):
-            raise expt.InputError('Input should be iterable')
-        if len(lines) != parsing.PARAMETER_LENGTH:
-            raise expt.InputError(
-                f'Input array be of length {parsing.PARAMETER_LENGTH}, '
-                f'containing every line of input file (not including '
-                f'raw-data).')
-
-        stripped = [line.strip() for line in lines]
-
-        param_values = {'header': stripped[:parsing.DAT_FILE_HEADER_LENGTH]}
-        for name, idx in parsing.DAT_FILE_LINE_INDEX.items():
-            if name == 'raw_data_path':
-                continue
-            value = stripped[idx]
-            if name in parsing.FORTRAN_TO_C_FIELDS:
-                try:
-                    value = int(value) - 1
-                except ValueError as exc:
-                    raise expt.InputError(
-                        f'Invalid legacy input parameters:\n{name} on line '
-                        f'{idx} is not an integer: {value!r}') from exc
-            param_values[name] = value
-
-        try:
-            return cls(**param_values)
-        except pydantic.ValidationError as exc:
-            raise expt.InputError(
-                f'Invalid legacy input parameters:\n{exc}') from exc
-
-    def _dat_value(self, name: str) -> str:
-        # Fortran index fields are stored 0-based, so the inverse of the
-        # conversion in from_dat_lines is applied here.
-        value = getattr(self, name)
-        if value is None:
-            if name == 'output_dir':
-                raise expt.InputError(
-                    'output_dir has no value, which a .dat file cannot '
-                    'represent')
-            # The format has no way to say "unset", so an optional
-            # parameter without a value is written as zero.
-            return '0'
-        if isinstance(value, bool):
-            return str(int(value))
-        if name in parsing.FORTRAN_TO_C_FIELDS:
-            return str(value + 1)
-        return str(value)
-
-    def to_dat_lines(self, raw_data_path: str = 'pipe') -> list[str]:
-        """Render the parameters as the header lines of a legacy `.dat` file.
-
-        Parameters
-        ----------
-        raw_data_path: str
-            Value for the raw data path line, which is not a parameter.
-            ``'pipe'`` means the raw data follows the header lines.
-
-        Returns
-        -------
-        list[str]
-            The `PARAMETER_LENGTH` header lines, without line endings.
-
-        Raises
-        ------
-        InputError: Exception
-            Raised if a parameter holds no value the format can represent.
-        """
-        header = list(self.header)
-        header += [''] * (parsing.DAT_FILE_HEADER_LENGTH - len(header))
-        values = {name: self._dat_value(name)
-                  for name in parsing.DAT_FILE_LINE_INDEX
-                  if name != 'raw_data_path'}
-        block = parsing.DAT_FILE_TEMPLATE.format(
-            raw_data_path=raw_data_path, **values)
-        return header + block.splitlines()
+def _raise_value_errors(value_errors: list[str]):
+    """Raise every failed check at once, if any failed."""
+    if len(value_errors) != 0:
+        merged_error = "Input values contain errors:"
+        for e in value_errors:
+            merged_error += f"\n  - {e}"
+        raise ValueError(merged_error)
 
 
 def _to_raw_data(value: Collection) -> NPArray:
-    """Coerce raw data to a 1D float array."""
+    """Coerce raw data to a float array."""
     if not hasattr(value, '__iter__'):
         raise expt.RawDataImportError('Raw data should be iterable')
     return np.asarray(value, dtype=float)
 
 
-#: Raw data as read from an input file. Held as an array, but dumped and
-#: serialised as a list of floats.
+#: Raw data as read from an input file, held as an array.
 RawData = Annotated[
     pydantic.InstanceOf[np.ndarray],
-    pydantic.BeforeValidator(_to_raw_data),
-    pydantic.PlainSerializer(lambda value: value.tolist(), return_type=list)]
+    pydantic.BeforeValidator(_to_raw_data)]
 
 
 class Frames(_ValidatedModel):
@@ -338,10 +215,12 @@ class Frames(_ValidatedModel):
         legacy_order = ('framecount', 'framelength', 'skip_frames',
                         'skip_bins_start', 'skip_bins_end', 'rebin', 'dtbin',
                         'raw_data_path')
+
         if len(args) > len(legacy_order):
             raise TypeError(
                 f'Frames takes at most {len(legacy_order)} positional '
                 f'arguments but {len(args)} were given')
+
         super().__init__(**dict(zip(legacy_order, args)), **kwargs)
 
     def __eq__(self, other: object) -> bool:
@@ -350,7 +229,33 @@ class Frames(_ValidatedModel):
         # a list, which compares element-wise.
         if not isinstance(other, Frames):
             return NotImplemented
+
         return self.model_dump() == other.model_dump()
+
+    @pydantic.field_validator('raw_data')
+    @classmethod
+    def _flatten_raw_data(cls, raw_data: NPArray | None,
+                          info: pydantic.ValidationInfo) -> NPArray | None:
+        # Raw data given in 2D must hold one frame per row, and is held flat.
+        if raw_data is not None and raw_data.ndim == 2:
+            nframes = info.data.get('nframes')
+
+            if raw_data.shape[0] != nframes:
+                raise expt.RawDataImportError(
+                    f'Raw data has {raw_data.shape[0]} rows, expected one '
+                    f'per frame ({nframes})')
+
+            raw_data = raw_data.ravel()
+
+        return raw_data
+
+    @pydantic.field_serializer('raw_data')
+    def _dump_raw_data(self, raw_data: NPArray | None) -> list | None:
+        # Dumped with one frame per row.
+        if raw_data is None:
+            return None
+
+        return raw_data.reshape(self.nframes, self.nbins_frame).tolist()
 
     @pydantic.model_validator(mode='after')
     def _check_cross_field_bounds(self) -> Frames:
@@ -358,40 +263,29 @@ class Frames(_ValidatedModel):
             raise ValueError(
                 f'skip_frames ({self.skip_frames}) must be less than '
                 f'nframes ({self.nframes})')
-        if not self.skip_bins_start < self.nbins_frame:
+        # Bins are cut from both ends of a frame, and must leave at least
+        # one.
+        skip_bins = self.skip_bins_start + self.skip_bins_end
+        if not skip_bins < self.nbins_frame:
             raise ValueError(
-                f'skip_bins_start ({self.skip_bins_start}) must be less '
-                f'than nbins_frame ({self.nbins_frame})')
-        if not self.skip_bins_end < self.nbins_frame:
-            raise ValueError(
-                f'skip_bins_end ({self.skip_bins_end}) must be less than '
-                f'nbins_frame ({self.nbins_frame})')
+                f'skip_bins_start + skip_bins_end ({skip_bins}) must be less '
+                f'than nbins_frame ({self.nbins_frame}):'
+                f'    {self.skip_bins_start=}'
+                f'    {self.skip_bins_end=}')
         return self
 
     @pydantic.model_validator(mode='after')
     def _check_raw_data_length(self) -> Frames:
+
         if self.raw_data is not None:
             ndata = self.nframes * self.nbins_frame
+
             if len(self.raw_data) != ndata:
                 raise expt.RawDataImportError(
                     f'Raw data has length {len(self.raw_data)}.\n'
                     f'expected length: {ndata}')
-        return self
 
-    @classmethod
-    def from_parameters(cls, params: Parameters, raw_data_path: str = '',
-                        raw_data: Collection | None = None) -> Frames:
-        """Build Frames from the frame-shaping fields of a Parameters."""
-        return cls(
-            raw_data=raw_data,
-            framecount=params.framecount,
-            framelength=params.framelength,
-            skip_frames=params.skip_frames,
-            skip_bins_start=params.skip_bins_start,
-            skip_bins_end=params.skip_bins_end,
-            rebin=params.rebin,
-            dtbin=params.dtbin,
-            raw_data_path=raw_data_path)
+        return self
 
     @pydantic.computed_field
     @property
@@ -469,63 +363,125 @@ class Frames(_ValidatedModel):
         return np.array(raw_data)
 
 
+class Metadata(_ValidatedModel):
+    """Information describing input data and where it came from, held in
+    full only by JSON files."""
+
+    # Version of the file the data was read from, None if not read from one.
+    format_version: str | None = None
+    selector: str | None = None
+    cycle_stamp_ns: int | None = None
+    context_name: str | None = None
+    acquisition_id: int = 1
+    bunch_id: int = 0
+    name: str | None = None
+    c_time: int | None = None  # ms
+    timespan: float | None = None  # µs
+    ring: int | None = None
+    delay: float | None = None  # ns
+    v_scale: float | None = None  # V/div
+    v_position: float | None = None  # div
+
 class TomographyData(_ValidatedModel):
-    """Full input data parsed from a legacy `.dat` file: the machine and
-    reconstruction parameters plus the frame/raw-data metadata.
+    """Full input data, as held by a file of the latest JSON format version:
+    the machine and reconstruction parameters, the frames holding the raw
+    data, and the metadata.
     """
 
+    # Fields are dumped in this order, so the raw data in frames comes last.
+    metadata: Metadata = pydantic.Field(default_factory=Metadata)
+    parameter_descriptions: dict[str, str] = (
+        pdesc.PARAMETER_DESCRIPTIONS_V3_0_0)
     parameters: Parameters
     frames: Frames
 
+    @pydantic.model_validator(mode='after')
+    def _check_parameters_fit_frames(self) -> TomographyData:
+        params, frames = self.parameters, self.frames
+
+        value_errors = []
+
+        if not params.synch_part_x < frames.nbins_frame:
+            value_errors.append(
+                f'synch_part_x ({params.synch_part_x}) must be less than '
+                f'nbins_frame ({frames.nbins_frame})')
+
+        # These index profiles, the frames left after skip_frames.
+        for name in ('filmstart', 'filmstop', 'beam_ref_frame',
+                     'machine_ref_frame'):
+            if not getattr(params, name) < frames.nprofs:
+                value_errors.append(
+                    f'{name} ({getattr(params, name)}) must be less than the '
+                    f'number of profiles, nframes - skip_frames '
+                    f'({frames.nprofs})')
+
+        _raise_value_errors(value_errors)
+        return self
+
     @classmethod
-    def from_dat_file(cls, path: str) -> TomographyData:
-        """Build a TomographyData by reading and parsing a legacy `.dat` file.
+    def from_file(cls, path: str) -> TomographyData:
+        """Read input data from a file of any supported format version,
+        converting it to the latest version first if needed.
 
         Parameters
         ----------
         path: str
-            Path to the `.dat` file.
+            Path to the file. ``'stdin'`` or ``''`` reads from stdin.
 
         Returns
         -------
         TomographyData
+            The input data, with the file's format version in its metadata.
+
+        Raises
+        ------
+        InputError: Exception
+            Raised if the file's format version is not supported, or the file
+            holds invalid input.
         """
-        raw_params, raw_data = parsing.read_input(path)
-        params = Parameters.from_dat_lines(raw_params)
-        raw_data_path = raw_params[parsing.RAW_DATA_FILE_IDX]
-        frame = Frames.from_parameters(params, raw_data_path=raw_data_path,
-                                       raw_data=raw_data)
-        return cls(parameters=params, frames=frame)
+        text, version = fhand.read_file(path)
 
-    def to_dat_file(self, path: str):
-        """Write the input data to a legacy `.dat` file.
+        try:
+            data = cls.model_validate_json(
+                fhand.convert_text(text, version, fhand.JSON_VERSION))
+        except pydantic.ValidationError as exc:
+            raise expt.InputError(
+                f'Invalid input in "{path}":\n{exc}') from exc
 
-        Raw data is appended to the parameter lines unless the frames name
-        an external file holding it.
+        data.metadata.format_version = version
+
+        return data
+
+    def to_file(self, path: str, version: str = fhand.JSON_VERSION):
+        """Write the input data to a file of the given format version,
+        converting it from the latest version if needed.
 
         Parameters
         ----------
         path: str
             Path of the file to write.
+        version: str, optional, default=JSON_VERSION
+            Format version to write, :data:`DAT_VERSION` for a `.dat` file.
 
         Raises
         ------
+        InputError: Exception
+            Raised if the format version is not supported, or the data
+            cannot be represented in it.
         RawDataImportError: Exception
-            Raised if raw data should be written inline but is missing.
+            Raised if a `.dat` file should hold raw data that is missing.
         """
-        # An empty path names no external file, so the data goes inline.
-        raw_data_path = ('pipe' if self.frames.raw_data_path == ''
-                          else self.frames.raw_data_path)
-
-        lines = self.parameters.to_dat_lines(raw_data_path)
-        if raw_data_path == 'pipe':
-            if self.frames.raw_data is None:
-                raise expt.RawDataImportError(
-                    'No raw data held to write inline')
-            lines += [str(value) for value in self.frames.raw_data.tolist()]
+        metadata = self.metadata.model_copy(
+            update={'format_version': fhand.JSON_VERSION})
+        # The profile counts are derived, so they are left out and the raw
+        # data ends the file.
+        document = self.model_copy(update={'metadata': metadata}).model_dump(
+            mode='json', exclude={'frames': {'nprofs', 'nbins'}})
+        text = fhand.convert_text(fhand.format_json(document),
+                                  fhand.JSON_VERSION, version)
 
         with open(path, 'w') as f:
-            f.write('\n'.join(lines) + '\n')
+            f.write(text)
 
     def to_machine(self) -> Machine:
         """Build a Machine from the input data.
@@ -536,22 +492,21 @@ class TomographyData(_ValidatedModel):
             Machine object containing parameters for the machine and the
             tomographic reconstruction.
         """
-        params = self.parameters
+        params, frames = self.parameters, self.frames
 
         # Calculating limits in phase for reconstruction area, specified by
         # user, from bin offsets to physical units of phase [s].
-        min_dt = params.min_dt_bin * params.dtbin
-        max_dt = (self.frames.nbins - params.max_dt_bin) * params.dtbin
+        min_dt = params.min_dt_bin * frames.sampling_time
+        max_dt = (frames.nbins - params.max_dt_bin) * frames.sampling_time
 
         # Machine silently ignores unknown arguments, so the fields it does
         # not take are excluded explicitly.
-        machine_kwargs = params.model_dump(exclude={
-            'header', 'framecount', 'framelength', 'skip_frames',
-            'skip_bins_start', 'skip_bins_end', 'min_dt_bin', 'max_dt_bin',
-            'rebin'})
+        machine_kwargs = params.model_dump(exclude={'min_dt_bin',
+                                                    'max_dt_bin'})
 
-        return Machine(**machine_kwargs, nprofiles=self.frames.nprofs,
-                       nbins=self.frames.nbins, min_dt=min_dt, max_dt=max_dt)
+        return Machine(**machine_kwargs, dtbin=frames.sampling_time,
+                       nprofiles=frames.nprofs, nbins=frames.nbins,
+                       min_dt=min_dt, max_dt=max_dt)
 
     def to_profiles(self) -> Profiles:
         """Build Profiles from the held raw data, ready for tracking.

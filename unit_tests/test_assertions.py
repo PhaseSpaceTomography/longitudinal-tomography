@@ -525,11 +525,11 @@ class TestAssertions(unittest.TestCase):
     def test_assert_machine_input_bad_pickup_sensitivity(self):
         machine = mch.Machine(**MACHINE_ARGS)
 
-        machine.pickup_sensitivity = -1
+        machine.pickup_sensitivity = 0
         with self.assertRaises(
                 expt.SpaceChargeParameterError,
-                msg='pickup_sensitivity with with value less than '
-                    'zero should raise an Exception'):
+                msg='pickup_sensitivity with with value less than or '
+                    'equal to zero should raise an Exception'):
             asrt.assert_machine_input(machine)
 
     def test_assert_machine_input_bad_g_coupling(self):

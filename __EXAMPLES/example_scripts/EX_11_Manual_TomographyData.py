@@ -25,21 +25,13 @@ frames = tdata.Frames(
     sampling_time=4.999999999999999E-10,
     raw_data=raw_data)
 
-# Parameters repeats the frame fields, so they are taken from frames to keep
-# the two in agreement. filmstart, filmstop, beam_ref_frame and
-# machine_ref_frame are 0-based, one less than in the input file.
+# filmstart, filmstop, beam_ref_frame and machine_ref_frame are 0-based, one
+# less than in the input file.
 parameters = tdata.Parameters(
     output_dir='/tmp/',
-    framecount=frames.nframes,
-    skip_frames=frames.skip_frames,
-    framelength=frames.nbins_frame,
-    dtbin=frames.sampling_time,
     dturns=9,
-    skip_bins_start=frames.skip_bins_start,
-    skip_bins_end=frames.skip_bins_end,
     min_dt_bin=0,
     max_dt_bin=0,
-    rebin=frames.rebin,
     synch_part_x=202.39800000000002,
     demax=-1.E6,
     filmstart=0,

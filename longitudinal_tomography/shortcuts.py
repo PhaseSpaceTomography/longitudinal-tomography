@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING
 from .tracking import Tracking
 from .tracking import particles
 from .tomography import tomography
-from .utils import tomo_input as tin
-from .data import data_treatment as dtreat
+from .utils import tomo_data as tdata
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -31,21 +30,10 @@ def read_input_file(input_file_path: str) -> tuple[MachineABC, NPArray]:
     :param input_file_path: path to input file
     :return: machine and waterfall
     """
-    raw_params, raw_data = tin.get_user_input(input_file_path)
+    # Builds the machine, treats the raw data and fits synch_part_x if needed
+    profiles = tdata.TomographyData.from_file(input_file_path).to_profiles()
 
-    machine, frames = tin.txt_input_to_machine(raw_params)
-    machine.values_at_turns()
-    measured_waterfall = frames.to_waterfall(raw_data)
-
-    profiles = tin.raw_data_to_profiles(
-        measured_waterfall, machine, frames.rebin, frames.sampling_time)
-    profiles.calc_profilecharge()
-
-    if profiles.machine.synch_part_x < 0:
-        fit_info = dtreat.fit_synch_part_x(profiles)
-        machine.load_fitted_synch_part_x_ftn(fit_info)
-
-    return machine, profiles.waterfall
+    return profiles.machine, profiles.waterfall
 
 
 def track(machine: MachineABC, reconstruction_idx: int = None,

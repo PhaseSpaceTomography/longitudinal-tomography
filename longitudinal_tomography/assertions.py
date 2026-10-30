@@ -597,9 +597,8 @@ def assert_machine_input(machine: Machine):
 
     # Space charge parameter assertion
     if machine.pickup_sensitivity is not None:
-        assert_greater_or_equal(machine.pickup_sensitivity,
-                                'pick-up sensitivity',
-                                0, expt.SpaceChargeParameterError)
+        assert_greater(machine.pickup_sensitivity, 'pick-up sensitivity',
+                       0, expt.SpaceChargeParameterError)
     if machine.g_coupling is not None:
         assert_greater_or_equal(machine.g_coupling, 'g_coupling',
                                 0, expt.SpaceChargeParameterError,
