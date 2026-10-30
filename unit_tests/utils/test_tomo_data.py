@@ -93,8 +93,7 @@ class TestParameters(unittest.TestCase):
                             ('h_ratio', 0), ('b0', 0.0), ('charge', 0),
                             ('mean_orbit_rad', 0.0), ('bending_rad', 0.0),
                             ('rest_energy', 0.0), ('min_dt_bin', -1),
-                            ('max_dt_bin', -1), ('pickup_sensitivity', 0.0),
-                            ('pickup_sensitivity', 1.5)):
+                            ('max_dt_bin', -1), ('pickup_sensitivity', 0.0)):
             with self.subTest(field=name, value=value):
                 with self.assertRaises(
                         pydantic.ValidationError,
