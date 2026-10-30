@@ -33,11 +33,6 @@ frame_input_args = {
 
 MACHINE_ARGS = commons.get_machine_args()
 
-def _resource_dir() -> str:
-    base_dir = os.path.split(os.path.realpath(__file__))[0]
-    base_dir = os.path.split(base_dir)[0]
-    return os.path.join(base_dir, 'resources')
-
 
 class TestTomoIn(unittest.TestCase):
 
