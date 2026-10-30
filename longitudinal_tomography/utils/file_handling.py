@@ -268,12 +268,14 @@ def _dat_to_document_v3(lines: Sequence[str],
             f'Input array be of length {parsing.PARAMETER_LENGTH}, '
             f'containing every line of input file (not including '
             f'raw-data).')
+
     lines = [line.strip() for line in lines]
 
     parameters = {
         name: _from_dat_v2(name, lines[i])
         for name, i in parsing.DAT_FILE_LINE_INDEX.items()
         if name != 'raw_data_path'}
+
     frames = {field: parameters.pop(name)
               for field, name in _DAT_V2_FRAMES_VALUES.items()}
 
@@ -281,6 +283,7 @@ def _dat_to_document_v3(lines: Sequence[str],
     selector, _, context_name = preamble[0].partition('=')
     # The cycle stamp is given in seconds.
     stamp = _from_dat_v2('cycle_stamp', preamble[1])
+
     metadata = {
         'format_version': '3.0.0',
         'selector': selector or None,
@@ -293,6 +296,7 @@ def _dat_to_document_v3(lines: Sequence[str],
            for name, text in zip(parsing.DAT_FILE_PREAMBLE, preamble[2:])}}
 
     frames['raw_data_path'] = lines[parsing.RAW_DATA_FILE_IDX]
+
     frames['raw_data'] = None if raw_data is None else np.reshape(
         raw_data, (frames['nframes'], frames['nbins_frame'])).tolist()
 
@@ -337,7 +341,6 @@ def _from_dat_v2(name: str, text: str) -> str | int | float | bool | None:
         raise expt.InputError(
             f'Invalid legacy input:\n{name} is not valid: {text!r}') from exc
 
-
 def _to_dat_v2(name: str, value: str | int | float | bool | None) -> str:
     # The inverse of _from_dat_v2, for a parameter.
     if value is None:
@@ -348,13 +351,15 @@ def _to_dat_v2(name: str, value: str | int | float | bool | None) -> str:
         # The format has no way to say "unset", so an optional parameter
         # without a value is written as zero.
         return '0'
+
     if isinstance(value, bool):
         return str(int(value))
+
     value = _whole_to_int(name, value)
+
     if name in parsing.FORTRAN_TO_C_FIELDS:
         return str(value + 1)
     return str(value)
-
 
 def _whole_to_int(name: str, value: str | int | float | None) \
         -> str | int | float | None:
@@ -379,6 +384,7 @@ def _json_v3_to_dat_v2(text: str) -> str:
              metadata.get('context_name') or '')
     # The cycle stamp is written in seconds, so any fraction is lost.
     stamp = metadata.get('cycle_stamp_ns')
+
     preamble = ['='.join(names) if any(names) else None,
                 None if stamp is None
                 else _whole_to_int('cycle_stamp', stamp // 10**9),
@@ -397,6 +403,7 @@ def _json_v3_to_dat_v2(text: str) -> str:
     except KeyError as exc:
         raise expt.InputError(
             f'Version 3.0.0 input has no value for {exc}') from exc
+
     lines = (['' if value is None else str(value) for value in preamble]
              + parsing.DAT_FILE_TEMPLATE.format(
                  raw_data_path=raw_data_path, **values).splitlines())
@@ -404,9 +411,10 @@ def _json_v3_to_dat_v2(text: str) -> str:
     if raw_data_path == 'pipe':
         if frames.get('raw_data') is None:
             raise expt.RawDataImportError('No raw data held to write inline')
-        lines += [str(value) for row in frames['raw_data'] for value in row]
-    return '\n'.join(lines) + '\n'
 
+        lines += [str(value) for row in frames['raw_data'] for value in row]
+
+    return '\n'.join(lines) + '\n'
 
 #: (version, adjacent version) -> function converting the text of a file
 #: from the first to the second. Supporting another version means adding it

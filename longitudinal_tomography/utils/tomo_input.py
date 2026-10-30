@@ -85,6 +85,7 @@ def txt_input_to_machine(input_array: str | list) \
                                   fhand.JSON_VERSION)
     else:
         text = fhand.dat_to_json(input_array)
+
     try:
         data = tdata.TomographyData.model_validate_json(text)
     except pydantic.ValidationError as exc:

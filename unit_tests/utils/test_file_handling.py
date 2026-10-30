@@ -167,10 +167,13 @@ class TestFileHandling(unittest.TestCase):
     def test_converting_invalid_dat_warns(self):
         with open(dat_path) as f:
             lines = f.read().splitlines()
+
         lines[parsing.DAT_FILE_LINE_INDEX['rebin']] = '0'
         invalid = os.path.join(self.tmp_dir, 'invalid.dat')
+
         with open(invalid, 'w') as f:
             f.write('\n'.join(lines) + '\n')
+
         json_path = os.path.join(self.tmp_dir, 'data.json')
 
         with self.assertWarns(UserWarning,
@@ -189,10 +192,13 @@ class TestFileHandling(unittest.TestCase):
                    if name not in kept]
         json_path, document = self._to_json(
             tdata.TomographyData.from_file(dat_path))
+
         for name in omitted:
             del document['parameters'][name]
+
         with open(json_path, 'w') as f:
             json.dump(document, f)
+
         dat_copy = os.path.join(self.tmp_dir, 'copy.dat')
 
         # Omitting a value with a default is valid, so gives no warning.
@@ -209,20 +215,25 @@ class TestFileHandling(unittest.TestCase):
                                      f'as its default')
 
     def test_whole_floats_are_written_as_integers(self):
+
         json_path, document = self._to_json(
             tdata.TomographyData.from_file(dat_path))
+
         document['parameters'].update(niter=20.0, filmstart=0.0)
         document['frames']['rebin'] = 3.0
         document['metadata'].update(
             cycle_stamp_ns=float(document['metadata']['cycle_stamp_ns']),
             c_time=325.0, ring=3.0)
+
         with open(json_path, 'w') as f:
             json.dump(document, f)
+
         dat_copy = os.path.join(self.tmp_dir, 'copy.dat')
         fhand.convert(json_path, dat_copy, fhand.DAT_VERSION)
 
         with open(dat_copy) as f:
             lines = f.read().splitlines()
+
         for name, expected in (('niter', '20'), ('filmstart', '1'),
                                ('rebin', '3')):
             with self.subTest(field=name):
@@ -230,6 +241,7 @@ class TestFileHandling(unittest.TestCase):
                                  expected,
                                  msg=f'a whole float {name} should be '
                                      f'written as an integer')
+
         # Preamble lines 1, 2 and 4 hold cycle_stamp, c_time and ring.
         self.assertEqual([lines[1], lines[2], lines[4]],
                          ['1520341165', '325', '3'],
@@ -251,6 +263,7 @@ class TestFileHandling(unittest.TestCase):
                  ('b', 'c'): lambda text: text + '>c',
                  ('c', 'b'): lambda text: text + '<b',
                  ('b', 'a'): lambda text: text + '<a'}
+
         with mock.patch.object(fhand, 'VERSIONS', ('a', 'b', 'c')), \
                 mock.patch.dict(fhand._STEPS, steps, clear=True):
             self.assertEqual(fhand.convert_text('a', 'a', 'c'), 'a>b>c',
@@ -332,6 +345,7 @@ class TestFileHandling(unittest.TestCase):
 
         expected = {'selector': 'LHCINDIV', 'context_name': 'LHCINDIV',
                     'cycle_stamp_ns': 1520341165 * 10**9, 'c_time': 325}
+
         for key, value in expected.items():
             with self.subTest(key=key):
                 self.assertEqual(metadata[key], value,
@@ -451,12 +465,14 @@ class TestDatParsing(unittest.TestCase):
                 ('skip_bins_end', 'skip_bins_end', 70),
                 ('rebin', 'rebin', 3),
                 ('sampling_time', 'dtbin', 9.999999999999999E-10)):
+
             with self.subTest(field=frame_name):
                 self.assertEqual(frames[frame_name], value,
                                  msg=f'{frame_name} not taken from {name}')
                 self.assertNotIn(name, parameters,
                                  msg=f'{name} should be held only by the '
                                      f'frames')
+
         self.assertEqual(frames['raw_data_path'], 'pipe',
                          msg='raw_data_path not taken from the .dat file')
         self.assertIsNone(frames['raw_data'],
@@ -464,9 +480,11 @@ class TestDatParsing(unittest.TestCase):
 
     def test_converts_fortran_indices(self):
         lines = _parameter_lines()
+
         for name, value in (('filmstart', 3), ('filmstop', 5),
                             ('beam_ref_frame', 7), ('machine_ref_frame', 9)):
             lines[parsing.DAT_FILE_LINE_INDEX[name]] = f'{value}\n'
+
         # dturns is an ordinary int field, it must survive untouched.
         lines[parsing.DAT_FILE_LINE_INDEX['dturns']] = '9\n'
 
@@ -535,6 +553,7 @@ class TestDatParsing(unittest.TestCase):
                     'timespan': 1015.943, 'ring': 3,
                     'delay': 1259.0000000000002, 'v_scale': 0.01,
                     'v_position': -1.8679245283018875}
+
         for name, value in expected.items():
             with self.subTest(field=name):
                 self.assertEqual(metadata[name], value,
@@ -612,6 +631,7 @@ class TestDatWriting(unittest.TestCase):
 
         self.assertEqual(restored.frames, original.frames,
                          msg='frames should survive a .dat round trip')
+
         nptest.assert_array_equal(
             restored.frames.raw_data, original.frames.raw_data,
             err_msg='raw data should survive a .dat round trip')
@@ -652,6 +672,7 @@ class TestDatWriting(unittest.TestCase):
         for name, i in parsing.DAT_FILE_LINE_INDEX.items():
             if name in ('raw_data_path', 'output_dir'):
                 continue
+
             with self.subTest(field=name):
                 self.assertEqual(float(lines[i]), float(source[i]),
                                  msg=f'{name} changed value when written')
@@ -697,8 +718,10 @@ class TestDatWriting(unittest.TestCase):
     def test_absent_optional_is_written_as_zero(self):
         optional = ('g_coupling', 'zwall_over_n')
         data = tdata.TomographyData.from_file(dat_path)
+
         for name in optional:
             setattr(data.parameters, name, None)
+
         _, lines = self._write_dat(data)
 
         for name in optional:

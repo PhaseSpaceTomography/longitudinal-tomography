@@ -33,7 +33,6 @@ frame_input_args = {
 
 MACHINE_ARGS = commons.get_machine_args()
 
-
 def _resource_dir() -> str:
     base_dir = os.path.split(os.path.realpath(__file__))[0]
     base_dir = os.path.split(base_dir)[0]
@@ -48,9 +47,11 @@ class TestTomoIn(unittest.TestCase):
     def test_frames_set_raw_data_fails(self):
         for description, raw_data in (('scalar raw data', 1),
                                       ('wrong amount of data points', [1])):
+
             with self.subTest(case=description):
                 frames = tomoin.Frames(**frame_input_args)
                 frames.raw_data = raw_data
+
                 with self.assertRaises(
                         expt.RawDataImportError,
                         msg=f'{description} should raise an exception'):
@@ -403,8 +404,10 @@ class TestTomoIn(unittest.TestCase):
     def test_txt_input_to_machine_invalid_value_fails(self):
         infile = os.path.join(self._find_resource_dir(),
                               'parameters_INDIVShavingC325.dat')
+
         with open(infile, 'r') as f:
             file_lines = f.readlines()
+
         file_lines[parsing.DAT_FILE_LINE_INDEX['rebin']] = '0\n'
 
         with self.assertRaises(expt.InputError,
@@ -418,16 +421,20 @@ class TestTomoIn(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             json_path = os.path.join(tmp_dir, 'INDIVShavingC325.json')
             fhand.convert(dat_path, json_path)
+
             with open(json_path) as f:
                 text = f.read()
+
             with mock.patch('sys.stdin', io.StringIO(text)):
                 from_stdin = tomoin.get_user_input('stdin')
+
             inputs = {'.dat file': tomoin.get_user_input(dat_path),
                       'JSON file': tomoin.get_user_input(json_path),
                       'JSON on stdin': from_stdin}
 
         with open(dat_path) as f:
             _, raw_data = parsing.split_input(f.read().splitlines())
+
         for source, (json_text, held_data) in inputs.items():
             with self.subTest(source=source):
                 self.assertEqual(json_text, text,
@@ -441,8 +448,10 @@ class TestTomoIn(unittest.TestCase):
     def test_txt_input_to_machine_accepts_either_format(self):
         dat_path = os.path.join(self._find_resource_dir(),
                                 'INDIVShavingC325.dat')
+
         with open(dat_path) as f:
             dat_text = f.read()
+
         lines = dat_text.splitlines()
         machine, frames = tomoin.txt_input_to_machine(
             lines[:parsing.PARAMETER_LENGTH])
@@ -451,6 +460,7 @@ class TestTomoIn(unittest.TestCase):
         self.assertIsNone(frames.raw_data,
                           msg='.dat parameter lines should give frames '
                               'without raw data')
+
         for source, text in (('JSON', tomoin.get_user_input(dat_path)[0]),
                              ('.dat', dat_text)):
             with self.subTest(source=source):

@@ -319,6 +319,7 @@ class TestTomographyData(unittest.TestCase):
         for name, expected in MACHINE_ARGS.items():
             if name in DERIVED_MACHINE_ARGS:
                 continue
+
             with self.subTest(field=name):
                 self.assertEqual(getattr(data.parameters, name), expected,
                                  msg=f'{name} read incorrectly from the file')
@@ -439,10 +440,12 @@ class TestTomographyData(unittest.TestCase):
         frames = {**frame_input_args, 'skip_frames': 10}
         for name in ('filmstart', 'filmstop', 'beam_ref_frame',
                      'machine_ref_frame'):
+
             with self.subTest(field=name):
                 args = {**PARAMETER_ARGS, 'filmstop': 139}
                 tdata.TomographyData(parameters={**args, name: 139},
                                      frames=frames)
+
                 with self.assertRaises(
                         pydantic.ValidationError,
                         msg=f'{name} beyond the last profile should be '
@@ -454,6 +457,7 @@ class TestTomographyData(unittest.TestCase):
         bad_input = {'synch_part_x': 1000.0, 'filmstart': 150,
                      'filmstop': 150, 'beam_ref_frame': 150,
                      'machine_ref_frame': 150}
+
         with (self.assertRaises(pydantic.ValidationError,
                                msg="Ill formed input should be rejected")
                                as exception):

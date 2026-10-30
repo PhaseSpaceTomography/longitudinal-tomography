@@ -215,10 +215,12 @@ class Frames(_ValidatedModel):
         legacy_order = ('framecount', 'framelength', 'skip_frames',
                         'skip_bins_start', 'skip_bins_end', 'rebin', 'dtbin',
                         'raw_data_path')
+
         if len(args) > len(legacy_order):
             raise TypeError(
                 f'Frames takes at most {len(legacy_order)} positional '
                 f'arguments but {len(args)} were given')
+
         super().__init__(**dict(zip(legacy_order, args)), **kwargs)
 
     def __eq__(self, other: object) -> bool:
@@ -227,6 +229,7 @@ class Frames(_ValidatedModel):
         # a list, which compares element-wise.
         if not isinstance(other, Frames):
             return NotImplemented
+
         return self.model_dump() == other.model_dump()
 
     @pydantic.field_validator('raw_data')
@@ -236,11 +239,14 @@ class Frames(_ValidatedModel):
         # Raw data given in 2D must hold one frame per row, and is held flat.
         if raw_data is not None and raw_data.ndim == 2:
             nframes = info.data.get('nframes')
+
             if raw_data.shape[0] != nframes:
                 raise expt.RawDataImportError(
                     f'Raw data has {raw_data.shape[0]} rows, expected one '
                     f'per frame ({nframes})')
+
             raw_data = raw_data.ravel()
+
         return raw_data
 
     @pydantic.field_serializer('raw_data')
@@ -248,6 +254,7 @@ class Frames(_ValidatedModel):
         # Dumped with one frame per row.
         if raw_data is None:
             return None
+
         return raw_data.reshape(self.nframes, self.nbins_frame).tolist()
 
     @pydantic.model_validator(mode='after')
@@ -269,12 +276,15 @@ class Frames(_ValidatedModel):
 
     @pydantic.model_validator(mode='after')
     def _check_raw_data_length(self) -> Frames:
+
         if self.raw_data is not None:
             ndata = self.nframes * self.nbins_frame
+
             if len(self.raw_data) != ndata:
                 raise expt.RawDataImportError(
                     f'Raw data has length {len(self.raw_data)}.\n'
                     f'expected length: {ndata}')
+
         return self
 
     @pydantic.computed_field
@@ -390,10 +400,12 @@ class TomographyData(_ValidatedModel):
         params, frames = self.parameters, self.frames
 
         value_errors = []
+
         if not params.synch_part_x < frames.nbins_frame:
             value_errors.append(
                 f'synch_part_x ({params.synch_part_x}) must be less than '
                 f'nbins_frame ({frames.nbins_frame})')
+
         # These index profiles, the frames left after skip_frames.
         for name in ('filmstart', 'filmstop', 'beam_ref_frame',
                      'machine_ref_frame'):
@@ -428,13 +440,16 @@ class TomographyData(_ValidatedModel):
             holds invalid input.
         """
         text, version = fhand.read_file(path)
+
         try:
             data = cls.model_validate_json(
                 fhand.convert_text(text, version, fhand.JSON_VERSION))
         except pydantic.ValidationError as exc:
             raise expt.InputError(
                 f'Invalid input in "{path}":\n{exc}') from exc
+
         data.metadata.format_version = version
+
         return data
 
     def to_file(self, path: str, version: str = fhand.JSON_VERSION):
@@ -464,6 +479,7 @@ class TomographyData(_ValidatedModel):
             mode='json', exclude={'frames': {'nprofs', 'nbins'}})
         text = fhand.convert_text(fhand.format_json(document),
                                   fhand.JSON_VERSION, version)
+
         with open(path, 'w') as f:
             f.write(text)
 
