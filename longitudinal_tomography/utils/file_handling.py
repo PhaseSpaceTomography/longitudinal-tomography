@@ -103,13 +103,10 @@ def read_file(path: str) -> tuple[str, str]:
         Raised if the file does not exist or names no format version.
     """
     text = ''.join(parsing.read_lines(path))
-    version = detect_text_version(text)
-    if version is None:
-        raise expt.InputError(f'No format version found in "{path}"')
-    return text, version
+    return text, detect_text_version(text)
 
 
-def detect_text_version(text: str) -> str | None:
+def detect_text_version(text: str) -> str:
     """Find the format version of the text of an input file.
 
     Parameters
@@ -119,18 +116,36 @@ def detect_text_version(text: str) -> str | None:
 
     Returns
     -------
-    version: str | None
-        The format version, or None if the text names none.
+    version: str
+        The format version.
+
+    Raises
+    ------
+    InputError: Exception
+        Raised if the text names no format version.
     """
     if text.lstrip().startswith('{'):
-        return json.loads(text).get('metadata', {}).get('format_version')
+        version = json.loads(text).get('metadata', {}).get('format_version')
+        if version is None:
+            raise expt.InputError('JSON input has no format_version in its '
+                                  'metadata')
 
-    # A `.dat` file names its version on the line after the preamble.
-    lines = text.splitlines()
-    version_line = (lines[parsing.DAT_FILE_HEADER_LENGTH]
-                    if len(lines) > parsing.DAT_FILE_HEADER_LENGTH else '')
-    return (version_line.removeprefix('! Version').strip()
-            if version_line.startswith('! Version') else None)
+    else:
+        # A `.dat` file names its version on the line after the preamble.
+        lines = text.splitlines()
+        if len(lines) <= parsing.DAT_FILE_HEADER_LENGTH:
+            raise expt.InputError(
+                f'.dat input has {len(lines)} lines, too few to name a '
+                f'format version')
+        version_line = lines[parsing.DAT_FILE_HEADER_LENGTH]
+
+        if not version_line.startswith('! Version'):
+            raise expt.InputError(
+                f'.dat input names no format version on line '
+                f'{parsing.DAT_FILE_HEADER_LENGTH + 1}: {version_line!r}')
+        version = version_line.removeprefix('! Version').strip()
+
+    return version
 
 
 def convert(input_path: str, output_path: str, version: str = JSON_VERSION):
@@ -271,10 +286,10 @@ def _dat_to_document_v3(lines: Sequence[str],
 
     lines = [line.strip() for line in lines]
 
-    parameters = {
-        name: _from_dat_v2(name, lines[i])
-        for name, i in parsing.DAT_FILE_LINE_INDEX.items()
-        if name != 'raw_data_path'}
+    parameters = {}
+    for name, i in parsing.DAT_FILE_LINE_INDEX.items():
+        if name != 'raw_data_path':
+            parameters[name] = _from_dat_v2(name, lines[i])
 
     frames = {field: parameters.pop(name)
               for field, name in _DAT_V2_FRAMES_VALUES.items()}
@@ -297,8 +312,11 @@ def _dat_to_document_v3(lines: Sequence[str],
 
     frames['raw_data_path'] = lines[parsing.RAW_DATA_FILE_IDX]
 
-    frames['raw_data'] = None if raw_data is None else np.reshape(
-        raw_data, (frames['nframes'], frames['nbins_frame'])).tolist()
+    if raw_data is None:
+        frames['raw_data'] = None
+    else:
+        frames['raw_data'] = np.reshape(
+            raw_data, (frames['nframes'], frames['nbins_frame'])).tolist()
 
     return {'metadata': metadata,
             'parameter_descriptions': pdesc.PARAMETER_DESCRIPTIONS_V3_0_0,
@@ -341,6 +359,7 @@ def _from_dat_v2(name: str, text: str) -> str | int | float | bool | None:
         raise expt.InputError(
             f'Invalid legacy input:\n{name} is not valid: {text!r}') from exc
 
+
 def _to_dat_v2(name: str, value: str | int | float | bool | None) -> str:
     # The inverse of _from_dat_v2, for a parameter.
     if value is None:
@@ -350,16 +369,16 @@ def _to_dat_v2(name: str, value: str | int | float | bool | None) -> str:
                 'represent')
         # The format has no way to say "unset", so an optional parameter
         # without a value is written as zero.
-        return '0'
+        text = '0'
+    elif isinstance(value, bool):
+        text = str(int(value))
+    else:
+        value = _whole_to_int(name, value)
+        if name in parsing.FORTRAN_TO_C_FIELDS:
+            value += 1
+        text = str(value)
+    return text
 
-    if isinstance(value, bool):
-        return str(int(value))
-
-    value = _whole_to_int(name, value)
-
-    if name in parsing.FORTRAN_TO_C_FIELDS:
-        return str(value + 1)
-    return str(value)
 
 def _whole_to_int(name: str, value: str | int | float | None) \
         -> str | int | float | None:
@@ -387,22 +406,35 @@ def _json_v3_to_dat_v2(text: str) -> str:
 
     preamble = ['='.join(names) if any(names) else None,
                 None if stamp is None
-                else _whole_to_int('cycle_stamp', stamp // 10**9),
-                *(_whole_to_int(name, metadata.get(name))
-                  for name in parsing.DAT_FILE_PREAMBLE)]
+                else _whole_to_int('cycle_stamp', stamp // 10**9)]
+    for name in parsing.DAT_FILE_PREAMBLE:
+        preamble.append(_whole_to_int(name, metadata.get(name)))
 
     # An empty path names no external file, so the data goes inline.
     raw_data_path = frames.get('raw_data_path') or 'pipe'
-    try:
-        given = {**_JSON_V3_0_0_DEFAULTS, **document['parameters'],
-                 **{name: frames[field]
-                    for field, name in _DAT_V2_FRAMES_VALUES.items()}}
-        values = {name: _to_dat_v2(name, given[name])
-                  for name in parsing.DAT_FILE_LINE_INDEX
-                  if name != 'raw_data_path'}
-    except KeyError as exc:
+
+    # Missing values are named by their version 3.0.0 names.
+    given = {**_JSON_V3_0_0_DEFAULTS, **document['parameters']}
+    missing = []
+
+    for field, name in _DAT_V2_FRAMES_VALUES.items():
+        if field in frames:
+            given[name] = frames[field]
+        else:
+            missing.append(field)
+
+    missing += [name for name in parsing.DAT_FILE_LINE_INDEX
+                if name not in given
+                   and name != 'raw_data_path'
+                   and name not in _DAT_V2_FRAMES_VALUES.values()]
+
+    if missing:
         raise expt.InputError(
-            f'Version 3.0.0 input has no value for {exc}') from exc
+            f'Version 3.0.0 input has no value for {", ".join(missing)}')
+
+    values = {name: _to_dat_v2(name, given[name])
+              for name in parsing.DAT_FILE_LINE_INDEX
+              if name != 'raw_data_path'}
 
     lines = (['' if value is None else str(value) for value in preamble]
              + parsing.DAT_FILE_TEMPLATE.format(
